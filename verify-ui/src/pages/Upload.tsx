@@ -57,7 +57,7 @@ export const Upload = () => {
         >
           <QRCodeVerification
             triggerElement={triggerElement}
-            verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+            verifyServiceUrl={ window._env_.VERIFY_SERVICE_API_URL}
             isEnableScan={false}
             onVCProcessed={handleOnVCProcessed}
             uploadButtonId={"upload-qr"}

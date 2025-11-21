@@ -1,3 +1,4 @@
+
 import { useEffect, useState } from "react";
 import CameraAccessDenied from "./CameraAccessDenied";
 import { useAppDispatch } from "../../../redux/hooks";
@@ -53,7 +54,7 @@ function QrScanner({ onClose, scannerActive }: {
       <div className="w-full h-full lg:h-auto lg:w-full flex items-center justify-center rounded-lg overflow-hidden">
         <QRCodeVerification
           scannerActive={scannerActive}
-          verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+          verifyServiceUrl={window._env_.VERIFY_SERVICE_API_URL}
           isEnableUpload={false}
           onVCProcessed={handleOnVCProcessed}
           onClose={onClose}

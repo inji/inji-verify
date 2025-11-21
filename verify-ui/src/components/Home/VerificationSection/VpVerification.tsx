@@ -129,7 +129,7 @@ const DisplayActiveStep = () => {
               >
                 <OpenID4VPVerification
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                  verifyServiceUrl={ window._env_.VERIFY_SERVICE_API_URL}
                   presentationDefinition={presentationDefinition}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}
@@ -165,7 +165,7 @@ const DisplayActiveStep = () => {
               >
                 <OpenID4VPVerification
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                  verifyServiceUrl={ window._env_.VERIFY_SERVICE_API_URL}
                   presentationDefinition={presentationDefinition}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}

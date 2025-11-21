@@ -12,7 +12,57 @@ import km from "../locales/km.json";
 import { storage } from "./storage";
 import { LanguageObject } from "../types/data-types";
 
-const resources = { en, ta, kn, hi, fr, ar, pt, es, km };
+/**
+ * Build resource object for a language so keys can be resolved whether
+ * components use:
+ *   - t('Common.Button.upload')
+ *   - t('Common:Button.upload')
+ *   - t('Button.upload')
+ *
+ * Approach:
+ *  - always register `translation` namespace containing the whole JSON
+ *  - register each top-level key as its own namespace
+ *  - register each second-level key (if object) as its own namespace
+ */
+const buildResource = (langObj: Record<string, any>) => {
+  const res: Record<string, any> = {
+    translation: langObj,
+  };
+
+  // register top-level namespaces (e.g. Common, Accepted, Rejected)
+  Object.keys(langObj).forEach((topKey) => {
+    const topVal = langObj[topKey];
+    if (typeof topVal === "object" && topVal !== null) {
+      res[topKey] = topVal;
+
+      // register second-level namespaces (e.g. Button) pointing to the subtree
+      Object.keys(topVal).forEach((secondKey) => {
+        const secondVal = topVal[secondKey];
+        if (typeof secondVal === "object" && secondVal !== null) {
+          // Only add if not colliding with an already added namespace
+          if (!res[secondKey]) {
+            res[secondKey] = secondVal;
+          }
+        }
+      });
+    }
+  });
+
+  return res;
+};
+
+// Build resources for all languages using the helper above
+const resources = {
+  en: buildResource(en),
+  ta: buildResource(ta),
+  kn: buildResource(kn),
+  hi: buildResource(hi),
+  fr: buildResource(fr),
+  ar: buildResource(ar),
+  pt: buildResource(pt),
+  es: buildResource(es),
+  km: buildResource(km),
+};
 
 export const LanguagesSupported: LanguageObject[] = [
   { label: "English", value: "en" },

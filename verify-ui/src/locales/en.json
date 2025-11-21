@@ -10,7 +10,10 @@
   "Header": {
     "heading": "Verify credentials ",
     "headingHighlight": "with ease!",
-    "description": "Effortlessly verify credentials with Inji Verify! Just scan the QR code or upload it for instant validation, following the steps below."
+    "description": "Effortlessly verify credentials with Inji Verify! Just scan the QR code or upload it for instant validation, following the steps below.",
+
+    "heading_truckpass": "Verify Truck Pass",
+    "description_truckpass": "Effortlessly verify credentials with TruckPass Portal! Just scan the QR code or upload it for instant validation, following the steps below."
   },
   "Tab": {
     "upload": "Upload QR Code",
@@ -111,15 +114,15 @@
     }
   },
   "ResultSummary": {
-    "SUCCESS": "Congratulations, the given credential is valid!",
-    "INVALID": "Unfortunately, the given credential is invalid!",
-    "EXPIRED": "The given credential is valid but expired!",
+    "SUCCESS": "Congratulations, the given TruckPass is valid!",
+    "INVALID": "Unfortunately, the given TruckPass is invalid!",
+    "EXPIRED": "Unfortunately, the given TruckPass is valid but expired!",
     "TIMEOUT": "The scan session has expired due to inactivity. Please initiate a new scan."
   },
   "AlertMessages": {
     "qrUploadSuccess": "QR code uploaded successfully!",
-    "qrScanSuccess":"QR code scanned successfully!",
-    "sessionExpired":"Session expired. Please re-initiate the request.",
+    "qrScanSuccess": "QR code scanned successfully!",
+    "sessionExpired": "Session expired. Please re-initiate the request.",
     "qrNotDetected": "No MultiFormat Readers were able to detect the QR code.",
     "qrNotSupported": "QR code format is not supported.",
     "unsupportedFileSize": "File size not supported. The file size should be between 10 KB and 5 MB.",
@@ -131,7 +134,7 @@
     "scanSessionExpired": "The scan session has expired due to inactivity. Please initiate a new scan.",
     "partialCredentialShared": "Verification completed with partial credentials. Please note that some requested credentials are missing.",
     "validationFailure": "We couldn’t validate the verification response. Please ensure the response is correct and try again.",
-    "incorrectCredential":"The credentials shared do not match the requested ones. Please provide the correct credentials and try again."
+    "incorrectCredential": "The credentials shared do not match the requested ones. Please provide the correct credentials and try again."
   },
   "OvpErrors": {
     "invalidScope": "Invalid Scope",
@@ -151,7 +154,7 @@
     "invalidParams": "Invalid Parameters!!"
   },
   "CopyRight": {
-    "content": "2024 © MOSIP - All rights reserved."
+    "content": "powered by Inji, a MOSIP product"
   },
   "CameraAccessDenied": {
     "header": "Camera Access Denied",
@@ -169,9 +172,25 @@
       "scan": "Scan",
       "back": "Back",
       "verifyAnotherQrCode": "Verify Another QR code",
-      "openWallet":"Open Wallet",
+      "openWallet": "Open Wallet",
       "proceed": "Proceed",
-      "cancel": "Cancel"
+      "cancel": "Cancel",
+      "accept": "Accept entry",
+      "reject": "Reject entry"
+    }
+  },
+  "Accepted": {
+    "Accept": {
+      "title": "TruckPass Verified",
+      "description": "The traveler is cleared to cross the border",
+      "button": "Okay"
+    }
+  },
+  "Rejected": {
+    "Reject": {
+      "title": "Entry Rejected",
+      "description": "Entry rejected - get content",
+      "button": "Okay"
     }
   }
 }

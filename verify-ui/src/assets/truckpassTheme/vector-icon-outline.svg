@@ -1,0 +1,12 @@
+<svg width="40" height="40" viewBox="0 0 40 40" xmlns="http://www.w3.org/2000/svg">
+  <rect 
+    x="0.5" 
+    y="0.5" 
+    width="39" 
+    height="39" 
+    rx="13.5" 
+    fill="#006DE7" 
+    fill-opacity="0.08" 
+    stroke="#006DE7"
+  />
+</svg>

@@ -174,6 +174,58 @@
     --iv-selector-pannel-sub-title: #475467;
     --iv-qr-code-timer: #8e8e8e;
   }
+    [class="truckpass_theme"] {
+    --iv-font-base: "Inter", sans-serif;
+    --iv-primary-color: #006DE7;                /* tabs / scan color */
+    --iv-logo-start-color: #006DE7;             /* if logo needs accent */
+    --iv-background-color: #ffffff;
+    --iv-white-text: #ffffff;
+    --iv-header-label-text: #0b2b4a;
+    --iv-header-description-text: #0b2b4a;
+    --iv-offline-label-text: #2c2c2c;
+    --iv-offline-description-text: #7b7b7b;
+    --iv-header-background-color: #F5FAFF;      /* hero/ header pale bg */
+    --iv-verificationMethodTabs-bg-color: #ffffff;
+    --iv-horizontal-line: #006DE7;              /* the middle page line */
+    --iv-page-background-color: #F5FAFF;        /* page background */
+    --iv-success: #ecfff6;
+    --iv-invalid: #ffdedd;
+    --iv-expired: #fff5e3;
+    --iv-successText: #1f9f60;
+    --iv-invalidText: #cb4241;
+    --iv-expiredText: #d98c00;
+    --iv-successBorder: #abefc6;
+    --iv-invalidBorder: #d68e8d;
+    --iv-expiredBorder: #e2ca9f;
+    --iv-success-alert: #57a04b;
+    --iv-warning-alert: #d98c00;
+    --iv-error-alert: #cb4241;
+    --iv-arrow-background: #F5FAFF;
+    --iv-stepper-background: #F5FAFF;           /* stepper panel bg */
+    --iv-stepper-label: #006DE7;                /* stepper active color */
+    --iv-stepper-description: #535353;
+    --iv-camera-denied-label-color: #000000;
+    --iv-camera-denied-description-color: #707070;
+    --iv-upload-description: #8e8e8e;
+    --iv-copyrights-text: #707070;
+    --iv-copyrights-border: #707070;
+    --iv-active-tab-text: #ffffff;
+    --iv-active-tab-background: #006DE7;        /* active tab bg */
+    --iv-inactive-tab-text: #000000;
+    --iv-inactive-tab-background: #ffffff;
+    --iv-disabledTab-bg: #e8e8e8;
+    --iv-disabledTab-text: #4d4d4d;
+    --iv-document-icon: #000000;
+    --iv-selector-border: #e4e7ec;
+    --iv-sortBy-border: #d0d5dd;
+    --iv-sortBy-text: #344054;
+    --iv-disabled-button-bg: #c1c1c1;
+    --iv-gradient-scanning-line: linear-gradient(90deg, #006DE7 0%, #006DE7 100%);
+    --iv-selector-pannel-title: #101828;
+    --iv-selector-pannel-sub-title: #475467;
+    --iv-qr-code-timer: #8e8e8e;
+  }
+
 }
 
 body {
