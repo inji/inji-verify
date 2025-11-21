@@ -20,6 +20,21 @@ import { ReactComponent as VectorCollapseSvg } from "../assets/truckpassTheme/ve
 import { ReactComponent as VectorExpandSvg } from "../assets/truckpassTheme/vector-expand.svg";
 import { ReactComponent as VectorOutlineSvg } from "../assets/truckpassTheme/vector-icon-outline.svg";
 
+// Truckpass-specific icons (filenames adjusted to actual assets in folder)
+import { ReactComponent as WhiteScanIcon } from "../assets/truckpassTheme/white-scan-icon.svg"; // exists
+// Note: white-upload.svg not present in truckpass assets — will fallback to defaultTheme
+import { ReactComponent as WhiteDownloadIcon } from "../assets/truckpassTheme/white-download.svg"; // exists
+import { ReactComponent as VectorDownload } from "../assets/truckpassTheme/vector-download.svg"; // exists
+import { ReactComponent as VerificationSuccessIcon } from "../assets/truckpassTheme/verification-success-icon.svg"; // actual filename has -icons
+import { ReactComponent as VerificationFailedIcon } from "../assets/truckpassTheme/verification-failed-icon.svg";
+import { ReactComponent as SearchIcon } from "../assets/truckpassTheme/search.svg"; // renamed
+import { ReactComponent as FilterLinesIcon } from "../assets/truckpassTheme/filter-lines.svg"; // renamed
+import { ReactComponent as WhiteReGenerateIcon } from "../assets/truckpassTheme/white-regenerate.svg"; // renamed
+import { ReactComponent as CloseIcon } from "../assets/truckpassTheme/close_icon.svg"; // underscore in filename
+// new-tab-icon not present in truckpass assets; we'll keep using defaultTheme.NewTabIcon
+import { ReactComponent as UnderConstruction } from "../assets/truckpassTheme/under-construction.svg";
+import { ReactComponent as SharableLink } from "../assets/truckpassTheme/sharable-link.svg";
+
 // Default imports (URL strings) — useful when components use `style={{ backgroundImage: `url(${...})` }}`
 import QrCodeOutlineUrl from "../assets/truckpassTheme/qr-code-outline.svg";
 import GradientScanFillIconUrl from "../assets/truckpassTheme/gradient-scan-icon.svg";
@@ -27,25 +42,25 @@ import GradientUploadIconUrl from "../assets/truckpassTheme/gradient-upload-icon
 import TruckpassLogoUrl from "../assets/truckpassTheme/TruckpassVerifyLogo.svg";
 import WelcomeBannerUrl from "../assets/truckpassTheme/WelcomeBanner.svg";
 
-// fallback: reuse existing theme icons (defaultTheme)
+// fallback: reuse existing theme icons (defaultTheme) for anything still missing
 import defaultTheme from "./default-theme";
 
 const truckpassTheme = {
   // primary logos / images
   Logo: NavLogo,
   LogoUrl: TruckpassLogoUrl,
-  InjiLogo: defaultTheme.InjiLogo,
+  InjiLogo: defaultTheme.InjiLogo, // still using default for Inji logo (not in truckpass assets)
   WelcomeBanner: WelcomeBanner,
   WelcomeBannerUrl,
 
   // scan / upload icons (both inline svg components and url strings available)
   GradientScanIcon: GradientScanFillIcon,
   GradientScanFillIconUrl: GradientScanFillIconUrl,
-  WhiteScanIcon: defaultTheme.WhiteScanIcon,
+  WhiteScanIcon: WhiteScanIcon,
 
   GradientUploadIcon: GradientUploadIcon,
   GradientUploadIconUrl,
-  WhiteUploadIcon: defaultTheme.WhiteUploadIcon,
+  WhiteUploadIcon: defaultTheme.WhiteUploadIcon, // no truckpass white-upload asset, fallback to default
 
   // QR icons / outlines
   QrIcon: QrCodeIcon,
@@ -65,7 +80,7 @@ const truckpassTheme = {
   Check: CheckIcon,
   DocumentIcon: DocumentIconSvg,
   DownloadIcon: DownloadIconSvg,
-  WhiteDownloadIcon: defaultTheme.WhiteDownloadIcon, // keep default white download if needed
+  WhiteDownloadIcon: WhiteDownloadIcon, // prefer truckpass asset
   MenuIcon: HamburgerMenuIcon,
   ReGenerateIcon: ReGenerateIconSvg,
 
@@ -75,18 +90,18 @@ const truckpassTheme = {
   VectorOutline: VectorOutlineSvg,
   VectorExpand: VectorExpandSvg,
   VectorCollapse: VectorCollapseSvg,
-  VectorDownload: defaultTheme.VectorDownload,
+  VectorDownload: VectorDownload,
 
-  // common fallbacks (use what's already in defaultTheme)
-  VerificationSuccessIcon: defaultTheme.VerificationSuccessIcon,
-  VerificationFailedIcon: defaultTheme.VerificationFailedIcon,
-  SearchIcon: defaultTheme.SearchIcon,
-  FilterLinesIcon: defaultTheme.FilterLinesIcon,
-  WhiteReGenerateIcon: defaultTheme.WhiteReGenerateIcon,
-  CloseIcon: defaultTheme.CloseIcon,
-  NewTabIcon: defaultTheme.NewTabIcon,
-  UnderConstruction: defaultTheme.UnderConstruction,
-  SharableLink: defaultTheme.SharableLink,
+  // use truckpass versions where available, else fallback to defaultTheme
+  VerificationSuccessIcon: VerificationSuccessIcon,
+  VerificationFailedIcon: VerificationFailedIcon,
+  SearchIcon: SearchIcon,
+  FilterLinesIcon: FilterLinesIcon,
+  WhiteReGenerateIcon: WhiteReGenerateIcon,
+  CloseIcon: CloseIcon,
+  NewTabIcon: defaultTheme.NewTabIcon, // no truckpass new-tab asset
+  UnderConstruction: UnderConstruction,
+  SharableLink: SharableLink,
 };
 
 export default truckpassTheme;
