@@ -25,22 +25,29 @@ function switchToVerificationMethod(method: VerificationMethod) {
   return null;
 }
 
+// ✅ Updated router: "/" is Login, app pages still use existing URLs (Pages.*)
 const router = createBrowserRouter([
-  // Standalone login page
+  // Root → Login
+  {
+    path: "/",
+    element: <TruckPassLogin />,
+  },
+
+  // Explicit login route (alias, if someone hits /login directly)
   {
     path: "/login",
     element: <TruckPassLogin />,
   },
 
-  // ✅ New OTP page (standalone)
+  // OTP page
   {
     path: "/otp",
     element: <OtpPage />,
   },
 
-  // Default app layout (PageTemplate)
+  // Layout route with PageTemplate wrapping all app pages
+  // No `path` here → children control their own URLs via Pages.*
   {
-    path: "/",
     element: <PageTemplate />,
     children: [
       {

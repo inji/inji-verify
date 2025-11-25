@@ -22,14 +22,14 @@ export const UploadQrCode = ({
 
     return (
       <div
-        className={`bg-${window._env_.DEFAULT_THEME}-gradient hover:text-white p-px bg-no-repeat rounded-[5px] w-[180px] mt-10`}
+        className={`bg-${window._env_.DEFAULT_THEME}-gradient hover:text-white p-[2px] bg-no-repeat rounded-full w-[180px] mt-6`}
       >
         <label
           htmlFor={"upload-qr"}
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
           onTouchStart={() => setHover(true)}
-          className={`group bg-white hover:bg-${window._env_.DEFAULT_THEME}-gradient font-bold h-[40px] rounded-[5px] flex content-center justify-center text-lgNormalTextSize pt-2 cursor-pointer`}
+          className={`group bg-white hover:bg-${window._env_.DEFAULT_THEME}-gradient font-bold h-[40px] rounded-full flex items-center justify-center text-lgNormalTextSize cursor-pointer`}
         >
           <span className={`${rtl ? "ml-1.5" : "mr-1.5"}`}>
             <UploadIcon />

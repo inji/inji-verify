@@ -2,7 +2,7 @@ import {AlertInfo, claim, VerificationStepsContentType } from "../types/data-typ
 import i18next from 'i18next';
 
 export const Pages = {
-    Home: "/",
+    Home: "/upload",
     Scan:"/scan",
     VerifyCredentials: "/verify",
     Offline: "/offline",
