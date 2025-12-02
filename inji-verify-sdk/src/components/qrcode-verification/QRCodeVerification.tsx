@@ -1,7 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
   QRCodeVerificationProps,
-  QrData,
   scanResult,
   VcStatus,
 } from "./QRCodeVerification.types";
@@ -35,6 +34,7 @@ import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
 import { isSdJwt } from "../../utils/utils";
+import { QrData } from "../../types/OVPSchemeQrData";
 
 const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   scannerActive = true,
@@ -353,7 +353,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const createVPRequest = async (presentationDefinition: any) => {
     try {
       let presentationDefinitionId;
-      const data = await vpRequest(
+      const data: QrData = await vpRequest(
         verifyServiceUrl,
         clientId,
         transactionId ?? undefined,

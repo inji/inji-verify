@@ -16,23 +16,6 @@ export interface VerificationResult {
 
 export type VerificationResults = VerificationResult[];
 
-export interface QrData {
-  transactionId: string;
-  requestId: string;
-  authorizationDetails?: {
-    responseType: string;
-    responseMode: string;
-    clientId: string;
-    presentationDefinition: Record<string, unknown>;
-    presentationDefinitionUri?: string;
-    responseUri: string;
-    nonce: string;
-    iat: number;
-  };
-  expiresAt: number;
-  requestUri?: string;
-}
-
 export interface VPRequestBody {
   clientId: string;
   nonce: string;

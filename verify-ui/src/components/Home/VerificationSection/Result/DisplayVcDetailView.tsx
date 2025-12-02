@@ -35,11 +35,11 @@ function DisplayVcDetailView({
   const [templateError, setTemplateError] = useState(false);
 
   const positionLeft = `left-[250px] ${
-    templateUrl ? "lg:left-[310px]" : "lg:left-[328px]"
-  } ${templateUrl ? "lg:hover:left-[197px]" : "lg:hover:left-[215px]"}`;
+    templateUrl ? "lg:left-[310px]" : "lg:left-[350px]"
+  } ${templateUrl ? "lg:hover:left-[197px]" : "lg:hover:left-[237px]"}`;
   const positionRight = `right-[250px] ${
-    templateUrl ? "lg:right-[310px]" : "lg:right-[328px]"
-  } ${templateUrl ? "lg:hover:right-[197px]" : "lg:hover:right-[215px]"}`;
+    templateUrl ? "lg:right-[310px]" : "lg:right-[350px]"
+  } ${templateUrl ? "lg:hover:right-[197px]" : "lg:hover:right-[237px]"}`;
   const buttonPosition = isRtl ? positionRight : positionLeft;
 
   const showTemplate = templateUrl && !templateError;

@@ -8,9 +8,7 @@ import io.inji.verify.shared.Constants;
 import io.inji.verify.utils.Utils;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
-import io.mosip.vercred.vcverifier.constants.CredentialValidatorConstants;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
-import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -110,6 +108,8 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+            utilsMock.when(() -> Utils.isSdJwt(TEST_VC_STRING))
+                    .thenReturn(false);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.SUCCESS);
 
@@ -131,15 +131,21 @@ public class VCSubmissionServiceImplTest {
 
     @Test
     void getVcWithVerification_shouldReturnSuccessStatus_whenSDJWTVerificationPasses() {
-            VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_SDJWT_VC_STRING);
-            when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
+        VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_SDJWT_VC_STRING);
+        when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
 
-            VerificationResult successResult = mock(VerificationResult.class);
-            when(successResult.getVerificationStatus()).thenReturn(true);
-            when(successResult.getVerificationErrorCode()).thenReturn("");
+        CredentialVerificationSummary credentialVerificationSummary = mock(CredentialVerificationSummary.class);
+        when(credentialsVerifier.verifyAndGetCredentialStatus(
+                eq(TEST_SDJWT_VC_STRING),
+                eq(CredentialFormat.VC_SD_JWT),
+                anyList())
+        ).thenReturn(credentialVerificationSummary);
 
-            when(credentialsVerifier.verify(TEST_SDJWT_VC_STRING, CredentialFormat.VC_SD_JWT))
-                    .thenReturn(successResult);
+        try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+            utilsMock.when(() -> Utils.isSdJwt(TEST_SDJWT_VC_STRING))
+                    .thenReturn(true);
+            utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
+                    .thenReturn(VerificationStatus.SUCCESS);
 
             VCSubmissionVerificationStatusDto resultDto = vcSubmissionService.getVcWithVerification(TEST_TRANSACTION_ID);
 
@@ -148,7 +154,13 @@ public class VCSubmissionServiceImplTest {
             assertEquals(VerificationStatus.SUCCESS, resultDto.getVerificationStatus());
 
             verify(vcSubmissionRepository, times(1)).findById(TEST_TRANSACTION_ID);
-            verify(credentialsVerifier, times(1)).verify(TEST_SDJWT_VC_STRING, CredentialFormat.VC_SD_JWT);
+            verify(credentialsVerifier, times(1)).verifyAndGetCredentialStatus(
+                    eq(TEST_SDJWT_VC_STRING),
+                    eq(CredentialFormat.VC_SD_JWT),
+                    argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED))
+            );
+            utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
+        }
     }
 
     @Test
@@ -165,6 +177,8 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+            utilsMock.when(() -> Utils.isSdJwt(TEST_VC_STRING))
+                    .thenReturn(false);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.EXPIRED);
 
@@ -190,21 +204,33 @@ public class VCSubmissionServiceImplTest {
         VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_SDJWT_VC_STRING);
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
 
-        VerificationResult successResult = mock(VerificationResult.class);
-        when(successResult.getVerificationStatus()).thenReturn(true);
-        when(successResult.getVerificationErrorCode()).thenReturn(CredentialValidatorConstants.ERROR_CODE_VC_EXPIRED);
+        CredentialVerificationSummary credentialVerificationSummary = mock(CredentialVerificationSummary.class);
+        when(credentialsVerifier.verifyAndGetCredentialStatus(
+                eq(TEST_SDJWT_VC_STRING),
+                eq(CredentialFormat.VC_SD_JWT),
+                anyList())
+        ).thenReturn(credentialVerificationSummary);
 
-        when(credentialsVerifier.verify(TEST_SDJWT_VC_STRING, CredentialFormat.VC_SD_JWT))
-                .thenReturn(successResult);
+        try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+            utilsMock.when(() -> Utils.isSdJwt(TEST_SDJWT_VC_STRING))
+                    .thenReturn(true);
+            utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
+                    .thenReturn(VerificationStatus.EXPIRED);
 
-        VCSubmissionVerificationStatusDto resultDto = vcSubmissionService.getVcWithVerification(TEST_TRANSACTION_ID);
+            VCSubmissionVerificationStatusDto resultDto = vcSubmissionService.getVcWithVerification(TEST_TRANSACTION_ID);
 
-        assertNotNull(resultDto);
-        assertEquals(TEST_SDJWT_VC_STRING, resultDto.getVc());
-        assertEquals(VerificationStatus.EXPIRED, resultDto.getVerificationStatus());
+            assertNotNull(resultDto);
+            assertEquals(TEST_SDJWT_VC_STRING, resultDto.getVc());
+            assertEquals(VerificationStatus.EXPIRED, resultDto.getVerificationStatus());
 
-        verify(vcSubmissionRepository, times(1)).findById(TEST_TRANSACTION_ID);
-        verify(credentialsVerifier, times(1)).verify(TEST_SDJWT_VC_STRING, CredentialFormat.VC_SD_JWT);
+            verify(vcSubmissionRepository, times(1)).findById(TEST_TRANSACTION_ID);
+            verify(credentialsVerifier, times(1)).verifyAndGetCredentialStatus(
+                    eq(TEST_SDJWT_VC_STRING),
+                    eq(CredentialFormat.VC_SD_JWT),
+                    argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED))
+            );
+            utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
+        }
     }
 
     @Test
@@ -220,6 +246,8 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+            utilsMock.when(() -> Utils.isSdJwt(TEST_VC_STRING))
+                    .thenReturn(false);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.INVALID);
 
@@ -245,21 +273,33 @@ public class VCSubmissionServiceImplTest {
         VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_SDJWT_VC_STRING);
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
 
-        VerificationResult successResult = mock(VerificationResult.class);
-        when(successResult.getVerificationStatus()).thenReturn(false);
-        when(successResult.getVerificationErrorCode()).thenReturn("");
+        CredentialVerificationSummary credentialVerificationSummary = mock(CredentialVerificationSummary.class);
+        when(credentialsVerifier.verifyAndGetCredentialStatus(
+                eq(TEST_SDJWT_VC_STRING),
+                eq(CredentialFormat.VC_SD_JWT),
+                anyList())
+        ).thenReturn(credentialVerificationSummary);
 
-        when(credentialsVerifier.verify(TEST_SDJWT_VC_STRING, CredentialFormat.VC_SD_JWT))
-                .thenReturn(successResult);
+        try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+            utilsMock.when(() -> Utils.isSdJwt(TEST_SDJWT_VC_STRING))
+                    .thenReturn(true);
+            utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
+                    .thenReturn(VerificationStatus.INVALID);
 
-        VCSubmissionVerificationStatusDto resultDto = vcSubmissionService.getVcWithVerification(TEST_TRANSACTION_ID);
+            VCSubmissionVerificationStatusDto resultDto = vcSubmissionService.getVcWithVerification(TEST_TRANSACTION_ID);
 
-        assertNotNull(resultDto);
-        assertEquals(TEST_SDJWT_VC_STRING, resultDto.getVc());
-        assertEquals(VerificationStatus.INVALID, resultDto.getVerificationStatus());
+            assertNotNull(resultDto);
+            assertEquals(TEST_SDJWT_VC_STRING, resultDto.getVc());
+            assertEquals(VerificationStatus.INVALID, resultDto.getVerificationStatus());
 
-        verify(vcSubmissionRepository, times(1)).findById(TEST_TRANSACTION_ID);
-        verify(credentialsVerifier, times(1)).verify(TEST_SDJWT_VC_STRING, CredentialFormat.VC_SD_JWT);
+            verify(vcSubmissionRepository, times(1)).findById(TEST_TRANSACTION_ID);
+            verify(credentialsVerifier, times(1)).verifyAndGetCredentialStatus(
+                    eq(TEST_SDJWT_VC_STRING),
+                    eq(CredentialFormat.VC_SD_JWT),
+                    argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED))
+            );
+            utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
+        }
     }
 
     @Test
@@ -287,6 +327,8 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+            utilsMock.when(() -> Utils.isSdJwt(TEST_VC_STRING))
+                    .thenReturn(false);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.REVOKED);
 

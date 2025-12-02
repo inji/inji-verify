@@ -117,7 +117,7 @@
         <identity-credential.version>20231002</identity-credential.version>
         <ld-signatures-java.version>1.11.0</ld-signatures-java.version>
         <jsonld-common-java.version>1.8.0</jsonld-common-java.version>
-        <vcverifier-jar.version>1.7.0-SNAPSHOT</vcverifier-jar.version>
+        <vcverifier-jar.version>1.6.0-SNAPSHOT</vcverifier-jar.version>
         <json.version>20240303</json.version>
         <bouncycastle.version>1.78</bouncycastle.version>
         <java-jwt.version>3.18.1</java-jwt.version>

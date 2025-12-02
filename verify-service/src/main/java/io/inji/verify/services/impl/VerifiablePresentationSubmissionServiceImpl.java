@@ -19,20 +19,16 @@ import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.*;
-import io.mosip.vercred.vcverifier.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.springframework.stereotype.Service;
-
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.List;
 import java.util.Optional;
 import java.util.stream.IntStream;
-
 import org.json.JSONTokener;
-
 import static io.inji.verify.utils.Utils.isSdJwt;
 
 @Service
@@ -81,7 +77,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             extractTokens(vpSubmission.getVpToken(), jsonVpTokens, sdJwtVpTokens);
 
             log.info("Processing VP verification");
-            log.info("Number of VP tokens to verify: {}", jsonVpTokens.size() + ":" + sdJwtVpTokens.size());
+            log.debug("Number of VP tokens to verify: {}", jsonVpTokens.size() + ":" + sdJwtVpTokens.size());
 
             if (jsonVpTokens.isEmpty() && sdJwtVpTokens.isEmpty()) {
                 throw new InvalidVpTokenException();
@@ -109,7 +105,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                     } else {
                         Object verifiableCredential = vpToken.opt("verifiableCredential");
                         if (verifiableCredential instanceof JSONArray array) {
-                            array.forEach(vc -> addVerificationResults(vc.toString(), verificationResults));
+                            array.forEach(vc -> addVerificationResults(vc.toString(), verificationResults, CredentialFormat.LDP_VC));
                         } else {
                             throw new InvalidVpTokenException();
                         }
@@ -120,13 +116,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             }
 
             for (String sdJwtVpToken : sdJwtVpTokens) {
-                VerificationResult verificationResult = credentialsVerifier.verify(sdJwtVpToken, CredentialFormat.VC_SD_JWT);
-
-                if (!verificationResult.getVerificationStatus()) {
-                    log.error("SD-JWT VC verification result errors : {} {}", verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());
-                }
-                VerificationStatus status = Util.INSTANCE.getVerificationStatus(verificationResult);
-                verificationResults.add(new VCResultDto(sdJwtVpToken, status));
+                addVerificationResults(sdJwtVpToken, verificationResults, CredentialFormat.VC_SD_JWT);
             }
 
             log.info("VP submission processing done");
@@ -141,11 +131,15 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
     }
 
-    private void addVerificationResults(String vc, List<VCResultDto> verificationResults) {
+    private void addVerificationResults(String vc, List<VCResultDto> verificationResults, CredentialFormat  credentialFormat) {
         List<String> statusPurposeList = new ArrayList<>();
         statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
-        CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, CredentialFormat.LDP_VC, statusPurposeList);
-
+        CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList);
+        VerificationResult verificationResult = credentialVerificationSummary.getVerificationResult();
+        if (!verificationResult.getVerificationStatus()) {
+            log.error("VC Verification Failed");
+            log.error("VC verification result errors : {} {}", verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());
+        }
         VerificationStatus status = Utils.getVcVerificationStatus(credentialVerificationSummary);
         verificationResults.add(new VCResultDto(vc, status));
     }

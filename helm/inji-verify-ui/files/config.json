@@ -5,7 +5,7 @@
       "name": "MOSIP ID",
       "type": "MOSIPVerifiableCredential",
       "essential": true,
-      "isAuthRequestEmbedded": false,
+      "clientIdScheme":"did",
       "definition": {
         "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
         "format": {
@@ -40,7 +40,7 @@
       "logo": "/assets/cert.png",
       "name": "Life Insurance",
       "type": "LifeInsuranceCredential",
-      "isAuthRequestEmbedded": true,
+      "clientIdScheme":"did",
       "definition": {
         "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
         "format": {
@@ -75,7 +75,7 @@
       "logo": "/assets/cert.png",
       "name": "Health Insurance",
       "type": "InsuranceCredential",
-      "isAuthRequestEmbedded": true,
+      "clientIdScheme":"pre_registered",
       "definition": {
         "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
         "format": {
@@ -110,7 +110,7 @@
       "logo": "/assets/cert.png",
       "name": "Mock Identity (SD JWT)",
       "type": "SD_JWT",
-      "isAuthRequestEmbedded": false,
+      "clientIdScheme":"did",
       "definition": {
         "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
         "format": {
@@ -145,7 +145,7 @@
       "logo": "/assets/cert.png",
       "name": "Land Registry",
       "type": "LandStatementCredential",
-      "isAuthRequestEmbedded": true,
+      "clientIdScheme":"did",
       "definition": {
         "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
         "format": {

@@ -1,12 +1,12 @@
 import {
   AppError,
   PresentationDefinition,
-  QrData,
   VPRequestBody,
 } from "../components/openid4vp-verification/OpenID4VPVerification.types";
 import {
   vcSubmissionBody
 } from "../components/qrcode-verification/QRCodeVerification.types";
+import { QrData } from "../types/OVPSchemeQrData";
 
 const generateNonce = (): string => {
   return btoa(Date.now().toString());
@@ -33,7 +33,7 @@ export const vcVerification = async (credential: unknown, url: string) => {
   try {
     const response = await fetch(url + "/vc-verification", requestOptions);
     const data = await response.json();
-    if (response.status !== 200) throw new Error(`Failed VC Verification due to: ${data.error}`);
+    if (response.status !== 200) throw new Error(`Failed VC Verification due to: ${ data.error || "Unknown Error" }`);
     return data.verificationStatus;
   } catch (error) {
     console.error(error);
@@ -65,7 +65,7 @@ export const vcSubmission = async (
   try {
     const response = await fetch(url + "/vc-submission", requestOptions);
     const data = await response.json();
-    if (response.status !== 200) throw new Error(`Failed to Submit VC due to: ${data.error}`);
+    if (response.status !== 200) throw new Error(`Failed to Submit VC due to: ${ data.error || "Unknown Error" }`);
     return data.transactionId;
   } catch (error) {
     console.error(error);
@@ -134,6 +134,13 @@ export const vpRequestStatus = async (url: string, reqId: string) => {
   }
 };
 
+const isAppError = (error: unknown): error is AppError => (
+  typeof error === 'object' &&
+  error !== null &&
+  'errorMessage' in error &&
+  typeof (error as Record<string, unknown>).errorMessage === 'string'
+);
+
 export const vpResult = async (url: string, txnId: string) => {
   try {
     const response = await fetch(url + `/vp-result/${txnId}`);
@@ -147,10 +154,10 @@ export const vpResult = async (url: string, txnId: string) => {
     }
     return data.vcResults;
   } catch (error) {
-    if (error instanceof Error) {
-      throw Error(error.message);
-    } else {
+    if (isAppError(error)) {
       throw error as AppError;
+    } else {
+      throw error;
     }
   }
 };

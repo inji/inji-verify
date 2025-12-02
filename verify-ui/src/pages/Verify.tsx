@@ -31,7 +31,7 @@ export function Verify() {
     <Button
       id="stepper-request-credentials-button"
       title={t("rqstButton")}
-      className={`w-[300px] mx-auto lg:ml-[76px] mt-10 hidden lg:block`}
+      className={`w-[300px] mx-auto lg:ms-[76px] mt-10 hidden lg:block`}
       variant="fill"
       onClick={handleRequestCredentials}
       disabled={activeScreen === 3 }

@@ -46,18 +46,10 @@ public class VCSubmissionServiceImpl implements VCSubmissionService {
         return vcSubmissionRepository.findById(transactionId).map(vcSubmission -> {
             String vc = vcSubmission.getVc();
             boolean isSdJwtVc = isSdJwt(vc);
-            if (isSdJwtVc) {
-                VerificationResult verificationResult = credentialsVerifier.verify(vc, CredentialFormat.VC_SD_JWT);
-                if (!verificationResult.getVerificationStatus()) {
-                    log.error("SD-JWT VC verification result errors : {} {}", verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());
-                }
-                VerificationStatus status = Util.INSTANCE.getVerificationStatus(verificationResult);
-                return new VCSubmissionVerificationStatusDto(vc, status);
-            }
-
+            CredentialFormat credentialFormat = isSdJwtVc ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
             List<String> statusPurposeList = new ArrayList<>();
             statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
-            CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, CredentialFormat.LDP_VC, statusPurposeList);
+            CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList);
             VerificationStatus vcVerificationStatus = Utils.getVcVerificationStatus(credentialVerificationSummary);
 
             return new VCSubmissionVerificationStatusDto(vc, vcVerificationStatus);

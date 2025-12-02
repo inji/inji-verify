@@ -1,6 +1,10 @@
 package io.inji.verify.services.impl;
 
-import io.inji.verify.dto.submission.*;
+import io.inji.verify.dto.submission.VPSubmissionDto;
+import io.inji.verify.dto.submission.PresentationSubmissionDto;
+import io.inji.verify.dto.submission.DescriptorMapDto;
+import io.inji.verify.dto.submission.PathNestedDto;
+import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.VPResultStatus;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
 import io.inji.verify.exception.VPSubmissionWalletError;
@@ -9,21 +13,38 @@ import io.inji.verify.models.VPSubmission;
 import io.inji.verify.repository.VPSubmissionRepository;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;
-import io.mosip.vercred.vcverifier.constants.CredentialFormat;
-import io.mosip.vercred.vcverifier.data.*;
-import jakarta.validation.OverridesAttribute;
+import io.mosip.vercred.vcverifier.data.VerificationStatus;
+import io.mosip.vercred.vcverifier.data.VerificationResult;
+import io.mosip.vercred.vcverifier.data.PresentationVerificationResult;
+import io.mosip.vercred.vcverifier.data.VCResultWithCredentialStatus;
+import io.mosip.vercred.vcverifier.data.VPVerificationStatus;
+import io.mosip.vercred.vcverifier.data.PresentationResultWithCredentialStatus;
+import io.mosip.vercred.vcverifier.data.VCResult;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.*;
+import org.mockito.InjectMocks;
+import org.mockito.Mock;
+import org.mockito.MockitoAnnotations;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.List;
-
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.*;
+import java.util.Arrays;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+import static org.mockito.Mockito.verify;
+import static org.mockito.Mockito.times;
+import static org.mockito.Mockito.when;
+import static org.mockito.Mockito.any;
+import static org.mockito.Mockito.anyString;
+import static org.mockito.Mockito.anyList;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.eq;
 
 public class VerifiablePresentationSubmissionServiceImplTest {
 
@@ -65,7 +86,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     public void testGetVPResult_Success_JSONObject() throws VPSubmissionNotFoundException, VPSubmissionWalletError {
         List<String> requestIds = List.of("req123");
         List<VCResultWithCredentialStatus> vcResults = List.of(
-            new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.SUCCESS, new ArrayList<>())
+            new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.SUCCESS, new HashMap<>())
         );
         String transactionId = "tx123";
 
@@ -98,7 +119,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String vpTokenJson = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[{\"type\":[\"VerifiablePresentation\"]}]}";
         String base64Token = Base64.getUrlEncoder().encodeToString(vpTokenJson.getBytes());
         List<VCResultWithCredentialStatus> vcResults = List.of(
-            new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new ArrayList<>())
+            new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new HashMap<>())
         );
         VPSubmission vpSubmission = new VPSubmission("state123", "\"" + base64Token + "\"",
             new PresentationSubmissionDto("id", "dId", List.of(
@@ -119,10 +140,10 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
         List<VCResultWithCredentialStatus> vcResults1 = List.of(
-            new VCResultWithCredentialStatus("vc1", VerificationStatus.SUCCESS, new ArrayList<>())
+            new VCResultWithCredentialStatus("vc1", VerificationStatus.SUCCESS, new HashMap<>())
         );
         List<VCResultWithCredentialStatus> vcResults2 = List.of(
-            new VCResultWithCredentialStatus("vc2", VerificationStatus.SUCCESS, new ArrayList<>())
+            new VCResultWithCredentialStatus("vc2", VerificationStatus.SUCCESS, new HashMap<>())
         );
         VPSubmission vpSubmission = new VPSubmission(
                 "state123",
@@ -158,7 +179,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String base64Token1 = Base64.getUrlEncoder().encodeToString(vpToken1Json.getBytes());
         
         List<VCResultWithCredentialStatus> vcResults = List.of(
-            new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new ArrayList<>())
+            new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new HashMap<>())
         );
 
         VPSubmission vpSubmission = new VPSubmission("state123", 
@@ -219,7 +240,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String transactionId = "tx123";
 
         List<VCResultWithCredentialStatus> vcResults = List.of(
-                new VCResultWithCredentialStatus("", VerificationStatus.INVALID, new ArrayList<>())
+                new VCResultWithCredentialStatus("",
+                        VerificationStatus.INVALID, new HashMap<>())
         );
 
         VPSubmission vpSubmission = new VPSubmission("state123", 
@@ -246,7 +268,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String transactionId = "tx123";
 
         List<VCResultWithCredentialStatus> vcResults = List.of(
-                new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new ArrayList<>())
+                new VCResultWithCredentialStatus("",
+                        VerificationStatus.SUCCESS, new HashMap<>())
         );
 
         VPSubmission vpSubmission = new VPSubmission("state123", 
@@ -475,7 +498,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String transactionId = "tx123";
 
         List<VCResultWithCredentialStatus> vcResults = List.of(
-            new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new ArrayList<>())
+            new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new HashMap<>())
         );
         VPSubmission vpSubmission = new VPSubmission("state123",
                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"VerifiablePresentation\":[{\"type\":[\"VerifiablePresentation\"]}]}",
@@ -547,10 +570,10 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String transactionId = "tx123";
 
         List<VCResultWithCredentialStatus> vcResults = Arrays.asList(
-                new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.SUCCESS, new ArrayList<>()),
-                new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.REVOKED, new ArrayList<>()),
-                new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.EXPIRED, new ArrayList<>()),
-                new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.INVALID, new ArrayList<>())
+                new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.SUCCESS, new HashMap<>()),
+                new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.REVOKED, new HashMap<>()),
+                new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.EXPIRED, new HashMap<>()),
+                new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.INVALID, new HashMap<>())
         );
 
         VPSubmission vpSubmission = new VPSubmission(
@@ -584,9 +607,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
-        List<VCResultWithCredentialStatus> successResults = List.of(new VCResultWithCredentialStatus("vc_success", VerificationStatus.SUCCESS, new ArrayList<>()));
-        List<VCResultWithCredentialStatus> expiredResults = List.of(new VCResultWithCredentialStatus("vc_expired", VerificationStatus.EXPIRED, new ArrayList<>()));
-        List<VCResultWithCredentialStatus> invalidResults = List.of(new VCResultWithCredentialStatus("vc_invalid", VerificationStatus.INVALID, new ArrayList<>()));
+        List<VCResultWithCredentialStatus> successResults = List.of(new VCResultWithCredentialStatus("vc_success", VerificationStatus.SUCCESS, new HashMap<>()));
+        List<VCResultWithCredentialStatus> expiredResults = List.of(new VCResultWithCredentialStatus("vc_expired", VerificationStatus.EXPIRED, new HashMap<>()));
+        List<VCResultWithCredentialStatus> invalidResults = List.of(new VCResultWithCredentialStatus("vc_invalid", VerificationStatus.INVALID, new HashMap<>()));
 
         VPSubmission vpSubmission = new VPSubmission("state123",
             "[{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"VerifiablePresentation\":[{\"type\":[\"VerifiablePresentation\"]}]}, " +
@@ -643,10 +666,15 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+
+        // Mock CredentialVerificationSummary and VerificationResult
+        io.mosip.vercred.vcverifier.data.CredentialVerificationSummary mockSummary = mock(io.mosip.vercred.vcverifier.data.CredentialVerificationSummary.class);
         VerificationResult mockResult = mock(VerificationResult.class);
         when(mockResult.getVerificationStatus()).thenReturn(true);
-        when(credentialsVerifier.verify(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.LDP_VC)))
-            .thenReturn(mockResult);
+        when(mockSummary.getVerificationResult()).thenReturn(mockResult);
+
+        when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.LDP_VC), anyList()))
+            .thenReturn(mockSummary);
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
             .thenReturn(new AuthorizationRequestCreateResponse());
 
@@ -677,10 +705,15 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+
+        // Mock CredentialVerificationSummary and VerificationResult
+        io.mosip.vercred.vcverifier.data.CredentialVerificationSummary mockSummary = mock(io.mosip.vercred.vcverifier.data.CredentialVerificationSummary.class);
         VerificationResult mockResult = mock(VerificationResult.class);
         when(mockResult.getVerificationStatus()).thenReturn(true);
-        when(credentialsVerifier.verify(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.VC_SD_JWT)))
-            .thenReturn(mockResult);
+        when(mockSummary.getVerificationResult()).thenReturn(mockResult);
+
+        when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.VC_SD_JWT), anyList()))
+            .thenReturn(mockSummary);
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
             .thenReturn(new AuthorizationRequestCreateResponse());
 
@@ -719,8 +752,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     @Test
     public void testGetVPResult_Revoked_JSONObject() throws VPSubmissionNotFoundException, VPSubmissionWalletError {
         List<String> requestIds = List.of("req123");
-        List<VCResultWithCredentialStatus> vcResults =
-                List.of(new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.REVOKED, new  ArrayList<>()));
+        List<VCResultWithCredentialStatus> vcResults = List.of(new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.REVOKED, new HashMap<>()));
         String transactionId = "tx123";
 
         VPSubmission vpSubmission = new VPSubmission(
