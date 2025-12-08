@@ -1,6 +1,6 @@
 # Revocation 
 
-As of version `1.6.0` The Inji verify supports verification of `Revoked` vc. Revocation is a mechanism used by an issuer to express the status of a Claim after issuance. 
+`Inji Verify` now supports verification of `Revoked` vc. Revocation is a mechanism used by an issuer to express the status of a Claim after issuance. 
 
 # Why is VC Revocation needed?
 
@@ -54,7 +54,7 @@ The API documentations can be found in the [Inji Verify API documentation](https
 
 - After a successful `UPLOAD` or `SCAN`, `INJI VERIFY` performs server-side verification of a Verifiable Credential (VC) to validate its integrity and authenticity. It executes checks such as cryptographic signature validation and ensures that the credential has not been altered or tampered with.
 
-### How it check for revocation
+### How it checks for revocation
 
 > - **_Issuer_**: assigns each new credential a statusListIndex and puts that index into the VC's credentialStatus object.
 >
@@ -62,23 +62,29 @@ The API documentations can be found in the [Inji Verify API documentation](https
 
 - The verification status returned can be **_SUCCESS_**, **_INVALID_**, **_EXPIRED_** or **_REVOKED_**.
 
-- If the Inji Verify Backend encounters any error while retrieving the `statusListCredential` or verifying the status, it will respond with an error description and `status code` as `500`.
+- If the `Inji Verify Backend` encounters any `error` while retrieving the `statusListCredential` or verifying the status, it will respond with an `error description` and `status code` as `500`.
 
 ## 2. OPENID4VP
 
-### Verifiable Presentation Submission:
+### Verifiable Presentation Submission
 
-- Inji Verify allow users to submit Verifiable Presentation.
-- Once the wallet scans the QR code, it generates the VP token and the submission request, which are then posted to the Inji Verify backend.
-- If the wallet encounters any error while generating the VP token, it will submit the error to the Inji Verify backend along with an error description.
+Inji Verify allows users to submit a Verifiable Presentation.
 
-### Submission Result:
-- Once the wallet submits the VC, the status will be changed to **_VP_SUBMITTED_**.
-- Inji verify UI can fetch the result of the submission through APIs. The result will contain two things.
-  - Overall status of submission, either its **_SUCCESS_** or **_FAILED_**
-  - List of VC with its own verification status, it can be 
-  * **_SUCCESS_** 
-  * **_INVALID_** 
+- Once the `wallet` scans the QR code, it generates the `VP token` and the `submission request`, and then posts them to the Inji Verify backend.
+
+- If the `wallet` encounters any error while generating the `VP token`, it submits the `error` to the `Inji Verify backend` along with an `error description`.
+
+### Submission Result
+
+- Once the `wallet` submits the VP, the status is updated to **_VP_SUBMITTED_**.
+- The `Inji Verify UI` can then fetch the result of the submission. The result contains two things:
+
+  1. The overall status of the submission, which is either **_SUCCESS_** or **_FAILED_**. 
+
+  2. A list of VCs with their individual verification statuses, which can be:
+  * **_SUCCESS_**
+  * **_INVALID_**
   * **_EXPIRED_**
   * **_REVOKED_**
-- During the revocation check, any error encountered by the `Inji Verify Backend` will result in an exception containing a descriptive error message, which the Verify UI will display to the user.
+  
+During the revocation check, if the Inji Verify Backend encounters any error, it throws an exception with a descriptive error message, which the Verify UI displays to the user.

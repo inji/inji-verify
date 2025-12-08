@@ -1,6 +1,6 @@
 # SVG Template Rendering
 
-Inji Verify supports `SVG Template Rendering` based on the `W3C` `VC Render Method` draft specification.
+`Inji Verify` now supports `SVG Template Rendering` based on the `W3C` `VC Render Method` draft specification.
 
 This feature allows issuers to define branded, `visually rich`, and `layout-controlled` representations of their Verifiable Credentials (VCs).
 
