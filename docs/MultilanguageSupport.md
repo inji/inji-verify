@@ -1,6 +1,6 @@
 # Multilanguage Support
 
-`Inji Verify` now supports **multilanguage rendering** of Verifiable Credential (VC) fields.  
+`Inji Verify` now supports `multilanguage rendering` of Verifiable Credential (VC) fields.
 This allows issuers to embed localized values for attributes (such as gender, name, address, roles, and more), enabling the UI to display information in the **viewer’s preferred language**.
 
 ---
