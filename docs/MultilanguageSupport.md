@@ -32,7 +32,6 @@ Issuers must represent localized fields using an array of objects containing:
 
 - `language` – ISO language code  
 - `value` – localized value  
-- `direction` - Determines the general arrangement and progression of content when bidirectional text is displayed. (`optional`)
 
 Issuers may express human-readable fields using the standard language value object format:
 
@@ -40,7 +39,6 @@ Issuers may express human-readable fields using the standard language value obje
 "property": {
   "value": "The string value",
   "lang": "LANGUAGE"
-  "dir": "DIRECTION"
 }
 ```
 
@@ -50,16 +48,15 @@ Or
 "property": {
   "@value": "The string value",
   "@language": "LANGUAGE"
-  "@direction": "DIRECTION"
 }
 ```
 
-### Example (Gender field in 2 languages)
+## Example (Gender field in 2 languages)
 
 ```json
 "gender": [
   { "lang": "en", "value": "Male" },
-  { "@language": "ar", "@value": "ذكر",  "@direction": "RTL" }
+  { "@language": "ar", "@value": "ذكر" }
 ]
 ```
 The issuer may include as many languages as needed.
@@ -76,7 +73,7 @@ Inji Verify supports both patterns:
 "gender": [
   { "language": "en", "value": "Male" },
   { "language": "fr", "value": "Homme" },
-  { "language": "ar", "value": "ذكر", "dir": "rtl" }
+  { "language": "ar", "value": "ذكر" }
 ]
 ```
 
@@ -85,7 +82,7 @@ Inji Verify supports both patterns:
 ```json
 "title": [
   { "@value": "HTML and CSS", "@language": "en" },
-  { "@value": "HTML و CSS", "@language": "ar", "@direction": "rtl" }
+  { "@value": "HTML و CSS", "@language": "ar" }
 ]
 ```
 
@@ -99,9 +96,9 @@ Inji Verify normalizes both formats internally and renders them consistently.
 
 After a VC is verified, the `Verify UI` reads the `user's selected language` (e.g., en, fr, ta, ar) and matches it against each `multilingual VC field`.
 
-**_Step-by-step_**:
+## Step-by-step:
 
-**1. Match selected UI language**
+### 1. Match selected UI language
 
 If any VC entry has:
 
@@ -114,7 +111,7 @@ Selected language = `ta`,
 Field contains `Tamil` → show the `Tamil` value:
 `பெங்களூர்`
 
-**2. Fallback to English**
+### 2. Fallback to English
 
 If the `selected language` is `not available`:
 
@@ -122,8 +119,7 @@ If the `selected language` is `not available`:
 
 This guarantees that every field always displays a value.
 
-
-**3. ↩️ RTL (Right-to-Left) Rendering**
+### 3. ↩️ RTL (Right-to-Left) Rendering
 
 If the `selected UI` language is `RTL` (e.g., ar):
 
@@ -136,5 +132,5 @@ Key–value components reorder accordingly.
 SVG Template rendering also applies RTL direction (if the template uses direction hints).
 
 This ensures accurate and accessible Arabic/RTL presentation.
----
 
+---

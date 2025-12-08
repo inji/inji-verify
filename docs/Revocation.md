@@ -24,11 +24,9 @@ The API documentations can be found in the [Inji Verify API documentation](https
 ## 1. UPLOAD & SCAN
 
 ### Verifiable Credential Submission:
-- Inji Verify have API to submit Verifiable Credential.
+- Inji Verify allows users to SCAN & UPLOAD Verifiable Credential.
 
-> **Note** that Verifiable Credential Submission endpoint(`/vc-submission`) is specifically for submitting individual credentials and is distinct from a Verifiable Presentation (VP) submission.
-
-- Once the verifier scans the QR code, it decodes the QR code using `pixel_pass_library` and post it to the Inji Verify backend (db).
+- Once the verifier scans the QR code, it decodes the QR code using pixel_pass_library and sends the extracted VC to the Inji Verify backend for storage in the database.
 
 - A typical JSON-LD Revoked Verifiable Credential includes a field like this:
 
@@ -54,9 +52,7 @@ The API documentations can be found in the [Inji Verify API documentation](https
 
 ### Submission Result:
 
-- Inji verify UI can fetch the result of the submission through APIs.
-
-- This API performs server-side verification of a Verifiable Credential (VC) to validate its integrity and authenticity. It executes checks such as cryptographic signature validation and ensures that the credential has not been altered or tampered with.
+- After a succesfull `UPLOAD` or `SCAN`, `INJI VERIFY` performs server-side verification of a Verifiable Credential (VC) to validate its integrity and authenticity. It executes checks such as cryptographic signature validation and ensures that the credential has not been altered or tampered with.
 
 ### How it check for revocation
 
@@ -66,26 +62,18 @@ The API documentations can be found in the [Inji Verify API documentation](https
 
 - The verification status returned can be **_SUCCESS_**, **_INVALID_**, **_EXPIRED_** or **_REVOKED_**.
 
-- If the Inji Verify Backend encounters any error while retrieving the `statusListCredential` or verifying the status, it will post the error back to the Verify UI along with an error description and `status code` as `500`.
-
+- If the Inji Verify Backend encounters any error while retrieving the `statusListCredential` or verifying the status, it will respond back with error description and status code as 500 ?
 
 ## 2. OPENID4VP
 
 ### Verifiable Presentation Submission:
 
-- Inji Verify have API to submit Verifiable Presentation.
+- Inji Verify allow users to submit Verifiable Presentation.
 - Once the wallet scans the QR code, it generates the VP token and the submission request, which are then posted to the Inji Verify backend.
-- If the wallet encounters any error while generating the VP token, it will post the error back to the Inji Verify backend along with an error description.
-
-> **Important Implementation Note:**
-> The endpoint can return a **_redirect_uri_** based on the **_INJI_VERIFY_REDIRECT_URI_** configuration.
->
-> If **_INJI_VERIFY_REDIRECT_URI_** is blank, no **_redirect_uri_** is returned.
->
-> This minimal feature implementation is intended to support integration with specific modules (e.g., wallets and verifier applications). Full implementation, including response_code support, is planned for future releases to ensure complete compliance with the OpenID4VP specification.
+- If the wallet encounters any error while generating the VP token, it will submit the error to the Inji Verify backend along with an error description.
 
 ### Submission Result:
-- Once the wallet submits the VC, The status will be changed to **_VP_SUBMITTED_**.
+- Once the wallet submits the VC, the status will be changed to **_VP_SUBMITTED_**.
 - Inji verify UI can fetch the result of the submission through APIs. The result will contain two things.
   - Overall status of submission, either its **_SUCCESS_** or **_FAILED_**
   - List of VC with its own verification status, it can be 
@@ -93,4 +81,4 @@ The API documentations can be found in the [Inji Verify API documentation](https
   * **_INVALID_** 
   * **_EXPIRED_**
   * **_REVOKED_**
-- During the revocation check, any error encountered by the vc_verifier will result in an exception containing a descriptive error message, which the Verify UI will display to the user.
+- During the revocation check, any error encountered by the `Inji Verify Backend` will result in an exception containing a descriptive error message, which the Verify UI will display to the user.

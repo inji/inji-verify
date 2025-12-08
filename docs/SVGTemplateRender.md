@@ -1,6 +1,6 @@
 # SVG Template Rendering
 
-As of Inji Verify `v1.6.0`, the system fully supports `SVG Template Rendering` based on the `W3C` `VC Render Method` draft specification.
+Inji Verify supports `SVG Template Rendering` based on the `W3C` `VC Render Method` draft specification.
 
 This feature allows issuers to define branded, `visually rich`, and `layout-controlled` representations of their Verifiable Credentials (VCs).
 
@@ -103,7 +103,7 @@ To support such visual customization, the VC can include a `renderMethod` sectio
 | Part     | Meaning                                                                                         |
 |----------|-------------------------------------------------------------------------------------------------|
 | SVG      | The template is an SVG graphic (cards, certificates, identity badges).                          |
-| Mustache | Template variables like `{{credentialSubject.name}}` are replaced with actual VC data.          |
+| Mustache | Template variables like `{{/credentialSubject/fullName}}` are replaced with actual VC data.          |
 
 # Functionalities 
 
@@ -111,7 +111,7 @@ To support such visual customization, the VC can include a `renderMethod` sectio
 
 When a credential is ready to be displayed, Inji Verify performs the following steps:
 
-- `Inji verify UI` fetch the result of the submission through APIs, and validate it using `vc-verifier` and returns the response
+- `Inji Verify UI` fetches the submission result through APIs, validates it using `vc-verifier`, and returns the response
 
 - `Inji Verify UI` renders the response accordingly:
 
