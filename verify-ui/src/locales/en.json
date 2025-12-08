@@ -5,7 +5,8 @@
     "help": "Help",
     "contactUs": "Contact us",
     "documentation": "Documentation",
-    "faqs": "FAQs"
+    "faqs": "FAQs",
+    "language": "English"
   },
   "Header": {
     "heading": "Verify credentials ",
@@ -93,7 +94,7 @@
       },
       "SelectCredential": {
         "label": "Select Credential Types",
-        "description": "Choose the Verifiable Credentials (VCs) from the list to be requested from the mobile wallet."
+        "description": "Choose the Verifiable Credentials (VCs) from the list to be requested from the mobile wallet."
       },
       "RequestMissingCredential": {
         "label": "Request Missing Credentials & Generate QR Code",
@@ -154,7 +155,7 @@
     "invalidParams": "Invalid Parameters!!"
   },
   "CopyRight": {
-    "content": "powered by Inji, a MOSIP product"
+    "content": "powered by <i>Inji</i>, a MOSIP product"
   },
   "CameraAccessDenied": {
     "header": "Camera Access Denied",
@@ -182,15 +183,35 @@
   "Accepted": {
     "Accept": {
       "title": "TruckPass Verified",
-      "description": "The traveler is cleared to cross the border",
+      "description": "The driver is cleared to cross the border",
       "button": "Okay"
     }
   },
   "Rejected": {
     "Reject": {
       "title": "Entry Rejected",
-      "description": "Entry rejected - get content",
+      "description": "The driver is rejected to cross the border",
       "button": "Okay"
+    }
+  },
+  "OtpPage": {
+    "title": "Check your email",
+    "subtitle": "We sent an OTP to your email ID",
+    "buttons": {
+      "verify": "Verify",
+      "backToLogin": "Back to log in"
+    },
+    "otpPlaceholder": "0"
+  },
+  "LoginPage": {
+    "title": "Log In",
+    "emailPlaceholder": "Enter Your Email ID",
+    "buttons": {
+      "continue": "Continue"
+    },
+    "errors": {
+      "invalidEmail": "Please enter a valid email address.",
+      "generic": "Something went wrong — try again."
     }
   }
 }

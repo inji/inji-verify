@@ -1,8 +1,11 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import logo from "../assets/truckpassTheme/TruckpassVerifyLogo.png";
-import banner from "../assets/truckpassTheme/WelcomeBanner.png";
-import world from "../assets/truckpassTheme/LanguageSelectionWorld.png";
+import { useTranslation } from "react-i18next";
+
+import logo from "../assets/truckpassTheme/TruckpassVerifyLogo.svg";
+import banner from "../assets/truckpassTheme/WelcomeBanner.svg";
+import truckIcon from "../assets/truckpassTheme/truckpassTruckLogo.svg";
+import { LanguageSelector } from "../components/commons/LanguageSelector";
 
 export default function TruckPassLogin() {
   const [email, setEmail] = useState<string>("");
@@ -10,27 +13,31 @@ export default function TruckPassLogin() {
   const [loading, setLoading] = useState<boolean>(false);
   const navigate = useNavigate();
 
+  // 🔹 Use separate namespaces
+  const { t: tNavbar } = useTranslation("Navbar");
+  const { t: tLogin } = useTranslation("LoginPage");
+
   function validateEmail(value: string): boolean {
     return /\S+@\S+\.\S+/.test(value);
   }
 
-  const handleEmailSubmit = async (e: React.FormEvent<HTMLFormElement>): Promise<void> => {
+  const handleEmailSubmit = async (
+    e: React.FormEvent<HTMLFormElement>
+  ): Promise<void> => {
     e.preventDefault();
     setError("");
 
     if (!validateEmail(email)) {
-      setError("Please enter a valid email address.");
+      setError(tLogin("errors.invalidEmail"));
       return;
     }
 
     try {
       setLoading(true);
-      // simulate short delay
       await new Promise((r) => setTimeout(r, 500));
-      // redirect to OTP page
-      navigate("/otp");
+      navigate("/otp", { state: { email } });
     } catch {
-      setError("Something went wrong — try again.");
+      setError(tLogin("errors.generic"));
     } finally {
       setLoading(false);
     }
@@ -39,56 +46,46 @@ export default function TruckPassLogin() {
   return (
     <div className="min-h-screen flex flex-col">
       {/* Header */}
-        <div className="flex items-center justify-between px-10 py-3 w-full">
-          {/* Left: Logo */}
-          <div className="flex items-center">
-            <img src={logo} alt="TruckPass Verify Logo" className="h-8 w-auto" />
-          </div>
-
-          {/* Right: Navigation */}
-          <nav className="flex items-center gap-8">
-            <a href="#" className="text-sm font-medium text-gray-800 hover:underline">
-              Home
-            </a>
-            <a href="#" className="text-sm font-medium text-gray-800 hover:underline">
-              Help
-            </a>
-
-            {/* Language Selector */}
-            <button
-              type="button"
-              className="flex items-center gap-2 text-sm font-medium text-gray-800 hover:underline focus:outline-none"
-            >
-              <img src={world} alt="Language Selection" className="h-5 w-5 object-contain" />
-              <span>English</span>
-              <svg
-                xmlns="http://www.w3.org/2000/svg"
-                className="h-3 w-3 text-gray-600"
-                viewBox="0 0 20 20"
-                fill="currentColor"
-              >
-                <path
-                  fillRule="evenodd"
-                  d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.06z"
-                  clipRule="evenodd"
-                />
-              </svg>
-            </button>
-          </nav>
+      <div className="flex items-center justify-between px-10 py-3 w-full">
+        <div className="flex items-center gap-2">
+          <img src={truckIcon} alt="TruckPass Icon" className="h-6 w-auto" />
+          <img src={logo} alt="TruckPass Verify Logo" className="h-8 w-auto" />
         </div>
+
+        <nav className="flex items-center gap-8">
+          <a
+            href="#"
+            className="text-sm font-medium text-gray-800 hover:underline"
+          >
+            {tNavbar("home")}
+          </a>
+          <a
+            href="#"
+            className="text-sm font-medium text-gray-800 hover:underline"
+          >
+            {tNavbar("help")}
+          </a>
+
+          <LanguageSelector />
+        </nav>
+      </div>
 
       {/* Main content */}
       <main className="flex-1 grid grid-cols-1 lg:grid-cols-2">
-        {/* Left: Banner */}
         <div className="hidden lg:flex items-center justify-center bg-gray-50">
-          <img src={banner} alt="TruckPass Verify Banner" className="w-full h-full object-cover" />
+          <img
+            src={banner}
+            alt="TruckPass Verify Banner"
+            className="w-full h-full object-cover"
+          />
         </div>
 
-        {/* Right: Email Form */}
         <section className="flex items-center justify-center py-16 px-8 bg-white">
           <div className="w-full max-w-md">
             <div className="mb-8">
-              <h2 className="text-2xl font-semibold">Log In</h2>
+              <h2 className="text-2xl font-semibold">
+                {tLogin("title")}
+              </h2>
             </div>
 
             <form onSubmit={handleEmailSubmit} className="space-y-4">
@@ -98,7 +95,7 @@ export default function TruckPassLogin() {
                   type="email"
                   value={email}
                   onChange={(e) => setEmail(e.target.value)}
-                  placeholder="Enter Your Email ID"
+                  placeholder={tLogin("emailPlaceholder")}
                   className="w-full border border-gray-200 rounded-md px-4 py-3 focus:outline-none focus:ring-2 focus:ring-blue-400"
                   aria-label="Email address"
                 />
@@ -130,11 +127,10 @@ export default function TruckPassLogin() {
                       />
                     </svg>
                   )}
-                  <span>Continue</span>
+                  <span>{tLogin("buttons.continue")}</span>
                 </button>
               </div>
             </form>
-
           </div>
         </section>
       </main>

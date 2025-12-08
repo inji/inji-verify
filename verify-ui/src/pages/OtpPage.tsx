@@ -1,14 +1,34 @@
 import React, { useRef, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
-import logo from "../assets/truckpassTheme/TruckpassVerifyLogo.png";
-import world from "../assets/truckpassTheme/LanguageSelectionWorld.png";
+import { useTranslation } from "react-i18next";
+
+import logo from "../assets/truckpassTheme/TruckpassVerifyLogo.svg";
+import truckIcon from "../assets/truckpassTheme/truckpassTruckLogo.svg";
+import { LanguageSelector } from "../components/commons/LanguageSelector";
 
 export default function OtpPage(): JSX.Element {
   const navigate = useNavigate();
   const location = useLocation();
 
+  // 🔹 Use namespaces like on Login page
+  const { t: tNavbar } = useTranslation("Navbar");
+  const { t: tOtp } = useTranslation("OtpPage");
+
   const passedEmail = (location.state as any)?.email as string | undefined;
   const email = passedEmail ?? "youremail@gmail.com";
+
+  const getMaskedEmail = (rawEmail: string): string => {
+    const [localPart, domain] = rawEmail.split("@");
+    if (!domain) return rawEmail;
+
+    const visible = localPart.slice(0, 4);
+    const hiddenLength = Math.max(localPart.length - 4, 0);
+    const mask = hiddenLength > 0 ? "•".repeat(hiddenLength) : "";
+
+    return `${visible}${mask}@${domain}`;
+  };
+
+  const maskedEmail = getMaskedEmail(email);
 
   const OTP_LENGTH = 6;
   const DEFAULT_OTP = "111111";
@@ -51,7 +71,10 @@ export default function OtpPage(): JSX.Element {
     }, 0);
   };
 
-  const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>, idx: number) => {
+  const handleKeyDown = (
+    e: React.KeyboardEvent<HTMLInputElement>,
+    idx: number
+  ) => {
     const key = e.key;
     if (key === "Backspace") {
       e.preventDefault();
@@ -75,7 +98,10 @@ export default function OtpPage(): JSX.Element {
     }
   };
 
-  const handlePaste = (e: React.ClipboardEvent<HTMLInputElement>, idx: number) => {
+  const handlePaste = (
+    e: React.ClipboardEvent<HTMLInputElement>,
+    idx: number
+  ) => {
     e.preventDefault();
     const paste = e.clipboardData.getData("Text").replace(/\D/g, "");
     if (!paste) return;
@@ -112,37 +138,26 @@ export default function OtpPage(): JSX.Element {
     <div className="min-h-screen flex flex-col bg-white">
       {/* Header */}
       <div className="flex items-center justify-between px-10 py-3 w-full">
-        <div className="flex items-center">
+        <div className="flex items-center gap-2">
+          <img src={truckIcon} alt="TruckPass Icon" className="h-6 w-auto" />
           <img src={logo} alt="TruckPass Verify Logo" className="h-8 w-auto" />
         </div>
 
         <nav className="flex items-center gap-8">
-          <a href="#" className="text-sm font-medium text-gray-800 hover:underline">
-            Home
+          <a
+            href="#"
+            className="text-sm font-medium text-gray-800 hover:underline"
+          >
+            {tNavbar("home")}
           </a>
-          <a href="#" className="text-sm font-medium text-gray-800 hover:underline">
-            Help
+          <a
+            href="#"
+            className="text-sm font-medium text-gray-800 hover:underline"
+          >
+            {tNavbar("help")}
           </a>
 
-          <button
-            type="button"
-            className="flex items-center gap-2 text-sm font-medium text-gray-800 focus:outline-none"
-          >
-            <img src={world} alt="Language" className="h-5 w-5 object-contain" />
-            <span>English</span>
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              className="h-3 w-3 text-gray-600"
-              viewBox="0 0 20 20"
-              fill="currentColor"
-            >
-              <path
-                fillRule="evenodd"
-                d="M5.23 7.21a.75.75 0 011.06.02L10 10.94l3.71-3.71a.75.75 0 111.06 1.06l-4.24 4.24a.75.75 0 01-1.06 0L5.21 8.29a.75.75 0 01.02-1.06z"
-                clipRule="evenodd"
-              />
-            </svg>
-          </button>
+          <LanguageSelector />
         </nav>
       </div>
 
@@ -150,7 +165,6 @@ export default function OtpPage(): JSX.Element {
       <main className="flex-1 flex items-start justify-center px-6 py-16">
         <div className="w-full max-w-2xl">
           <div className="text-center">
-            {/* small icon */}
             <div className="mx-auto mb-4 w-12 h-12 rounded-md border border-gray-200 flex items-center justify-center text-blue-600">
               <svg
                 xmlns="http://www.w3.org/2000/svg"
@@ -168,20 +182,22 @@ export default function OtpPage(): JSX.Element {
               </svg>
             </div>
 
-            <h1 className="text-2xl font-bold mb-2">Check your email</h1>
+            <h1 className="text-2xl font-bold mb-2">
+              {tOtp("title")}
+            </h1>
             <p className="text-sm text-gray-500 mb-6">
-              We sent an OTP to your email ID{" "}
-              <span className="font-medium text-gray-800">{email}</span>
+              {tOtp("subtitle")}{" "}
+              <span className="font-medium text-gray-800">
+                {maskedEmail}
+              </span>
             </p>
           </div>
 
-          {/* OTP Inputs */}
           <form onSubmit={verifyOtp} className="flex flex-col items-center">
             <div className="flex items-center gap-3 mb-6">
               {Array.from({ length: OTP_LENGTH }).map((_, idx) => (
                 <React.Fragment key={idx}>
                   <div style={{ position: "relative", display: "inline-block" }}>
-                    {/* Highlight Box for focused input */}
                     {activeIdx === idx && (
                       <div
                         aria-hidden
@@ -192,13 +208,12 @@ export default function OtpPage(): JSX.Element {
                           right: -5,
                           bottom: -5,
                           borderRadius: 10,
-                          border: "3px solid rgba(29,78,216,0.9)", // blue border
+                          border: "3px solid rgba(29,78,216,0.9)",
                           background: "transparent",
                         }}
                       />
                     )}
 
-                    {/* Input field */}
                     <input
                       id={`otp-${idx}`}
                       ref={(el) => (inputsRef.current[idx] = el)}
@@ -210,17 +225,24 @@ export default function OtpPage(): JSX.Element {
                       onKeyDown={(ev) => handleKeyDown(ev, idx)}
                       onPaste={(ev) => handlePaste(ev as any, idx)}
                       onFocus={() => setActiveIdx(idx)}
-                      onBlur={() => setActiveIdx((cur) => (cur === idx ? null : cur))}
-                      placeholder="0"
+                      onBlur={() =>
+                        setActiveIdx((cur) => (cur === idx ? null : cur))
+                      }
+                      placeholder={tOtp("otpPlaceholder")}
                       className={`w-14 h-14 text-2xl text-center rounded-md border-2 font-semibold outline-none relative z-10
                         placeholder-gray-300
-                        ${values[idx] ? "border-blue-500 text-blue-600" : "border-gray-200 text-gray-800"}`}
+                        ${
+                          values[idx]
+                            ? "border-blue-500 text-blue-600"
+                            : "border-gray-200 text-gray-800"
+                        }`}
                       aria-label={`OTP digit ${idx + 1}`}
                     />
                   </div>
 
-                  {/* Dash between 3rd and 4th boxes */}
-                  {idx === 2 && <span className="mx-2 text-gray-400 text-lg">-</span>}
+                  {idx === 2 && (
+                    <span className="mx-2 text-gray-400 text-lg">-</span>
+                  )}
                 </React.Fragment>
               ))}
             </div>
@@ -229,7 +251,7 @@ export default function OtpPage(): JSX.Element {
               type="submit"
               className="w-56 bg-blue-600 hover:bg-blue-700 text-white font-medium py-3 rounded-md shadow-sm mb-4"
             >
-              Verify
+              {tOtp("buttons.verify")}
             </button>
 
             <button
@@ -244,9 +266,14 @@ export default function OtpPage(): JSX.Element {
                 fill="none"
                 stroke="currentColor"
               >
-                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth="2" d="M15 19l-7-7 7-7" />
+                <path
+                  strokeLinecap="round"
+                  strokeLinejoin="round"
+                  strokeWidth="2"
+                  d="M15 19l-7-7 7-7"
+                />
               </svg>
-              Back to log in
+              {tOtp("buttons.backToLogin")}
             </button>
           </form>
         </div>

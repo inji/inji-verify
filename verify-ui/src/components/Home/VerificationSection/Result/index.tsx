@@ -4,6 +4,7 @@ import { useVerificationFlowSelector } from "../../../../redux/features/verifica
 import DisplayVcDetailsModal from "./DisplayVcDetailsModal";
 import DisplayVcDetailView from "./DisplayVcDetailView";
 import { Button } from "../commons/Button";
+import StatusPopup from "../commons/StatusPopup";
 import { useTranslation } from "react-i18next";
 import { useAppDispatch } from "../../../../redux/hooks";
 import {
@@ -15,29 +16,60 @@ import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
 import { resetVpRequest } from "../../../../redux/features/verify/vpVerificationState";
 import { DisplayTimeout } from "../../../../utils/config";
 
-// <-- Confirm these file names/paths exist in your repo. If not, update imports.
 import acceptGif from "../../../../assets/truckpassTheme/accepted-gif.gif";
 import rejectGif from "../../../../assets/truckpassTheme/rejected-gif.gif";
 import rejectIcon from "../../../../assets/truckpassTheme/reject-icon.svg";
 import acceptIcon from "../../../../assets/truckpassTheme/accept-icon.svg";
 
+type ActionButtonProps = {
+  title: string;
+  color: string;
+  iconSrc: string;
+  onClick: () => void;
+  ariaLabel: string;
+};
 
+const ActionButton = ({
+  title,
+  color,
+  iconSrc,
+  onClick,
+  ariaLabel,
+}: ActionButtonProps) => {
+  return (
+    <button
+      type="button"
+      onClick={onClick}
+      aria-label={ariaLabel}
+      className="flex items-center gap-3 px-6 py-3 rounded-[10px] text-white font-semibold shadow-[0_10px_30px_rgba(0,0,0,0.12)] hover:opacity-95 transition"
+      style={{ minWidth: 200, backgroundColor: color }}
+    >
+      <span className="inline-flex items-center justify-center w-6 h-6 rounded-full">
+        <img src={iconSrc} alt={title} className="w-4 h-4" />
+      </span>
+      <span>{title}</span>
+    </button>
+  );
+};
 
 const Result = () => {
+  console.log("VP Result component rendered ✅");
+
   const { vc, vcStatus } = useVerificationFlowSelector(
     (state) => state.verificationResult ?? { vc: null, vcStatus: null }
   );
   const { method } = useVerificationFlowSelector((state) => ({
     method: state.method,
   }));
+
   const [isModalOpen, setModalOpen] = useState(false);
   const [claims, setClaims] = useState<AnyVc | null>(null);
   const [credentialType, setCredentialType] = useState<string>("");
+
   const { t } = useTranslation("");
   const dispatch = useAppDispatch();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
-  // popup states
   const [showAcceptPopup, setShowAcceptPopup] = useState(false);
   const [showRejectPopup, setShowRejectPopup] = useState(false);
 
@@ -52,23 +84,18 @@ const Result = () => {
     }
   };
 
-  const handleAccept = () => {
-    setShowAcceptPopup(true);
-  };
-
-  const handleReject = () => {
-    setShowRejectPopup(true);
-  };
+  const handleAccept = () => setShowAcceptPopup(true);
+  const handleReject = () => setShowRejectPopup(true);
 
   useEffect(() => {
     const fetchDecodedClaims = async () => {
       if (typeof vc === "string") {
-        const claims = await decodeSdJwtToken(vc);
-        setClaims(claims as SdJwtVc);
-        setCredentialType(claims.regularClaims.vct);
-      } else {
+        const claimsDecoded = await decodeSdJwtToken(vc);
+        setClaims(claimsDecoded as SdJwtVc);
+        setCredentialType(claimsDecoded.regularClaims.vct);
+      } else if (vc) {
         setClaims(vc as LdpVc);
-        if (vc && Array.isArray((vc as any).type)) {
+        if (Array.isArray((vc as any).type)) {
           const typeEntry = (vc as any).type[1];
           if (typeof typeEntry === "string") {
             setCredentialType(typeEntry);
@@ -78,6 +105,7 @@ const Result = () => {
         }
       }
     };
+
     fetchDecodedClaims();
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [vc]);
@@ -100,51 +128,40 @@ const Result = () => {
 
   return (
     <div id="result-section" className="relative mb-[100px]">
-      <div className={`text-whiteText`}>
+      <div className="text-whiteText">
         <ResultSummary status={vcStatus} />
       </div>
 
       <div>
-        <div className={`h-[3px] border-b-2 border-b-transparent`} />
+        <div className="h-[3px] border-b-2 border-b-transparent" />
 
         {claims && (
           <DisplayVcDetailView
             vc={claims}
             onExpand={() => setModalOpen(true)}
-            className={`h-auto rounded-t-0 rounded-b-lg overflow-y-auto mt-[-30px]`}
+            className="h-auto rounded-t-0 rounded-b-lg overflow-y-auto mt-[-30px]"
           />
         )}
 
-        {/* Accept / Reject buttons (side-by-side) */}
-        <div className="flex justify-center gap-6 mt-6">
-          <button
-            type="button"
-            onClick={handleReject}
-            aria-label="Reject Entry"
-            className="flex items-center gap-3 px-6 py-3 rounded-lg bg-[#CB4241] text-white font-semibold shadow-lg hover:opacity-95"
-            style={{ minWidth: 160 }}
-          >
-            {/* Small icon (optional). Keep plain text if you prefer) */}
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full">
-              <img src={rejectIcon} alt="Reject" className="w-4 h-4" />
-            </span>
-
-            <span>{t("Common.Button.reject")}</span>
-          </button>
-
-          <button
-            type="button"
-            onClick={handleAccept}
-            aria-label="Allow Entry"
-            className="flex items-center gap-3 px-6 py-3 rounded-lg bg-[#1F9F60] text-white font-semibold shadow-lg hover:opacity-95"
-            style={{ minWidth: 160 }}
-          >
-            <span className="inline-flex items-center justify-center w-6 h-6 rounded-full">
-              <img src={acceptIcon} alt="Accept" className="w-4 h-4" />
-            </span>
-            <span>{t("Common.Button.accept")}</span>
-          </button>
-        </div>
+        {/* Accept / Reject buttons */}
+        {claims && (
+          <div className="flex justify-center gap-6 mt-6 border border-dashed">
+            <ActionButton
+              title={t("Common:Button.reject")}
+              color="#CB4241"
+              iconSrc={rejectIcon}
+              onClick={handleReject}
+              ariaLabel="Reject Entry"
+            />
+            <ActionButton
+              title={t("Common:Button.accept")}
+              color="#1F9F60"
+              iconSrc={acceptIcon}
+              onClick={handleAccept}
+              ariaLabel="Allow Entry"
+            />
+          </div>
+        )}
 
         {/* Verify another QR code */}
         <div className="grid content-center justify-center">
@@ -156,7 +173,6 @@ const Result = () => {
         </div>
       </div>
 
-      {/* Details modal */}
       {claims && (
         <DisplayVcDetailsModal
           isOpen={isModalOpen}
@@ -167,55 +183,25 @@ const Result = () => {
         />
       )}
 
-      {/* Accept popup */}
-      {showAcceptPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 w-[480px] max-w-[90vw] text-center shadow-xl">
-            {acceptGif && (
-              <img
-                src={acceptGif}
-                alt="verified"
-                className="mx-auto w-28 mb-4"
-              />
-            )}
-            <h2 className="text-2xl font-semibold mb-2">{t("Accepted.Accept.title")}</h2>
-            <p className="text-gray-700 mb-6">
-              {t("Accepted.Accept.description")}
-            </p>
+      <StatusPopup
+        isOpen={showAcceptPopup}
+        onClose={() => setShowAcceptPopup(false)}
+        title={t("Accepted.Accept.title")}
+        description={t("Accepted.Accept.description")}
+        buttonLabel={t("Accepted.Accept.button")}
+        gifSrc={acceptGif}
+        gifAlt="verified"
+      />
 
-            <button
-              onClick={() => setShowAcceptPopup(false)}
-              className="px-6 py-3 rounded-lg bg-[#006DE7] text-white font-semibold w-full"
-            >
-              {t("Accepted.Accept.button")}
-            </button>
-          </div>
-        </div>
-      )}
-
-      {/* Reject popup */}
-      {showRejectPopup && (
-        <div className="fixed inset-0 bg-black bg-opacity-40 flex items-center justify-center z-50">
-          <div className="bg-white rounded-xl p-8 w-[480px] max-w-[90vw] text-center shadow-xl">
-            {rejectGif && (
-              <img
-                src={rejectGif}
-                alt="rejected"
-                className="mx-auto w-28 mb-4"
-              />
-            )}
-            <h2 className="text-2xl font-semibold mb-2">{t("Rejected.Reject.title")}</h2>
-            <p className="text-gray-700 mb-6">{t("Rejected.Reject.description")}</p>
-
-            <button
-              onClick={() => setShowRejectPopup(false)}
-              className="px-6 py-3 rounded-lg bg-[#006DE7] text-white font-semibold w-full"
-            >
-              {t("Rejected.Reject.button")}
-            </button>
-          </div>
-        </div>
-      )}
+      <StatusPopup
+        isOpen={showRejectPopup}
+        onClose={() => setShowRejectPopup(false)}
+        title={t("Rejected.Reject.title")}
+        description={t("Rejected.Reject.description")}
+        buttonLabel={t("Rejected.Reject.button")}
+        gifSrc={rejectGif}
+        gifAlt="rejected"
+      />
     </div>
   );
 };

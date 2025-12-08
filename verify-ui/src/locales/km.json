@@ -1,67 +1,68 @@
 {
   "Navbar": {
     "home": "ទំព័រដើម",
-    "verifyCredentials": "ផ្ទៀងផ្ទាត់អត្តសញ្ញាណ",
+    "verifyCredentials": "ផ្ទៀងផ្ទាត់លិខិតបញ្ជាក់",
     "help": "ជំនួយ",
     "contactUs": "ទាក់ទង​មក​ពួក​យើង",
     "documentation": "ឯកសារ",
-    "faqs": "សំណួរ​ពេញនិយម"
+    "faqs": "សំណួរញឹកញាប់",
+    "language": "ខ្មែរ"
   },
   "Header": {
-    "heading": "ផ្ទៀងផ្ទាត់អត្តសញ្ញាណ ",
-    "headingHighlight": "បានយ៉ាងងាយស្រួល!",
-    "description": "ផ្ទៀងផ្ទាត់ឯកសារបានយ៉ាងងាយស្រួលជាមួយ Inji Verify! គ្រាន់តែស្គែន QR code ឬ​អាប់ឡោតឯកសារ ដើម្បីទទួលបានលទ្ធផលផ្ទៀងផ្ទាត់ភ្លាមៗ តាមជំហានខាងក្រោម។",
+    "heading": "ផ្ទៀងផ្ទាត់លិខិតបញ្ជាក់ ",
+    "headingHighlight": "បានយ៉ាង​ងាយស្រួល!",
+    "description": "ផ្ទៀងផ្ទាត់លិខិតបញ្ជាក់បានងាយស្រួលជាមួយ Inji Verify! គ្រាន់តែស្កេន QR code ឬអាប់ឡូដ ដើម្បីទទួលបានលទ្ធផលភ្លាមៗ តាមជំហានខាងក្រោម។",
 
-    "heading_truckpass": "ផ្ទៀងផ្ទាត់ Truck Pass",
-    "description_truckpass": "ផ្ទៀងផ្ទាត់ឯកសារជាមួយ TruckPass Portal បានយ៉ាងងាយស្រួល! សូមស្គែន QR code ឬអាប់ឡោតឯកសារ ដើម្បីទទួលបានលទ្ធផលភ្លាមៗ។"
+    "heading_truckpass": "ផ្ទៀងផ្ទាត់បណ្ណអនុញ្ញាតរថយន្តដឹកទំនិញ",
+    "description_truckpass": "ផ្ទៀងផ្ទាត់លិខិតបញ្ជាក់បានងាយស្រួលជាមួយ TruckPass Portal! ស្កេន QR code ឬអាប់ឡូដ ដើម្បីទទួលបានលទ្ធផលភ្លាមៗ។"
   },
   "Tab": {
-    "upload": "អាប់ឡោត QR Code",
-    "scan": "ស្គែន QR Code",
-    "VP_Verification": "ផ្ទៀងផ្ទាត់ VP",
+    "upload": "ਅាប់ឡូដ QR Code",
+    "scan": "ស្កេន QR Code",
+    "VP_Verification": "ការផ្ទៀងផ្ទាត់ VP",
     "ble": "BLE"
   },
   "Upload": {
-    "format": "ប្រភេទឯកសារអនុញ្ញាត៖ PNG/JPEG/JPG/PDF \n ទំហំឯកសារ៖ 10KB ដល់ 5MB"
+    "format": "ഫួយល័​បញ្ជាក់៖ PNG/JPEG/JPG/PDF \n ទំហំ​ឯកសារ - 10KB ដល់ 5MB"
   },
   "Verify": {
-    "selectorTitle": "ផ្ទាំងជ្រើសរើសអត្តសញ្ញាណដែលអាចផ្ទៀងផ្ទាត់បាន",
-    "selectorSubTitle": "សូមជ្រើសរើសអត្តសញ្ញាណដែលអ្នកចង់ទទួលពី Wallet របស់អ្នកប្រើប្រាស់",
+    "selectorTitle": "បន្ទះជ្រើសរើសលិខិតបញ្ជាក់ដែលអាចផ្ទៀងផ្ទាត់បាន",
+    "selectorSubTitle": "សូមជ្រើសរើសលិខិតបញ្ជាក់ដែលអ្នកចង់ទទួលពីកាបូបឌីជីថលរបស់អ្នកប្រើ",
     "searchPlaceholder": "ស្វែងរកប្រភេទ VC",
-    "listHeader": "ជ្រើសរើសអត្តសញ្ញាណដែលត្រូវការ",
+    "listHeader": "ជ្រើសរើសលិខិតបញ្ជាក់ដែលត្រូវការ",
     "sortAtoZ": "តម្រៀប (A-Z)",
     "sortZtoA": "តម្រៀប (Z-A)",
-    "rqstButton": "ស្នើសុំអត្តសញ្ញាណ",
-    "goBack": "ត្រឡប់ក្រោយ",
+    "rqstButton": "ស្នើសុំលិខិតបញ្ជាក់",
+    "goBack": "ត្រលប់ក្រោយ",
     "generateQrCodeBtn": "បង្កើត QR Code",
-    "qrCodeInfo": "សូមស្គែន QR code ខាងក្រោមតាមរយៈ Wallet ដើម្បីចែករំលែកអត្តសញ្ញាណដែលបានស្នើ",
+    "qrCodeInfo": "សូមស្កេន QR code ខាងក្រោមជាមួយកាបូបឌីជីថលរបស់អ្នក ដើម្បីចែករំលែកលិខិតបញ្ជាក់ដែលបានស្នើសុំ",
     "qrCodeExpired": "QR Code ផុតកំណត់",
-    "noVcsFound": "រកមិនឃើញអត្តសញ្ញាណដែលអាចផ្ទៀងផ្ទាត់បាន។",
+    "noVcsFound": "រកមិនឃើញលិខិតបញ្ជាក់ឡើយ។",
     "sortBy": "តម្រៀបតាម",
     "expand": "បើកពេញអេក្រង់",
     "collapse": "បិទពេញអេក្រង់",
     "download": "ទាញយក",
-    "missingCredentials": "ស្នើសុំអត្តសញ្ញាណដែលខ្វះខាត",
+    "missingCredentials": "ស្នើសុំលិខិតបញ្ជាក់ដែលខ្វះ",
     "restartProcess": "ចាប់ផ្តើមឡើងវិញ",
     "notShared": "មិនបានចែករំលែក",
     "SUCCESS": "ត្រឹមត្រូវ",
     "EXPIRED": "ត្រឹមត្រូវ ប៉ុន្តែផុតកំណត់",
     "INVALID": "មិនត្រឹមត្រូវ",
-    "credentialsRequested": "បានស្នើសុំអត្តសញ្ញាណ",
-    "walletSelectorTitle": "ផ្ទាំងជ្រើសរើស Wallet",
-    "walletSelectorDescription": "សូមជ្រើស Wallet មួយដើម្បីបន្តការផ្ទៀងផ្ទាត់។",
-    "walletSearchPlaceholder": "ស្វែងរក Wallet",
-    "IconToolTip": "វាលដែលមានរូបតំណាងនេះបង្ហាញថាព័ត៌មានត្រូវបានចែករំលែកជាច្រើនជម្រើសដោយអ្នកកាន់។"
+    "credentialsRequested": "បានស្នើសុំលិខិតបញ្ជាក់",
+    "walletSelectorTitle": "ជ្រើសរើសកាបូបឌីជីថល",
+    "walletSelectorDescription": "សូមជ្រើសរើសកាបូបដើម្បីបន្តការផ្ដល់ Verifiable Presentation។",
+    "walletSearchPlaceholder": "ស្វែងរកកាបូប",
+    "IconToolTip": "វាលដែលមានរូបតំណាងនេះបង្ហាញថា ព័ត៌មានត្រូវបានចែករំលែកត្រឹមតែផ្នែកខ្លះដោយម្ចាស់កាបូប។"
   },
   "VerificationStepsContent": {
     "SCAN": {
       "QrCodePrompt": {
-        "label": "ស្គែន QR Code",
-        "description": "ចុច 'ស្គែន' ដើម្បី​ចាប់ផ្តើមស្គែនឯកសារ ឬកាត​ដែលមាន QR code"
+        "label": "ស្កេន QR Code",
+        "description": "ចុច 'ស្កេន' ដើម្បីចាប់ផ្តើមស្កេនឯកសារ/កាតដែលមាន QR code"
       },
       "ActivateCamera": {
-        "label": "បើកកាមេរ៉ា និងដាក់ទីតាំង QR Code",
-        "description": "សូមបើកកាមេរ៉ារបស់អ្នក និងដាក់ QR Code នៅក្នុងស៊ុម ដើម្បីចាប់ផ្តើមផ្ទៀងផ្ទាត់។"
+        "label": "បើកកាមេរ៉ា និងដាក់ QR Code ក្នុងស៊ុម",
+        "description": "បើកកាមេរ៉ាឧបករណ៍របស់អ្នក ហើយដាក់ QR code នៅក្នុងស៊ុមដើម្បីចាប់ផ្តើមការផ្ទៀងផ្ទាត់។"
       },
       "Verifying": {
         "label": "កំពុងផ្ទៀងផ្ទាត់",
@@ -69,128 +70,148 @@
       },
       "DisplayResult": {
         "label": "មើលលទ្ធផល",
-        "description": "សូមមើលលទ្ធផលផ្ទៀងផ្ទាត់។"
+        "description": "មើលលទ្ធផលផ្ទៀងផ្ទាត់។"
       }
     },
     "UPLOAD": {
       "QrCodePrompt": {
-        "label": "អាប់ឡោត QR Code",
-        "description": "សូមអាប់ឡោតឯកសារដែលមាន QR code"
+        "label": "អាប់ឡូដ QR Code",
+        "description": "អាប់ឡូដឯកសារមួយដែលមាន QR code"
       },
       "Verifying": {
         "label": "កំពុងផ្ទៀងផ្ទាត់ឯកសារ",
-        "description": "ការផ្ទៀងផ្ទាត់ឯកសារ ឬកាត កំពុងដំណើរការ។"
+        "description": "ការផ្ទៀងផ្ទាត់ឯកសារ/កាតកំពុងដំណើរការ។"
       },
       "DisplayResult": {
         "label": "មើលលទ្ធផល",
-        "description": "សូមមើលលទ្ធផលផ្ទៀងផ្ទាត់។"
+        "description": "មើលលទ្ធផលផ្ទៀងផ្ទាត់។"
       }
     },
     "VERIFY": {
       "InitiateVpRequest": {
-        "label": "ចាប់ផ្តើមដំណើរការ VP",
-        "description": "ចុច <span> ស្នើសុំអត្តសញ្ញាណ </span> ដើម្បីចាប់ផ្តើមដំណើរការផ្ទៀងផ្ទាត់"
+        "label": "ចាប់ផ្តើមការស្នើសុំ VP",
+        "description": "ចុច <span> ស្នើសុំលិខិតបញ្ជាក់ <span> ដើម្បីចាប់ផ្តើមការផ្ទៀងផ្ទាត់"
       },
       "SelectCredential": {
-        "label": "ជ្រើសប្រភេទអត្តសញ្ញាណ",
-        "description": "ជ្រើសអត្តសញ្ញាណដែលត្រូវស្នើសុំពី Wallet របស់អ្នកប្រើប្រាស់។"
+        "label": "ជ្រើសរើសប្រភេទលិខិតបញ្ជាក់",
+        "description": "ជ្រើសរើសលិខិតបញ្ជាក់ (VC) ពីបញ្ជី ដើម្បីស្នើសុំពីកាបូប។"
       },
       "RequestMissingCredential": {
-        "label": "ស្នើសុំអត្តសញ្ញាណដែលខ្វះ និងបង្កើត QR Code",
-        "description": "ចុច <span> ស្នើសុំអត្តសញ្ញាណដែលខ្វះ </span> ដើម្បីបន្តការផ្ទៀងផ្ទាត់ ឬចុច <span> ចាប់ផ្តើមឡើងវិញ </span>។"
+        "label": "ស្នើសុំលិខិតបញ្ជាក់ដែលខ្វះ & បង្កើត QR Code",
+        "description": "ចុច <span> ស្នើសុំលិខិតបញ្ជាក់ដែលខ្វះ<span> ដើម្បីបន្តការផ្ទៀងផ្ទាត់ ឬ <span>ចាប់ផ្តើមឡើងវិញ<span>។"
       },
       "ScanQrCode": {
-        "label": "ស្គែន QR Code (ប្រើឧបករណ៍ផ្សេង)",
-        "description": "សូមប្រើឧបករណ៍ផ្សេងដែលមាន Wallet ដើម្បីស្គែន QR code (ការស្គែនក្នុងឧបករណ៍តែមួយ កំពុងរៀបចំ!)"
+        "label": "ស្កេន QR Code (ប្រើឧបករណ៍ផ្សេង)",
+        "description": "ប្រើកាបូបនៅលើឧបករណ៍ផ្សេងដើម្បីស្កេន QR code (លក្ខណៈស្កេនលើឧបករណ៍តែមួយ នឹងមកដល់ឆាប់ៗនេះ!)"
       },
       "SelectWallet": {
-        "label": "ចែករំលែកអត្តសញ្ញាណពី Wallet",
-        "description": "សូមជ្រើស Wallet មួយពីបញ្ជីដែលមាន និងបន្តចែករំលែកអត្តសញ្ញាណ។"
+        "label": "ចែករំលែកលិខិតបញ្ជាក់ពីកាបូប",
+        "description": "ជ្រើសរើសកាបូបមួយនៅក្នុងឧបករណ៍ដូចគ្នា ដើម្បីបន្តចែករំលែក VC។"
       },
       "DisplayResult": {
         "label": "មើលលទ្ធផលផ្ទៀងផ្ទាត់",
-        "description": "សូមមើលលទ្ធផលនៃអត្តសញ្ញាណដែលបានចែករំលែក។"
+        "description": "ពិនិត្យលទ្ធផល VC ដែលបានចែករំលែក។"
       }
     }
   },
   "ResultSummary": {
-    "SUCCESS": "អបអរសាទរ! TruckPass ដែលបានផ្តល់គឺត្រឹមត្រូវ!",
-    "INVALID": "ជំរាបសួរ! TruckPass ដែលបានផ្តល់គឺមិនត្រឹមត្រូវ!",
-    "EXPIRED": "ជំរាបសួរ! TruckPass ត្រឹមត្រូវ ប៉ុន្តែផុតកំណត់ហើយ!",
-    "TIMEOUT": "សម័យស្គែនបានផុតពេលដោយសារការអសកម្ម។ សូមចាប់ផ្តើមស្គែនឡើងវិញ។"
+    "SUCCESS": "អបអរសាទរ! បណ្ណរថយន្តត្រឹមត្រូវ!",
+    "INVALID": "សូមអភ័យទោស! បណ្ណរថយន្តមិនត្រឹមត្រូវ!",
+    "EXPIRED": "បណ្ណរថយន្តត្រឹមត្រូវ ប៉ុន្តែផុតកំណត់!",
+    "TIMEOUT": "សម័យស្កេនផុតកំណត់ដោយសារមិនមានសកម្មភាព។ សូមស្កេនម្ដងទៀត។"
   },
   "AlertMessages": {
-    "qrUploadSuccess": "អាប់ឡោត QR code បានជោគជ័យ!",
-    "qrScanSuccess": "ស្គែន QR code បានជោគជ័យ!",
-    "sessionExpired": "សម័យផុតកំណត់។ សូមព្យាយាមម្ដងទៀត។",
-    "qrNotDetected": "រកមិនឃើញ QR code ទេ។",
-    "qrNotSupported": "ប្រភេទ QR code មិនបានគាំទ្រ។",
-    "unsupportedFileSize": "ទំហំឯកសារមិនគាំទ្រ។ ត្រូវនៅចន្លោះ 10KB ដល់ 5MB។",
-    "verificationMethodComingSoon": "មកដល់ឆាប់ៗនេះ",
-    "unsupportedFileType": "ប្រភេទឯកសារមិនគាំទ្រ: png, jpeg, jpg, pdf",
+    "qrUploadSuccess": "អាប់ឡូដ QR code បានជោគជ័យ!",
+    "qrScanSuccess": "ស្កេន QR code បានជោគជ័យ!",
+    "sessionExpired": "សម័យផុតកំណត់។ សូមស្នើសុំឡើងវិញ។",
+    "qrNotDetected": "រកមិនឃើញ QR code ឡើយ។",
+    "qrNotSupported": "មិនគាំទ្រ QR format នេះទេ។",
+    "unsupportedFileSize": "ទំហំឯកសារមិនគាំទ្រ។ ត្រូវតែ 10KB–5MB។",
+    "verificationMethodComingSoon": "នឹងមកដល់ឆាប់ៗ",
+    "unsupportedFileType": "ប្រភេទឯកសារមិនគាំទ្រ។ PNG, JPEG, JPG, PDF ប៉ុណ្ណោះ",
     "pageNotFound": "រកមិនឃើញទំព័រ!!",
-    "failToGenerateQrCode": "មានបញ្ហាក្នុងការបង្កើតសំណើ QR។ សូមព្យាយាមម្ដងទៀត។",
-    "unexpectedError": "មានបញ្ហាមិនបានរំពឹងទុក។ សូមព្យាយាមម្ដងទៀត។",
-    "scanSessionExpired": "សម័យស្គែនផុតកំណត់។ សូមស្គែនឡើងវិញ។",
-    "partialCredentialShared": "ការផ្ទៀងផ្ទាត់បានបញ្ចប់ជាមួយអត្តសញ្ញាណមួយចំនួន។",
-    "validationFailure": "មិនអាចផ្ទៀងផ្ទាត់ការឆ្លើយតបបានទេ។ សូមពិនិត្យម្ដងទៀត។",
-    "incorrectCredential": "អត្តសញ្ញាណដែលចែករំលែក មិនត្រូវនឹងអត្តសញ្ញាណដែលបានស្នើទេ។"
+    "failToGenerateQrCode": "មានបញ្ហា ក្នុងការបង្កើតសំណើសាកល្បង។ សូមព្យាយាមម្ដងទៀត។",
+    "unexpectedError": "កំហុសមិនរំពឹងទុក។ សូមព្យាយាមម្ដងទៀត។",
+    "scanSessionExpired": "សម័យស្កេនផុតកំណត់។ សូមស្កេនឡើងវិញ។",
+    "partialCredentialShared": "បានផ្ទៀងផ្ទាត់ជាមួយ VC ខ្លះៗប៉ុណ្ណោះ។",
+    "validationFailure": "មិនអាចផ្ទៀងផ្ទាត់ប្រតិកម្មបានទេ។",
+    "incorrectCredential": "VC មិនត្រឹមត្រូវតាមដែលបានស្នើសុំទេ។"
   },
   "OvpErrors": {
-    "invalidScope": "ស្កុបមិនត្រឹមត្រូវ",
-    "invalidRequest": "សូមពិនិត្យព័ត៌មានរបស់អ្នក ហើយព្យាយាមម្ដងទៀត",
-    "invalidClient": "ម៉ាស៊ីនភ្ញៀវមិនត្រឹមត្រូវ",
-    "vpFormatsNotSupported": "ទ្រង់ទ្រាយ VP មិនត្រូវគ្នា",
-    "invalidPresentationDefinitionUri": "URI ការកំណត់រូបភាពមិនត្រឹមត្រូវ",
-    "invalidPresentationDefinitionReference": "យោងការកំណត់រូបភាពមិនត្រឹមត្រូវ",
-    "resourceNotFound": "មានបញ្ហាជាមួយសំណើរបស់អ្នក។ សូមព្យាយាមម្ដងទៀត។",
-    "requestTimeOut": "សំណើយូរពេលពេក។ សូមព្យាយាមម្ដងទៀត។",
-    "uriTooLong": "URL វែងពេក។ សូមប្រើតំណខ្លី។",
-    "internalServerError": "បញ្ហាជាមួយម៉ាស៊ីនមេ។ សូមព្យាយាមម្ដងទៀត។",
-    "serverUnavailable": "សេវាមិនអាចប្រើបាននៅពេលនេះ។",
-    "invalidVpToken": "អត្តសញ្ញាណមិនបំពេញតម្រូវការ។",
-    "unsupportedFormat": "ទ្រង់ទ្រាយ VP មិនគាំទ្រ",
-    "invalidResources": "ធនធានដែលបានស្នើគឺមិនត្រឹមត្រូវ។",
-    "invalidParams": "ប៉ារ៉ាម៉ែត្រមិនត្រឹមត្រូវ!!"
+    "invalidScope": "វិសាលភាពមិនត្រឹមត្រូវ",
+    "invalidRequest": "សូមពិនិត្យព័ត៌មាន និងសាកល្បងម្ដងទៀត",
+    "invalidClient": "Client មិនត្រឹមត្រូវ",
+    "vpFormatsNotSupported": "VP Format មិនគាំទ្រ",
+    "invalidPresentationDefinitionUri": "Presentation URI មិនត្រឹមត្រូវ",
+    "invalidPresentationDefinitionReference": "Presentation reference មិនត្រឹមត្រូវ",
+    "resourceNotFound": "មានបញ្ហាជាមួយសំណើររបស់អ្នក។",
+    "requestTimeOut": "សំណើរយឺតពេលពេក។",
+    "uriTooLong": "URL វែងពេក។",
+    "internalServerError": "ម៉ាស៊ីនមេមានបញ្ហា។",
+    "serverUnavailable": "សេវាអសកម្ម។",
+    "invalidVpToken": "VC មិនបំពេញលក្ខខណ្ឌទេ។",
+    "unsupportedFormat": "Format មិនគាំទ្រ",
+    "invalidResources": "ធនធានមិនត្រឹមត្រូវ",
+    "invalidParams": "Parameter មិនត្រឹមត្រូវ!!"
   },
   "CopyRight": {
-    "content": "ដំណើរការដោយ Inji សម្ភារៈ MOSIP"
+    "content": "ដំណើរការដោយ <i>Inji</i> ផលិតផល MOSIP"
   },
   "CameraAccessDenied": {
     "header": "បដិសេធការចូលប្រើកាមេរ៉ា",
-    "description": "យើងត្រូវការកាមេរ៉ារបស់អ្នកដើម្បីស្គែន QR code។ សូមអនុញ្ញាតតាមការកំណត់ Browser។",
+    "description": "យើងត្រូវការកាមេរ៉ារបស់អ្នកដើម្បីស្កេន QR code។ សូមអនុញ្ញាតពី browser settings។",
     "okay": "យល់ព្រម"
   },
   "Offline": {
-    "header": "មិនមានអ៊ីនធឺណិត!",
-    "description": "យើងមិនអាចតភ្ជាប់បានទេ។ សូមពិនិត្យអ៊ីនធឺណិតរបស់អ្នក។",
-    "retry": "ព្យាយាមម្ដងទៀត"
+    "header": "គ្មានការតភ្ជាប់អ៊ីនធឺណិត!",
+    "description": "អូហ៍! មិនអាចតភ្ជាប់បានទេ។ សូមពិនិត្យបណ្តាញរបស់អ្នក។",
+    "retry": "សាកល្បងម្តងទៀត"
   },
   "Common": {
     "Button": {
-      "upload": "អាប់ឡោត",
-      "scan": "ស្គែន",
-      "back": "ត្រឡប់",
-      "verifyAnotherQrCode": "ផ្ទៀងផ្ទាត់ QR Code មួយទៀត",
-      "openWallet": "បើក Wallet",
+      "upload": "អាប់ឡូដ",
+      "scan": "ស្កេន",
+      "back": "ត្រឡប់ក្រោយ",
+      "verifyAnotherQrCode": "ផ្ទៀងផ្ទាត់ QR Code ផ្សេងទៀត",
+      "openWallet": "បើកកាបូប",
       "proceed": "បន្ត",
       "cancel": "បោះបង់",
-      "accept": "អនុញ្ញាតចូល",
-      "reject": "បដិសេធចូល"
+      "accept": "អនុញ្ញាតឱ្យចូល",
+      "reject": "បដិសេធការចូល"
     }
   },
   "Accepted": {
     "Accept": {
-      "title": "TruckPass បានផ្ទៀងផ្ទាត់",
-      "description": "អ្នកដំណើរត្រូវបានអនុញ្ញាតឱ្យឆ្លងកាត់ព្រំដែន",
+      "title": "បានផ្ទៀងផ្ទាត់ TruckPass",
+      "description": "អ្នកបើកបរអាចឆ្លងកាត់ព្រំដែនបាន",
       "button": "យល់ព្រម"
     }
   },
   "Rejected": {
     "Reject": {
       "title": "បដិសេធការចូល",
-      "description": "ការចូលត្រូវបានបដិសេធ - សូមពិនិត្យព័ត៌មាន",
+      "description": "បានបដិសេធឱ្យអ្នកបើកបរឆ្លងព្រំដែន",
       "button": "យល់ព្រម"
+    }
+  },
+  "OtpPage": {
+    "title": "សូមពិនិត្យអ៊ីមែលរបស់អ្នក",
+    "subtitle": "យើងបានផ្ញើ OTP ទៅកាន់អ៊ីមែលរបស់អ្នក",
+    "buttons": {
+      "verify": "ផ្ទៀងផ្ទាត់",
+      "backToLogin": "ត្រលប់ទៅការចូលប្រើ"
+    },
+    "otpPlaceholder": "0"
+  },
+  "LoginPage": {
+    "title": "ចូលប្រើ",
+    "emailPlaceholder": "បញ្ចូលអ៊ីមែលរបស់អ្នក",
+    "buttons": {
+      "continue": "បន្ត"
+    },
+    "errors": {
+      "invalidEmail": "សូមបញ្ចូលអ៊ីមែលត្រឹមត្រូវ។",
+      "generic": "មានកំហុស—សាកល្បងម្ដងទៀត។"
     }
   }
 }

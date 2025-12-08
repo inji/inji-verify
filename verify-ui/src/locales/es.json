@@ -5,14 +5,16 @@
     "help": "Ayuda",
     "contactUs": "Contáctanos",
     "documentation": "Documentación",
-    "faqs": "Preguntas Frecuentes"
+    "faqs": "Preguntas Frecuentes",
+    "language": "Español"
   },
   "Header": {
     "heading": "Verifica credenciales ",
     "headingHighlight": "¡con facilidad!",
-    "description": "Verifica credenciales sin esfuerzo con Inji Verify. Simplemente escanea el código QR o súbelo para obtener una validación instantánea siguiendo los pasos a continuación.",
-    "heading_truckpass": "Verificar Truck Pass",
-    "description_truckpass": "Verifica credenciales sin esfuerzo con el Portal TruckPass. Simplemente escanea el código QR o súbelo para obtener una validación instantánea siguiendo los pasos a continuación."
+    "description": "¡Verifica credenciales fácilmente con Inji Verify! Solo escanea el código QR o súbelo para una validación instantánea siguiendo los pasos a continuación.",
+
+    "heading_truckpass": "Verificar Pase de Camión",
+    "description_truckpass": "¡Verifica credenciales fácilmente con el Portal TruckPass! Solo escanea el código QR o súbelo para validación inmediata siguiendo los pasos a continuación."
   },
   "Tab": {
     "upload": "Subir Código QR",
@@ -21,32 +23,32 @@
     "ble": "BLE"
   },
   "Upload": {
-    "format": "Formatos permitidos: PNG/JPEG/JPG/PDF \n Tamaño del archivo: 10 KB a 5 MB"
+    "format": "Formatos permitidos: PNG/JPEG/JPG/PDF \n Tamaño del archivo: 10KB a 5MB"
   },
   "Verify": {
     "selectorTitle": "Panel de Selección de Credenciales Verificables",
-    "selectorSubTitle": "Selecciona las Credenciales Verificables que deseas recibir de la cartera del usuario",
-    "searchPlaceholder": "Buscar tipo de VC",
-    "listHeader": "Selecciona las Credenciales Verificables requeridas",
+    "selectorSubTitle": "Selecciona las Credenciales Verificables que deseas recibir desde la cartera del usuario",
+    "searchPlaceholder": "Buscar Tipo de Credencial",
+    "listHeader": "Selecciona las Credenciales Necesarias",
     "sortAtoZ": "Ordenar (A-Z)",
     "sortZtoA": "Ordenar (Z-A)",
     "rqstButton": "Solicitar Credenciales Verificables",
     "goBack": "Regresar",
     "generateQrCodeBtn": "Generar Código QR",
-    "qrCodeInfo": "Escanea el código QR a continuación con tu cartera digital para compartir la credencial solicitada",
-    "qrCodeExpired": "Código QR Expirado",
+    "qrCodeInfo": "Escanea el siguiente código QR con tu cartera digital para compartir la credencial solicitada",
+    "qrCodeExpired": "El código QR ha expirado",
     "noVcsFound": "No se encontraron Credenciales Verificables.",
     "sortBy": "Ordenar por",
-    "expand": "Abrir en pantalla completa",
-    "collapse": "Cerrar pantalla completa",
+    "expand": "Abrir en Pantalla Completa",
+    "collapse": "Cerrar Pantalla Completa",
     "download": "Descargar",
-    "missingCredentials": "Solicitar credenciales faltantes",
-    "restartProcess": "Reiniciar proceso",
-    "notShared": "No compartido",
+    "missingCredentials": "Solicitar Credenciales Faltantes",
+    "restartProcess": "Reiniciar Proceso",
+    "notShared": "No Compartido",
     "SUCCESS": "Válido",
-    "EXPIRED": "Válido pero expirado",
+    "EXPIRED": "Válido pero Expirado",
     "INVALID": "Inválido",
-    "credentialsRequested": "Se solicitaron credenciales",
+    "credentialsRequested": "Credenciales solicitadas",
     "walletSelectorTitle": "Panel de Selección de Cartera",
     "walletSelectorDescription": "Selecciona una cartera para continuar con la Presentación Verificable.",
     "walletSearchPlaceholder": "Buscar Carteras",
@@ -59,7 +61,7 @@
         "description": "Toca 'Escanear' para comenzar a escanear el documento o tarjeta con un código QR"
       },
       "ActivateCamera": {
-        "label": "Activar Cámara y Posicionar Código QR",
+        "label": "Activar Cámara y Enfocar Código QR",
         "description": "Activa la cámara de tu dispositivo y coloca el código QR dentro del marco para iniciar la verificación."
       },
       "Verifying": {
@@ -67,7 +69,7 @@
         "description": "La verificación del código QR está en progreso."
       },
       "DisplayResult": {
-        "label": "Ver resultado",
+        "label": "Ver Resultado",
         "description": "Ver el resultado de la verificación."
       }
     },
@@ -77,119 +79,139 @@
         "description": "Sube un archivo que contenga un código QR"
       },
       "Verifying": {
-        "label": "Verificar documento",
+        "label": "Verificar Documento",
         "description": "La verificación del documento o tarjeta está en progreso."
       },
       "DisplayResult": {
-        "label": "Ver resultado",
+        "label": "Ver Resultado",
         "description": "Ver el resultado de la verificación."
       }
     },
     "VERIFY": {
       "InitiateVpRequest": {
         "label": "Iniciar Proceso de Solicitud VP",
-        "description": "Haz clic en <span>Solicitar Credenciales Verificables</span> para iniciar el proceso de verificación."
+        "description": "Haz clic en <span> Solicitar Credenciales Verificables <span> para iniciar el proceso de verificación"
       },
       "SelectCredential": {
         "label": "Seleccionar Tipos de Credenciales",
-        "description": "Elige las Credenciales Verificables (VCs) de la lista que se solicitarán a la cartera móvil."
+        "description": "Elige las Credenciales Verificables (VCs) de la lista para solicitarlas desde la cartera móvil."
       },
       "RequestMissingCredential": {
         "label": "Solicitar Credenciales Faltantes y Generar Código QR",
-        "description": "Haz clic en <span>Solicitar Credenciales Faltantes</span> para continuar con la verificación de la VC faltante, o haz clic en <span>Reiniciar Proceso</span> para comenzar de nuevo."
+        "description": "Haz clic en <span>Solicitar Credenciales Faltantes<span> para verificar la credencial faltante, o en <span>Reiniciar Proceso<span> para comenzar nuevamente."
       },
       "ScanQrCode": {
-        "label": "Escanear Código QR (Usar otro dispositivo)",
-        "description": "Usa una cartera con credenciales verificables en otro dispositivo con capacidad de escaneo QR para escanear el código (¡El soporte para escaneo en el mismo dispositivo llegará pronto!)"
+        "label": "Escanear Código QR (Usar Otro Dispositivo)",
+        "description": "Utiliza una cartera con credenciales verificables en otro dispositivo para escanear el código QR (¡El soporte para escaneo en el mismo dispositivo llegará pronto!)"
       },
       "SelectWallet": {
         "label": "Compartir Credenciales desde la Cartera",
-        "description": "Elige una cartera móvil de la lista disponible en el mismo dispositivo y continúa con el compartir las credenciales."
+        "description": "Selecciona una cartera de la lista disponible en el mismo dispositivo para compartir las credenciales."
       },
       "DisplayResult": {
-        "label": "Ver Resultados de Verificación",
-        "description": "Revisa los resultados de verificación de las credenciales compartidas desde la cartera."
+        "label": "Ver Resultados de la Verificación",
+        "description": "Revisa los resultados de las credenciales compartidas desde la cartera."
       }
     }
   },
   "ResultSummary": {
-    "SUCCESS": "¡Felicidades, el TruckPass proporcionado es válido!",
-    "INVALID": "Desafortunadamente, el TruckPass proporcionado es inválido.",
-    "EXPIRED": "Desafortunadamente, el TruckPass proporcionado es válido pero ha expirado.",
-    "TIMEOUT": "La sesión de escaneo ha expirado por inactividad. Por favor inicia un nuevo escaneo."
+    "SUCCESS": "¡Felicidades, el Pase de Camión es válido!",
+    "INVALID": "Lamentablemente, el Pase de Camión no es válido.",
+    "EXPIRED": "Lamentablemente, el Pase de Camión es válido pero ha expirado.",
+    "TIMEOUT": "La sesión de escaneo expiró por inactividad. Inicia un nuevo escaneo."
   },
   "AlertMessages": {
     "qrUploadSuccess": "¡Código QR subido con éxito!",
     "qrScanSuccess": "¡Código QR escaneado con éxito!",
-    "sessionExpired": "La sesión ha expirado. Por favor reinicia la solicitud.",
-    "qrNotDetected": "Ningún lector multiformal pudo detectar el código QR.",
-    "qrNotSupported": "El formato del código QR no es compatible.",
-    "unsupportedFileSize": "El tamaño del archivo no es compatible. Debe estar entre 10 KB y 5 MB.",
+    "sessionExpired": "Sesión expirada. Vuelve a iniciar la solicitud.",
+    "qrNotDetected": "No se pudo detectar ningún código QR.",
+    "qrNotSupported": "Formato de código QR no soportado.",
+    "unsupportedFileSize": "Tamaño de archivo no soportado. Debe estar entre 10KB y 5MB.",
     "verificationMethodComingSoon": "Próximamente",
-    "unsupportedFileType": "Tipo de archivo no compatible. Formatos permitidos: png, jpeg, jpg, pdf",
-    "pageNotFound": "Página no encontrada",
-    "failToGenerateQrCode": "¡Ups! Tenemos problemas para generar la solicitud de verificación. Intenta nuevamente más tarde.",
-    "unexpectedError": "Ocurrió un error inesperado. Intenta nuevamente más tarde o contacta soporte si el problema persiste.",
-    "scanSessionExpired": "La sesión de escaneo ha expirado por inactividad. Por favor inicia un nuevo escaneo.",
+    "unsupportedFileType": "Formato de archivo no soportado. Permitidos: png, jpeg, jpg, pdf",
+    "pageNotFound": "Página no encontrada!!",
+    "failToGenerateQrCode": "¡Ups! No pudimos generar la solicitud de verificación. Intenta más tarde.",
+    "unexpectedError": "Ocurrió un error inesperado. Intenta nuevamente o contacta soporte.",
+    "scanSessionExpired": "La sesión de escaneo expiró por inactividad. Inicia un nuevo escaneo.",
     "partialCredentialShared": "Verificación completada con credenciales parciales. Algunas credenciales solicitadas faltan.",
-    "validationFailure": "No pudimos validar la respuesta de verificación. Asegúrate de que sea correcta e intenta nuevamente.",
-    "incorrectCredential": "Las credenciales compartidas no coinciden con las solicitadas. Por favor proporciona las correctas e intenta nuevamente."
+    "validationFailure": "No pudimos validar la respuesta. Asegúrate de que sea correcta e inténtalo de nuevo.",
+    "incorrectCredential": "Las credenciales compartidas no coinciden con las solicitadas. Proporciona las correctas e intenta nuevamente."
   },
   "OvpErrors": {
-    "invalidScope": "Ámbito inválido",
-    "invalidRequest": "Verifica tu información e intenta nuevamente",
+    "invalidScope": "Alcance inválido",
+    "invalidRequest": "Revisa tu entrada e inténtalo nuevamente",
     "invalidClient": "Cliente inválido",
-    "vpFormatsNotSupported": "Formatos VP no compatibles",
+    "vpFormatsNotSupported": "Formatos VP no soportados",
     "invalidPresentationDefinitionUri": "URI de definición de presentación inválido",
     "invalidPresentationDefinitionReference": "Referencia de definición de presentación inválida",
-    "resourceNotFound": "Ocurrió un problema con tu solicitud. Por favor verifica e intenta nuevamente.",
-    "requestTimeOut": "La solicitud tardó demasiado. Intenta nuevamente más tarde.",
+    "resourceNotFound": "Algo salió mal con tu solicitud. Verifica e intenta de nuevo.",
+    "requestTimeOut": "La solicitud tardó demasiado. Intenta más tarde.",
     "uriTooLong": "El enlace es demasiado largo. Usa uno más corto.",
-    "internalServerError": "Estamos teniendo problemas para procesar tu solicitud. Intenta nuevamente más tarde.",
-    "serverUnavailable": "El servicio no está disponible actualmente. Intenta más tarde.",
-    "invalidVpToken": "Las credenciales no cumplen los requisitos. Verifica e intenta nuevamente.",
-    "unsupportedFormat": "Formatos VP no compatibles",
+    "internalServerError": "Tenemos problemas procesando tu solicitud. Intenta más tarde.",
+    "serverUnavailable": "El servicio no está disponible. Intenta nuevamente más tarde.",
+    "invalidVpToken": "Las credenciales no cumplen los requisitos. Verifica e inténtalo de nuevo.",
+    "unsupportedFormat": "Formatos VP no soportados",
     "invalidResources": "El recurso solicitado es inválido.",
-    "invalidParams": "¡Parámetros inválidos!"
+    "invalidParams": "Parámetros inválidos!!"
   },
   "CopyRight": {
-    "content": "desarrollado por Inji, un producto MOSIP"
+    "content": "desarrollado por <i>Inji</i>, un producto de MOSIP"
   },
   "CameraAccessDenied": {
     "header": "Acceso a la Cámara Denegado",
-    "description": "Necesitamos tu cámara para escanear el código. Ve a la configuración del navegador y permite el acceso a la cámara para este sitio web.",
+    "description": "Necesitamos tu cámara para escanear el código. Ve a la configuración del navegador y permite el acceso.",
     "okay": "Aceptar"
   },
   "Offline": {
     "header": "¡Sin conexión a Internet!",
-    "description": "¡Ups! No podemos conectarnos. Verifica tu conexión e intenta nuevamente.",
-    "retry": "Intentar nuevamente"
+    "description": "¡Ups! No pudimos conectarnos. Verifica tu conexión e inténtalo de nuevo.",
+    "retry": "Reintentar"
   },
   "Common": {
     "Button": {
       "upload": "Subir",
       "scan": "Escanear",
       "back": "Regresar",
-      "verifyAnotherQrCode": "Verificar otro código QR",
+      "verifyAnotherQrCode": "Verificar Otro Código QR",
       "openWallet": "Abrir Cartera",
       "proceed": "Continuar",
       "cancel": "Cancelar",
-      "accept": "Aceptar entrada",
+      "accept": "Permitir entrada",
       "reject": "Rechazar entrada"
     }
   },
   "Accepted": {
     "Accept": {
-      "title": "TruckPass Verificado",
-      "description": "El viajero está autorizado para cruzar la frontera",
+      "title": "Pase de Camión Verificado",
+      "description": "El conductor está autorizado para cruzar la frontera",
       "button": "Aceptar"
     }
   },
   "Rejected": {
     "Reject": {
       "title": "Entrada Rechazada",
-      "description": "Entrada rechazada - obtener contenido",
+      "description": "Se deniega el cruce de la frontera al conductor",
       "button": "Aceptar"
+    }
+  },
+  "OtpPage": {
+    "title": "Revisa tu correo electrónico",
+    "subtitle": "Hemos enviado un OTP a tu correo",
+    "buttons": {
+      "verify": "Verificar",
+      "backToLogin": "Volver al inicio de sesión"
+    },
+    "otpPlaceholder": "0"
+  },
+  "LoginPage": {
+    "title": "Iniciar Sesión",
+    "emailPlaceholder": "Ingresa tu correo electrónico",
+    "buttons": {
+      "continue": "Continuar"
+    },
+    "errors": {
+      "invalidEmail": "Ingresa un correo válido.",
+      "generic": "Algo salió mal — intenta nuevamente."
     }
   }
 }

@@ -12,6 +12,13 @@ type ButtonProps = HTMLAttributes<HTMLButtonElement> &
     icon?: ReactElement;
     variant?: ButtonVariant;
     disabled?: boolean;
+
+    /* --- NEW OPTIONAL PROPS (Non-breaking) --- */
+    bgColor?: string;              // solid bg override
+    textColor?: string;            // solid text color override
+    noGradient?: boolean;          // disable gradient behavior completely
+    minWidth?: number | string;    // optional min width
+    iconPosition?: "left" | "right"; // default: left
   };
 
 export const Button = ({
@@ -20,6 +27,11 @@ export const Button = ({
   variant = "fill",
   disabled = false,
   className = "",
+  bgColor,
+  textColor,
+  minWidth,
+  noGradient = false,
+  iconPosition = "left",
   id,
   ...rest
 }: ButtonProps) => {
@@ -31,67 +43,92 @@ export const Button = ({
   const isClear = variant === "clear";
   const isFill = variant === "fill";
 
-  const wrapperClass = [
-    "rounded-[5px]",
-    "transition-all duration-200",
+  /* ----------------------------------------
+     Determine background behavior
+     ---------------------------------------- */
+
+  const usesCustomSolidColor = !!bgColor || noGradient;
+
+  const computedBg =
     disabled
       ? "bg-disabledButtonBg"
-      : isOutline || isFill
-      ? `${gradient}`
-      : "", // clear → no border
-    className,
-  ]
-    .filter(Boolean)
-    .join(" ");
+      : usesCustomSolidColor
+      ? bgColor
+      : isFill
+      ? gradient
+      : isOutline
+      ? "bg-white"
+      : "bg-transparent";
 
-  const buttonBaseClass = [
-    "h-[40px]",
-    "w-full",
-    "rounded-[5px]",
-    "flex",
-    "items-center",
-    "justify-center",
-    "group",
-  ];
-
-  const buttonStateClass = disabled
-    ? "bg-disabledButtonBg text-white"
-    : isFill
-    ? `${gradient} text-white`
-    : isOutline
-    ? "bg-white"
-    : "bg-transparent"; // clear
-
-  const hoverClass = disabled
-    ? ""
-    : isOutline || isClear
-    ? `hover:${gradient} hover:text-white`
-    : "";
-
-  const textClass = [
-    "font-bold normal-case transition-all duration-200",
+  const computedTextColor =
     disabled
       ? "text-white"
-      : isFill
+      : textColor
+      ? textColor
+      : isFill && !usesCustomSolidColor
       ? "text-white"
-      : textGradient, // for outline/clear
-    (isOutline || isClear) && !disabled
-      ? "group-hover:text-white"
-      : "",
-  ]
-    .filter(Boolean)
-    .join(" ");
+      : !isFill && !noGradient
+      ? textGradient
+      : "text-black";
+
+  /* Hover only applies when not disabled & not using custom color */
+  const hoverClass =
+    disabled || usesCustomSolidColor
+      ? ""
+      : isFill
+      ? ""
+      : `hover:${gradient} hover:text-white`;
+
+  /* ---------------------------------------- */
 
   return (
-    <div className={wrapperClass}>
+    <div
+      className={[
+        "rounded-[5px]",
+        "transition-all duration-200",
+        computedBg,
+        className,
+      ]
+        .filter(Boolean)
+        .join(" ")}
+      style={{ minWidth }}
+    >
       <button
         {...rest}
         id={id}
         disabled={disabled}
-        className={[...buttonBaseClass, buttonStateClass, hoverClass].join(" ")}
+        className={[
+          "h-[40px]",
+          "w-full",
+          "rounded-[5px]",
+          "flex",
+          "items-center",
+          "justify-center",
+          "gap-2",
+          computedBg,
+          hoverClass,
+          "group",
+        ].join(" ")}
       >
-        {icon && <span className="mr-1.5">{icon}</span>}
-        <span className={textClass}>{title}</span>
+        {icon && iconPosition === "left" && (
+          <span className="flex items-center">{icon}</span>
+        )}
+
+        <span
+          className={[
+            "font-bold normal-case transition-all duration-200",
+            computedTextColor,
+            !disabled && (isOutline || isClear) && !usesCustomSolidColor
+              ? "group-hover:text-white"
+              : "",
+          ].join(" ")}
+        >
+          {title}
+        </span>
+
+        {icon && iconPosition === "right" && (
+          <span className="flex items-center">{icon}</span>
+        )}
       </button>
     </div>
   );

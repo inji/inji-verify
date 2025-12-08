@@ -20,6 +20,9 @@ import { ReactComponent as VectorCollapseSvg } from "../assets/truckpassTheme/ve
 import { ReactComponent as VectorExpandSvg } from "../assets/truckpassTheme/vector-expand.svg";
 import { ReactComponent as VectorOutlineSvg } from "../assets/truckpassTheme/vector-icon-outline.svg";
 
+// 🚚 TruckPass truck logo SVG (new)
+import { ReactComponent as TruckIcon } from "../assets/truckpassTheme/truckpassTruckLogo.svg";
+
 // Truckpass-specific icons (filenames adjusted to actual assets in folder)
 import { ReactComponent as WhiteScanIcon } from "../assets/truckpassTheme/white-scan-icon.svg"; // exists
 // Note: white-upload.svg not present in truckpass assets — will fallback to defaultTheme
@@ -49,6 +52,7 @@ const truckpassTheme = {
   // primary logos / images
   Logo: NavLogo,
   LogoUrl: TruckpassLogoUrl,
+  TruckIcon, // 👈 now available to the rest of the app
   InjiLogo: defaultTheme.InjiLogo, // still using default for Inji logo (not in truckpass assets)
   WelcomeBanner: WelcomeBanner,
   WelcomeBannerUrl,
