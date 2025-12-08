@@ -70,7 +70,7 @@ function installing_inji-verify-service() {
     --set extraEnv[2].name=INJI_DID_VERIFY_PUBLIC_KEY_URI \
     --set extraEnv[2].value="did:web:${INJIVERIFY_HOST//:/\\:}:v1:verify#key-0" \
     --set extraEnv[3].name=INJI_VERIFY_REDIRECT_URI \
-    --set extraEnv[3].value=" "# Space character is intentional; empty string causes Helm deployment errors    
+    --set extraEnv[3].value=" " # Space character is intentional; empty string causes Helm deployment errors
     
   kubectl -n $NS  get deploy -o name |  xargs -n1 -t  kubectl -n $NS rollout status
 
