@@ -52,7 +52,7 @@ The API documentations can be found in the [Inji Verify API documentation](https
 
 ### Submission Result:
 
-- After a succesfull `UPLOAD` or `SCAN`, `INJI VERIFY` performs server-side verification of a Verifiable Credential (VC) to validate its integrity and authenticity. It executes checks such as cryptographic signature validation and ensures that the credential has not been altered or tampered with.
+- After a successful `UPLOAD` or `SCAN`, `INJI VERIFY` performs server-side verification of a Verifiable Credential (VC) to validate its integrity and authenticity. It executes checks such as cryptographic signature validation and ensures that the credential has not been altered or tampered with.
 
 ### How it check for revocation
 
@@ -62,7 +62,7 @@ The API documentations can be found in the [Inji Verify API documentation](https
 
 - The verification status returned can be **_SUCCESS_**, **_INVALID_**, **_EXPIRED_** or **_REVOKED_**.
 
-- If the Inji Verify Backend encounters any error while retrieving the `statusListCredential` or verifying the status, it will respond back with error description and status code as 500 ?
+- If the Inji Verify Backend encounters any error while retrieving the `statusListCredential` or verifying the status, it will respond with an error description and `status code` as `500`.
 
 ## 2. OPENID4VP
 
