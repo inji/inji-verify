@@ -66,7 +66,7 @@ const Result = () => {
   const [claims, setClaims] = useState<AnyVc | null>(null);
   const [credentialType, setCredentialType] = useState<string>("");
 
-  const { t } = useTranslation("");
+  const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
 
@@ -183,22 +183,24 @@ const Result = () => {
         />
       )}
 
+      {/* ACCEPT POPUP */}
       <StatusPopup
         isOpen={showAcceptPopup}
         onClose={() => setShowAcceptPopup(false)}
-        title={t("Accepted.Accept.title")}
-        description={t("Accepted.Accept.description")}
-        buttonLabel={t("Accepted.Accept.button")}
+        title={t("Accepted:Accept.title")}
+        description={t("Accepted:Accept.description")}
+        buttonLabel={t("Accepted:Accept.button")}
         gifSrc={acceptGif}
         gifAlt="verified"
       />
 
+      {/* REJECT POPUP */}
       <StatusPopup
         isOpen={showRejectPopup}
         onClose={() => setShowRejectPopup(false)}
-        title={t("Rejected.Reject.title")}
-        description={t("Rejected.Reject.description")}
-        buttonLabel={t("Rejected.Reject.button")}
+        title={t("Rejected:Reject.title")}
+        description={t("Rejected:Reject.description")}
+        buttonLabel={t("Rejected:Reject.button")}
         gifSrc={rejectGif}
         gifAlt="rejected"
       />

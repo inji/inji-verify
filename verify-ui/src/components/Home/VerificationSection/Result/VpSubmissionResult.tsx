@@ -68,9 +68,7 @@ const VpSubmissionResult: React.FC<VpSubmissionResultProps> = ({
   );
   const showResult = useVerifyFlowSelector((state) => state.isShowResult);
 
-  // Use no default namespace so global keys like "Accepted.Accept.title" work
-  const { t } = useTranslation("");
-
+  const { t } = useTranslation();
   const filterVerifiedVcs = verifiedVcs.filter((verifiedVc) =>
     originalSelectedClaims.some(
       (selectedVc) => getCredentialType(verifiedVc.vc) === selectedVc.type
@@ -185,9 +183,9 @@ const VpSubmissionResult: React.FC<VpSubmissionResultProps> = ({
       <StatusPopup
         isOpen={showAcceptPopup}
         onClose={() => setShowAcceptPopup(false)}
-        title={t("Accepted.Accept.title")}
-        description={t("Accepted.Accept.description")}
-        buttonLabel={t("Accepted.Accept.button")}
+        title={t("Accepted:Accept.title")}
+        description={t("Accepted:Accept.description")}
+        buttonLabel={t("Accepted:Accept.button")}
         gifSrc={acceptGif}
         gifAlt="verified"
       />
@@ -196,9 +194,9 @@ const VpSubmissionResult: React.FC<VpSubmissionResultProps> = ({
       <StatusPopup
         isOpen={showRejectPopup}
         onClose={() => setShowRejectPopup(false)}
-        title={t("Rejected.Reject.title")}
-        description={t("Rejected.Reject.description")}
-        buttonLabel={t("Rejected.Reject.button")}
+        title={t("Rejected:Reject.title")}
+        description={t("Rejected:Reject.description")}
+        buttonLabel={t("Rejected:Reject.button")}
         gifSrc={rejectGif}
         gifAlt="rejected"
       />
