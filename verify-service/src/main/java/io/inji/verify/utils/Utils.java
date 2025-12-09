@@ -1,5 +1,7 @@
 package io.inji.verify.utils;
 
+import io.inji.verify.dto.core.CredentialStatusErrorDto;
+import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.shared.Constants;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
@@ -8,9 +10,12 @@ import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import io.mosip.vercred.vcverifier.exception.StatusCheckException;
 import io.mosip.vercred.vcverifier.utils.Base64Decoder;
 import io.mosip.vercred.vcverifier.utils.Util;
+import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
-
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import java.time.Instant;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
@@ -42,18 +47,18 @@ public final class Utils {
         return new String(decodedBytes);
     }
 
-    public static VerificationStatus getVcVerificationStatus(CredentialVerificationSummary credentialVerificationSummary) {
-        log.info("Credential Verification Summary: {}", credentialVerificationSummary);
+    public static VerificationStatus getVcVerificationStatus(CredentialVerificationSummary credentialVerificationSummary) throws CredentialStatusCheckException {
+        log.debug("Credential Verification Summary: {}", credentialVerificationSummary);
         VerificationResult verificationResult = credentialVerificationSummary.getVerificationResult();
         VerificationStatus verificationStatus = Util.INSTANCE.getVerificationStatus(verificationResult);
         boolean isRevoked = checkIfVCIsRevoked(credentialVerificationSummary.getCredentialStatus());
         if (isRevoked) return VerificationStatus.REVOKED;
 
-        log.info("VC verification status is {}", verificationStatus );
+        log.debug("VC verification status is {}", verificationStatus );
         return verificationStatus;
     }
 
-    public static boolean checkIfVCIsRevoked(Map<String, CredentialStatusResult> credentialStatusResults) {
+    public static boolean checkIfVCIsRevoked(Map<String, CredentialStatusResult> credentialStatusResults) throws CredentialStatusCheckException {
         if (!credentialStatusResults.isEmpty()) {
             CredentialStatusResult credentialStatusResult = credentialStatusResults.get(Constants.STATUS_PURPOSE_REVOKED);
             if (credentialStatusResult != null) {
@@ -63,7 +68,8 @@ public final class Utils {
                     // VC is Revoked if status is Not Valid
                     return !isStatusValid;
                 } else {
-                    return false; // Since got error while checking Revocation Status, VC is considered as not Revoked
+                    log.error("Failed to get Credential Status due to: {} {}", error.getErrorCode(), error.getErrorMessage());
+                    throw new CredentialStatusCheckException(error.getErrorCode(), error.getErrorMessage());
                 }
             } else {
                 return false;
@@ -72,8 +78,15 @@ public final class Utils {
         return false;
     }
 
-    public static VerificationStatus applyRevocationStatus(VerificationStatus originalStatus, Map<String, CredentialStatusResult> credentialStatus) {
+    public static VerificationStatus applyRevocationStatus(VerificationStatus originalStatus, Map<String, CredentialStatusResult> credentialStatus) throws CredentialStatusCheckException {
         boolean isRevoked = checkIfVCIsRevoked(credentialStatus);
         return isRevoked ? VerificationStatus.REVOKED : originalStatus;
+    }
+
+    public static ResponseEntity<Object> getResponseEntityForCredentialStatusException(CredentialStatusCheckException ex, HttpServletRequest request) {
+        String errorMessage = ex.getErrorCode() + " - " + ex.getErrorDescription();
+        CredentialStatusErrorDto credentialStatusErrorDto =
+                new CredentialStatusErrorDto(Instant.now().toString(), 500, request.getRequestURI(), errorMessage);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(credentialStatusErrorDto);
     }
 }

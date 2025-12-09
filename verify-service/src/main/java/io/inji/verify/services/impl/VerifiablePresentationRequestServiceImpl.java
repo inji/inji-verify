@@ -2,7 +2,11 @@ package io.inji.verify.services.impl;
 
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import com.nimbusds.jose.*;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSSigner;
+import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.Ed25519Signer;
 import com.nimbusds.jose.jwk.OctetKeyPair;
 import com.nimbusds.jose.util.JSONObjectUtils;
@@ -35,15 +39,16 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.web.context.request.async.DeferredResult;
-
 import java.text.ParseException;
 import java.time.Instant;
-import java.util.*;
-
+import java.util.List;
+import java.util.Optional;
+import java.util.HashMap;
+import java.util.NoSuchElementException;
+import java.util.Date;
+import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
-
 import static io.inji.verify.shared.Constants.VP_FORMATS;
-import static io.inji.verify.shared.Constants.VP_REQUEST_URI;
 
 @Service
 @Slf4j

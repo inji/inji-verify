@@ -1,4 +1,4 @@
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=develop&project=mosip_inji-verify=alert_status)](https://sonarcloud.io/dashboard?branch=release-0.16.x&id=mosip_inji-verify)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=release-0.16.x&project=mosip_inji-verify&id=mosip_inji-verify&metric=alert_status)](https://sonarcloud.io/dashboard?branch=release-0.16.x&id=mosip_inji-verify)
 # Inji Verify
 
 Injiverify is a web interface to verify the validity of the QR / credential using a browser from smartphone / tablet / computer. A user should be able to do primariliy 4 key actions - Scan, Validate, Fetch, Display.
@@ -9,7 +9,7 @@ This document contains the following sections:
 
 - Installations
 - Folder Structure
-- release-0.16.xer Setup
+- Developer Setup
 - Demo Setup
 
 ---
@@ -119,40 +119,10 @@ docker rm inji-verify-service-dev
 This section helps to quickly get started with a demo of the Inji Verify application
 
 Once the repository is cloned, move into the inji-verify repository directory.
-Choose one of the branches that are currently available for the demo:
-
-release branches:
-- release-0.8.x
-- release-0.9.x
-- release-0.10.x
-- release-0.11.x
-- release-0.12.x
-- release-0.13.x
-- release-0.14.x
-- release-0.15.x
-- release-0.16.x
-
-
-tags : 
-- v0.15.1
-- v0.15.0
-- v0.14.0
-- v0.13.0
-- v0.12.3
-- v0.11.1
-- v0.11.0
-- v0.10.0
-- v0.9.0
-- v0.8.1
-- v0.8.0
-
-active branches:
-- master
-- develop
 
 ```shell
 cd ./inji-verify # repository folder
-git checkout branchName/tagname # choose from any of the above branches
+git checkout branchName/tagname
 ```
 
 ## [Deployment in K8 cluster](deploy/README.md)

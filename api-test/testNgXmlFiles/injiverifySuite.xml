@@ -29,7 +29,7 @@
 	<test name="GetVpRequestWithDID">
 		<parameter name="ymlFile"
 			value="injiverify/GetVpRequestWithDID/GetVpRequestWithDID.yml" />
-			<parameter name="pathParams" value="requestUri" />
+			<parameter name="pathParams" value="requestId" />
 			<parameter name="headers" value="" />
 		<classes>
 			<class

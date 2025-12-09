@@ -39,15 +39,33 @@ The flow here utilizes the simple redirection to pass the Authorization request 
 5. **Authorization Response**: After the user accepts the request then wallet checks for the credentials which matches as per the presentation definition (which the verifier requested for) and if there are any wallet shows the list to the user allowing them to select, and then it constructs a VP response and signs using its private key.
 
    * **Response Parameters**:
+   The response Parameters may have
      * **vp_token** - JSON string or object which contains either a single VP or array of VPs. Each VC in every VP can be either encoded using base64url or sent as JSON object.
      * **presentation_submission** - It contains mappings between the requested Verifiable Credentials and where to find them within the returned VP Token.
+
+      Or
+     * **error** - String to allow the wallet to report errors.
+     * **errorDescription** - String which contains human readable description about the error reported by wallet.
+
+      And
      * **other parameters include** - state(**request-id**), code, id_token
 
 6. **Transmission of Authorization Response**: Once the Wallet prepares the VP, Wallet sends it back to verifier application (using redirect URI) based on the response_mode and the response_type specified by the verifier application in the Authorization Request
 
-7. **Validation of the Authorization Response**: Upon receiving the Response (Authorization Response) from the Wallet, the verifier validates the signature of the Verifiable Presentation (VP) using its public key. Additionally, the verifier checks the signature of each Verifiable Credential (VC) by examining the proof details provided in each VC by the issuer. 
-   
-   If validation is successful, the verifier grants access or approval to the user. If validation fails, the verifier notifies the user of the failure
+   > **Important Implementation Note:**
+   > The endpoint can return a **_redirect_uri_** based on the **_INJI_VERIFY_REDIRECT_URI_** configuration.
+   >
+   > If **_INJI_VERIFY_REDIRECT_URI_** is blank, no **_redirect_uri_** is returned.
+   >
+   > This minimal feature implementation is intended to support integration with specific modules (e.g., wallets and verifier applications). Full implementation, including response_code support, is planned for future releases to ensure complete compliance with the OpenID4VP specification. 
+
+7. **Validation of the Authorization Response**: Upon receiving the Authorization Response from the Wallet, the verifier validates the signature of the Verifiable Presentation (VP) using the wallet’s public key. It also verifies each Verifiable Credential (VC) by checking the issuer’s proof details.
+
+   The final result returned to the Verify UI contains:
+   - The overall submission status: SUCCESS or FAILED
+   - A list of VCs with their individual verification statuses: SUCCESS, INVALID, EXPIRED, or REVOKED.
+
+   During the revocation check, if the vc_verifier encounters any error, it returns an exception with a descriptive error message, which the Verify UI displays to the user.
 
 
 Flow Chart:
@@ -67,7 +85,8 @@ J --> L[User Accepts Consent to Share the selected VC with Verifier]
 L --> M[Construct VP Response and Sign with Private Key]
 M --> N[Send VP to Verifier]
 K --> N1[Send Error Response to Verifier]
-N --> O[Verifier Receives VP Response or Error Response]
+N --> O[Verifier Receives VP Response or Error Response 
+        returns redirect_uri if configured]
 N1 --> O
 O --> P[Verifier Validates VP]
 P --> Q[Verify VP Signature]

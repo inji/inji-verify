@@ -24,7 +24,7 @@ public class AuthorizationRequestCreateResponse implements Serializable {
 
     @NotNull
     @Convert(converter = AuthorizationRequestResponseDtoConverter.class)
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private final AuthorizationRequestResponseDto authorizationDetails;
 
     @NotNull

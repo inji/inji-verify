@@ -3,7 +3,6 @@ import { QRCodeSVG } from "qrcode.react";
 import {
   AppError,
   OpenID4VPVerificationProps,
-  QrData,
   SessionState,
   VerificationResults,
   VerificationStatus,
@@ -11,18 +10,19 @@ import {
 import { vpRequest, vpRequestStatus, vpResult } from "../../utils/api";
 import "./OpenID4VPVerification.css";
 import { isSdJwt } from "../../utils/utils";
+import { QrData } from "../../types/OVPSchemeQrData";
 
 export const isMobileDevice = (): boolean => {
-  const ua = navigator.userAgent;
+  const userAgent = navigator.userAgent;
 
   const isMobileUA = /Android.*Mobile|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    ua
+    userAgent
   );
 
   const isTabletUA =
-    /iPad/i.test(ua) ||
-    (/Macintosh/i.test(ua) && "ontouchend" in document) || // iPad iOS13+ (real)
-    (/Android/i.test(ua) && !/Mobile/i.test(ua)); // Android tablet
+    /iPad/i.test(userAgent) ||
+    (/Macintosh/i.test(userAgent) && "ontouchend" in document) || // iPad iOS13+ (real)
+    (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent)); // Android tablet
 
   return isMobileUA || isTabletUA;
 };
@@ -307,13 +307,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         handleGenerateQRCode();
       }
     }
-  }, [
-    triggerElement,
-    isSameDeviceFlowEnabled,
-    startVerification,
-    handleGenerateQRCode,
-    presentationDefinition,
-  ]);
+  }, [triggerElement, isSameDeviceFlowEnabled]);
 
   useEffect(() => {
     return () => {

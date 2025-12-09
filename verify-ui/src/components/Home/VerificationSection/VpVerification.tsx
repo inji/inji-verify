@@ -76,7 +76,7 @@ const DisplayActiveStep = () => {
   };
 
   const getClientId = () => {
-    return (isSingleVc && selectedClaims[0]?.isAuthRequestEmbedded) ? window._env_.CLIENT_ID : window._env_.CLIENT_ID_DID;
+    return (isSingleVc && selectedClaims[0]?.clientIdScheme === "pre_registered") ? window._env_.CLIENT_ID : window._env_.CLIENT_ID_DID;
   }
 
   useEffect(() => {

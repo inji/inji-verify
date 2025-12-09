@@ -1,5 +1,5 @@
 GetVpRequestWithSDJWT:
-  InjiVerify_GetVpRequestWithSDJWT_Valid_Sid:
+  InjiVerify_GetVpRequestWithSDJWT_All_Valid_Smoke_Sid:
     endPoint: /v1/verify/vp-request
     description: Fetch VP request with SD-JWT
     uniqueIdentifier: TC_InjiVerify_GetVpRequestWithSDJWT_01

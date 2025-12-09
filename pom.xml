@@ -114,6 +114,7 @@
         <jakarta-servlet.version>6.0.0</jakarta-servlet.version>
         <jakarta-validation.version>3.0.2</jakarta-validation.version>
         <lombok.version>1.18.30</lombok.version>
+        <h2.version>2.2.224</h2.version>
         <identity-credential.version>20231002</identity-credential.version>
         <ld-signatures-java.version>1.11.0</ld-signatures-java.version>
         <jsonld-common-java.version>1.8.0</jsonld-common-java.version>

@@ -1,5 +1,5 @@
 GetVpTokenForRequestSDJWT:
-  Injiverify_GetVpTokenForRequestSDJWT_All_Valid_Smoke:
+  Injiverify_GetVpTokenForRequestSDJWT_All_Valid_Smoke_Sid:
       endPoint: /v1/verify/vp-result/{transactionId}
       description: Getting the VP token for the Request with SD-JWT
       uniqueIdentifier: TC_InjiVerify_GetVpTokenForRequestSDJWT_01
@@ -8,10 +8,10 @@ GetVpTokenForRequestSDJWT:
       inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
       outputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequestResult
       input: '{
-      "transactionId":"$ID:GetVpRequestWithSDJWT_Valid_Sid_transactionId$"
+      "transactionId":"$ID:GetVpRequestWithSDJWT_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-    "transactionId": "$ID:GetVpRequestWithSDJWT_Valid_Sid_transactionId$",
+    "transactionId": "$ID:GetVpRequestWithSDJWT_All_Valid_Smoke_Sid_transactionId$",
     "vpResultStatus": "SUCCESS"
 }'
 

@@ -1,5 +1,5 @@
 CreateNewVerificationRequestWithDID:
-  Injiverify_CreateNewVerificationRequest_DID_ClientId_Valid_Sid:
+  Injiverify_CreateNewVerificationRequest_DID_ClientId_Valid_Smoke_Sid:
       endPoint: /v1/verify/vp-request
       description: Creating a new verification request with DID-based client id
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequestWithDID_01

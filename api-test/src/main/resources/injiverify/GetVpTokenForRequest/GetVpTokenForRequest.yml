@@ -29,3 +29,19 @@ GetVpTokenForRequest:
       output: '{
       "errorCode": "INVALID_TRANSACTION_ID"
 }'
+
+  Injiverify_GetVpTokenForRequest_NotFound_TransactionId_Neg:
+    endPoint: /v1/verify/vp-result/{transactionId}
+    description: Requesting a non-existent transactionId should return 404
+    uniqueIdentifier: TC_InjiVerify_GetVpTokenForRequest_04
+    role: noauth
+    restMethod: get
+    inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
+    outputTemplate: injiverify/responseCode
+    checkOnlyStatusCodeInResponse: true
+    input: '{
+    "transactionId":"NON_EXISTENT_TRANSACTION_ID"
+    }'
+    output: '{
+    "responseCode": "404"
+    }'

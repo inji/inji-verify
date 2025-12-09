@@ -12,10 +12,8 @@ import base.BasePage;
 
 public class VpVerification extends BasePage {
 
-	private WebDriver driver;
-
 	public VpVerification(WebDriver driver) {
-		this.driver = driver;
+		super(driver);
 		PageFactory.initElements(driver, this);
 	}
 
@@ -49,7 +47,7 @@ public class VpVerification extends BasePage {
 	@FindBy(xpath = "//*[name()='path' and contains(@fill,'#000000')]")
 	WebElement verificationQrCode;
 
-	@FindBy(xpath = "//div[@id='ovp-loader']")
+    @FindBy(id = "ovp-loader")
 	WebElement loadingScreen;
 
 	@FindBy(xpath = "//h1[contains(@class,'text-selectorPanelTitle') and contains(text(),'Verifiable Credential Selection Panel')]")
@@ -97,7 +95,7 @@ public class VpVerification extends BasePage {
 	@FindBy(xpath = "//label[@for='Health Insurance']")
 	WebElement HealthInsuranceChecklist;
 
-	@FindBy(xpath = "//label[@for='SD JWT PID (Talao)']")
+	@FindBy(xpath = "//label[@for='Mock Identity (SD JWT)']")
 	WebElement SDJwtVCChecklist;
 
 	@FindBy(xpath = "//span[@class='walletName' and text()='Inji Wallet']")
@@ -259,31 +257,31 @@ public class VpVerification extends BasePage {
 		clickOnElement(driver, SortButton);
 	}
 
-	public void ClickOnGenerateQrCodeButton() {
+	public void clickOnGenerateQrCodeButton() {
 		clickOnElement(driver, GenerateQrCodeButton);
 	}
 
-	public void ClickOnMosipIdChecklist() {
+	public void clickOnMosipIdChecklist() {
 		clickOnElement(driver, MosipIdChecklist);
 	}
 
-	public void ClickOnHealthInsuranceChecklist() {
+	public void clickOnHealthInsuranceChecklist() {
 		clickOnElement(driver, HealthInsuranceChecklist);
 	}
 
-	public void ClickOnSDJwtVCChecklist() {
+	public void clickOnSDJwtVCChecklist() {
 		clickOnElement(driver, SDJwtVCChecklist);
 	}
 
-	public void ClickOnWalletButton() {
+	public void clickOnWalletButton() {
 		clickOnElement(driver, WalletButton);
 	}
 
-	public void ClickOnProceedButton() {
+	public void clickOnProceedButton() {
 		clickOnElement(driver, ProceedButton);
 	}
 
-	public void ClickOnLandRegistryChecklist() {
+	public void clickOnLandRegistryChecklist() {
 		clickOnElement(driver, LandRegistryChecklist);
 	}
 
@@ -312,6 +310,7 @@ public class VpVerification extends BasePage {
 	public void clickOnOpenWalletButton() {
 		clickOnElement(driver, openWalletButton);
 	}
+
 
 
 }

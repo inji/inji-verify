@@ -9,6 +9,7 @@ import {
 import { raiseAlert } from "../redux/features/alerts/alerts.slice";
 import { useAppDispatch } from "../redux/hooks";
 import { QRCodeVerification } from "@mosip/react-inji-verify-sdk";
+import { getClientId, isVPSubmissionSupported } from "../utils/commonUtils";
 
 export const Upload = () => {
   const { t } = useTranslation("Upload");
@@ -36,15 +37,6 @@ export const Upload = () => {
     dispatch(verificationComplete({verificationResult: data[0]}));
   }
 
-  function getClientId() {
-    return window._env_.CLIENT_ID;
-  }
-
-  function getVPSubmissionSupported() {
-    const value = window._env_.VP_SUBMISSION_SUPPORTED;
-    return String(value).toLowerCase() === "true";
-  }
-
   return (
     <div className="flex flex-col pt-0 pb-[100px] lg:py-[42px] px-0 lg:px-[104px] text-center content-center justify-center">
       <div className="xs:col-end-13">
@@ -70,7 +62,7 @@ export const Upload = () => {
               dispatch(goToHomeScreen({}));
             }}
             clientId={getClientId()}
-            isVPSubmissionSupported={getVPSubmissionSupported()}
+            isVPSubmissionSupported={isVPSubmissionSupported()}
           />
         </div>
         <div className="grid text-center content-center justify-center pt-2">

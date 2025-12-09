@@ -171,3 +171,20 @@ VpSubmission:
       output: '{
       "responseCode": "400"
 }'
+
+  Injiverify_VpSubmission_Invalid_Error_Neg:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting the authorization response with invalid error value
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_11
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmissionNeg
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state":"$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
+      "error": "sdfsfdsf"
+      }'
+      output: '{
+      "responseCode": "400"
+}'

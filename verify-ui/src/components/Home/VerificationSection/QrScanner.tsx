@@ -7,6 +7,7 @@ import {
 } from "../../../redux/features/verification/verification.slice";
 import { raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { QRCodeVerification } from "@mosip/react-inji-verify-sdk";
+import { getClientId, isVPSubmissionSupported } from "../../../utils/commonUtils";
 
 function QrScanner({ onClose, scannerActive }: {
   onClose: () => void;
@@ -25,15 +26,6 @@ function QrScanner({ onClose, scannerActive }: {
     vcStatus: string
   }[]) => {
     dispatch(verificationComplete({verificationResult: data[0]}));
-  }
-
-  function getClientId() {
-    return window._env_.CLIENT_ID;
-  }
-
-  function getVPSubmissionSupported() {
-    const value = window._env_.VP_SUBMISSION_SUPPORTED;
-    return String(value).toLowerCase() === "true";
   }
 
   return (
@@ -65,7 +57,7 @@ function QrScanner({ onClose, scannerActive }: {
             }
           }}
           clientId={getClientId()}
-          isVPSubmissionSupported={getVPSubmissionSupported()}
+          isVPSubmissionSupported={isVPSubmissionSupported()}
         />
       </div>
 

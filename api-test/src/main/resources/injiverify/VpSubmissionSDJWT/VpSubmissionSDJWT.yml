@@ -1,5 +1,5 @@
 VpSubmissionSDJWT:
-  Injiverify_VpSubmissionSDJWT_All_Valid_Smoke:
+  Injiverify_VpSubmissionSDJWT_All_Valid_Smoke_Sid:
     endPoint: /v1/verify/vp-submission/direct-post
     description: Submitting the authorization response for SD-JWT
     uniqueIdentifier: TC_InjiVerify_VpSubmissionSDJWT_01
@@ -9,7 +9,7 @@ VpSubmissionSDJWT:
     inputTemplate: injiverify/VpSubmissionSDJWT/VpSubmissionSDJWT
     outputTemplate: injiverify/responseCode
     input: '{
-      "state":"$ID:GetVpRequestWithSDJWT_Valid_Sid_requestId$",
+      "state":"$ID:GetVpRequestWithSDJWT_All_Valid_Smoke_Sid_requestId$",
       "definition_id":"$PRESENTATIONDEFINITIONID$"
     }'
     output: '{

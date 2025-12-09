@@ -1,5 +1,5 @@
 GetVpRequestStatusSDJWT:
-  Injiverify_GetVpRequestStatusSDJWT_All_Valid_Smoke:
+  Injiverify_GetVpRequestStatusSDJWT_All_Valid_Smoke_Sid:
       endPoint: /v1/verify/vp-request/{requestId}/status
       description: Getting the status of VP Request for SD-JWT
       uniqueIdentifier: TC_InjiVerify_GetVpRequestStatusSDJWT_01
@@ -8,7 +8,7 @@ GetVpRequestStatusSDJWT:
       inputTemplate: injiverify/GetVpRequestStatus/GetVpRequestStatus
       outputTemplate: injiverify/GetVpRequestStatus/GetVpRequestStatusResult
       input: '{
-      "requestId":"$ID:GetVpRequestWithSDJWT_Valid_Sid_requestId$"
+      "requestId":"$ID:GetVpRequestWithSDJWT_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
     "status": "VP_SUBMITTED"

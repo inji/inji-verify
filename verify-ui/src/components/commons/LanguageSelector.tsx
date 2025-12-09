@@ -41,8 +41,6 @@ export const LanguageSelector: React.FC = () => {
       className="flex flex-row justify-center items-center"
       data-testid="LanguageSelector-Outer-Div"
       ref={containerRef}
-      tabIndex={0}
-      role="button"
     >
       <GlobeIcon />
 
