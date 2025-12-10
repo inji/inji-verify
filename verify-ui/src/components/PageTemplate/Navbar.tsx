@@ -1,17 +1,23 @@
 import React, {useCallback, useEffect, useState} from 'react';
 import { MdArrowForwardIos } from "react-icons/md";
 import { MdExpandLess } from "react-icons/md";
-import {Pages} from "../../utils/config";
+import {AlertMessages, Pages} from "../../utils/config";
 import { LanguageSelector } from '../commons/LanguageSelector';
 import { useTranslation } from 'react-i18next';
-import { useAppSelector } from '../../redux/hooks';
+import { useAppDispatch, useAppSelector } from '../../redux/hooks';
 import { RootState } from '../../redux/store';
 import { isRTL } from '../../utils/i18n';
 import { Logo, MenuIcon, NewTabIcon } from '../../utils/theme-utils';
+import { raiseAlert } from '../../redux/features/alerts/alerts.slice';
 
 const SubMenu = () => {
     const {t} = useTranslation("Navbar");
-
+    const dispatch = useAppDispatch();
+    const showAlert = ()=> {
+        dispatch(
+            raiseAlert({ ...AlertMessages().verificationMethodComingSoon, open: true })
+        );
+        }
     return (
         <div id="help-submenu"
              className="absolute top-[36px] left-[-12px] mt-2 w-[100vw] lg:w-[250px] lg:top-[24px] lg:left-[-190px] bg-white rounded-md py-1 ring-1 ring-black ring-opacity-5 lg:py-5 lg:shadow-lg z-60">
@@ -25,7 +31,7 @@ const SubMenu = () => {
                target="_blank"
                rel="noreferrer"
                className="inline-flex items-center w-full px-[26px] py-2 text-sm lg:px-4"> {t("documentation")} <NewTabIcon className="mx-1.5" /></a>
-            <button id="faq" disabled className="inline-flex items-center w-full px-[26px] py-2 text-sm lg:px-4"> {t("faqs")} </button>
+            <button id="faq" onClick={showAlert} className="inline-flex items-center w-full px-[26px] py-2 text-sm lg:px-4"> {t("faqs")} </button>
         </div>
     );
 }
