@@ -76,7 +76,7 @@ const DisplayActiveStep = () => {
   };
 
   const getClientId = () => {
-    return (isSingleVc && selectedClaims[0]?.isAuthRequestEmbedded) ? window._env_.CLIENT_ID : window._env_.CLIENT_ID_DID;
+    return (isSingleVc && selectedClaims[0]?.clientIdScheme === "pre_registered") ? window._env_.CLIENT_ID : window._env_.CLIENT_ID_DID;
   }
 
   useEffect(() => {
@@ -128,6 +128,7 @@ const DisplayActiveStep = () => {
                 className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
               >
                 <OpenID4VPVerification
+                  key={flowType + "_" + activeScreen}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
                   verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
                   presentationDefinition={presentationDefinition}
@@ -164,6 +165,7 @@ const DisplayActiveStep = () => {
                 className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
               >
                 <OpenID4VPVerification
+                  key={flowType + "_" + activeScreen}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
                   verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
                   presentationDefinition={presentationDefinition}

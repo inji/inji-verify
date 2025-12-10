@@ -307,13 +307,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         handleGenerateQRCode();
       }
     }
-  }, [
-    triggerElement,
-    isSameDeviceFlowEnabled,
-    startVerification,
-    handleGenerateQRCode,
-    presentationDefinition,
-  ]);
+  }, [triggerElement, isSameDeviceFlowEnabled]);
 
   useEffect(() => {
     return () => {

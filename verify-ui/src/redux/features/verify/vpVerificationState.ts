@@ -87,20 +87,7 @@ const vpVerificationState = createSlice({
         : VerificationSteps[state.method].DisplayResult;
       state.flowType = state.isPartiallyShared && state.flowType === "sameDevice" ? "sameDevice" : "crossDevice";
     },
-    resetVpRequest: (state) => {
-      state.activeScreen = VerificationSteps[state.method].InitiateVpRequest;
-      state.verificationSubmissionResult = [];
-      state.isLoading = false;
-      state.activeScreen = VerificationSteps["VERIFY"].InitiateVpRequest;
-      state.SelectionPanel = false;
-      state.unVerifiedClaims = [];
-      state.selectedClaims = [];
-      state.flowType = "crossDevice";
-      state.sharingType = VCShareType.SINGLE;
-      state.isPartiallyShared = false;
-      state.isShowResult = false;
-      state.presentationDefinition.input_descriptors = [];
-    },
+    resetVpRequest: () => PreloadedState,
   },
 });
 

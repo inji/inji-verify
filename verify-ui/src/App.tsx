@@ -30,7 +30,7 @@ function switchToVerificationMethod(method: VerificationMethod) {
       methodPath = Pages.VerifyCredentials;
       break;
     default:
-      methodPath = "";
+      methodPath = Pages.Home;
   }
   if (sessionStoragePath && sessionStoragePath !== methodPath) {
     sessionStorage.removeItem("pathName");

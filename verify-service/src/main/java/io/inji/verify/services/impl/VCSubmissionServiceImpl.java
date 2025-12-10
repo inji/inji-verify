@@ -1,9 +1,8 @@
 package io.inji.verify.services.impl;
 
+import io.inji.verify.exception.CredentialStatusCheckException;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
-import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VerificationStatus;
-import io.mosip.vercred.vcverifier.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import io.inji.verify.dto.submission.VCSubmissionDto;
@@ -18,6 +17,7 @@ import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 import static io.inji.verify.utils.Utils.isSdJwt;
 
 @Slf4j
@@ -42,25 +42,20 @@ public class VCSubmissionServiceImpl implements VCSubmissionService {
     }
 
     @Override
-    public VCSubmissionVerificationStatusDto getVcWithVerification(String transactionId) {
-        return vcSubmissionRepository.findById(transactionId).map(vcSubmission -> {
-            String vc = vcSubmission.getVc();
+    public VCSubmissionVerificationStatusDto getVcWithVerification(String transactionId) throws CredentialStatusCheckException {
+        Optional<VCSubmission> vcSubmission = vcSubmissionRepository.findById(transactionId);
+        if (vcSubmission.isPresent()) {
+            String vc = vcSubmission.get().getVc();
             boolean isSdJwtVc = isSdJwt(vc);
-            if (isSdJwtVc) {
-                VerificationResult verificationResult = credentialsVerifier.verify(vc, CredentialFormat.VC_SD_JWT);
-                if (!verificationResult.getVerificationStatus()) {
-                    log.error("SD-JWT VC verification result errors : {} {}", verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());
-                }
-                VerificationStatus status = Util.INSTANCE.getVerificationStatus(verificationResult);
-                return new VCSubmissionVerificationStatusDto(vc, status);
-            }
-
+            CredentialFormat credentialFormat = isSdJwtVc ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
             List<String> statusPurposeList = new ArrayList<>();
             statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
-            CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, CredentialFormat.LDP_VC, statusPurposeList);
+            CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList);
             VerificationStatus vcVerificationStatus = Utils.getVcVerificationStatus(credentialVerificationSummary);
 
             return new VCSubmissionVerificationStatusDto(vc, vcVerificationStatus);
-        }).orElse(null);
+        } else {
+            return null;
+        }
     }
 }
