@@ -148,7 +148,7 @@ export const vpResult = async (url: string, txnId: string) => {
     if (response.status !== 200) {
       throw {
         errorCode: data.errorCode,
-        errorMessage: data.errorMessage,
+        errorMessage: data.errorMessage ? data.errorMessage : data.error,
         transactionId: txnId ?? null
       } as AppError;
     }

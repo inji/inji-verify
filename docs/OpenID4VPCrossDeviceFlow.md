@@ -13,7 +13,7 @@ requesting and presenting Verifiable Credentials.
 The API documentations can be found [here](https://mosip.stoplight.io/docs/inji-verify/branches/main/)
 
 ## Functionalities
-##### Authorization Request Creation:
+### Authorization Request Creation:
 - Inji Verify can generate a QR code with authorization request which is created and obtained from Inji Verify backend. 
   - Below are the fields we expect in the creation of a new authorization request,
       - client_id
@@ -21,7 +21,7 @@ The API documentations can be found [here](https://mosip.stoplight.io/docs/inji-
       - transactionId (Optional) - will be generated at server if not provided
   - Inji verify Ui will make a request to backend to create the authorization request and the UI will render this as a QR code for the wallet to scan.
 
-#####  Authorization Request Status:
+###  Authorization Request Status:
 - Inji Verify have API to get the current status of an authorization request.
     - The status will be,
       - **_ACTIVE_** - Authorization request is created but nor expired or any VP submission has been received. 
@@ -29,15 +29,28 @@ The API documentations can be found [here](https://mosip.stoplight.io/docs/inji-
       - **_EXPIRED_** - No VP submission happened within expiry time and the authorization request expired.
 - This API call is a long poll call which will have a one-minute timeout.
 
-#####  Verifiable Presentation Submission:
+###  Verifiable Presentation Submission:
 - Inji Verify have API to submit Verifiable Presentation.
-- Once the wallet scans the QR code, wallet generates the VP token and submission request. This will be posted to the Inji verify backend.
+- Once the wallet scans the QR code, it generates the VP token and the submission request, which are then posted to the Inji Verify backend.
+- If the wallet encounters any error while generating the VP token, it will post the error back to the Inji Verify backend along with an error description.
 
-#####  Submission Result:
+> **Important Implementation Note:**
+> The endpoint can return a **_redirect_uri_** based on the **_INJI_VERIFY_REDIRECT_URI_** configuration.
+>
+> If **_INJI_VERIFY_REDIRECT_URI_** is blank, no **_redirect_uri_** is returned.
+>
+> This minimal feature implementation is intended to support integration with specific modules (e.g., wallets and verifier applications). Full implementation, including response_code support, is planned for future releases to ensure complete compliance with the OpenID4VP specification.
+
+###  Submission Result:
 - Once the wallet submits the VC, The status will be changed to **_VP_SUBMITTED_**.
 - Inji verify UI can fetch the result of the submission through APIs. The result will contain two things.
-  - Overall status of submission, either its **_SUCCESS_** or **_INVALID_**
-  - List of VC with its own verification status.
+  - Overall status of submission, either its **_SUCCESS_** or **_FAILED_**
+  - List of VC with its own verification status, it can be 
+  * **_SUCCESS_** 
+  * **_INVALID_** 
+  * **_EXPIRED_**
+  * **_REVOKED_**
+- During the revocation check, any error encountered by the vc_verifier will result in an exception containing a descriptive error message, which the Verify UI will display to the user.
 
 ## Sequence Diagram
 ```mermaid    
@@ -54,10 +67,11 @@ sequenceDiagram
     Verify UI--)Verify UI: 5. Polling Status BACKEND_URL/vp-request/${reqId}/status (ACTIVE, VP_SUBMITTED, EXPIRED)
     Wallet--)Wallet: 6. Scan QR Code
     Wallet--)Wallet: 7. Process the QR Data and List the matching VC's
-    Wallet->>Verify Backend: 8.Authenticate User & Submitts VP Token <br> (BACKEND_URL/vp-submission/direct-post)
-    Verify Backend--)Verify UI: 9. Status == VP_SUBMITTED
-    Verify UI->>Verify Backend: 10. Request the response from the respective endpoints <br> Ex- (BACKEND_URL/vp-result/${txnId})
-    Verify Backend->>Verify UI: 11. Using txn_Id the server will fetch the data from DB and validate it using vc-verifier and return the response
-    Verify UI--)Verify UI: 12. Render VC and its statuses accordingly
+    Wallet->>Verify Backend: 8.Authenticate User & Submits VP Token | Error <br> (BACKEND_URL/vp-submission/direct-post)
+    Verify Backend->>Wallet: 9. Returns only redirect_uri (from INJI_VERIFY_REDIRECT_URI). <br/> If not configured, no redirect_uri is returned.
+    Verify Backend--)Verify UI: 10. Status == VP_SUBMITTED
+    Verify UI->>Verify Backend: 11. Request the response from the respective endpoints <br> Ex- (BACKEND_URL/vp-result/${txnId})
+    Verify Backend->>Verify UI: 12. Using txn_Id the server will fetch the data from DB and validate it using vc-verifier and return the response
+    Verify UI--)Verify UI: 13. Render VC and its statuses accordingly
     
 ```

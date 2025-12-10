@@ -1,6 +1,7 @@
 package io.inji.verify.services.impl;
 
 import io.inji.verify.dto.verification.VCVerificationStatusDto;
+import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.utils.Utils;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
@@ -25,7 +26,7 @@ public class VCVerificationServiceImplTest {
     }
 
     @Test
-    public void shouldReturnSuccessForVerifiedVc() {
+    public void shouldReturnSuccessForVerifiedVc() throws CredentialStatusCheckException {
         CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
         when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                 anyString(),
@@ -43,7 +44,7 @@ public class VCVerificationServiceImplTest {
     }
 
     @Test
-    public void shouldReturnExpiredForVerifiedVcWhichIsExpired() {
+    public void shouldReturnExpiredForVerifiedVcWhichIsExpired() throws CredentialStatusCheckException {
         CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
         when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                 anyString(),
@@ -61,7 +62,7 @@ public class VCVerificationServiceImplTest {
     }
 
     @Test
-    public void shouldReturnInvalidForVcWhichIsInvalid() {
+    public void shouldReturnInvalidForVcWhichIsInvalid() throws CredentialStatusCheckException {
         CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
         when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                 anyString(),
@@ -79,7 +80,7 @@ public class VCVerificationServiceImplTest {
     }
 
     @Test
-    public void shouldUseLDPFormatForOtherContentTypes() {
+    public void shouldUseLDPFormatForOtherContentTypes() throws CredentialStatusCheckException {
         CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
         when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                 anyString(),
@@ -97,7 +98,7 @@ public class VCVerificationServiceImplTest {
     }
 
     @Test
-    public void shouldReturnRevokedForRevokedVc() {
+    public void shouldReturnRevokedForRevokedVc() throws CredentialStatusCheckException {
         CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
         when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                 anyString(),

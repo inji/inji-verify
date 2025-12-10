@@ -19,7 +19,6 @@ import java.io.Serializable;
 @NoArgsConstructor(force = true)
 @Table(name = "authorization_request_details")
 public class AuthorizationRequestCreateResponse implements Serializable {
-
     @Id
     private final String requestId;
 

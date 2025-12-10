@@ -4,11 +4,8 @@ import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.dto.submission.VPSubmissionDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.VPResultStatus;
-import io.inji.verify.exception.InvalidVpTokenException;
-import io.inji.verify.exception.TokenMatchingFailedException;
-import io.inji.verify.exception.VPSubmissionNotFoundException;
+import io.inji.verify.exception.*;
 import io.inji.verify.dto.result.VCResultDto;
-import io.inji.verify.exception.VPSubmissionWalletError;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.repository.VPSubmissionRepository;
@@ -53,7 +50,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         verifiablePresentationRequestService.invokeVpRequestStatusListener(vpSubmissionDto.getState());
     }
 
-    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId) throws VPSubmissionWalletError {
+    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId) throws VPSubmissionWalletError, CredentialStatusCheckException {
         log.info("Processing VP submission");
 
         List<VCResultDto> verificationResults = new ArrayList<>();
@@ -95,17 +92,18 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                         VPVerificationStatus proofVerificationStatus = presentationResultWithCredentialStatus.getProofVerificationStatus();
                         vpVerificationStatuses.add(proofVerificationStatus);
 
-                        List<VCResultDto> vcResults = presentationResultWithCredentialStatus.getVcResults().stream()
-                                .map(vcResult -> {
-                                    VerificationStatus vcStatus = Utils.applyRevocationStatus(vcResult.getStatus(), vcResult.getCredentialStatus());
-                                    return new VCResultDto(vcResult.getVc(), vcStatus);
-                                })
-                                .toList();
+                        List<VCResultDto> vcResults = new ArrayList<>();
+                        for (var vcResult : presentationResultWithCredentialStatus.getVcResults()) {
+                            VerificationStatus vcStatus = Utils.applyRevocationStatus(vcResult.getStatus(), vcResult.getCredentialStatus());
+                            vcResults.add(new VCResultDto(vcResult.getVc(), vcStatus));
+                        }
                         verificationResults.addAll(vcResults);
                     } else {
                         Object verifiableCredential = vpToken.opt("verifiableCredential");
                         if (verifiableCredential instanceof JSONArray array) {
-                            array.forEach(vc -> addVerificationResults(vc.toString(), verificationResults, CredentialFormat.LDP_VC));
+                            for (Object vc : array) {
+                                addVerificationResults(vc.toString(), verificationResults, CredentialFormat.LDP_VC);
+                            }
                         } else {
                             throw new InvalidVpTokenException();
                         }
@@ -125,13 +123,16 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         } catch (VPSubmissionWalletError e) {
             log.error("Received wallet error: {} - {}", e.getErrorCode(), e.getErrorDescription());
             throw e;
+        } catch (CredentialStatusCheckException e) {
+            log.error("Received Credential status check exception: {} - {}", e.getErrorCode(), e.getErrorDescription());
+            throw e;
         } catch (Exception e) {
             log.error("Failed to verify VP submission", e);
             return new VPTokenResultDto(transactionId, VPResultStatus.FAILED, verificationResults);
         }
     }
 
-    private void addVerificationResults(String vc, List<VCResultDto> verificationResults, CredentialFormat  credentialFormat) {
+    private void addVerificationResults(String vc, List<VCResultDto> verificationResults, CredentialFormat  credentialFormat) throws CredentialStatusCheckException{
         List<String> statusPurposeList = new ArrayList<>();
         statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
         CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList);
@@ -200,7 +201,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionNotFoundException, VPSubmissionWalletError {
+    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
         List<VPSubmission> vpSubmissions = vpSubmissionRepository.findAllById(requestIds);
 
         if (vpSubmissions.isEmpty()) {

@@ -23,7 +23,6 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
 public class PresentationDefinition {
-
     @Id
     private final String id;
 
@@ -40,7 +39,7 @@ public class PresentationDefinition {
     private final FormatDto format;
 
     @Convert(converter = ListSubmissionRequirementDtoConverter.class)
-     @Column(columnDefinition = "TEXT")
+    @Column(columnDefinition = "TEXT")
     private final List<SubmissionRequirementDto> submissionRequirements;
 
     @JsonIgnore
