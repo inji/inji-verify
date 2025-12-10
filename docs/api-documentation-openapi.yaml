@@ -317,14 +317,14 @@ paths:
 
         Since version `1.5.0`, the endpoint supports credentials in both JSON-LD and SD-JWT formats.
 
-        Starting from version `1.6.0`, the API also performs revocation checks. A credential’s verification status can be `SUCCESS, INVALID, EXPIRED, or REVOKED`.
+        Starting from version `1.6.0`, the API also performs revocation checks for JSON-LD credentials. A credential’s verification status can be `SUCCESS, INVALID, EXPIRED, or REVOKED`.
 
         Additionally, beginning with version `1.6.0`, the Verifiable Presentation itself may be unsigned (i.e., submitted without a proof section). This supports online sharing scenarios, such as transmitting large VCs via QR codes (DataShare), where including a cryptographic proof may not be feasible.
       tags:
         - VP Request Management
       responses:
         '200':
-          description: 'This response indicates that the submission results were successfully retrieved. The response includes the overall `submissionStatus` and an array of `vcResults`, with each entry providing the verification status of an individual Verifiable Credential (VC).'
+          description: 'This response indicates that the submission results were successfully retrieved. The response includes the overall `vpResultStatus` and an array of `vcResults`, with each entry providing the verification status of an individual Verifiable Credential (VC).'
           content:
             application/json:
               schema:
@@ -334,7 +334,7 @@ paths:
                   summary: A successful VP submission result
                   value:
                     transactionId: txn_abc123
-                    submissionStatus: SUCCESS
+                    vpResultStatus: SUCCESS
                     vcResults:
                       - vc: '{...}'
                         verificationStatus: SUCCESS
@@ -342,7 +342,7 @@ paths:
                   summary: A failed VP submission result
                   value:
                     transactionId: txn_def456
-                    submissionStatus: FAILED
+                    vpResultStatus: FAILED
                     vcResults:
                       - vc: '{...}'
                         verificationStatus: INVALID
@@ -442,7 +442,7 @@ paths:
 
         To verify an SD-JWT VC, set the request header: `Content-Type: application/vc+sd-jwt`
 
-        As of version `1.6.0`, the API also performs revocation checks credentials. When a credential is found to be revoked, the verification status may additionally be `REVOKED`.
+        As of version `1.6.0`, the API also performs revocation checks for JSON-LD credentials. When a credential is found to be revoked, the verification status may additionally be `REVOKED`.
 
         In certain cases, the API may return a 500 Internal Server Error. This can occur if a runtime exception is encountered during VC verification or if an error occurs while performing the credential status (revocation) check. When such errors arise, the API returns a response body describing the issue along with the 500 status code.
       operationId: vc-verification
@@ -1124,7 +1124,7 @@ components:
           type: string
           description: The transaction ID for the VP request for which the result needs to be fetched.
           example: txn_abc123
-        submissionStatus:
+        vpResultStatus:
           type: string
           description: The overall status for the VP submission ('SUCCESS' or 'FAILED').
           enum:
