@@ -7,9 +7,6 @@ import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
-import org.hibernate.type.SqlTypes;
-import org.hibernate.annotations.JdbcTypeCode;
-
 
 import java.io.Serializable;
 
