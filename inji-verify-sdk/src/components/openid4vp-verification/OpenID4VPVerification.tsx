@@ -112,7 +112,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       }
       return params.toString();
     },
-    [verifyServiceUrl, clientId]
+    [clientId]
   );
 
   const fetchVPResult = useCallback(
