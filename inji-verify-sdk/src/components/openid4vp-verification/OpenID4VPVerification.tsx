@@ -94,7 +94,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         if (data.authorizationDetails.presentationDefinitionUri) {
           params.set(
             "presentation_definition_uri",
-            verifyServiceUrl + data.authorizationDetails.presentationDefinitionUri
+            data.authorizationDetails.presentationDefinitionUri
           );
         } else {
           params.set(
