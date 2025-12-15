@@ -72,6 +72,11 @@ module.exports = {
         selectorPannelTitle: "var(--iv-selector-pannel-title)",
         selectorPannelSubTitle: "var(--iv-selector-pannel-sub-title)",
         qrCodeTimer: "var(--iv-qr-code-timer)",
+
+        /* --- TruckPass minimal solid color keys (added) --- */
+        truckpassPrimary: "#006DE7",
+        truckpassBackground: "#F5FAFF",
+        truckpassLine: "#006DE7",
       },
       backgroundImage: {
         "default_theme-gradient":
@@ -86,6 +91,12 @@ module.exports = {
           "linear-gradient(90deg, #52AE32 0%, #006535 100%)",
         "car_theme-lighter-gradient":
           "linear-gradient(83.99deg, rgba(211, 246, 199, 0.08) 38.27%, rgba(82, 174, 50, 0.08) 93.3%)",
+
+        /* --- TruckPass theme kept as gradients but start & end identical (solid look) --- */
+        "truckpass_theme-gradient":
+          "linear-gradient(90deg, #006DE7 0%, #006DE7 100%)",
+        "truckpass_theme-lighter-gradient":
+          "linear-gradient(90deg, #F5FAFF 0%, #F5FAFF 100%)",
       },
     },
   },
@@ -99,6 +110,9 @@ module.exports = {
     "bg-car_theme-gradient",
     "bg-car_theme-lighter-gradient",
     "hover:bg-car_theme-gradient",
+    "bg-truckpass_theme-gradient",
+    "bg-truckpass_theme-lighter-gradient",
+    "hover:bg-truckpass_theme-gradient",
   ], //Listing possible class names in the safelist, ensures Tailwind generates those styles.
   plugins: [],
 };

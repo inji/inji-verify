@@ -1,5 +1,6 @@
 import i18n from "i18next";
 import { initReactI18next } from "react-i18next";
+
 import en from "../locales/en.json";
 import fr from "../locales/fr.json";
 import ta from "../locales/ta.json";
@@ -9,10 +10,22 @@ import ar from "../locales/ar.json";
 import pt from "../locales/pt.json";
 import es from "../locales/es.json";
 import km from "../locales/km.json";
+
 import { storage } from "./storage";
 import { LanguageObject } from "../types/data-types";
 
-const resources = { en, ta, kn, hi, fr, ar, pt, es, km };
+// ✅ Reverted resources — NO buildResource, no namespace injection
+const resources = {
+  en,
+  ta,
+  kn,
+  hi,
+  fr,
+  ar,
+  pt,
+  es,
+  km,
+};
 
 export const LanguagesSupported: LanguageObject[] = [
   { label: "English", value: "en" },
@@ -27,7 +40,6 @@ export const LanguagesSupported: LanguageObject[] = [
 ];
 
 export const defaultLanguage = window._env_.DEFAULT_LANG;
-
 export const selected_language = storage.getItem(storage.SELECTED_LANGUAGE);
 
 i18n.use(initReactI18next).init({
