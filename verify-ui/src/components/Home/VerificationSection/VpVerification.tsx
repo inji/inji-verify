@@ -131,7 +131,7 @@ const DisplayActiveStep = () => {
                   key={flowType + "_" + activeScreen}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
                   verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
-                  presentationDefinitionId={"201"}
+                  presentationDefinition={presentationDefinition}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}
                   onError={handleOnError}
