@@ -21,7 +21,8 @@ const PreloadedState: VerifyState = {
     purpose:
       "Relying party is requesting your digital ID for the purpose of Self-Authentication",
     input_descriptors: [] as any[],
-  }  
+  },
+  sdkInstanceKey: 0,
 };
 
 const vpVerificationState = createSlice({
@@ -87,7 +88,11 @@ const vpVerificationState = createSlice({
         : VerificationSteps[state.method].DisplayResult;
       state.flowType = state.isPartiallyShared && state.flowType === "sameDevice" ? "sameDevice" : "crossDevice";
     },
-    resetVpRequest: () => PreloadedState,
+    resetVpRequest: (state) => {
+      const prevSdkKey = state.sdkInstanceKey;
+      Object.assign(state, PreloadedState);
+      state.sdkInstanceKey = prevSdkKey + 1;
+    },
   },
 });
 
