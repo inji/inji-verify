@@ -19,7 +19,7 @@ public class AuthorizationRequestResponseDtoTest {
         String nonce = "testNonce";
         String responseUri = "testUri";
 
-        AuthorizationRequestResponseDto responseDto = new AuthorizationRequestResponseDto(clientId, null, new VPDefinitionResponseDto(presentationDefinition.getId(),presentationDefinition.getInputDescriptors(),presentationDefinition.getName(),presentationDefinition.getPurpose(),presentationDefinition.getFormat(),presentationDefinition.getSubmissionRequirements()),nonce,responseUri);
+        AuthorizationRequestResponseDto responseDto = new AuthorizationRequestResponseDto(clientId, null, new VPDefinitionResponseDto(presentationDefinition.getId(),presentationDefinition.getInputDescriptors(),presentationDefinition.getName(),presentationDefinition.getPurpose(),presentationDefinition.getFormat(),presentationDefinition.getSubmissionRequirements()),nonce,responseUri, false);
 
         assertEquals(Constants.RESPONSE_TYPE, responseDto.getResponseType());
         assertEquals(clientId, responseDto.getClientId());
