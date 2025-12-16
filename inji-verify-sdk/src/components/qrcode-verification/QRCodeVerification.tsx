@@ -353,14 +353,13 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const createVPRequest = async (presentationDefinition: any) => {
     try {
       let presentationDefinitionId;
-      const acceptVPWithoutHolderProof = true; // for data-share vc default value is true
       const data: QrData = await vpRequest(
         verifyServiceUrl,
         clientId,
         transactionId ?? undefined,
         presentationDefinitionId,
         presentationDefinition,
-        acceptVPWithoutHolderProof
+        true // default to true for data-share vc
       );
 
       storeStates(data);
@@ -537,7 +536,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         }
       }
     } catch (error) {
-      console.log("FetchVP Result", typeof error);
       resetState();
       handleError(error);
       resetState();

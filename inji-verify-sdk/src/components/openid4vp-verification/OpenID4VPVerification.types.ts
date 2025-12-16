@@ -22,7 +22,7 @@ export interface VPRequestBody {
   transactionId?: string;
   presentationDefinitionId?: string;
   presentationDefinition?: PresentationDefinition;
-  acceptVPWithoutHolderProof?: Boolean;
+  acceptVPWithoutHolderProof?: boolean;
 }
 type ExclusivePresentationDefinition =
   /**
@@ -133,8 +133,8 @@ export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
   onError: (error: AppError) => void;
 
   /**
-   Indicates whether Vp contains proof.
-   Defaults to false, allowing unsigned Vp (Vp without proof).
+   Indicates whether to accept VP submissions without holder proof.
+   When true, allows unsigned VPs (VPs without proof).
    */
   acceptVPWithoutHolderProof?: boolean;
 };
