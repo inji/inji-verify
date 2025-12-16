@@ -12,6 +12,8 @@ import io.inji.verify.exception.VPSubmissionWalletError;
 import io.inji.verify.exception.VPWithoutProofException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
+import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
+import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import io.inji.verify.repository.VPSubmissionRepository;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;

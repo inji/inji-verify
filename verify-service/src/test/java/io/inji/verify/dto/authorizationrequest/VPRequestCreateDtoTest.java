@@ -5,10 +5,7 @@ import io.inji.verify.dto.presentation.InputDescriptorDto;
 import io.inji.verify.dto.presentation.SubmissionRequirementDto;
 import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import org.junit.jupiter.api.Test;
-
-import java.text.Format;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -31,5 +28,6 @@ public class VPRequestCreateDtoTest {
         assertEquals(presentationDefinitionId, vpRequestCreateDto.getPresentationDefinitionId());
         assertEquals(nonce, vpRequestCreateDto.getNonce());
         assertEquals(presentationDefinition, vpRequestCreateDto.getPresentationDefinition());
+        assertFalse(vpRequestCreateDto.isAcceptVPWithoutHolderProof());
     }
 }
