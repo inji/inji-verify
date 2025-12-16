@@ -94,7 +94,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         if (data.authorizationDetails.presentationDefinitionUri) {
           params.set(
             "presentation_definition_uri",
-            verifyServiceUrl + data.authorizationDetails.presentationDefinitionUri
+            data.authorizationDetails.presentationDefinitionUri
           );
         } else {
           params.set(
@@ -112,7 +112,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       }
       return params.toString();
     },
-    [verifyServiceUrl, clientId]
+    [clientId]
   );
 
   const fetchVPResult = useCallback(
@@ -307,13 +307,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         handleGenerateQRCode();
       }
     }
-  }, [
-    triggerElement,
-    isSameDeviceFlowEnabled,
-    startVerification,
-    handleGenerateQRCode,
-    presentationDefinition,
-  ]);
+  }, [triggerElement, isSameDeviceFlowEnabled]);
 
   useEffect(() => {
     return () => {

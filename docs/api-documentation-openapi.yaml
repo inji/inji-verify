@@ -29,20 +29,35 @@ paths:
   /vp-request:
     post:
       summary: Create a new verification request
-      description: |
-        This endpoint is used to initiate a verifiable presentation (VP) request. 
-        It's the first step a verifier takes to ask a wallet to present credentials.
+      description: |-
+        This endpoint is used to initiate a Verifiable Presentation (VP) request. It represents the first step a verifier takes to request credentials from a wallet.
+
+        **Request**
+
         The request body must include a `clientId` and either:
-        - A `presentationDefinitionId` (referencing a pre-existing definition), or
-        - A full `presentationDefinition` object. 
+        - A `presentationDefinitionId` referencing a pre-existing presentation definition, or
+        - A full `presentationDefinition` object.
 
-        The response from this endpoint is used by the UI application to generate a QR code, which the wallet consumes. As of version *0.14.x*, the response will include a mix of `camelCase` and `snake_case` attributes. It is the responsibility of the UI application to convert `snake_case` attributes before generating the QR code.
+        **Response**
 
-        The response will contain the Authorization Request in one of two ways:
-        - **By value** (the full request object), or
-        - **By reference** (`request_uri`).
-        - In *0.13.x*, the Authorization Request was always provided by value. In this case, the `clientId` could simply be the client’s name.
-        - From *0.14.x* onward, the endpoint supports Authorization Request by reference (`request_uri`). For this, the `clientId` must be a valid DID URL of the verifier.
+        The `response` from this endpoint is used by the UI application to generate a QR code for the wallet to consume.
+
+        Note: As of version `0.16.x`, the response may include a mix of camelCase and snake_case attributes. *It is the responsibility of the UI application to convert any snake_case attributes before generating the QR code.*
+
+        The response provides the Authorization Request in one of two ways:
+
+        - By value — the full request object is returned.
+
+        - By reference — a `request_uri` is returned, pointing to the request.
+
+        **Version-specific behavior:**
+
+        Till `0.13.x`, 
+        - the Authorization Request was always returned by value, and the `clientId` could simply be the client’s name.
+
+        From `0.14.x` onwards, 
+        - Authorization Requests can be returned by reference (`request_uri`) as well. 
+        - In this case, the clientId must be a valid DID URL representing the verifier.
       operationId: createVPRequest
       tags:
         - VP Request Management
@@ -57,7 +72,14 @@ paths:
               presentationDefinitionId: age_verification
       responses:
         '201':
-          description: 'The VP Request was created successfully. The response includes a transactionId and requestId, along with either the full authorizationDetails or a requestUri.'
+          description: |-
+            The Verifiable Presentation (VP) request was created successfully. The response includes a `transactionId` and a `requestId`, along with either:
+
+            - The full `authorizationDetails` object, or
+
+            - A `requestUri` pointing to the authorization request.
+
+            This information can be used by the client application to generate a QR code or otherwise initiate the VP flow with the wallet.
           content:
             application/json:
               schema:
@@ -101,11 +123,14 @@ paths:
         '400':
           description: The request failed due to an invalid or missing field in the request body.
         '404':
-          description: The specified PresentationDefinitionId was not found on the server.
+          description: The specified `presentationDefinitionId` was not found on the server.
   '/vp-request/{requestId}':
     get:
       summary: Get VP Request JWT
-      description: This endpoint allows a client to retrieve the Verifiable Presentation (VP) request in its JSON Web Token (JWT) format. This is particularly useful for cross-device flows where the wallet needs to fetch the request details from a URI. This is introduced in version *0.14.x* to support Authorization Request by reference.
+      description: |-
+        This endpoint allows a client to retrieve a Verifiable Presentation (VP) request in its JSON Web Token (JWT) format. This is especially useful for cross-device flows, where a wallet fetches the request details from a URI rather than receiving it directly.
+
+        This feature was introduced in version `0.14.x` to support Authorization Requests by reference (`request_uri`).
       operationId: getVPRequestJwt
       tags:
         - VP Request Management
@@ -169,17 +194,31 @@ paths:
     post:
       summary: Submit authorization response
       description: |-
-        This endpoint is the destination for a wallet to submit a Verifiable Presentation (VP) `vp_token` and a `presentation_submission` object, typically when `response_mode` is `direct_post`.
-        The server processes this VP submission, saves it in database, and updates the transaction status.
+        This endpoint is used by a wallet to submit a Verifiable Presentation (VP) via the vp_token and a presentation_submission object, typically when the response_mode is direct_post. Upon receiving the submission, the server processes the VP, stores it in the database, and updates the transaction status.
 
-        With release `0.15.0`, following changes are done in API:
-        1. new request attributes `error` and `error_description` have been added for accepting error from wallet
-        2. `vp_token` is allowed as null, provided `error` is not null
-        3. `presentation_submission` is allowed as null, provided `error` is not null
-        4. if `vp_token` is not null, then `presentation_submission` should be not null
-        5. if `error` is not null, then `vp_token` and `presentation_submission` should be null  
-        6. if `error` is not null, still `error_description` can be null
-         
+        **Changes in Release `0.15.0`**
+
+        The following updates were introduced:
+
+        New request attributes `error` and `error_description` were added to allow the wallet to report errors.
+
+        `vp_token` can be null if `error` is provided.
+
+        `presentation_submission` can be null if `error` is provided.
+
+        If `vp_token` is not null, then `presentation_submission` must also be provided.
+
+        If `error` is not null, both `vp_token` and `presentation_submission` must be null.
+
+        If `error` is provided, `error_description` is optional and can be null.
+
+        **Changes in Release `0.16.0`**
+
+        The endpoint can return a `redirect_uri` based on the `INJI_VERIFY_REDIRECT_URI` configuration.
+
+        If `INJI_VERIFY_REDIRECT_URI` is blank, no `redirect_uri` is returned.
+
+        This minimal feature implementation is intended to support integration with specific modules (e.g., wallets and verifier applications). Full implementation, including response_code support, is planned for future releases to ensure complete compliance with the OpenID4VP specification.
       operationId: submitResponse
       tags:
         - VP Submission
@@ -210,11 +249,10 @@ paths:
                   redirect_uri:
                     type: string
                     nullable: true
-                    description: >
-                      Optional redirect URL returned only if the verifier has been
-                      configured with `inji.verify.redirect-uri`.
+                    description: |
+                      Optional redirect URL returned only if the verifier has been configured with `INJI_VERIFY_REDIRECT_URI`.
               example:
-                redirect_uri: "https://example.com/"
+                redirect_uri: 'https://example.com/'
         '400':
           description: The submission failed due to an invalid request format or missing required fields.
         '404':
@@ -222,7 +260,10 @@ paths:
   /vc-submission:
     post:
       summary: Submit Verifiable Credential (VC)
-      description: 'This API allows a user or system to submit a Verifiable Credential to the server. The server can optionally generate a transactionId if one is not provided in the request. This is distinct from a Verifiable Presentation submission.'
+      description: |-
+        This API allows a user or system to submit a Verifiable Credential (VC) to the server. If a `transactionId` is not provided in the request, the server can generate one automatically.
+
+        Note that this endpoint is specifically for submitting individual credentials and is distinct from a Verifiable Presentation (VP) submission.
       operationId: submitVC
       tags:
         - VC Submission
@@ -270,13 +311,20 @@ paths:
         in: path
         required: true
     get:
-      summary: Get the VP token for a request
-      description: 'This endpoint provides the final outcome of a Verifiable Presentation submission. After a wallet has submitted a VP, this endpoint can be polled to get the submission status and the verification results for each credential.'
+      summary: Get the VP results for a  given transactionId
+      description: |-
+        This endpoint returns the final result of a Verifiable Presentation (VP) submission. After a wallet submits a VP, this endpoint can be used to retrieve the verification status of each credential.
+
+        Since version `1.5.0`, the endpoint supports credentials in both JSON-LD and SD-JWT formats.
+
+        Starting from version `1.6.0`, the API also performs revocation checks for JSON-LD credentials. A credential’s verification status can be `SUCCESS, INVALID, EXPIRED, or REVOKED`.
+
+        Additionally, beginning with version `1.6.0`, the Verifiable Presentation itself may be unsigned (i.e., submitted without a proof section). This supports online sharing scenarios, such as transmitting large VCs via QR codes (DataShare), where including a cryptographic proof may not be feasible.
       tags:
         - VP Request Management
       responses:
         '200':
-          description: 'The result of the submission was successfully retrieved. The response includes the overall submissionStatus and an array of vcResults, each detailing the verification status for an individual VC.'
+          description: 'This response indicates that the submission results were successfully retrieved. The response includes the overall `vpResultStatus` and an array of `vcResults`, with each entry providing the verification status of an individual Verifiable Credential (VC).'
           content:
             application/json:
               schema:
@@ -286,7 +334,7 @@ paths:
                   summary: A successful VP submission result
                   value:
                     transactionId: txn_abc123
-                    submissionStatus: SUCCESS
+                    vpResultStatus: SUCCESS
                     vcResults:
                       - vc: '{...}'
                         verificationStatus: SUCCESS
@@ -294,14 +342,14 @@ paths:
                   summary: A failed VP submission result
                   value:
                     transactionId: txn_def456
-                    submissionStatus: FAILED
+                    vpResultStatus: FAILED
                     vcResults:
                       - vc: '{...}'
                         verificationStatus: INVALID
-        '400':
+        '404':
           description: |-
-            There was error during VP request processing in the wallet, which is sent to the Verifier.
-            The client is expected to use this to display the results of VP request.
+            This response indicates that an `error` occurred during the Verifiable Presentation (VP) request processing in the wallet, which is sent to the Verifier.
+            Clients can use this information to display the outcome or status of the VP request to the end user.
           content:
             application/json:
               schema:
@@ -318,10 +366,32 @@ paths:
                     description: The error code sent by the wallet during VP submission
                   errorDescription:
                     type: string
-                    description: The optional error message sent by the wallet
-        '404':
-          description: 'No result was found for the given transaction ID, or the given transaction ID is invalid.'
-          content: {}
+                    description: The optional error message
+        '500':
+          description: 'In certain cases, the API may return a 500 Internal Server Error. This can occur if a runtime exception is encountered during VC verification or if an error occurs while performing the credential status (revocation) check. When such errors arise, the API returns a response body describing the issue along with the 500 status code.'
+          content:
+            application/json:
+              schema:
+                type: object
+                x-examples:
+                  Example 1:
+                    timestamp: '2025-12-03T10:52:43.747423Z'
+                    status: 500
+                    path: /v1/verify/vc-verification
+                    error: 'STATUS_RETRIEVAL_ERROR - Retrieval of the status list failed: Network request failed with error response'
+                properties:
+                  timestamp:
+                    type: string
+                    description: Timestamp of the response
+                  status:
+                    type: integer
+                    description: Status code 500
+                  path:
+                    type: string
+                    description: Path of endpoint
+                  error:
+                    type: string
+                    description: Error details message
       operationId: get-vp-result-requestId-presentations
   '/vp-definition/{id}':
     parameters:
@@ -361,20 +431,32 @@ paths:
       operationId: get-presentation-id
   /vc-verification:
     post:
-      summary: Get the submitted VC verified
-      description: This API performs the server-side verification of a submitted Verifiable Credential to check its integrity and authenticity. It performs checks such as cryptographic signature validation to ensure the VC has not been tampered with.
+      summary: Get the VC verified
+      description: |-
+        This API performs server-side verification of a Verifiable Credential (VC) to validate its integrity and authenticity. It executes checks such as cryptographic signature validation and ensures that the credential has not been altered or tampered with.
+        The verification status returned can be `SUCCESS, INVALID, or EXPIRED`.
+
+        Starting from version `1.5.0`, the API supports verification of both JSON-LD and SD-JWT formatted VCs.
+
+        To verify a JSON-LD VC, set the request header: `Content-Type: application/vc+ld+json`
+
+        To verify an SD-JWT VC, set the request header: `Content-Type: application/vc+sd-jwt`
+
+        As of version `1.6.0`, the API also performs revocation checks for JSON-LD credentials. When a credential is found to be revoked, the verification status may additionally be `REVOKED`.
+
+        In certain cases, the API may return a 500 Internal Server Error. This can occur if a runtime exception is encountered during VC verification or if an error occurs while performing the credential status (revocation) check. When such errors arise, the API returns a response body describing the issue along with the 500 status code.
       operationId: vc-verification
       tags:
         - VC verification API
       requestBody:
         required: true
         content:
-          application/json:
+          application/vc+ld+json:
             schema:
               $ref: '#/components/schemas/VCVerificationRequest'
             examples:
               example:
-                summary: Example VC to be verified
+                summary: Example JSON LD format VC to be verified
                 value:
                   vc:
                     '@context':
@@ -393,10 +475,21 @@ paths:
                       verificationMethod: 'did:web:example.com#key-1'
                       proofPurpose: assertionMethod
                       jws: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+          application/vc+sd-jwt:
+            schema:
+              $ref: '#/components/schemas/VCVerificationSDJWTRequest'
+            examples:
+              example:
+                summary: Example SD-JWT format VC to be verified
+                value:
+                  vc: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
         description: The Verifiable Credential to be verified.
       responses:
         '200':
-          description: 'The VC verification status. The response contains the verificationStatus, which can be ''SUCCESS'' / ''EXPIRED'' / ''INVALID''.'
+          description: |-
+            The VC verification status indicates the result of validating each credential. The verificationStatus field can be `SUCCESS, EXPIRED, or INVALID`.
+
+            Starting with version `1.6.0`, an additional status, `REVOKED`, is returned when a credential has been explicitly revoked by its issuer.
           content:
             application/json:
               schema:
@@ -407,14 +500,54 @@ paths:
                   value:
                     verificationStatus: SUCCESS
                 invalid:
-                  summary: An invalid verification result
+                  summary: Invalid verification result
                   value:
                     verificationStatus: INVALID
+                expired:
+                  summary: Expired verification result
+                  value:
+                    verificationStatus: EXPIRED
+                revoked:
+                  summary: Revoked verification result
+                  value:
+                    verificationStatus: REVOKED
         '400':
           description: The request body format is invalid.
+        '500':
+          description: 'In certain cases, the API may return a 500 Internal Server Error. This can occur if a runtime exception is encountered during VC verification or if an error occurs while performing the credential status (revocation) check. When such errors arise, the API returns a response body describing the issue along with the 500 status code.'
+          content:
+            application/json:
+              schema:
+                type: object
+                x-examples:
+                  Example 1:
+                    timestamp: '2025-12-03T10:52:43.747423Z'
+                    status: 500
+                    path: /v1/verify/vc-verification
+                    error: 'STATUS_RETRIEVAL_ERROR - Retrieval of the status list failed: Network request failed with error response - Failed to connect to localhost/[0:0:0:0:0:0:0:1]:8090'
+                properties:
+                  timestamp:
+                    type: string
+                    description: Timestamp of the response
+                  status:
+                    type: integer
+                    description: Status code 500
+                  path:
+                    type: string
+                    description: Path of endpoint
+                  error:
+                    type: string
+                    description: Error details message
+              examples:
+                Example 1:
+                  value:
+                    timestamp: '2025-12-03T10:52:43.747423Z'
+                    status: 500
+                    path: /v1/verify/vc-verification
+                    error: 'STATUS_RETRIEVAL_ERROR - Retrieval of the status list failed: Network request failed with error response'
   /well-known/did.json:
     post:
-      summary: Get the did document
+      summary: Get the DID document
       description: 'This endpoint is part of a standard DID discovery mechanism, following the .well-known pattern. It is used to retrieve a DID (Decentralized Identifier) document for a given DID. A DID document contains crucial information for interacting with a DID, including public keys for authentication and service endpoints. This is introduced in version *0.14.x*.'
       tags:
         - ./well-known
@@ -652,6 +785,7 @@ components:
         - SUCCESS
         - EXPIRED
         - INVALID
+        - REVOKED
       example: SUCCESS
     AuthorizationResponse:
       type: object
@@ -974,6 +1108,14 @@ components:
               verificationMethod: 'did:web:example.com#key-1'
               proofPurpose: assertionMethod
               jws: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+    VCVerificationSDJWTRequest:
+      title: VCVerificationSDJWTRequest
+      type: object
+      properties:
+        vc:
+          type: string
+          description: The complete verifiable credential object to be verified by the server.
+          example: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
     VpTokenResult:
       title: VpTokenResult
       type: object
@@ -982,7 +1124,7 @@ components:
           type: string
           description: The transaction ID for the VP request for which the result needs to be fetched.
           example: txn_abc123
-        submissionStatus:
+        vpResultStatus:
           type: string
           description: The overall status for the VP submission ('SUCCESS' or 'FAILED').
           enum:

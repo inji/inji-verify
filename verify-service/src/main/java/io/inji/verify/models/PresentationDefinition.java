@@ -21,25 +21,23 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
 public class PresentationDefinition {
-
     @Id
     private final String id;
 
     @Convert(converter = ListInputDescriptorDtoConverter.class)
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private final List<InputDescriptorDto> inputDescriptors;
 
     private final String name;
 
     private final String purpose;
 
-    @Lob
-    @Column(name = "vp_format")
+    @Column(columnDefinition = "TEXT", name = "vp_format")
     @Convert(converter = FormatDtoConverter.class)
     private final FormatDto format;
 
     @Convert(converter = ListSubmissionRequirementDtoConverter.class)
-    @Lob
+    @Column(columnDefinition = "TEXT")
     private final List<SubmissionRequirementDto> submissionRequirements;
 
     @JsonIgnore

@@ -2,6 +2,7 @@ package io.inji.verify.services.impl;
 
 import io.inji.verify.dto.submission.VCSubmissionResponseDto;
 import io.inji.verify.dto.submission.VCSubmissionVerificationStatusDto;
+import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.models.VCSubmission;
 import io.inji.verify.repository.VCSubmissionRepository;
 import io.inji.verify.shared.Constants;
@@ -96,7 +97,7 @@ public class VCSubmissionServiceImplTest {
     }
 
     @Test
-    void getVcWithVerification_shouldReturnSuccessStatus_whenVerificationPasses() {
+    void getVcWithVerification_shouldReturnSuccessStatus_whenVerificationPasses() throws CredentialStatusCheckException {
         VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_VC_STRING);
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
 
@@ -130,7 +131,7 @@ public class VCSubmissionServiceImplTest {
     }
 
     @Test
-    void getVcWithVerification_shouldReturnSuccessStatus_whenSDJWTVerificationPasses() {
+    void getVcWithVerification_shouldReturnSuccessStatus_whenSDJWTVerificationPasses() throws CredentialStatusCheckException{
         VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_SDJWT_VC_STRING);
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
 
@@ -164,7 +165,7 @@ public class VCSubmissionServiceImplTest {
     }
 
     @Test
-    void getVcWithVerification_shouldReturnExpiredStatus_whenVerificationPassesButVCIsExpired() {
+    void getVcWithVerification_shouldReturnExpiredStatus_whenVerificationPassesButVCExpired() throws CredentialStatusCheckException{
         VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_VC_STRING);
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID))
                 .thenReturn(Optional.of(foundVCSubmission));
@@ -200,7 +201,7 @@ public class VCSubmissionServiceImplTest {
     }
 
     @Test
-    void getVcWithVerification_shouldReturnInExpiredStatus_whenSDJWTVerificationPassesButVcIsExpired() {
+    void getVcWithVerification_shouldReturnInExpiredStatus_whenSDJWTVerificationPassesButVcExpired() throws CredentialStatusCheckException {
         VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_SDJWT_VC_STRING);
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
 
@@ -234,7 +235,7 @@ public class VCSubmissionServiceImplTest {
     }
 
     @Test
-    void getVcWithVerification_shouldReturnInvalidStatus_whenVerificationFails() {
+    void getVcWithVerification_shouldReturnInvalidStatus_whenVerificationFails() throws CredentialStatusCheckException {
         VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_VC_STRING);
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
 
@@ -269,7 +270,7 @@ public class VCSubmissionServiceImplTest {
     }
 
     @Test
-    void getVcWithVerification_shouldReturnInValidStatus_whenSDJWTVerificationFails() {
+    void getVcWithVerification_shouldReturnInvalidStatus_whenSDJWTVerificationFails() throws CredentialStatusCheckException {
         VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_SDJWT_VC_STRING);
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
 
@@ -303,7 +304,7 @@ public class VCSubmissionServiceImplTest {
     }
 
     @Test
-    void getVcWithVerification_shouldReturnNull_whenVCSubmissionNotFound() {
+    void getVcWithVerification_shouldReturnNull_whenVCSubmissionNotFound() throws CredentialStatusCheckException {
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.empty());
 
         VCSubmissionVerificationStatusDto resultDto = vcSubmissionService.getVcWithVerification(TEST_TRANSACTION_ID);
@@ -315,7 +316,7 @@ public class VCSubmissionServiceImplTest {
     }
 
     @Test
-    void getVcWithVerification_shouldReturnRevokeStatus_whenVerificationPassesButVCIsRevoked() {
+    void getVcWithVerification_shouldReturnRevokeStatus_whenVerificationPassesButVCIsRevoked() throws CredentialStatusCheckException {
         VCSubmission foundVCSubmission = new VCSubmission(TEST_TRANSACTION_ID, TEST_VC_STRING);
         when(vcSubmissionRepository.findById(TEST_TRANSACTION_ID)).thenReturn(Optional.of(foundVCSubmission));
 

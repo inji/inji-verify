@@ -1,6 +1,7 @@
 package io.inji.verify.services.impl;
 
 import io.inji.verify.dto.verification.VCVerificationStatusDto;
+import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.services.VCVerificationService;
 import io.inji.verify.shared.Constants;
 import io.inji.verify.utils.Utils;
@@ -24,7 +25,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
     }
 
     @Override
-    public VCVerificationStatusDto verify(String vc, String contentType) {
+    public VCVerificationStatusDto verify(String vc, String contentType) throws CredentialStatusCheckException {
         CredentialFormat format;
         if ("application/vc+sd-jwt".equalsIgnoreCase(contentType) || "application/dc+sd-jwt".equalsIgnoreCase(contentType)) {
             format = CredentialFormat.VC_SD_JWT;
