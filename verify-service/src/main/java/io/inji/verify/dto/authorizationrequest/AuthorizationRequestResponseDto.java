@@ -6,7 +6,6 @@ import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import io.inji.verify.shared.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
 import java.time.Instant;
 
 @Getter

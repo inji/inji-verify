@@ -28,5 +28,6 @@ class ErrorCodeTest {
     @Test
     void testValueOf() {
         assertEquals(ErrorCode.NO_VP_SUBMISSION, ErrorCode.valueOf("NO_VP_SUBMISSION"));
+        assertEquals(ErrorCode.VP_WITHOUT_PROOF, ErrorCode.valueOf("VP_WITHOUT_PROOF"));
     }
 }
