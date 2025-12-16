@@ -536,7 +536,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         }
       }
     } catch (error) {
-      resetState();
       handleError(error);
       resetState();
     }
