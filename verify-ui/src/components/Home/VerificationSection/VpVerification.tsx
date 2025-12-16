@@ -33,7 +33,8 @@ const DisplayActiveStep = () => {
   const showResult = useVerifyFlowSelector((state) => state.isShowResult);
   const flowType = useVerifyFlowSelector((state) => state.flowType);
   const incorrectCredentialShared = selectedClaims.length === 1 && unverifiedClaims.length === 1 && isSingleVc;
-
+  const sdkInstanceKey = useVerifyFlowSelector((state) => state.sdkInstanceKey);
+  
   const dispatch = useAppDispatch();
 
   const handleRequestCredentials = () => {
@@ -128,7 +129,7 @@ const DisplayActiveStep = () => {
                 className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
               >
                 <OpenID4VPVerification
-                  key={flowType + "_" + activeScreen}
+                  key={`${flowType}-${sdkInstanceKey}`}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
                   verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
                   presentationDefinition={presentationDefinition}
@@ -165,7 +166,7 @@ const DisplayActiveStep = () => {
                 className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
               >
                 <OpenID4VPVerification
-                  key={flowType + "_" + activeScreen}
+                  key={`${flowType}-${sdkInstanceKey}`}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
                   verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
                   presentationDefinition={presentationDefinition}
@@ -180,9 +181,15 @@ const DisplayActiveStep = () => {
         </div>
       </div>
     );
+  } else {
+    return <></>;
   }
 };
 
 export const VpVerification = () => {
-  return <div>{DisplayActiveStep()}</div>;
+  return (
+    <div>
+      <DisplayActiveStep />
+    </div>
+  );
 };
