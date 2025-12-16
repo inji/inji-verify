@@ -7,6 +7,7 @@ import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
 import io.inji.verify.exception.VPSubmissionWalletError;
+import io.inji.verify.exception.VPWithoutProofException;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -35,7 +36,7 @@ public class VPResultController {
     }
 
     @GetMapping(path = "/vp-result/{transactionId}")
-    public ResponseEntity<Object> getVPResult(@PathVariable String transactionId, HttpServletRequest request) throws CredentialStatusCheckException {
+    public ResponseEntity<Object> getVPResult(@PathVariable String transactionId, HttpServletRequest request) {
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
         if (!requestIds.isEmpty()) {
@@ -46,6 +47,8 @@ public class VPResultController {
             } catch (VPSubmissionNotFoundException e) {
                 log.error(e.getMessage());
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_VP_SUBMISSION));
+            } catch (VPWithoutProofException e) {
+                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF));
             } catch (VPSubmissionWalletError e) {
                 log.error("Received wallet error for transactionId: {} - {} - {}", e.getErrorCode(), e.getErrorDescription(), transactionId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(e.getErrorCode(), e.getErrorDescription()));
