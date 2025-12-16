@@ -85,15 +85,16 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         long expiresAt = Instant.now().plusSeconds(Constants.DEFAULT_EXPIRY).toEpochMilli();
         String nonce = vpRequestCreate.getNonce() != null ? vpRequestCreate.getNonce() : SecurityUtils.generateNonce();
         String responseUri = verifyServiceBaseUrl + Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI;
+        boolean acceptVPWithoutHolderProof = vpRequestCreate.isAcceptVPWithoutHolderProof();
 
         AuthorizationRequestResponseDto authorizationRequestResponseDto = Optional.ofNullable(vpRequestCreate.getPresentationDefinitionId())
                 .map(presentationDefinitionId -> presentationDefinitionRepository.findById(presentationDefinitionId)
                 .map(presentationDefinition -> {
                     VPDefinitionResponseDto vpDefinitionResponseDto = new VPDefinitionResponseDto(presentationDefinition.getId(), presentationDefinition.getInputDescriptors(), presentationDefinition.getName(), presentationDefinition.getPurpose(), presentationDefinition.getFormat(), presentationDefinition.getSubmissionRequirements());
-                    return new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), presentationDefinition.getURL(), vpDefinitionResponseDto, nonce, responseUri);
+                    return new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), presentationDefinition.getURL(), vpDefinitionResponseDto, nonce, responseUri, acceptVPWithoutHolderProof);
                 })
                 .orElseThrow(PresentationDefinitionNotFoundException::new))
-                .orElseGet(() -> new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), null, vpRequestCreate.getPresentationDefinition(), nonce, responseUri));
+                .orElseGet(() -> new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), null, vpRequestCreate.getPresentationDefinition(), nonce, responseUri, acceptVPWithoutHolderProof));
 
         AuthorizationRequestCreateResponse authorizationRequestCreateResponse = new AuthorizationRequestCreateResponse(requestId, transactionId, authorizationRequestResponseDto, expiresAt);
         authorizationRequestCreateResponseRepository.save(authorizationRequestCreateResponse);
@@ -192,6 +193,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                 })
                 .orElseThrow(VPRequestNotFoundException::new);
     }
+
     private String createAndSignAuthorizationRequestJwt(String verifierDid, AuthorizationRequestResponseDto authorizationRequest, String state) {
 
         try {
@@ -232,5 +234,11 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
             log.error("Error generating JWT: {}", e.getMessage());
             throw new JWTCreationException();
         }
+    }
+
+    public boolean isVPWithoutHolderProofAccepted(String requestId) {
+        return authorizationRequestCreateResponseRepository.findById(requestId).map(
+                authorizationRequestCreateResponse -> authorizationRequestCreateResponse.getAuthorizationDetails().isAcceptVPWithoutHolderProof()
+        ).orElse(false);
     }
 }
