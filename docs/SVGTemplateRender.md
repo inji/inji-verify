@@ -128,19 +128,16 @@ When a credential is ready to be displayed, Inji Verify performs the following s
 
 ```mermaid
 flowchart TD
-    A[VC Received by Inji Verify] --> B{renderMethod Present?}
-    B -- No --> Z[Render using Default Key-Value UI]
-    B -- Yes --> C[Check template.id]
-    C --> D{Is template.id URL?}
-    D -- Yes --> E[Fetch SVG from issuer's database]
-    D -- No --> F[Use inline SVG content]
-    E --> G{Fetch Success?}
-    G -- No --> Z[Fallback to Default Rendering]
-    G -- Yes --> H[Process SVG + Mustache]
-    F --> H[Process SVG + Mustache]
-    H --> I[Bind VC data into placeholders]
-    I --> J[Generate final rendered SVG]
-    J --> K[Display SVG in UI]
+    A[VC Received by Inji Verify] --> B{"renderMethod && renderMethod.template.id (URL) ?"}
+    B -- No --> Z["Fallback to Default Rendering (Key-Value)"]
+    B -- Yes --> C[Fetch SVG from issuer's database]
+    C --> D{Fetch Success?}
+    D -- No --> Z["Fallback to Default Rendering (Key-Value)"]
+    D -- Yes --> E[Process SVG + Mustache]
+    E --> F[Bind VC data into placeholders]
+    F --> G[Generate final rendered SVG]
+    G --> H[Display SVG in UI]
+    E -- Error while processing template --> I[Display Error in UI]
 ```
 
 ---
