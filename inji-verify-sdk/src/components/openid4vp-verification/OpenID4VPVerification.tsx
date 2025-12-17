@@ -94,7 +94,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         if (data.authorizationDetails.presentationDefinitionUri) {
           params.set(
             "presentation_definition_uri",
-            data.authorizationDetails.presentationDefinitionUri
+            verifyServiceUrl + data.authorizationDetails.presentationDefinitionUri
           );
         } else {
           params.set(
@@ -112,7 +112,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       }
       return params.toString();
     },
-    [clientId]
+    [verifyServiceUrl, clientId]
   );
 
   const fetchVPResult = useCallback(
