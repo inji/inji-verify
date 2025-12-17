@@ -235,10 +235,4 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
             throw new JWTCreationException();
         }
     }
-
-    public boolean isVPWithoutHolderProofAccepted(String requestId) {
-        return authorizationRequestCreateResponseRepository.findById(requestId).map(
-                authorizationRequestCreateResponse -> authorizationRequestCreateResponse.getAuthorizationDetails().isAcceptVPWithoutHolderProof()
-        ).orElse(false);
-    }
 }

@@ -259,19 +259,4 @@ class VerifiablePresentationRequestServiceImplTest {
         assertNotNull(result);
         assertEquals(VPRequestStatus.VP_SUBMITTED, result.getStatus()); // ✅ correct status
     }
-
-    @Test
-    void shouldReturnIsVPWithoutHolderProofAccepted() {
-        String requestId = "reqWithDefinition";
-        VPDefinitionResponseDto vpDef = new VPDefinitionResponseDto("id", List.of(), "name", "purpose", null, List.of());
-        AuthorizationRequestResponseDto authzDto = new AuthorizationRequestResponseDto("did:example", null, vpDef, "nonce", "responseUri", false);
-        AuthorizationRequestCreateResponse response = new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 1000);
-
-        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(response));
-        when(mockVPSubmissionRepository.findById(requestId)).thenReturn(Optional.of(mock()));
-
-        boolean result = service.isVPWithoutHolderProofAccepted(requestId);
-
-        assertFalse(result);
-    }
 }
