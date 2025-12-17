@@ -5,7 +5,7 @@
 -- -------------------------------------------------------------------------------------------------
 -- Rollback Script: v0.16.0 to v0.17.0
 -- Database       : inji_verify
--- Purpose        : Revert schema changes introduced in version 0.16.0
+-- Purpose        : Revert schema changes introduced in version 0.17.0
 -- -------------------------------------------------------------------------------------------------
 
 \c inji_verify
@@ -14,4 +14,4 @@
 -- SECTION 1: Revert presentation_definition table
 -- -------------------------------------------------------------------------------------------------
 ALTER TABLE verify.presentation_definition
-ALTER COLUMN input_descriptors TYPE jsonb;
+ALTER COLUMN input_descriptors TYPE jsonb USING input_descriptors::jsonb;

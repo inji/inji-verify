@@ -5,7 +5,7 @@
 -- -------------------------------------------------------------------------------------------------
 -- Upgrade Script : v0.16.0 to v0.17.0
 -- Database       : inji_verify
--- Purpose        : Apply schema changes introduced in version 0.16.0
+-- Purpose        : Apply schema changes introduced in version 0.17.0
 -- -------------------------------------------------------------------------------------------------
 \c inji_verify
 
