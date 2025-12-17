@@ -50,7 +50,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         verifiablePresentationRequestService.invokeVpRequestStatusListener(vpSubmissionDto.getState());
     }
 
-    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId) throws VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
+    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId) throws VPSubmissionWalletError, CredentialStatusCheckException {
         log.info("Processing VP submission");
 
         List<VCResultDto> verificationResults = new ArrayList<>();
@@ -109,7 +109,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                             throw new InvalidVpTokenException();
                         }
                     } else {
-                        throw new VPWithoutProofException();
+                        throw new InvalidVpTokenException();
                     }
                 } else {
                     throw new InvalidVpTokenException();
@@ -128,9 +128,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             throw e;
         } catch (CredentialStatusCheckException e) {
             log.error("Received Credential status check exception: {} - {}", e.getErrorCode(), e.getErrorDescription());
-            throw e;
-        } catch (VPWithoutProofException e) {
-            log.error("Received Invalid VP: ", e);
             throw e;
         } catch (Exception e) {
             log.error("Failed to verify VP submission", e);
@@ -207,7 +204,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
+    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
         List<VPSubmission> vpSubmissions = vpSubmissionRepository.findAllById(requestIds);
 
         if (vpSubmissions.isEmpty()) {
