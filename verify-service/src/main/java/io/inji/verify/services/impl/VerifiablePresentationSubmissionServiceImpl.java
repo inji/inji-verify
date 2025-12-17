@@ -1,5 +1,6 @@
 package io.inji.verify.services.impl;
 
+import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.dto.submission.VPSubmissionDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
@@ -84,7 +85,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             for (JSONObject vpToken : jsonVpTokens) {
                 boolean isVerifiablePresentation = isVerifiablePresentation(vpToken);
                 boolean isVerifiablePresentationSigned =  isVerifiablePresentationSigned(vpToken);
-                boolean acceptVPWithoutHolderProof  = request.getAuthorizationDetails().isAcceptVPWithoutHolderProof();
+                boolean acceptVPWithoutHolderProof = Optional.ofNullable(request.getAuthorizationDetails()).map(AuthorizationRequestResponseDto::isAcceptVPWithoutHolderProof).orElse(false);
 
                 if (isVerifiablePresentation) {
                     if (isVerifiablePresentationSigned) {
