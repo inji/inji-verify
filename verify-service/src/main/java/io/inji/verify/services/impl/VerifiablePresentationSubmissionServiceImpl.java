@@ -62,9 +62,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 log.info("VP submission from wallet has error");
                 throw new VPSubmissionWalletError(vpSubmission.getError(), vpSubmission.getErrorDescription());
             }
+            AuthorizationRequestCreateResponse request = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
 
             log.info("Processing VP token matching");
-            if (!isVPTokenMatching(vpSubmission, transactionId)) {
+            if (!isVPTokenMatching(vpSubmission, request)) {
                 throw new TokenMatchingFailedException();
             }
 
@@ -83,7 +84,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             for (JSONObject vpToken : jsonVpTokens) {
                 boolean isVerifiablePresentation = isVerifiablePresentation(vpToken);
                 boolean isVerifiablePresentationSigned =  isVerifiablePresentationSigned(vpToken);
-                boolean acceptVPWithoutHolderProof  = verifiablePresentationRequestService.isVPWithoutHolderProofAccepted(vpSubmission.getRequestId());
+                boolean acceptVPWithoutHolderProof  = request.getAuthorizationDetails().isAcceptVPWithoutHolderProof();
 
                 if (isVerifiablePresentation) {
                     if (isVerifiablePresentationSigned) {
@@ -214,10 +215,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return processSubmission(vpSubmission, transactionId);
     }
 
-    private boolean isVPTokenMatching(VPSubmission vpSubmission, String transactionId) {
+    private boolean isVPTokenMatching(VPSubmission vpSubmission, AuthorizationRequestCreateResponse request) {
         Object vpTokenRaw = new JSONTokener(vpSubmission.getVpToken()).nextValue();
         List<DescriptorMapDto> descriptorMap = vpSubmission.getPresentationSubmission().getDescriptorMap();
-        AuthorizationRequestCreateResponse request = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
 
         if (vpTokenRaw == null || request == null || descriptorMap == null || descriptorMap.isEmpty()) {
             log.info("Unable to perform token matching");
