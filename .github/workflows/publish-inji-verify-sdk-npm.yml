@@ -20,7 +20,7 @@ on:
       - MOSIP*
 
 permissions:
-  contents: write
+  contents: write # Required for creating release tags
 
 jobs:
   publish-inji-verify-sdk-to-npm-registry:
