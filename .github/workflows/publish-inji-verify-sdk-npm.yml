@@ -1,5 +1,8 @@
 name: inji-verify SDK NPM Publish
 
+permissions:
+  contents: write # Required for creating release tags
+
 on:
   release:
     types: [ published ]
