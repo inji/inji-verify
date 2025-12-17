@@ -1,4 +1,4 @@
-# Revocation Check
+# Revocation Support
 
 `Inji Verify` now supports revocation checking, allowing the verifier to determine whether a credential is valid or revoked. Revocation is a mechanism used by an issuer to express the status of a Claim after issuance. 
 
