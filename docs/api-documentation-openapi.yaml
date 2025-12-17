@@ -1111,7 +1111,7 @@ components:
     VCVerificationSDJWTRequest:
       title: VCVerificationSDJWTRequest
       type: object
-      required: vc
+      required: [vc]
       properties:
         vc:
           type: string
