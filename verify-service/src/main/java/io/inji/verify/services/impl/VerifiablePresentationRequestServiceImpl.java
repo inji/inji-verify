@@ -90,7 +90,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                 .map(presentationDefinitionId -> presentationDefinitionRepository.findById(presentationDefinitionId)
                 .map(presentationDefinition -> {
                     VPDefinitionResponseDto vpDefinitionResponseDto = new VPDefinitionResponseDto(presentationDefinition.getId(), presentationDefinition.getInputDescriptors(), presentationDefinition.getName(), presentationDefinition.getPurpose(), presentationDefinition.getFormat(), presentationDefinition.getSubmissionRequirements());
-                    return new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), presentationDefinition.getURL(), vpDefinitionResponseDto, nonce, responseUri);
+                    return new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), verifyServiceBaseUrl + presentationDefinition.getURL(), vpDefinitionResponseDto, nonce, responseUri);
                 })
                 .orElseThrow(PresentationDefinitionNotFoundException::new))
                 .orElseGet(() -> new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), null, vpRequestCreate.getPresentationDefinition(), nonce, responseUri));
