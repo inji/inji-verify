@@ -1,19 +1,19 @@
-# Revocation 
+# Revocation Support
 
-`Inji Verify` now supports verification of `Revoked` vc. Revocation is a mechanism used by an issuer to express the status of a Claim after issuance. 
+`Inji Verify` now supports revocation checking, allowing the verifier to determine whether a credential is valid or revoked. Revocation is a mechanism used by an issuer to express the status of a Claim after issuance. 
 
 # Why is VC Revocation needed?
 
-In a `Verifiable Credential` (VC), once it’s issued, it’s cryptographically signed and can be verified even offline.
+In a `Verifiable Credential` (VC), once it’s issued, it’s cryptographically signed and can be verified.
 
 But what happens if the credential later becomes invalid? For example:
 - A driver’s license is revoked
 - A student’s degree is withdrawn
-- An employment certificate is expired or suspended
+- An employment certificate is revoked
 
 We need a way to check if the VC is still valid — without reissuing it.
-That’s where the `credentialStatus` property comes in.
-It points to a `status list` or registry maintained by the issuer, where verifiers can check whether the credential has been `revoked`, `suspended`, or otherwise invalidated.
+That's where the `credentialStatus` property comes in.
+It points to a `status list` or registry maintained by the issuer, where verifiers can check whether the credential has been revoked.
 
 ## API Documentation
 
@@ -44,11 +44,11 @@ The API documentations can be found in the [Inji Verify API documentation](https
 
 | Field                 | Meaning                                                                                                   |
 |-----------------------|-----------------------------------------------------------------------------------------------------------|
-| id                    | A unique URL identifier for this status entry.                                                             |
+| id                    | A unique URL identifier for this status entry.                                                            |
 | type                  | The method used for status checking — e.g., `BitstringStatusListEntry`.                                   |
-| statusPurpose         | Describes why this status exists — e.g., "revocation" or "suspension".                                     |
-| statusListIndex       | A numeric index (or bit position) representing this credential’s position in the status list.             |
-| statusListCredential  | The URI of the status list credential — a VC published by the issuer that contains a compressed bitstring. |
+| statusPurpose         | Describes why this status exists — e.g., "revocation".                                                    |
+| statusListIndex       | A numeric index or position of status of credential.                                                      |
+| statusListCredential  | The URI of the status list credential.                                                                    |
 
 ### Submission Result:
 
@@ -58,7 +58,7 @@ The API documentations can be found in the [Inji Verify API documentation](https
 
 > - **_Issuer_**: assigns each new credential a statusListIndex and puts that index into the VC's credentialStatus object.
 >
-> - **_Inji Verify Backend_**: retrieves the `statusListCredential`, decodes its encodedList, checks the bit at that index to see whether it's revoked/suspended.
+> - **_Inji Verify Backend (vc verifier)_**: retrieves the `statusListCredential`, decodes its encodedList, checks the bit at that index to see whether it's revoked.
 
 - The verification status returned can be **_SUCCESS_**, **_INVALID_**, **_EXPIRED_** or **_REVOKED_**.
 
@@ -70,13 +70,18 @@ The API documentations can be found in the [Inji Verify API documentation](https
 
 Inji Verify allows users to submit a Verifiable Presentation.
 
-- Once the `wallet` scans the QR code, it generates the `VP token` and the `submission request`, and then posts them to the Inji Verify backend.
+- Inji Verify generates QR code with VP request.
+
+- Once the `wallet` scans the QR code, it generates the `VP token` and the `presentation submission`, and then posts them to the Inji Verify backend.
 
 - If the `wallet` encounters any error while generating the `VP token`, it submits the `error` to the `Inji Verify backend` along with an `error description`.
 
 ### Submission Result
 
 - Once the `wallet` submits the VP, the status is updated to **_VP_SUBMITTED_**.
+
+- The `Inji Verify Backend` retrieves the `statusListCredential`, decodes its encodedList, and checks the bit at the `statusListIndex` to determine whether the credential is revoked.
+
 - The `Inji Verify UI` can then fetch the result of the submission. The result contains two things:
 
   1. The overall status of the submission, which is either **_SUCCESS_** or **_FAILED_**. 

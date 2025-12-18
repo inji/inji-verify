@@ -1,10 +1,15 @@
 # SVG Template Rendering
 
-`Inji Verify` now supports `SVG Template Rendering` based on the `W3C` `VC Render Method` draft specification.
+Inji Verify now supports `SVG Template Rendering` based on the `W3C data model 2.0` `VC Render Method` draft specification.
 
-This feature allows issuers to define branded, `visually rich`, and `layout-controlled` representations of their Verifiable Credentials (VCs).
+## Supported Credential Formats
 
-Issuers can now specify exactly how their credentials should appear when rendered by a `verifier` or wallet.
+SVG rendering is supported for the following credential formats:
+- **W3C Verifiable Credentials** (JSON-LD)
+
+This feature allows issuers to define branded, visually rich, and layout-controlled representations of their Verifiable Credentials (VCs).
+
+Issuers can now specify exactly how their credentials should appear when rendered by a relying party or wallet.
 
 ---
 
@@ -30,7 +35,7 @@ To support such visual customization, the VC can include a `renderMethod` sectio
 
 - Issuers can embed a `renderMethod` object inside the credential.
 
-- The `issuer` must host and maintain the `SVG template` on their server or template store.
+- The issuer must host and maintain the `SVG template` on their server or template store.
 
 **_Example Of RenderMethod_**
 
@@ -56,7 +61,7 @@ To support such visual customization, the VC can include a `renderMethod` sectio
   "issuer": "https://issuer.example.org",
   "credentialSubject": {
     "id": "did:example:123",
-    "name": "Mayura Deshmukh",
+    "name": "SVG VC Example",
     "memberSince": "2023-01-01"
   },
   "renderMethod": [
@@ -76,7 +81,6 @@ To support such visual customization, the VC can include a `renderMethod` sectio
 
 | Field        | Meaning                                                                                 |
 |--------------|-----------------------------------------------------------------------------------------|
-| renderMethod | Describes how the VC should be visually rendered.                                       |
 | type         | Rendering method type (e.g., `TemplateRenderMethod`)                                    |
 | renderSuite  | Defines rendering engine (e.g., `svg-mustache`)                                         |
 | id           | URL pointing to where the SVG template is hosted                                        |
@@ -87,10 +91,7 @@ To support such visual customization, the VC can include a `renderMethod` sectio
 
 | MediaType          | Usage                                      |
 |--------------------|---------------------------------------------|
-| text/html          | HTML templates                              |
 | image/svg+xml      | SVG templates (commonly used with Mustache) |
-| application/pdf    | PDF-based renders                           |
-
 
 ## What svg-mustache Means
 
@@ -111,45 +112,38 @@ To support such visual customization, the VC can include a `renderMethod` sectio
 
 When a credential is ready to be displayed, Inji Verify performs the following steps:
 
-- `Inji Verify UI` fetches the submission result through APIs, validates it using `vc-verifier`, and returns the response
+- Inji Verify UI fetches the submission result through APIs, validates it using `vc-verifier`, and returns the response
 
-- `Inji Verify UI` renders the response accordingly:
+- Inji Verify UI renders the response accordingly:
 
-1. For `JSON VC` (already decoded) → Render directly
+1. For `ldp_vc` → Render directly
 
-   - If the verified credential includes a `renderMethod` with an `SVG template` reference, Inji Verify fetches the `SVG template` from the `issuer`, preprocesses the VC for language and placeholder handling, and renders the credential in `SVG format` using the `VCRenderer`. The sanitized SVG is then displayed in the interface.
+   - If the verified credential includes a `renderMethod` with an `SVG template` reference, Inji Verify fetches the `SVG template` from the issuer, preprocesses the VC for language and placeholder handling, and renders the credential in SVG format using the VCRenderer. The sanitized SVG is then displayed in the interface.
 
-   - If `SVG template rendering fails` for any reason (missing template, fetch failure, invalid SVG, rendering error, or empty output), Inji Verify automatically falls back to showing the credential in the standard key–value layout using its `default UI components`.
+   - If SVG template rendering fails for any reason (missing template, fetch failure, invalid SVG, rendering error, or empty output), Inji Verify automatically falls back to showing the credential in the standard key–value layout using its default UI components.
 
    - This ensures that credential display is always reliable—using SVG rendering and falling back to the structured key–value view when SVG is unavailable.
 
-2. For `SD-JWT VC` in encoded string format → Must be decoded using `@sd-jwt/decode`
-
-   - Since `SD-JWT` credentials do not contain a `renderMethod`. These credentials are always displayed in the `default key–value layout`.
-
-3. Or shows `error messages` and failure details if the `verification failed`.
+3. Or shows error messages and failure details if the verification failed.
 
 ```mermaid
 flowchart TD
-    A[VC Received by Inji Verify] --> B{renderMethod Present?}
-    B -- No --> Z[Render using Default Key-Value UI]
-    B -- Yes --> C[Check template.id or inline content]
-    C --> D{Is template.id URL?}
-    D -- Yes --> E[Fetch SVG from issuer's database]
-    D -- No --> F[Use inline SVG content]
-    E --> G{Fetch Success?}
-    G -- No --> Z[Fallback to Default Rendering]
-    G -- Yes --> H[Process SVG + Mustache]
-    F --> H[Process SVG + Mustache]
-    H --> I[Bind VC data into placeholders]
-    I --> J[Generate final rendered SVG]
-    J --> K[Display SVG in UI]
+    A[VC Received by Inji Verify] --> B{"renderMethod && renderMethod.template.id (URL) ?"}
+    B -- No --> Z["Fallback to Default Rendering (Key-Value)"]
+    B -- Yes --> C[Fetch SVG from issuer's database]
+    C --> D{Fetch Success?}
+    D -- No --> Z["Fallback to Default Rendering (Key-Value)"]
+    D -- Yes --> E[Process SVG + Mustache]
+    E --> F[Bind VC data into placeholders]
+    F --> G[Generate final rendered SVG]
+    G --> H[Display SVG in UI]
+    E -- Error while processing template --> I[Display Error in UI]
 ```
 
 ---
 
 > **_Important Notes_** : 
-`renderMethod` is not part of `cryptographic proof`.
-Changing the template does not break signatures.
-If the issuer’s template becomes unavailable, `Inji Verify` gracefully falls back to default rendering.
-`SD-JWT` credentials do not support renderMethod
+> - `renderMethod` is not part of `cryptographic proof`.
+> - Changing the template does not break signatures.
+> - If the issuer's template becomes unavailable, Inji Verify gracefully falls back to default rendering.
+> - `SD-JWT` credentials do not support renderMethod
