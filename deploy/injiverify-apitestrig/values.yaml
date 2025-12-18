@@ -3,5 +3,5 @@ modules:
     enabled: true
     image:
       repository: mosipid/apitest-inji-verify
-      tag: 0.16.x
+      tag: 0.16.0
       pullPolicy: Always

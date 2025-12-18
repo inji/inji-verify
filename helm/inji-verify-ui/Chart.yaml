@@ -2,7 +2,7 @@ apiVersion: v2
 name: inji-verify-ui
 description: A Helm chart for MOSIP inji verify ui module
 type: application
-version: 0.16.0-develop
+version: 0.16.0
 appVersion: ""
 dependencies:
   - name: common

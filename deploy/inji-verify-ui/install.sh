@@ -7,7 +7,7 @@ if [ $# -ge 1 ] ; then
 fi
 
 NS=injiverify
-CHART_VERSION=0.16.0-develop
+CHART_VERSION=0.16.0
 
 DEFAULT_INJIVERIFY_HOST=$( kubectl get cm inji-stack-config -n config-server -o jsonpath={.data.injiverify-host} )
 # Check if INJIVERIFY_HOST is present under configmap/inji-stack-config of configserver
