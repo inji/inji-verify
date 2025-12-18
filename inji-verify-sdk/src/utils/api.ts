@@ -82,11 +82,13 @@ export const vpRequest = async (
   clientId: string,
   txnId?: string,
   presentationDefinitionId?: string,
-  presentationDefinition?: PresentationDefinition
+  presentationDefinition?: PresentationDefinition,
+  acceptVPWithoutHolderProof?: boolean
 ) => {
   const requestBody: VPRequestBody = {
     clientId: clientId,
     nonce: generateNonce(),
+    acceptVPWithoutHolderProof: acceptVPWithoutHolderProof,
   };
 
   if (txnId) requestBody.transactionId = txnId;

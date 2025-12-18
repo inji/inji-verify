@@ -41,6 +41,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   onError,
   clientId,
   isSameDeviceFlowEnabled = true,
+  acceptVPWithoutHolderProof = false,
 }) => {
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -94,7 +95,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         if (data.authorizationDetails.presentationDefinitionUri) {
           params.set(
             "presentation_definition_uri",
-            verifyServiceUrl + data.authorizationDetails.presentationDefinitionUri
+            data.authorizationDetails.presentationDefinitionUri
           );
         } else {
           params.set(
@@ -112,7 +113,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       }
       return params.toString();
     },
-    [verifyServiceUrl, clientId]
+    [clientId]
   );
 
   const fetchVPResult = useCallback(
@@ -194,7 +195,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         clientId,
         transactionId ?? undefined,
         presentationDefinitionId,
-        presentationDefinition
+        presentationDefinition,
+        acceptVPWithoutHolderProof
       );
 
       sessionStateRef.current = {
