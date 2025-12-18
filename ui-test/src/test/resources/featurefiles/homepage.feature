@@ -10,7 +10,7 @@ Feature: Inji Verify homepage testing
     And Verify that Credentials button is displayed
     And Verify that Help button is displayed
     And Verify that expansion button is displayed before expansion
-    And Verify click on home button
+    And Verify click on Help button
     And Verify that links are valid under help
     And Verify minimize help option
     And Verify that upload QR Code tab is visible

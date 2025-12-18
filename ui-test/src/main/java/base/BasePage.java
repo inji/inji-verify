@@ -1,4 +1,6 @@
 package base;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.File;
 import java.io.IOException;
@@ -14,11 +16,13 @@ import org.openqa.selenium.remote.RemoteWebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
-import org.openqa.selenium.TimeoutException;
 
+import utils.BaseTest;
 import utils.WaitUtil;
 
 public class BasePage {
+	
+	private static final Logger logger = LoggerFactory.getLogger(BasePage.class);
 
     protected WebDriver driver;
 
@@ -49,7 +53,7 @@ public class BasePage {
                 WaitUtil.waitForVisibility(driver, element);
                 return element.isDisplayed();
             } catch (StaleElementReferenceException e) {
-                System.out.println("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
+                logger.error("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
                 attempts++;
                 try {
                     Thread.sleep(900);
@@ -58,7 +62,7 @@ public class BasePage {
                     return false;
                 }
             } catch (TimeoutException e) {
-                System.out.println("⏰ Timeout waiting for element to be visible.");
+                logger.error("⏰ Timeout waiting for element to be visible.");
                 return false;
             }
         }
@@ -75,7 +79,7 @@ public class BasePage {
                 wait.until(ExpectedConditions.visibilityOf(element));
                 return element.isDisplayed();
             } catch (StaleElementReferenceException e) {
-                System.out.println("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
+                logger.error("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
                 attempts++;
                 try {
                     Thread.sleep(900);
@@ -84,7 +88,7 @@ public class BasePage {
                     return false;
                 }
             } catch (TimeoutException e) {
-                System.out.println("⏰ Timeout waiting for element to be visible.");
+                logger.error("⏰ Timeout waiting for element to be visible.");
                 return false;
             }
         }
@@ -134,18 +138,20 @@ public class BasePage {
                     ((RemoteWebElement) fileInputElement).setFileDetector(new LocalFileDetector());
                 }
                 fileInputElement.sendKeys(file.getAbsolutePath());
-                System.out.println("✅ File uploaded successfully.");
+                logger.info("✅ File uploaded successfully.");
                 return;
             } catch (StaleElementReferenceException e) {
-                System.out.println("⚠️ Caught stale element exception, retrying...");
-                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                logger.error("⚠️ Caught stale element exception, retrying...");
+                try { Thread.sleep(1000); } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+                }
             }
         }
 
         throw new RuntimeException("❌ Failed to upload file due to repeated stale element exceptions.");
     }
 
-    public void uploadFileForInvalid(WebDriver driver, WebElement fileInputTrigger, String filename) {
+    public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger, String filename) {
         String filePath;
         String os = System.getProperty("os.name").toLowerCase();
         if (os.contains("win")) {
@@ -169,10 +175,10 @@ public class BasePage {
                     ((RemoteWebElement) fileInputElement).setFileDetector(new LocalFileDetector());
                 }
                 fileInputElement.sendKeys(file.getAbsolutePath());
-                System.out.println("✅ File uploaded successfully.");
+                logger.info("✅ File uploaded successfully.");
                 return;
             } catch (StaleElementReferenceException e) {
-                System.out.println("⚠️ Caught stale element exception, retrying...");
+                logger.error("⚠️ Caught stale element exception, retrying...");
                 try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
             }
         }
@@ -204,13 +210,13 @@ public class BasePage {
                     int responseCode = httpConn.getResponseCode();
 
                     if (responseCode < 200 || responseCode >= 400) {
-                        System.out.println(url + " - Broken link (Status " + responseCode + ")");
+                        logger.error(url + " - Broken link (Status " + responseCode + ")");
                         allLinksValid = false;
                     } else {
-                        System.out.println(url + " - Valid link (Status " + responseCode + ")");
+                        logger.info(url + " - Valid link (Status " + responseCode + ")");
                     }
                 } catch (IOException e) {
-                    System.out.println(url + " - Exception occurred: " + e.getMessage());
+                    logger.error(url + " - Exception occurred: " + e.getMessage());
                     allLinksValid = false;
                 } finally {
                     if (httpConn != null) {
@@ -231,7 +237,7 @@ public class BasePage {
 		try {
 			return Integer.parseInt(System.getProperty("explicitWaitTimeout", "30"));
 		} catch (NumberFormatException e) {
-            System.out.println("Invalid explicitWaitTimeout value in config.properties. Using default 30 seconds.");
+            logger.error("Invalid explicitWaitTimeout system property value. Using default 30 seconds.");
             return 30;
 		}
 }

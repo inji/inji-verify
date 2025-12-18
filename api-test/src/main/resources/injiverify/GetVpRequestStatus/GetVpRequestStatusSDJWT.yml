@@ -8,7 +8,7 @@ GetVpRequestStatusSDJWT:
       inputTemplate: injiverify/GetVpRequestStatus/GetVpRequestStatus
       outputTemplate: injiverify/GetVpRequestStatus/GetVpRequestStatusResult
       input: '{
-      "requestId":"$ID:GetVpRequestWithSDJWT_All_Valid_Smoke_Sid_requestId$"
+      "requestId":"$ID:CreateVpRequestWithSDJWT_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
     "status": "VP_SUBMITTED"

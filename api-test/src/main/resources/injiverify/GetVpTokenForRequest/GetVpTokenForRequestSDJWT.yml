@@ -8,10 +8,10 @@ GetVpTokenForRequestSDJWT:
       inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
       outputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequestResult
       input: '{
-      "transactionId":"$ID:GetVpRequestWithSDJWT_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId":"$ID:CreateVpRequestWithSDJWT_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-    "transactionId": "$ID:GetVpRequestWithSDJWT_All_Valid_Smoke_Sid_transactionId$",
+    "transactionId": "$ID:CreateVpRequestWithSDJWT_All_Valid_Smoke_Sid_transactionId$",
     "vpResultStatus": "SUCCESS"
 }'
 

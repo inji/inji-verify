@@ -9,7 +9,7 @@ VpSubmissionSDJWT:
     inputTemplate: injiverify/VpSubmissionSDJWT/VpSubmissionSDJWT
     outputTemplate: injiverify/responseCode
     input: '{
-      "state":"$ID:GetVpRequestWithSDJWT_All_Valid_Smoke_Sid_requestId$",
+      "state":"$ID:CreateVpRequestWithSDJWT_All_Valid_Smoke_Sid_requestId$",
       "definition_id":"$PRESENTATIONDEFINITIONID$"
     }'
     output: '{

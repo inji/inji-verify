@@ -257,31 +257,31 @@ public class VpVerification extends BasePage {
 		clickOnElement(driver, SortButton);
 	}
 
-	public void ClickOnGenerateQrCodeButton() {
+	public void clickOnGenerateQrCodeButton() {
 		clickOnElement(driver, GenerateQrCodeButton);
 	}
 
-	public void ClickOnMosipIdChecklist() {
+	public void clickOnMosipIdChecklist() {
 		clickOnElement(driver, MosipIdChecklist);
 	}
 
-	public void ClickOnHealthInsuranceChecklist() {
+	public void clickOnHealthInsuranceChecklist() {
 		clickOnElement(driver, HealthInsuranceChecklist);
 	}
 
-	public void ClickOnSDJwtVCChecklist() {
+	public void clickOnSDJwtVCChecklist() {
 		clickOnElement(driver, SDJwtVCChecklist);
 	}
 
-	public void ClickOnWalletButton() {
+	public void clickOnWalletButton() {
 		clickOnElement(driver, WalletButton);
 	}
 
-	public void ClickOnProceedButton() {
+	public void clickOnProceedButton() {
 		clickOnElement(driver, ProceedButton);
 	}
 
-	public void ClickOnLandRegistryChecklist() {
+	public void clickOnLandRegistryChecklist() {
 		clickOnElement(driver, LandRegistryChecklist);
 	}
 

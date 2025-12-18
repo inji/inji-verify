@@ -44,10 +44,10 @@ public class HomePage extends BasePage {
 	WebElement homeButton;
 
 	@FindBy(id = "fullname-value")
-	WebElement FullNameValue;
+	WebElement fullNameValue;
 
 	@FindBy(id = "gender-value")
-	WebElement FullGenderValue;
+	WebElement fullGenderValue;
 
 	@FindBy(xpath = "//a[@id='verify-credentials-button']")
 	WebElement Credentialsbutton;
@@ -208,11 +208,11 @@ public class HomePage extends BasePage {
 		return isElementIsVisible(driver, Expansionbutton);
 	}
 
-	public void ClickonHomeButton() {
-		clickOnElement(driver, homeButton);
+	public void clickOnHelpButton() {
+		clickOnElement(driver, helpButton);
 	}
 	
-	public void ClickonContinueButton() {
+	public void clickOnContinueButton() {
 		clickOnElement(driver, continueButton);
 	}
 
@@ -227,6 +227,10 @@ public class HomePage extends BasePage {
 
 	public void minimizeHelpButton() {
 		clickOnElement(driver, minimizeHelpButton);
+	}
+
+	public void clickOnHomeButton() {
+		clickOnElement(driver, homeButton);
 	}
 
 	public Boolean isUploadQRButtonVisible() {
@@ -304,7 +308,7 @@ public class HomePage extends BasePage {
 
 	}
 
-	public void ClickonQRUploadButton() {
+	public void clickOnQRUploadButton() {
 		clickOnElement(driver, QRUploadButton);
 	}
 
@@ -432,7 +436,7 @@ public class HomePage extends BasePage {
 		}
 	}
 
-	public  void SwitchToWebTab(){
+	public  void switchToWebTab(){
 		Set<String> allWindowHandles = driver.getWindowHandles();
 		System.out.println(allWindowHandles);
 		if (allWindowHandles.size() >= 2) {
@@ -443,7 +447,7 @@ public class HomePage extends BasePage {
 		}
 	}
 
-	public  void SwitchToVerifyTab(){
+	public  void switchToVerifyTab(){
 		Set<String> allWindowHandles = driver.getWindowHandles();
 		System.out.println(allWindowHandles);
 		if (allWindowHandles.size() >= 2) {
@@ -475,10 +479,6 @@ public class HomePage extends BasePage {
 		clickOnElement(driver,verifyButton );
 	}
 
-	public void clickOnHomebutton() {
-		clickOnElement(driver,HomeButton );
-	}
-
 	public Boolean isErrorMessageVisible() {
 		return isElementIsVisible(driver, errorMeassage);
 	}
@@ -488,22 +488,22 @@ public class HomePage extends BasePage {
 	}
 
 	public String getNameValueInArabic() {
-		return getText(driver, FullNameValue);
+		return getText(driver, fullNameValue);
 
 	}
 
 	public String getNameValueInFrench() {
-		return getText(driver, FullNameValue);
+		return getText(driver, fullNameValue);
 
 	}
 
 	public String getGenderValueInArabic() {
-		return getText(driver, FullGenderValue);
+		return getText(driver, fullGenderValue);
 
 	}
 
 	public String getGenderValueInFrench() {
-		return getText(driver, FullGenderValue);
+		return getText(driver, fullGenderValue);
 
 	}
 

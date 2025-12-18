@@ -30,7 +30,7 @@ import java.util.List;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-		features = {"classpath:featurefiles"},
+		features = {"/home/mosip/featurefiles/"},
 		dryRun = !true,
 		glue = {"stepdefinitions", "utils"},
 		snippets = SnippetType.CAMELCASE,

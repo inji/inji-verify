@@ -261,7 +261,7 @@ public class StepDef {
     @When("Verify click on home button")
     public void verifyClickOnHomeButton() {
         try {
-            homePage.ClickonHomeButton();
+            homePage.clickOnHomeButton();
             test.log(Status.PASS, "Successfully clicked on the Home button.");
             test.log(Status.PASS, "Successfully navigated to the home page after clicking the Home button.");
         } catch (NoSuchElementException e) {
@@ -279,7 +279,7 @@ public class StepDef {
     @When("User click on continue")
     public void verifyClickOnContinueButton() {
         try {
-            homePage.ClickonContinueButton();
+            homePage.clickOnContinueButton();
             test.log(Status.PASS, "Successfully clicked on the Continue button.");
             test.log(Status.PASS, "Successfully navigated to the home page after clicking the Continue button.");
         } catch (NoSuchElementException e) {
@@ -313,7 +313,7 @@ public class StepDef {
     }
 
     @When("Verify that links are valid under help")
-    public void VerifyThatLinksAreValidUnderHelp() {
+    public void verifyThatLinksAreValidUnderHelp() {
         try {
             boolean areLinksValid = homePage.verifyHelpOptionLinks();
             Assert.assertTrue(areLinksValid, "One or more links under Help are invalid.");
@@ -333,7 +333,8 @@ public class StepDef {
     @When("Verify minimize help option")
     public void verifyMinimizeHelpOption() {
         try {
-            homePage.minimizeHelpButton();
+          //  homePage.minimizeHelpButton();
+        	homePage.minimizeHelpButton();
             test.log(Status.PASS, "Clicked on minimize Help button successfully.");
 
             boolean isMinimized = homePage.isExpansionbuttonDisplayedBefore();
@@ -639,7 +640,7 @@ public class StepDef {
     @When("Click on Upload button")
     public void clickOnUploadButton() {
         try {
-            homePage.ClickonQRUploadButton();
+            homePage.clickOnQRUploadButton();
             test.log(Status.PASS, "Successfully clicked on the Upload button.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while clicking on the Upload button", e);
@@ -653,7 +654,7 @@ public class StepDef {
     @When("Upload QR code file png")
     public void uploadQRCodeFile() {
         try {
-            uploadqrcode.ClickonUploadQRCodePng();
+            uploadqrcode.clickOnUploadQRCodePng();
             test.log(Status.PASS, "Successfully uploaded the QR code file (PNG).");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading the QR code file (PNG)", e);
@@ -680,8 +681,8 @@ public class StepDef {
 
     @Then("Upload SVG rendered VC")
 	public void upload_SVG_rendered_VC_code() {
-	    try {
-	        uploadqrcode.ClickonUploadSVGQRCode();
+        try {
+            uploadqrcode.clickOnUploadSVGQRCode();
 	        test.log(Status.PASS, "Successfully uploaded SVG rendered VC.");
 	    } catch (AssertionError e) {
 	        test.log(Status.FAIL, "Verification failed: Upload of SVG rendered VC QR code did not behave as expected.");
@@ -698,7 +699,7 @@ public class StepDef {
     @When("Upload another QR code file png")
     public void uploadAnotherQRCodeFile() {
         try {
-            uploadqrcode.ClickonAnotherUploadQRCodePng();
+            uploadqrcode.clickOnAnotherUploadQRCodePng();
             test.log(Status.PASS, "Successfully uploaded another QR code file (PNG).");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading another QR code file (PNG)", e);
@@ -806,7 +807,7 @@ public class StepDef {
     @Then("Verify click on another qr code button")
     public void verify_clickOn_another_qr_code_button_on_successful_verification() {
         try {
-            uploadqrcode.clickOnAnotherQRcodeButton();
+            uploadqrcode.clickOnAnotherQRCodeButton();
             test.log(Status.PASS, "Clicked on 'Verify Another QR Code' button successfully.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while clicking 'Verify Another QR Code' button", e);
@@ -835,7 +836,7 @@ public class StepDef {
     @Then("Verify verify another qr code button on successful verification")
     public void verify_verify_another_qr_code_button_on_successful_verification() {
         try {
-            boolean isVerifyAnotherQRCodeButtonVisible = uploadqrcode.isVisibleVerifyAnotherQRcodeButton();
+            boolean isVerifyAnotherQRCodeButtonVisible = uploadqrcode.isVisibleVerifyAnotherQRCodeButton();
             Assert.assertTrue(isVerifyAnotherQRCodeButtonVisible, "Verify Another QR Code button is not visible.");
             test.log(Status.PASS, "Verify Another QR Code button is successfully visible.");
         } catch (NoSuchElementException e) {
@@ -891,7 +892,7 @@ public class StepDef {
     @When("Verify 'Verify Another QR Code' button on successful verification")
     public void verifyVerifyAnotherQRCodeButtonOnSuccessfulVerification() {
         try {
-            boolean isButtonVisible = uploadqrcode.isVisibleVerifyAnotherQRcodeButton();
+            boolean isButtonVisible = uploadqrcode.isVisibleVerifyAnotherQRCodeButton();
             Assert.assertTrue(isButtonVisible, "'Verify Another QR Code' button is not visible on successful verification.");
             test.log(Status.PASS, "'Verify Another QR Code' button is successfully visible on successful verification.");
         } catch (NoSuchElementException e) {
@@ -906,7 +907,7 @@ public class StepDef {
     @When("Verify click on 'Verify Another QR Code' button")
     public void verifyClickOnAnotherQRCodeButtonOnSuccessfulVerification() {
         try {
-            uploadqrcode.clickOnAnotherQRcodeButton();
+            uploadqrcode.clickOnAnotherQRCodeButton();
             test.log(Status.PASS, "Successfully clicked on the 'Verify Another QR Code' button.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while clicking the 'Verify Another QR Code' button", e);
@@ -920,7 +921,7 @@ public class StepDef {
     @When("Upload QR code file PDF")
     public void uploadQRCodeFilePdf() {
         try {
-            uploadqrcode.ClickonUploadQRCodePdf();
+            uploadqrcode.clickOnUploadQRCodePdf();
             test.log(Status.PASS, "Successfully uploaded the QR code file in PDF format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading the QR code PDF file", e);
@@ -934,7 +935,7 @@ public class StepDef {
     @When("Upload another QR code file PDF")
     public void uploadAnotherQRCodeFilePdf() {
         try {
-            uploadqrcode.ClickonAnotherUploadQRCodePdf();
+            uploadqrcode.clickOnAnotherUploadQRCodePdf();
             test.log(Status.PASS, "Successfully uploaded another QR code file in PDF format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading another QR code PDF file", e);
@@ -949,7 +950,7 @@ public class StepDef {
     @When("Upload QR code file JPG")
     public void uploadQRCodeFileJpg() {
         try {
-            uploadqrcode.ClickonUploadQRCodeJpg();
+            uploadqrcode.clickOnUploadQRCodeJpg();
             test.log(Status.PASS, "Successfully uploaded the QR code file in JPG format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading the QR code JPG file", e);
@@ -963,7 +964,7 @@ public class StepDef {
     @When("Upload another QR code file JPG")
     public void uploadAnotherQRCodeFileJpg() {
         try {
-            uploadqrcode.ClickonAnotherUploadQRCodeJpg();
+            uploadqrcode.clickOnAnotherUploadQRCodeJpg();
             test.log(Status.PASS, "Successfully uploaded another QR code file in JPG format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading another QR code JPG file", e);
@@ -977,7 +978,7 @@ public class StepDef {
     @When("Upload QR code file JPEG")
     public void uploadQRCodeFileJpeg() {
         try {
-            uploadqrcode.ClickonUploadQRCodeJpeg();
+            uploadqrcode.clickOnUploadQRCodeJpeg();
             test.log(Status.PASS, "Successfully uploaded the QR code file in JPEG format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading the QR code JPEG file", e);
@@ -991,7 +992,7 @@ public class StepDef {
     @When("Upload another QR code file JPEG")
     public void uploadAnotherQRCodeFileJpeg() {
         try {
-            uploadqrcode.ClickonAnotherUploadQRCodeJpeg();
+            uploadqrcode.clickOnAnotherUploadQRCodeJpeg();
             test.log(Status.PASS, "Successfully uploaded another QR code file in JPEG format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading another QR code JPEG file", e);
@@ -1005,7 +1006,7 @@ public class StepDef {
     @When("Click on Home button")
     public void clickOnHomeButton() {
         try {
-            uploadqrcode.ClickonHomeButton();
+            uploadqrcode.clickOnHomeButton();
             test.log(Status.PASS, "Successfully clicked on the Home button.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while clicking on the Home button", e);
@@ -1019,7 +1020,7 @@ public class StepDef {
     @When("Click on Verify Credential button")
     public void clickOnVerifyCredentialButton() {
         try {
-            uploadqrcode.clickVerifyCredentialsbutton();
+            uploadqrcode.clickVerifyCredentialsButton();
             test.log(Status.PASS, "Successfully clicked on the Verify Credential button.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while clicking on the Verify Credential button", e);
@@ -1044,7 +1045,7 @@ public class StepDef {
     @When("Upload QR code unsupported file HTML")
     public void uploadQRCodeUnsupportedFileHtml() {
         try {
-            uploadqrcode.ClickonUploadQRCodeHtml();
+            uploadqrcode.clickOnUploadQRCodeHtml();
             test.log(Status.PASS, "Attempted to upload an unsupported QR code file (HTML).");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while trying to upload an unsupported QR code file (HTML)", e);
@@ -1058,7 +1059,7 @@ public class StepDef {
     @When("Verify QR code file invalid")
     public void verifyQRCodeFileInvalid() {
         try {
-            uploadqrcode.ClickonUploadQRCodeInvalid();
+            uploadqrcode.clickOnUploadQRCodeInvalid();
             test.log(Status.PASS, "Attempted to upload an invalid QR code file.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading an invalid QR code file", e);
@@ -1072,7 +1073,7 @@ public class StepDef {
     @Given("Upload QR code file PDF downloaded from mobile")
     public void uploadQRCodeFilePdfDownloadedFromMobile() {
         try {
-            uploadqrcode.ClickonUploadQRCodeDownloadedFromPhone();
+            uploadqrcode.clickOnUploadQRCodeDownloadedFromPhone();
             test.log(Status.PASS, "Uploaded a QR code file (PDF) downloaded from mobile successfully.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading QR code file (PDF) from mobile", e);
@@ -1145,7 +1146,7 @@ public class StepDef {
     @When("Verify QR code file LargeFileSize")
     public void verifyQRCodeFileLargeFileSize() {
         try {
-            uploadqrcode.ClickonUploadQRCodeLageFileSize();
+            uploadqrcode.clickOnUploadQRCodeLargeFileSize();
             Assert.assertTrue(true, "Large file size QR code upload action performed successfully.");
             test.log(Status.PASS, "Successfully attempted to upload a large QR code file.");
         } catch (NoSuchElementException e) {
@@ -1208,7 +1209,7 @@ public class StepDef {
     @When("verify click on scan the qr tab")
     public void verifyClickOnScanTheQrTab() {
         try {
-            scanqrcode.ClickonScanQRButtonTab();
+            scanqrcode.clickOnScanQRButtonTab();
             test.log(Status.PASS, "Clicked on 'Scan QR' tab successfully.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while clicking 'Scan QR' tab", e);
@@ -1499,7 +1500,7 @@ public class StepDef {
     @When("verify click on okay button")
     public void verifyClickOnOkayButton() {
         try {
-            scanqrcode.ClickonOkayButton();
+            scanqrcode.clickOnOkayButton();
             test.log(Status.PASS, "Successfully clicked on the Okay button.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Failed to find the Okay button while attempting to click", e);
@@ -1513,7 +1514,7 @@ public class StepDef {
     @When("verify click on back button")
     public void verifyClickOnBackButton() {
         try {
-            scanqrcode.ClickonBackButton();
+            scanqrcode.clickOnBackButton();
             Assert.assertTrue(true, "Back button click action performed.");
             test.log(Status.PASS, "Successfully clicked on the Back button.");
         } catch (NoSuchElementException e) {
@@ -1530,7 +1531,7 @@ public class StepDef {
 	@When("Click on BLE tab")
 	public void click_on_ble_tab() {
 	    try {
-	        ble.ClickonBleTab();
+	        ble.clickOnBleTab();
 	        test.log(Status.PASS, "Successfully clicked on the BLE tab.");
 	        test.log(Status.PASS, "BLE tab is active after clicking.");
 	    } catch (NoSuchElementException e) {
@@ -1701,7 +1702,7 @@ public class StepDef {
 	@When("Upload QR code file Expired png")
 	public void upload_qr_code_file_expired_png() {
 	    try {
-	        uploadqrcode.ClickonUploadExpiredQRCodepngExpired();
+	        uploadqrcode.clickOnUploadExpiredQRCodepngExpired();
 	        test.log(Status.PASS, "Successfully uploaded the expired QR code PNG file.");
 	        test.log(Status.PASS, "Expired QR code PNG file uploaded successfully.");
 	    } catch (NoSuchElementException e) {
@@ -1718,8 +1719,8 @@ public class StepDef {
 
 	@When("Upload QR code file Expired jpg")
 	public void upload_qr_code_file_expired_jpg() {
-	    try {
-	        uploadqrcode.ClickonUploadExpiredQRCodeJpgExpired();
+        try {
+            uploadqrcode.clickOnUploadExpiredQRCodeJpgExpired();
 	        test.log(Status.PASS, "Successfully uploaded the expired QR code JPG file.");
 	        test.log(Status.PASS, "Expired QR code JPG file uploaded successfully.");
 	    } catch (NoSuchElementException e) {
@@ -1737,8 +1738,8 @@ public class StepDef {
 	
 	@When("Upload QR code file Expired jpeg")
 	public void uploadQrCodeFileExpiredJpeg() {
-	    try {
-	        uploadqrcode.ClickonUploadExpiredQRCodeJpgExpired(); 
+        try {
+            uploadqrcode.clickOnUploadExpiredQRCodeJpgExpired(); 
 	        Assert.assertTrue(true, "Expired JPEG QR code uploaded successfully.");
 	        test.log(Status.PASS, "Successfully uploaded expired QR code (JPEG format).");
 	    } catch (NoSuchElementException e) {
@@ -1754,7 +1755,7 @@ public class StepDef {
 	@When("Upload QR code file Expired pdf")
 	public void uploadQrCodeFileExpiredPdf() {
 	    try {
-	        uploadqrcode.ClickonUploadExpiredQRCodepngExpired(); 
+	        uploadqrcode.clickOnUploadExpiredQRCodepngExpired(); 
 	        Assert.assertTrue(true, "Expired PDF QR code uploaded successfully.");
 	        test.log(Status.PASS, "Successfully uploaded expired QR code (PDF format).");
 	    } catch (NoSuchElementException e) {
@@ -1817,7 +1818,7 @@ public class StepDef {
 	@When("Open inji verify in new tab")
 	public void open_inji_verify_in_new_tab() {
 	    try {
-	        homePage.SwitchToVerifyTab();
+	        homePage.switchToVerifyTab();
 	        test.log(Status.PASS, "Successfully switched to the Inji Verify tab.");
 	    } catch (NoSuchWindowException e) {
 	        logFailure(test, driver, "Failed to switch to Inji Verify tab - Tab not found", e);
@@ -2352,7 +2353,7 @@ public class StepDef {
 	@When("Open inji web in tab")
 	public void user_Open_inji_web_in_tab() {
 	    try {
-	        homePage.SwitchToWebTab();
+	        homePage.switchToWebTab();
 	        test.log(Status.PASS, "Successfully switched to inji web tab.");
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Error switching to inji web tab", e);
@@ -2378,7 +2379,7 @@ public class StepDef {
 	    }
 	}
 
-@Then("Verify that Upload button after 2 mins idle")
+@Then("Verify the Upload button after 2 mins idle")
 public void verify_upload_button_visible_after_2_mins_idle() {
      try {
 	        boolean isUploadButtonVisibleAfterIdle = homePage.isUploadButtonIsVisibleAfterIdle();
@@ -2395,10 +2396,10 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 
-	@When("verify click on home button")
+	@When("Verify click on Help button")
 	public void user_click_on_home_button() {
 	    try {
-	        homePage.clickOnHomebutton();
+	        homePage.clickOnHelpButton();
 	        test.log(Status.PASS, "Successfully clicked on home button.");
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while clicking home button", e);
@@ -2618,7 +2619,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	@Then("Upload Large size not supported QR code file")
 	public void upload_large_size_not_supported_qr_code_file() {
 	    try {
-	        uploadqrcode.ClickonUploadLargeSizeQRCode();
+	        uploadqrcode.clickOnUploadLargeSizeQRCode();
      
 	        test.log(Status.PASS, "Successfully verified large size QR code file is not supported and appropriate error is shown.");
 	    } catch (AssertionError e) {
@@ -2636,7 +2637,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	@Then("Click on ble tab")
 	public void click_on_ble_tab1() {
 	    try {
-	        ble.ClickonBleTab();
+	        ble.clickOnBleTab();
 	        test.log(Status.PASS, "Successfully clicked on BLE tab and verified it is active.");
 	    } catch (AssertionError e) {
 	        test.log(Status.FAIL, "Verification failed: BLE tab did not activate.");
@@ -2674,8 +2675,8 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	
 	@Then("Upload blur QR code file")
 	public void upload_blur_qrcode_file() {
-	    try {
-	        uploadqrcode.ClickonUploadBlurQRCode();
+        try {
+            uploadqrcode.clickOnUploadBlurQRCode();
 	        test.log(Status.PASS, "Successfully uploaded blur QR code file.");
 	    } catch (AssertionError e) {
 	        test.log(Status.FAIL, "Verification failed: Blur QR code file upload failed.");
@@ -2710,8 +2711,8 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 	@Then("Upload multiple qr code in one image file")
 	public void upload_multiple_QR_code_in_one_image_file() {
-	    try {
-	        uploadqrcode.ClickonUploadmultipleQRCode();
+        try {
+            uploadqrcode.clickOnUploadMultipleQRCode();
 	        test.log(Status.PASS, "Successfully uploaded image with multiple QR codes.");
 	    } catch (AssertionError e) {
 	        test.log(Status.FAIL, "Verification failed: Upload of multiple QR codes in one image did not behave as expected.");
@@ -2727,8 +2728,8 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
     @Then("Upload SD-Jwt QR code")
 	public void upload_sd_jwt_qr_code() {
-	    try {
-	        uploadqrcode.ClickonUploadSDJwtQRCode();
+        try {
+            uploadqrcode.clickOnUploadSDJwtQRCode();
 	        test.log(Status.PASS, "Successfully uploaded SD-Jwt QR code.");
 	    } catch (AssertionError e) {
 	        test.log(Status.FAIL, "Verification failed: Upload of SD-Jwt QR code did not behave as expected.");
@@ -2744,8 +2745,8 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 	@Then("Upload invalid pdf")
 	public void upload_invalid_pdf() {
-	    try {
-	        uploadqrcode.ClickonUploadInvalidPdf();
+        try {
+            uploadqrcode.clickOnUploadInvalidPdf();
 	        test.log(Status.PASS, "Successfully attempted to upload an invalid PDF file.");
 	    } catch (AssertionError e) {
 	        test.log(Status.FAIL, "Verification failed: Upload of invalid PDF file did not behave as expected.");
@@ -2885,7 +2886,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	@Then("Verify Click on Generate QR Code button")
 	public void verify_click_on_generate_qr_code_button() {
 	    try {
-	        vpverification.ClickOnGenerateQrCodeButton();
+	        vpverification.clickOnGenerateQrCodeButton();
 	        test.log(Status.PASS, "Successfully clicked on the 'Generate QR Code' button.");
 	    } catch (AssertionError e) {
 	        test.log(Status.FAIL, "Verification failed: Unable to click on the 'Generate QR Code' button.");
@@ -2950,7 +2951,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	@Then("Uncheck MOSIP ID")
 	public void uncheck_mosip_id() {
 	    try {
-	        vpverification.ClickOnMosipIdChecklist();
+	        vpverification.clickOnMosipIdChecklist();
 	        test.log(Status.PASS, "Successfully unchecked the MOSIP ID option.");
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while unchecking the MOSIP ID option", e);
@@ -2965,7 +2966,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	@Then("Select Health Insurance")
 	public void select_health_insurance() {
 	    try {
-	        vpverification.ClickOnHealthInsuranceChecklist();
+	        vpverification.clickOnHealthInsuranceChecklist();
 	        test.log(Status.PASS, "Successfully selected the Health Insurance option.");
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while selecting the Health Insurance option", e);
@@ -2979,7 +2980,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
     @Then("Select SD JWT VC")
 	public void select_sd_jwt_vc() {
 	    try {
-	        vpverification.ClickOnSDJwtVCChecklist();
+	        vpverification.clickOnSDJwtVCChecklist();
 	        test.log(Status.PASS, "Successfully selected the SD JWT VC option.");
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while selecting the SD JWT VC option", e);
@@ -2993,7 +2994,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
     @Then("Verify Click on wallet")
 	public void verify_click_on_wallet() {
 	    try {
-	        vpverification.ClickOnWalletButton();
+	        vpverification.clickOnWalletButton();
 	        test.log(Status.PASS, "Successfully clicked on the Wallet button.");
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while clicking on the Wallet button", e);
@@ -3007,7 +3008,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
     @Then("Verify Click on Proceed")
 	public void verify_click_on_proceed() {
 	    try {
-	        vpverification.ClickOnProceedButton();
+	        vpverification.clickOnProceedButton();
 	        test.log(Status.PASS, "Successfully clicked on the Proceed button.");
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while clicking on the Proceed button", e);
@@ -3022,7 +3023,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	@Then("Select Land Registry")
 	public void uncheck_land_registry() {
 	    try {
-	        vpverification.ClickOnLandRegistryChecklist();
+	        vpverification.clickOnLandRegistryChecklist();
 	        test.log(Status.PASS, "Successfully selected the Land Registry option.");
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while selecting the Land Registry option", e);
@@ -3143,10 +3144,13 @@ public void verify_upload_button_visible_after_2_mins_idle() {
     }
 
     @When("Verify select arabic language")
-    public void verifySelectArabicLanguage() {
+    public void verifyselectArabicLanguage() {
         try {
-            uploadqrcode.SelectArabicLanguage();
+            uploadqrcode.selectArabicLanguage();
             test.log(Status.PASS, "Clicked on 'Arabic Language' button successfully.");
+            boolean isArabicSelected = uploadqrcode.isArabicLanguageSelected();
+            Assert.assertTrue(isArabicSelected, "Arabic language should be selected after click");
+            test.log(Status.PASS, "Arabic language is successfully selected. Language indicator shows 'العربية'.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while clicking 'Arabic Language' button", e);
             throw e;
@@ -3157,9 +3161,9 @@ public void verify_upload_button_visible_after_2_mins_idle() {
     }
 
     @When("Verify select french language")
-    public void verifySelectFrenchLanguage() {
+    public void verifyselectFrenchLanguage() {
         try {
-            uploadqrcode.SelectFrenchLanguage();
+            uploadqrcode.selectFrenchLanguage();
             test.log(Status.PASS, "Clicked on 'French Language' button successfully.");
             boolean isFrenchSelected = uploadqrcode.isFrenchLanguageSelected();
             Assert.assertTrue(isFrenchSelected, "French language should be selected after click");
