@@ -296,7 +296,7 @@ Feature: Inji Verify upload qr code testing
     And Upload SD-Jwt QR code 
     And Verify message for valid QR code
 
-  @smoke @verifyuploadValidSDJWTqrcode
+  @smoke @verifyuploadValidSvgqrcode
   Scenario: Verify upload valid SVG qr code
     And Verify browser refresh
     And Verify upload QR code step2 label

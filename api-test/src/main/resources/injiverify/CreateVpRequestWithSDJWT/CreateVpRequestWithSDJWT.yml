@@ -15,5 +15,7 @@ CreateVpRequestWithSDJWT:
     "responseType": "vp_token",
     "clientId": "client123",
     "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
-    "id": "$PRESENTATIONDEFINITIONID$"
-    }'
+    "id": "$PRESENTATIONDEFINITIONID$",
+    "requestId": "",
+    "transactionId": ""
+}'

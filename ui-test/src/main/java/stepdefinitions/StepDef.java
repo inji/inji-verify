@@ -333,7 +333,6 @@ public class StepDef {
     @When("Verify minimize help option")
     public void verifyMinimizeHelpOption() {
         try {
-          //  homePage.minimizeHelpButton();
         	homePage.minimizeHelpButton();
             test.log(Status.PASS, "Clicked on minimize Help button successfully.");
 

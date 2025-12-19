@@ -33,7 +33,7 @@ GetVpTokenForRequest:
   Injiverify_GetVpTokenForRequest_NotFound_TransactionId_Neg:
     endPoint: /v1/verify/vp-result/{transactionId}
     description: Requesting a non-existent transactionId should return 404
-    uniqueIdentifier: TC_InjiVerify_GetVpTokenForRequest_04
+    uniqueIdentifier: TC_InjiVerify_GetVpTokenForRequest_03
     role: noauth
     restMethod: get
     inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
