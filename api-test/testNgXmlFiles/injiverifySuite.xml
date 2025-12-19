@@ -29,7 +29,7 @@
 	<test name="GetVpRequestWithDID">
 		<parameter name="ymlFile"
 			value="injiverify/GetVpRequestWithDID/GetVpRequestWithDID.yml" />
-			<parameter name="pathParams" value="requestUri" />
+			<parameter name="pathParams" value="requestId" />
 			<parameter name="headers" value="" />
 		<classes>
 			<class
@@ -69,9 +69,9 @@
 		</classes>
 	</test>
 
-    <test name="GetVpRequestWithSDJWT">
+    <test name="CreateVpRequestWithSDJWT">
 		<parameter name="ymlFile"
-			value="injiverify/GetVpRequestWithSDJWT/GetVpRequestWithSDJWT.yml" />
+			value="injiverify/CreateVpRequestWithSDJWT/CreateVpRequestWithSDJWT.yml" />
 			<parameter name="idKeyName" value="transactionId,requestId,requestUri,id"/>
 		<classes>
 			<class

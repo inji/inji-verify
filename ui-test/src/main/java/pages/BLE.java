@@ -9,10 +9,8 @@ import org.openqa.selenium.support.PageFactory;
 
 public class BLE extends BasePage {
 
-	private WebDriver driver;
-
 	public BLE(WebDriver driver) {
-		this.driver = driver;
+		super(driver);
 		PageFactory.initElements(driver, this);
 	}
 
@@ -22,7 +20,7 @@ public class BLE extends BasePage {
 	@FindBy(xpath = "//p[@id='alert-message']")
 	WebElement bleAlertMsg;
 
-	public void ClickonBleTab() {
+	public void clickOnBleTab() {
 		clickOnElement(driver, bleTab);
 	}
 

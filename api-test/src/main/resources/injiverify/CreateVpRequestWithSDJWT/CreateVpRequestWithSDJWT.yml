@@ -1,0 +1,19 @@
+CreateVpRequestWithSDJWT:
+  InjiVerify_CreateVpRequestWithSDJWT_All_Valid_Smoke_Sid:
+    endPoint: /v1/verify/vp-request
+    description: Create VP request with SD-JWT
+    uniqueIdentifier: TC_InjiVerify_CreateVpRequestWithSDJWT_01
+    role: noauth
+    restMethod: post
+    inputTemplate: injiverify/CreateVpRequestWithSDJWT/CreateVpRequestWithSDJWT
+    outputTemplate: injiverify/CreateVpRequestWithSDJWT/CreateVpRequestWithSDJWTResult
+    input: '{
+    "clientId": "client123",
+    "id":"$PRESENTATIONDEFINITIONID$"
+    }'
+    output: '{
+    "responseType": "vp_token",
+    "clientId": "client123",
+    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
+    "id": "$PRESENTATIONDEFINITIONID$"
+}'

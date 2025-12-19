@@ -29,6 +29,10 @@ public class UiConstants {
 	public static final String VP_VERIFICATION_QR_CODE_STEP4_LABEL = "View Verification Results";
 	public static final String VP_VERIFICATION_QR_CODE_STEP4_DESCRIPTION = "Check the verification results for the verifiable credentials shared from the wallet.";
 	public static final String VERIFIABLE_VERIFICATION_PANNEL = "Verifiable Credential Selection Panel";
+	public static final String NAME_VALUE_IN_ARABIC = "جون دو";
+	public static final String NAME_VALUE_IN_FRENCH = "Jean Dupont";	
+	public static final String GENDER_VALUE_IN_ARABIC = "ذكر";
+	public static final String GENDER_VALUE_IN_FRENCH = "Homme";
 
 	public static final String SCAN_QR_CODE_STEP4_DESCRIPTION = "View the verification result.";
 	public static final String FILE_FORMAT_CONSTRAINTS_TEXT = "Allowed file formats: PNG/JPEG/JPG/PDF File Size - 10KB to 5MB";
