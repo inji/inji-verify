@@ -1,9 +1,9 @@
 {
-    "TC_InjiVerify_GetVpTokenForRequestSDJWT_01": ["TC_InjiVerify_GetVpRequestWithSDJWT_01"],
-    "TC_InjiVerify_GetVpRequestStatusSDJWT_01": ["TC_InjiVerify_GetVpRequestWithSDJWT_01"],
+    "TC_InjiVerify_GetVpTokenForRequestSDJWT_01": ["TC_InjiVerify_CreateVpRequestWithSDJWT_01"],
+    "TC_InjiVerify_GetVpRequestStatusSDJWT_01": ["TC_InjiVerify_CreateVpRequestWithSDJWT_01"],
     "TC_InjiVerify_GetVpRequestStatus_04": ["TC_InjiVerify_CreateNewVerificationRequest_02"],
     "TC_InjiVerify_GetVpTokenForRequest_01": ["TC_InjiVerify_CreateNewVerificationRequest_01"],
-    "TC_InjiVerify_VpSubmissionSDJWT_01": ["TC_InjiVerify_GetVpRequestWithSDJWT_01"],
+    "TC_InjiVerify_VpSubmissionSDJWT_01": ["TC_InjiVerify_CreateVpRequestWithSDJWT_01"],
     "TC_InjiVerify_VpSubmission_01": ["TC_InjiVerify_CreateNewVerificationRequest_01"],
     "TC_InjiVerify_VpSubmission_04": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
     "TC_InjiVerify_VpSubmission_03": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
