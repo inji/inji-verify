@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.web.bind.annotation.CrossOrigin;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.RestController;
@@ -23,6 +24,7 @@ import static io.inji.verify.utils.Utils.getResponseEntityForCredentialStatusExc
 
 @RestController
 @Slf4j
+@CrossOrigin
 public class VPResultController {
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
     final VCSubmissionService vcSubmissionService;
@@ -49,7 +51,7 @@ public class VPResultController {
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_VP_SUBMISSION));
             } catch (InvalidVpTokenException e) {
                 log.error(e.getMessage());
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF));
+                return ResponseEntity.status(HttpStatus.OK).body(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF));
             } catch (VPSubmissionWalletError e) {
                 log.error("Received wallet error for transactionId: {} - {} - {}", e.getErrorCode(), e.getErrorDescription(), transactionId);
                 return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(e.getErrorCode(), e.getErrorDescription()));

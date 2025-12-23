@@ -19,5 +19,5 @@ public class VPRequestCreateDto {
     String nonce;
     @Valid
     VPDefinitionResponseDto presentationDefinition;
-    boolean acceptVPWithoutHolderProof;
+    private boolean acceptVPWithoutHolderProof;
 }

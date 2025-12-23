@@ -21,5 +21,5 @@ public class AuthorizationRequestResponseDto {
     private final VPDefinitionResponseDto presentationDefinition;
     private final String nonce;
     private final String responseUri;
-    private final boolean acceptVPWithoutHolderProof;
+    private boolean acceptVPWithoutHolderProof;
 }

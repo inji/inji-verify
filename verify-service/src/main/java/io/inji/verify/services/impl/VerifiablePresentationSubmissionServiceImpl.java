@@ -88,7 +88,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 boolean acceptVPWithoutHolderProof = Optional.ofNullable(request.getAuthorizationDetails()).map(AuthorizationRequestResponseDto::isAcceptVPWithoutHolderProof).orElse(false);
 
                 if (isVerifiablePresentation) {
-                    if (isVerifiablePresentationSigned) {
+                    if (isVerifiablePresentationSigned || acceptVPWithoutHolderProof) {
                         List<String> statusPurposeList = new ArrayList<>();
                         statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
                         PresentationResultWithCredentialStatus presentationResultWithCredentialStatus = presentationVerifier.verifyAndGetCredentialStatus(vpToken.toString(), statusPurposeList);
@@ -101,7 +101,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                             vcResults.add(new VCResultDto(vcResult.getVc(), vcStatus));
                         }
                         verificationResults.addAll(vcResults);
-                    } else if (acceptVPWithoutHolderProof) {
+                    } else {
                         Object verifiableCredential = vpToken.opt("verifiableCredential");
                         if (verifiableCredential instanceof JSONArray array) {
                             for (Object vc : array) {
@@ -110,8 +110,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                         } else {
                             throw new InvalidVpTokenException();
                         }
-                    } else {
-                        throw new InvalidVpTokenException();
                     }
                 } else {
                     throw new InvalidVpTokenException();
