@@ -8,6 +8,6 @@ class VPWithoutProofExceptionTest {
     @Test
     void shouldTestConstructor() {
         VPWithoutProofException exception = new VPWithoutProofException();
-        assertEquals("VP without proof, please provide a signed VP", exception.getMessage());
+        assertEquals("Invalid VP Submission since VP is without proof", exception.getMessage());
     }
 }

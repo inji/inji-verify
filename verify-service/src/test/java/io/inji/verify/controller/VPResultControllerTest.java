@@ -110,7 +110,7 @@ public class VPResultControllerTest {
 
         mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
                 .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(status().isNotFound())
+                .andExpect(status().isInternalServerError())
                 .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF))));
 
         verify(verifiablePresentationRequestService, times(1)).getLatestRequestIdFor(transactionId);
