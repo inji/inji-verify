@@ -13,7 +13,7 @@ public enum ErrorCode {
     NO_PRESENTATION_DEFINITION("NO_PRESENTATION_DEFINITION","No Presentation Definition found for given Presentation Definition ID."),
     DID_CREATION_FAILED("DID_CREATION_FAILED","Error while creating DID document."),
     VP_SUBMISSION_EXCEPTION("VP_SUBMISSION_EXCEPTION","Error while processing VP submission"),
-    VP_WITHOUT_PROOF("VP_WITHOUT_PROOF", "VP without proof, please provide a signed VP");
+    VP_WITHOUT_PROOF("VP_WITHOUT_PROOF", "Invalid VP Submission since VP is without proof");
 
     private final String errorCode;
     private final String errorMessage;
