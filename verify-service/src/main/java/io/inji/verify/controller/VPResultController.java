@@ -35,7 +35,7 @@ public class VPResultController {
     }
 
     @GetMapping(path = "/vp-result/{transactionId}")
-    public ResponseEntity<Object> getVPResult(@PathVariable String transactionId, HttpServletRequest request) throws CredentialStatusCheckException {
+    public ResponseEntity<Object> getVPResult(@PathVariable String transactionId, HttpServletRequest request) {
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
         if (!requestIds.isEmpty()) {
