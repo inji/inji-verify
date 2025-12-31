@@ -1,4 +1,4 @@
-import React, {useCallback, useEffect, useState} from 'react';
+import React, {useCallback, useEffect, useState, useRef} from 'react';
 import { MdArrowForwardIos } from "react-icons/md";
 import { MdExpandLess } from "react-icons/md";
 import {AlertMessages, Pages} from "../../utils/config";
@@ -77,9 +77,31 @@ const MobileDropDownMenu = ({ showMenu, setShowMenu }: { showMenu: boolean; setS
 
 const DesktopMenu = () => {
     const [showHelp, setShowHelp] = useState(false);
+    const helpRef = useRef<HTMLLIElement>(null);
     const {t} = useTranslation('Navbar');
     const language = useAppSelector((state:RootState)=>state.common.language)
     const rtl = isRTL(language)
+
+    useEffect(() => {
+        const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
+            if (
+                showHelp &&
+                helpRef.current &&
+                !helpRef.current.contains(event.target as Node)
+            ) {
+                setShowHelp(false);
+            }
+        };
+
+        document.addEventListener("mousedown", handleOutsideClick);
+        document.addEventListener("touchstart", handleOutsideClick);
+
+        return () => {
+            document.removeEventListener("mousedown", handleOutsideClick);
+            document.removeEventListener("touchstart", handleOutsideClick);
+        };
+    }, [showHelp]);
+
     return (
         <div className="hidden lg:block w-full lg:w-auto" id="navbar-default">
             <ul className={`hidden mt-4 lg:flex ${rtl ? "lg:space-x-reverse lg:space-x-10" : "lg:space-x-10"} lg:mt-0 lg:text-sm lg:font-medium`}>
@@ -98,7 +120,7 @@ const DesktopMenu = () => {
                         {t("verifyCredentials")}
                     </a>
                 </li>
-                <li className="relative">
+                <li className="relative" ref={helpRef}>
                     <button id="help-button"
                        onClick={() => setShowHelp(show=>!show)}
                        className="inline-flex items-center cursor-pointer py-2 rounded text-black">
