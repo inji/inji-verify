@@ -9,8 +9,11 @@ import io.inji.verify.enums.VPResultStatus;
 import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
 import io.inji.verify.exception.VPSubmissionWalletError;
+import io.inji.verify.exception.VPWithoutProofException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
+import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
+import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import io.inji.verify.repository.VPSubmissionRepository;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;
@@ -84,7 +87,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_Success_JSONObject() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_Success_JSONObject() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         List<VCResultWithCredentialStatus> vcResults = List.of(
             new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.SUCCESS, new HashMap<>())
@@ -114,7 +117,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_Success_Base64EncodedString() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_Success_Base64EncodedString() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
         String vpTokenJson = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[{\"type\":[\"VerifiablePresentation\"]}]}";
@@ -137,7 +140,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_Success_JSONArray() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_Success_JSONArray() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
         List<VCResultWithCredentialStatus> vcResults1 = List.of(
@@ -172,7 +175,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_Success_JSONArrayWithBase64() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_Success_JSONArrayWithBase64() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -213,7 +216,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_VerificationFailed_InvalidVPStatus() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_VerificationFailed_InvalidVPStatus() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -236,7 +239,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_VerificationFailed_InvalidVCStatus() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_VerificationFailed_InvalidVCStatus() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -264,7 +267,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_VerificationFailed_ExpiredVCStatus() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_VerificationFailed_ExpiredVCStatus() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -292,7 +295,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_TokenMatchingFailed_NullVpToken() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_TokenMatchingFailed_NullVpToken() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -312,7 +315,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_TokenMatchingFailed_NullRequest() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_TokenMatchingFailed_NullRequest() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -332,7 +335,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_TokenMatchingFailed_EmptyDescriptorMap() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_TokenMatchingFailed_EmptyDescriptorMap() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -351,7 +354,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_TokenMatchingFailed_NullDescriptorMap() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_TokenMatchingFailed_NullDescriptorMap() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -370,7 +373,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_ExceptionHandling_RuntimeException() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_ExceptionHandling_RuntimeException() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -392,7 +395,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_InvalidVPTokenFormat() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_InvalidVPTokenFormat() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -412,7 +415,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_InvalidItemInVPTokenArray() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_InvalidItemInVPTokenArray() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -432,7 +435,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_InvalidBase64InArray() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_InvalidBase64InArray() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -452,7 +455,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_InvalidBase64String() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_InvalidBase64String() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -472,7 +475,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_EmptyVpVerificationStatuses() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_EmptyVpVerificationStatuses() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -494,7 +497,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testIsVPTokenMatching_AllValidConditions() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testIsVPTokenMatching_AllValidConditions() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -521,7 +524,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_VerificationFailedException() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_VerificationFailedException() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -546,7 +549,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test 
-    public void testGetVPResult_TokenMatchingFailedException() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_TokenMatchingFailedException() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -566,7 +569,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_MixedVerificationStatuses() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_MixedVerificationStatuses() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -604,7 +607,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_AllVerificationStatusTypes() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_AllVerificationStatusTypes() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
@@ -643,7 +646,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testProcessJsonVpTokens_SimpleVC() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testProcessJsonVpTokens_SimpleVC() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         // Prepare a VPSubmission with a simple VC token
         JSONArray types = new JSONArray();
         types.put("VerifiableCredential");
@@ -687,7 +690,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testProcessSdJwtVpTokens_Success() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testProcessSdJwtVpTokens_Success() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         String header = Base64.getUrlEncoder().encodeToString("{\"typ\":\"vc+sd-jwt\"}".getBytes());
         String payload = Base64.getUrlEncoder().encodeToString("{\"sub\":\"123\"}".getBytes());
         String signature = Base64.getUrlEncoder().encodeToString("signature".getBytes());
@@ -751,7 +754,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testGetVPResult_Revoked_JSONObject() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException {
+    public void testGetVPResult_Revoked_JSONObject() throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
         List<String> requestIds = List.of("req123");
         List<VCResultWithCredentialStatus> vcResults = List.of(new VCResultWithCredentialStatus("Verified successfully", VerificationStatus.REVOKED, new HashMap<>()));
         String transactionId = "tx123";
