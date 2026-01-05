@@ -5,10 +5,7 @@ import io.inji.verify.dto.presentation.InputDescriptorDto;
 import io.inji.verify.dto.presentation.SubmissionRequirementDto;
 import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import org.junit.jupiter.api.Test;
-
-import java.text.Format;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.mock;
 
@@ -24,12 +21,13 @@ public class VPRequestCreateDtoTest {
         FormatDto mockFormatDto = mock();
         VPDefinitionResponseDto presentationDefinition = new VPDefinitionResponseDto("pd123",mockInputDescriptors,"name","purpose" ,mockFormatDto ,mockSubmissionRequirements);
 
-        VPRequestCreateDto vpRequestCreateDto = new VPRequestCreateDto(clientId, transactionId, presentationDefinitionId, nonce, presentationDefinition);
+        VPRequestCreateDto vpRequestCreateDto = new VPRequestCreateDto(clientId, transactionId, presentationDefinitionId, nonce, presentationDefinition, false);
 
         assertEquals(clientId, vpRequestCreateDto.getClientId());
         assertEquals(transactionId, vpRequestCreateDto.getTransactionId());
         assertEquals(presentationDefinitionId, vpRequestCreateDto.getPresentationDefinitionId());
         assertEquals(nonce, vpRequestCreateDto.getNonce());
         assertEquals(presentationDefinition, vpRequestCreateDto.getPresentationDefinition());
+        assertFalse(vpRequestCreateDto.isAcceptVPWithoutHolderProof());
     }
 }

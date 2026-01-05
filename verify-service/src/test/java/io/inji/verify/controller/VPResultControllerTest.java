@@ -6,6 +6,7 @@ import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPResultStatus;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
+import io.inji.verify.exception.VPWithoutProofException;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -92,6 +93,25 @@ public class VPResultControllerTest {
                 .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.NO_VP_SUBMISSION))));
+
+        verify(verifiablePresentationRequestService, times(1)).getLatestRequestIdFor(transactionId);
+        verify(verifiablePresentationSubmissionService, times(1)).getVPResult(requestIds, transactionId);
+    }
+
+    @Test
+    public void testGetVPResult_InternalServerError_VPWithoutProofException() throws Exception {
+        String transactionId = "tx101";
+        List<String> requestIds = new ArrayList<>();
+        requestIds.add("req112");
+
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId)).thenReturn(requestIds);
+        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId))
+                .thenThrow(new VPWithoutProofException());
+
+        mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
+                .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF))));
 
         verify(verifiablePresentationRequestService, times(1)).getLatestRequestIdFor(transactionId);
         verify(verifiablePresentationSubmissionService, times(1)).getVPResult(requestIds, transactionId);

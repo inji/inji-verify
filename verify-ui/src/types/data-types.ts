@@ -126,6 +126,7 @@ export type VerifyState = {
   sharingType: VCShareType;
   isPartiallyShared: boolean;
   presentationDefinition: PresentationDefinition;
+  sdkInstanceKey: number;
 };
 
 export enum VCShareType {

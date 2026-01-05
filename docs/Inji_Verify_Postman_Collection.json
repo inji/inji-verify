@@ -3,8 +3,7 @@
 		"_postman_id": "5636b71e-0a67-4c65-84b5-604506f8def2",
 		"name": "Inji_Verify_Postman_Collection",
 		"schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
-		"_exporter_id": "47128896",
-		"_collection_link": "https://joint-operations-geoscientist-11518343-173253.postman.co/workspace/Sarup's-Workspace~16549164-7704-4d4e-835a-c1fff0033167/collection/47128896-5636b71e-0a67-4c65-84b5-604506f8def2?action=share&source=collection_link&creator=47128896"
+		"_exporter_id": "47128896"
 	},
 	"item": [
 		{
@@ -420,24 +419,12 @@
 		},
 		{
 			"name": "OpenID4VP - Get VP Request Status",
-			"protocolProfileBehavior": {
-				"disableBodyPruning": true
-			},
 			"request": {
 				"auth": {
 					"type": "noauth"
 				},
 				"method": "GET",
 				"header": [],
-				"body": {
-					"mode": "raw",
-					"raw": "{\r\n  \"clientId\": \"client123\",\r\n  \"presentationDefinition\": {\r\n    \"id\": \"32f54163-7166-48f1-93d8-ff217bdb0653\",\r\n    \"input_descriptors\": [\r\n      {\r\n        \"id\": \"wa_driver_license\",\r\n        \"name\": \"Washington State Business License\",\r\n        \"purpose\": \"We can only allow licensed Washington State business representatives into the WA Business Conference\",\r\n        \"constraints\": {\r\n          \"fields\": [\r\n            {\r\n              \"path\": [\r\n                \"$.credentialSubject.dateOfBirth\",\r\n                \"$.credentialSubject.dob\",\r\n                \"$.vc.credentialSubject.dateOfBirth\",\r\n                \"$.vc.credentialSubject.dob\"\r\n              ]\r\n            }\r\n          ]\r\n        }\r\n      }\r\n    ]\r\n  }\r\n}",
-					"options": {
-						"raw": {
-							"language": "json"
-						}
-					}
-				},
 				"url": {
 					"raw": "https://{{base_url}}/v1/verify/vp-request/{{reqIdForOpenID4VP}}/status",
 					"protocol": "https",
@@ -525,6 +512,22 @@
 	"variable": [
 		{
 			"key": "base_url",
+			"value": ""
+		},
+		{
+			"key": "txnIdForJSON_Ld",
+			"value": ""
+		},
+		{
+			"key": "txnIdForSD_JWT",
+			"value": ""
+		},
+		{
+			"key": "txnIdForOpenID4VP",
+			"value": ""
+		},
+		{
+			"key": "reqIdForOpenID4VP",
 			"value": ""
 		}
 	]

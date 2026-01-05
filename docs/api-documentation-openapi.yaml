@@ -319,7 +319,7 @@ paths:
 
         Starting from version `1.6.0`, the API also performs revocation checks for JSON-LD credentials. A credential’s verification status can be `SUCCESS, INVALID, EXPIRED, or REVOKED`.
 
-        Additionally, beginning with version `1.6.0`, the Verifiable Presentation itself may be unsigned (i.e., submitted without a proof section). This supports online sharing scenarios, such as transmitting large VCs via QR codes (DataShare), where including a cryptographic proof may not be feasible.
+        Additionally, beginning with version `1.6.0`, Verifiable Presentations (VPs) can be submitted without a proof. This is mainly intended for online sharing scenarios, such as DataShare via QR codes, where adding a cryptographic proof may not be practical due to size constraints. This behavior is controlled by the acceptVPWithoutHolderProof configuration. When set to true, the API accepts unsigned VPs. When set to false (default), a valid proof is mandatory, and the API will return an error if it is missing. For DataShare use cases, this configuration is typically enabled.
       tags:
         - VP Request Management
       responses:
@@ -1111,6 +1111,7 @@ components:
     VCVerificationSDJWTRequest:
       title: VCVerificationSDJWTRequest
       type: object
+      required: [vc]
       properties:
         vc:
           type: string

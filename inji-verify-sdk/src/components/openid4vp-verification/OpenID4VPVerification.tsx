@@ -41,6 +41,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   onError,
   clientId,
   isSameDeviceFlowEnabled = true,
+  acceptVPWithoutHolderProof = false,
 }) => {
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -194,7 +195,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         clientId,
         transactionId ?? undefined,
         presentationDefinitionId,
-        presentationDefinition
+        presentationDefinition,
+        acceptVPWithoutHolderProof
       );
 
       sessionStateRef.current = {

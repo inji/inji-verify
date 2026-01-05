@@ -3,9 +3,10 @@ package io.mosip.testrig.apirig.injiverify.testrunner;
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.Properties;
 
 import org.apache.log4j.Level;
@@ -39,6 +40,7 @@ import io.mosip.testrig.apirig.utils.SkipTestCaseHandler;
 public class MosipTestRunner {
 	private static final Logger LOGGER = Logger.getLogger(MosipTestRunner.class);
 	private static String cachedPath = null;
+	private static String generateDependency;
 
 	public static String jarUrl = MosipTestRunner.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 	public static List<String> languageList = new ArrayList<>();
@@ -67,20 +69,27 @@ public class MosipTestRunner {
 			suiteSetup(getRunType());
 			SkipTestCaseHandler.loadTestcaseToBeSkippedList("testCaseSkippedList.txt");
 			GlobalMethods.setModuleNameAndReCompilePattern(InjiVerifyConfigManager.getproperty("moduleNamePattern"));
-			
 
-				HealthChecker healthcheck = new HealthChecker();
-				healthcheck.setCurrentRunningModule(BaseTestCase.currentModule);
-				Thread trigger = new Thread(healthcheck);
-				trigger.start();
+			HealthChecker healthcheck = new HealthChecker();
+			healthcheck.setCurrentRunningModule(BaseTestCase.currentModule);
+			Thread trigger = new Thread(healthcheck);
+			trigger.start();
 
 			BaseTestCase.getLanguageList();
 			
-			String testCasesToExecuteString = InjiVerifyConfigManager.getproperty("testCasesToExecute");
+			generateDependency = InjiVerifyConfigManager.getproperty("generateDependencyJson");
 
-			DependencyResolver.loadDependencies(getGlobalResourcePath() + "/" + "config/testCaseInterDependency.json");
-			if (!testCasesToExecuteString.isBlank()) {
-				InjiVerifyUtil.testCasesInRunScope = DependencyResolver.getDependencies(testCasesToExecuteString);
+			if (!"yes".equalsIgnoreCase(generateDependency)) {
+
+				String testCasesToExecute = InjiVerifyConfigManager.getproperty("testCasesToExecute");
+				LOGGER.info("Testcases to execute as per config: " + testCasesToExecute);
+
+				if (testCasesToExecute != null && !testCasesToExecute.isBlank()) {
+					DependencyResolver
+							.loadDependencies(getGlobalResourcePath() + "/config/testCaseInterDependency.json");
+
+					InjiVerifyUtil.testCasesInRunScope = DependencyResolver.getDependencies(testCasesToExecute);
+				}
 			}
 
 			startTestRunner();
@@ -91,7 +100,13 @@ public class MosipTestRunner {
 		HealthChecker.bTerminate = true;
 		
 		// Used for generating the test case interdependency JSON file
-		// AdminTestUtil.generateTestCaseInterDependencies(getGlobalResourcePath() + "/config/testCaseInterDependency.json");
+		if ("yes".equalsIgnoreCase(generateDependency)) {
+			LOGGER.info("Generating test case inter-dependencies");
+			AdminTestUtil.generateTestCaseInterDependencies(BaseTestCase.testCaseInterDependencyPath);
+		} else {
+			LOGGER.info("Skipping dependency generation");
+		}
+
 		System.exit(0);
 
 	}
@@ -107,8 +122,8 @@ public class MosipTestRunner {
 		if (!runType.equalsIgnoreCase("JAR")) {
 			AuthTestsUtil.removeOldMosipTempTestResource();
 		}
-		BaseTestCase.currentModule = GlobalConstants.INJIVERIFY;
-		BaseTestCase.certsForModule = GlobalConstants.INJIVERIFY;
+		BaseTestCase.currentModule = BaseTestCase.runContext + GlobalConstants.INJIVERIFY;
+		BaseTestCase.certsForModule = BaseTestCase.runContext + GlobalConstants.INJIVERIFY;
 		AdminTestUtil.copymoduleSpecificAndConfigFile(GlobalConstants.INJIVERIFY);
 	}
 

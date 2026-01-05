@@ -358,7 +358,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         clientId,
         transactionId ?? undefined,
         presentationDefinitionId,
-        presentationDefinition
+        presentationDefinition,
+        true // acceptVPWithoutHolderProof is set to true for DataShare VCs
       );
 
       storeStates(data);

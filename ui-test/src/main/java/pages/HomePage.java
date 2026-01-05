@@ -19,16 +19,15 @@ import org.openqa.selenium.NoSuchElementException;
 
 
 import base.BasePage;
+import utils.WaitUtil;
 
 public class HomePage extends BasePage {
-
-	private WebDriver driver;
 
     private static final String stayProtectedIssuer = InjiVerifyConfigManager.getproperty("stayProtectedIssuer");
     private static final String stayProtectedIssuerCredentialType = InjiVerifyConfigManager.getproperty("stayProtectedIssuerCredentialType");
 
 	public HomePage(WebDriver driver) {
-		this.driver = driver;
+		super(driver);
 		PageFactory.initElements(driver, this);
 	}
 
@@ -44,11 +43,20 @@ public class HomePage extends BasePage {
 	@FindBy(xpath = "//a[@id='home-button']")
 	WebElement homeButton;
 
+	@FindBy(id = "fullname-value")
+	WebElement fullNameValue;
+
+	@FindBy(id = "gender-value")
+	WebElement fullGenderValue;
+
 	@FindBy(xpath = "//a[@id='verify-credentials-button']")
 	WebElement Credentialsbutton;
 
 	@FindBy(xpath = "//button[@id='help-button']")
 	WebElement helpButton;
+	
+	@FindBy(xpath = "//button[.//span[text()='Continue as Guest']]")
+	WebElement continueButton;
 
 	@FindBy(xpath = "(//*[@id='help-button']//*[@class='mx-1.5 rotate-180']//*)[1]")
 	WebElement Expansionbutton;
@@ -124,6 +132,9 @@ public class HomePage extends BasePage {
 
 	@FindBy(xpath = "//button[contains(@data-testid, 'DataShareFooter-Success-Button')]")
 	WebElement getOnOnProceed;
+	
+	@FindBy(xpath = "//h3[@data-testid='ItemBox-Text' and text()='Health Insurance']")
+	WebElement healthInsurance;
 
 	@FindBy(xpath = "//div[@data-testid='ItemBox-Outer-Container-0']")
 	WebElement isMosipNationalId;
@@ -146,7 +157,7 @@ public class HomePage extends BasePage {
 	@FindBy(xpath = "//button[@id='verify_form']")
 	WebElement verifyButton;
 
-	@FindBy(xpath = "//*[@data-testid='DownloadResult-Home-Button']")
+	@FindBy(xpath = "//button[@id='home-button']")
 	WebElement HomeButton;
 
 	@FindBy(xpath = "//*[@data-testid='HomeBanner-Guest-Login']")
@@ -157,6 +168,7 @@ public class HomePage extends BasePage {
 
 	@FindBy(xpath = "(//span[contains(@class, 'bg-gradient-to-r') and contains(text(), 'Get Started')])[1]")
 	WebElement getStartedButton;
+
 
 	public Boolean isLogoDisplayed() {
 		return injiVerifyLogo.isDisplayed();
@@ -196,8 +208,12 @@ public class HomePage extends BasePage {
 		return isElementIsVisible(driver, Expansionbutton);
 	}
 
-	public void ClickonHomeButton() {
+	public void clickOnHelpButton() {
 		clickOnElement(driver, helpButton);
+	}
+	
+	public void clickOnContinueButton() {
+		clickOnElement(driver, continueButton);
 	}
 
 	public Boolean isExpansionbuttonDisplayedAfter() {
@@ -211,6 +227,10 @@ public class HomePage extends BasePage {
 
 	public void minimizeHelpButton() {
 		clickOnElement(driver, minimizeHelpButton);
+	}
+
+	public void clickOnHomeButton() {
+		clickOnElement(driver, homeButton);
 	}
 
 	public Boolean isUploadQRButtonVisible() {
@@ -288,7 +308,7 @@ public class HomePage extends BasePage {
 
 	}
 
-	public void ClickonQRUploadButton() {
+	public void clickOnQRUploadButton() {
 		clickOnElement(driver, QRUploadButton);
 	}
 
@@ -341,11 +361,12 @@ public class HomePage extends BasePage {
 		clickOnElement(driver, isMosipNationalId);
 	}
 
-    public void clickOnStayProtectedCredentialType() {
-        By locator = By.xpath("//h3[text()='" + stayProtectedIssuerCredentialType + "']");
-        WebElement stayProtectedCredentialTypeElement = waitForElementClickable(driver, locator, 30);
-        clickOnElement(driver, stayProtectedCredentialTypeElement);
-    }
+	public void clickOnStayProtectedCredentialType() {
+       		// Use explicit wait (configured via explicitWaitTimeout) instead of Thread.sleep
+		WaitUtil.waitForClickability(driver, healthInsurance);
+		clickOnElement(driver, healthInsurance);
+	}
+
 
 	public void clickOnOnProceed() {
 		try {
@@ -415,7 +436,7 @@ public class HomePage extends BasePage {
 		}
 	}
 
-	public  void SwitchToWebTab(){
+	public  void switchToWebTab(){
 		Set<String> allWindowHandles = driver.getWindowHandles();
 		System.out.println(allWindowHandles);
 		if (allWindowHandles.size() >= 2) {
@@ -426,7 +447,7 @@ public class HomePage extends BasePage {
 		}
 	}
 
-	public  void SwitchToVerifyTab(){
+	public  void switchToVerifyTab(){
 		Set<String> allWindowHandles = driver.getWindowHandles();
 		System.out.println(allWindowHandles);
 		if (allWindowHandles.size() >= 2) {
@@ -458,10 +479,6 @@ public class HomePage extends BasePage {
 		clickOnElement(driver,verifyButton );
 	}
 
-	public void clickOnHomebutton() {
-		clickOnElement(driver,HomeButton );
-	}
-
 	public Boolean isErrorMessageVisible() {
 		return isElementIsVisible(driver, errorMeassage);
 	}
@@ -469,5 +486,27 @@ public class HomePage extends BasePage {
 	public void clickOnContinueAsGuest() {
 		clickOnElement(driver,guestLogin );
 	}
+
+	public String getNameValueInArabic() {
+		return getText(driver, fullNameValue);
+
+	}
+
+	public String getNameValueInFrench() {
+		return getText(driver, fullNameValue);
+
+	}
+
+	public String getGenderValueInArabic() {
+		return getText(driver, fullGenderValue);
+
+	}
+
+	public String getGenderValueInFrench() {
+		return getText(driver, fullGenderValue);
+
+	}
+
+
 
 	}

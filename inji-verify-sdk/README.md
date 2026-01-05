@@ -130,6 +130,7 @@ https://your-backend.com
   isEnableScan={true}          // Allow camera scanning  
   isEnableZoom={true}          // Allow camera zoom
   isVPSubmissionSupported={false}  // This attribute indicates whether VP submission is supported in Inji OVP VC sharing flow. By default, it is false which means that VP token will be directly sent in response. If set to true, then VP token will be submitted to the VP_SUBMISSION_ URL.
+  acceptVPWithoutHolderProof={false} // This attribute controls whether unsigned Verifiable Presentations (VPs without proof) are allowed in the Inji OVP VC sharing flow. By default, it is set to false, meaning unsigned VP tokens are not supported and an error is thrown if an unsigned VP is received. If set to true, VP tokens without a signature (proof) are allowed and can be verified. For data-share it is set to true by default.
 />
 ```
 
@@ -206,13 +207,14 @@ presentationDefinition={{
 
 ### Common Props (Both Components)
 
-| Property           | Type          | Required | Description                                 |
-|--------------------|---------------|----------|---------------------------------------------|
-| `verifyServiceUrl` | string        | ✅        | Your backend verification URL               |
-| `onError`          | function      | ✅        | What to do when something goes wrong        |
-| `triggerElement`   | React element | ❌        | Custom button/element to start verification |
-| `transactionId`    | string        | ❌        | Your own tracking ID                        |
-| `clientId`         | string        | ✅        | Your own client ID                          |  
+| Property                         | Type          | Required | Description                                 |
+|----------------------------------|---------------|----------|---------------------------------------------|
+| `verifyServiceUrl`               | string        | ✅       | Backend verification URL                    |
+| `onError`                        | function      | ✅       | Callback invoked when an error occurs       |
+| `triggerElement`                 | React element | ❌       | Custom button/element to start verification |
+| `transactionId`                  | string        | ❌       | Optional client-side tracking ID            |
+| `clientId`                       | string        | ✅       | Client identifier                           |
+| `acceptVPWithoutHolderProof`     | boolean       | ❌       | Allow unsigned Verifiable Presentations     |
 
 ### QRCodeVerification Specific
 

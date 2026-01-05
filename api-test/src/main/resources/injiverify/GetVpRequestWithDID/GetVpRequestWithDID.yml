@@ -1,6 +1,6 @@
 GetVpRequestWithDID:
   Injiverify_GetVpRequestWithDID_All_Valid_Smoke_Sid:
-    endPoint: /v1/verify{requestUri}
+    endPoint: /v1/verify/vp-request/{requestId}
     description: Get VP request JWT for DID-based client id and validate Auth Request
     uniqueIdentifier: TC_InjiVerify_GetVpRequestWithDID_02
     role: noauth
@@ -8,7 +8,7 @@ GetVpRequestWithDID:
     inputTemplate: injiverify/GetVpRequestWithDID/GetVpRequestWithDID
     outputTemplate: injiverify/GetVpRequestWithDID/GetVpRequestWithDIDResult
     input: '{
-    "requestUri": "$ID:CreateNewVerificationRequest_DID_ClientId_Valid_Sid_requestUri$",
+    "requestId": "$ID:CreateNewVerificationRequest_DID_ClientId_Valid_Smoke_Sid_requestId$",
     "acceptHeader": "*/*"
 }'
     output: '{
