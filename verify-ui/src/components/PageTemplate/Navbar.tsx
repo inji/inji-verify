@@ -1,4 +1,5 @@
 import React, {useCallback, useEffect, useState, useRef} from 'react';
+import { Link } from "react-router-dom";
 import { MdArrowForwardIos } from "react-icons/md";
 import { MdExpandLess } from "react-icons/md";
 import {AlertMessages, Pages} from "../../utils/config";
@@ -59,8 +60,14 @@ const MobileDropDownMenu = ({ showMenu, setShowMenu }: { showMenu: boolean; setS
             showMenu && (
                 <div id="menu"
                      className="absolute right-0 top-[68px] w-[100vw] bg-white rounded-md shadow-lg p-3 ring-1 ring-black ring-opacity-5 font-bold text-[14px] z-[1000]">
-                    <a id="home-button" href={Pages.Home} className="block px-1 py-2 text-sm text-gray-700 hover:bg-gray-100">{t("home")}</a>
-                    <a id="verify-credentials-button" href={Pages.Home} className={`block px-1 py-2 font-bold text-sm bg-${window._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}>{t('verifyCredentials')}</a>
+                    <Link id="home-button" to={Pages.Home} className="block px-1 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setShowMenu(false)}>
+                        {t("home")}
+                    </Link>
+                    <Link id="verify-credentials-button" to={Pages.VerifyCredentials }
+                          className={`block px-1 py-2 font-bold text-sm bg-${window._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}
+                          onClick={() => setShowMenu(false)}>
+                        {t('verifyCredentials')}
+                    </Link>
                     <div className="relative">
                         <button id="submenu-button"
                                 className="inline-flex items-center w-full text-left px-1 py-3 text-sm text-gray-700 hover:bg-gray-100"
@@ -81,7 +88,6 @@ const DesktopMenu = () => {
     const {t} = useTranslation('Navbar');
     const language = useAppSelector((state:RootState)=>state.common.language)
     const rtl = isRTL(language)
-
     useEffect(() => {
         const handleOutsideClick = (event: MouseEvent | TouchEvent) => {
             if (
@@ -101,29 +107,28 @@ const DesktopMenu = () => {
             document.removeEventListener("touchstart", handleOutsideClick);
         };
     }, [showHelp]);
-
     return (
         <div className="hidden lg:block w-full lg:w-auto" id="navbar-default">
             <ul className={`hidden mt-4 lg:flex ${rtl ? "lg:space-x-reverse lg:space-x-10" : "lg:space-x-10"} lg:mt-0 lg:text-sm lg:font-medium`}>
                 <li>
-                    <a id="home-button"
-                       href={Pages.Home}
-                       className="block py-2 rounded text-black"
-                       aria-current="page">
+                    <Link id="home-button"
+                          to={Pages.Home}
+                          className="block py-2 rounded text-black"
+                          aria-current="page">
                         {t("home")}
-                    </a>
+                    </Link>
                 </li>
                 <li>
-                    <a id="verify-credentials-button"
-                       href={Pages.VerifyCredentials}
-                       className={`block py-2 font-bold rounded bg-${window._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}>
+                    <Link id="verify-credentials-button"
+                          to={Pages.VerifyCredentials}
+                          className={`block py-2 font-bold rounded bg-${window._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}>
                         {t("verifyCredentials")}
-                    </a>
+                    </Link>
                 </li>
                 <li className="relative" ref={helpRef}>
                     <button id="help-button"
-                       onClick={() => setShowHelp(show=>!show)}
-                       className="inline-flex items-center cursor-pointer py-2 rounded text-black">
+                            onClick={() => setShowHelp(show=>!show)}
+                            className="inline-flex items-center cursor-pointer py-2 rounded text-black">
                         {t("help")} <MdExpandLess className={`mx-1.5 ${showHelp ? "" : "rotate-180"}`}/>
                     </button>
                     {showHelp && (<SubMenu/>)}
@@ -148,9 +153,9 @@ function Navbar(props: any) {
                     >
                         <MenuIcon id="menu-icon" style={{width: "25px", height: "19px"}}/>
                     </button>
-                    <a href={Pages.Home} className="flex items-center">
+                    <Link to={Pages.Home} className="flex items-center">
                         <Logo className="w-[150px] sm:w-[184px] h-[32px] cursor-pointer"/>
-                    </a>
+                    </Link>
                 </div>
                 <DesktopMenu/>
                 <MobileDropDownMenu showMenu={showMenu} setShowMenu={setShowMenu}/>
