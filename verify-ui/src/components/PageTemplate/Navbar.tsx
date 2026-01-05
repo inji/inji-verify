@@ -59,12 +59,13 @@ const MobileDropDownMenu = ({ showMenu, setShowMenu }: { showMenu: boolean; setS
         {
             showMenu && (
                 <div id="menu"
-                     className="absolute right-0 top-[68px] w-[100vw] bg-white rounded-md shadow-lg p-3 ring-1 ring-black ring-opacity-5 font-bold text-[14px] z-[1000]" onClick={() => setShowMenu(false)}>
-                    <Link id="home-button" to={Pages.Home} className="block px-1 py-2 text-sm text-gray-700 hover:bg-gray-100">
+                     className="absolute right-0 top-[68px] w-[100vw] bg-white rounded-md shadow-lg p-3 ring-1 ring-black ring-opacity-5 font-bold text-[14px] z-[1000]">
+                    <Link id="home-button" to={Pages.Home} className="block px-1 py-2 text-sm text-gray-700 hover:bg-gray-100" onClick={() => setShowMenu(false)}>
                         {t("home")}
                     </Link>
-                    <Link id="verify-credentials-button" to={Pages.VerifyCredentials } onClick={() => setShowMenu(false)}
-                          className={`block px-1 py-2 font-bold text-sm bg-${window._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}>
+                    <Link id="verify-credentials-button" to={Pages.VerifyCredentials }
+                          className={`block px-1 py-2 font-bold text-sm bg-${window._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}
+                          onClick={() => setShowMenu(false)}>
                         {t('verifyCredentials')}
                     </Link>
                     <div className="relative">
