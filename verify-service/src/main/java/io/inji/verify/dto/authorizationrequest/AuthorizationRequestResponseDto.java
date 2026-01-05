@@ -6,7 +6,6 @@ import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import io.inji.verify.shared.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
-
 import java.time.Instant;
 
 @Getter
@@ -22,4 +21,5 @@ public class AuthorizationRequestResponseDto {
     private final VPDefinitionResponseDto presentationDefinition;
     private final String nonce;
     private final String responseUri;
+    private final boolean acceptVPWithoutHolderProof;
 }

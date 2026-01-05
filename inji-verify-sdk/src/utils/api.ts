@@ -150,7 +150,7 @@ export const vpResult = async (url: string, txnId: string) => {
     if (response.status !== 200) {
       throw {
         errorCode: data.errorCode,
-        errorMessage: data.errorMessage ? data.errorMessage : data.error,
+        errorMessage: data.errorMessage || data.error || "Unknown error",
         transactionId: txnId ?? null
       } as AppError;
     }
