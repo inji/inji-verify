@@ -19,6 +19,7 @@ import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import io.mosip.vercred.vcverifier.utils.Util;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -60,26 +61,20 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         boolean isSdJwt = Utils.isSdJwt(verifiableCredential);
         CredentialFormat format = isSdJwt ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
         VerificationResult verificationResult = null;
-        Map<String, CredentialStatusResult> credentialStatus = Map.of();
+        Map<String, CredentialStatusResult> credentialStatus = null;
         ExpiryCheckDto expiryCheck = null;
         List<StatusCheckDto> statusCheck = List.of();
 
         boolean skipStatusChecks = request.isSkipStatusChecks();
-        try {
             if (skipStatusChecks) {
                 verificationResult = credentialsVerifier.verify(verifiableCredential, format);
             } else {
-                List<String> filters = request.getStatusCheckFilters();
+                List<String> statusCheckFilters = request.getStatusCheckFilters();
                 CredentialVerificationSummary credentialVerificationSummary =
-                        credentialsVerifier.verifyAndGetCredentialStatus(verifiableCredential, format, filters);
+                        credentialsVerifier.verifyAndGetCredentialStatus(verifiableCredential, format, statusCheckFilters);
                 verificationResult = credentialVerificationSummary.getVerificationResult();
                 credentialStatus = credentialVerificationSummary.getCredentialStatus();
             }
-        } catch (Exception e) {
-            log.error("Exception during VC verification in verifyV2", e);
-            SchemaAndSignatureCheckDto schemaAndSignatureCheck = new SchemaAndSignatureCheckDto(false, new ErrorDto("VERIFICATION_FAILED", e.getMessage()));
-            return new VCVerificationResultDto(false, schemaAndSignatureCheck, expiryCheck, statusCheck, null);
-        }
 
         SchemaAndSignatureCheckDto schemaAndSignatureCheck = populateSchemaAndSignature(verificationResult);
         if (schemaAndSignatureCheck.isValid()) {
@@ -89,9 +84,9 @@ public class VCVerificationServiceImpl implements VCVerificationService {
             }
         }
 
-        boolean allChecksSuccessful = isAllCheckSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck);
+        boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck);
 
-        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, null);
+        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, new JSONObject());
     }
 
     private List<StatusCheckDto> populateStatusCheck(Map<String, CredentialStatusResult> credentialStatusResult) {
@@ -105,13 +100,13 @@ public class VCVerificationServiceImpl implements VCVerificationService {
                     if (res == null) {
                         return new StatusCheckDto(purpose, false, new ErrorDto("NULL_STATUS_RESULT", "Credential status result was null."));
                     }
-                    ErrorDto error = getErrorDto(res);
+                    ErrorDto error = populateErrorDto(res);
                     return new StatusCheckDto(purpose, res.isValid(), error);
                 })
                 .collect(Collectors.toList());
     }
 
-    private static ErrorDto getErrorDto(CredentialStatusResult res) {
+    private static ErrorDto populateErrorDto(CredentialStatusResult res) {
         return res.getError() != null
                 ? new ErrorDto(res.getError().getErrorCode().toString(), res.getError().getMessage())
                 : null;
@@ -131,7 +126,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         return new SchemaAndSignatureCheckDto(isValid, error);
     }
 
-    private boolean isAllCheckSuccessful(
+    private boolean populateAllChecksSuccessful(
             SchemaAndSignatureCheckDto schemaAndSignatureCheckDto,
             ExpiryCheckDto expiryCheckDto,
             List<StatusCheckDto> statusCheckDto) {
