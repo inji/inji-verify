@@ -141,10 +141,6 @@ public class VCVerificationServiceImplTest {
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
                 utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
-                Util utilMockInstance = mock(Util.class);
-                when(utilMockInstance.getVerificationStatus(any(VerificationResult.class)))
-                        .thenReturn(VerificationStatus.SUCCESS);
-
                 VCVerificationResultDto result = service.verifyV2(request);
 
                 assertTrue(result.isAllChecksSuccessful());
@@ -168,13 +164,9 @@ public class VCVerificationServiceImplTest {
             when(summary.getCredentialStatus()).thenReturn(Map.of("revocation", statusResult));
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(CredentialFormat.class), anyList()))
                     .thenReturn(summary);
-            Util utilMock = mock(Util.class);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
                 utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
-                when(utilMock.getVerificationStatus(any(VerificationResult.class)))
-                        .thenReturn(VerificationStatus.SUCCESS);
-
                 VCVerificationResultDto result = service.verifyV2(request);
 
                 assertTrue(result.isAllChecksSuccessful());
@@ -222,11 +214,10 @@ public class VCVerificationServiceImplTest {
             when(summary.getCredentialStatus()).thenReturn(Map.of("revocation", statusResult));
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(CredentialFormat.class), anyList()))
                     .thenReturn(summary);
-            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class);
-                 MockedStatic<Util> utilMock = mockStatic(Util.class)) {
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
                 utilsMock.when(() -> Utils.isSdJwt(anyString()))
                         .thenReturn(false);
-                utilMock.when(() -> Utils.getVcVerificationStatus(summary))
+                utilsMock.when(() -> Utils.getVcVerificationStatus(summary))
                         .thenReturn(VerificationStatus.SUCCESS);
                 VCVerificationResultDto result = service.verifyV2(request);
 
