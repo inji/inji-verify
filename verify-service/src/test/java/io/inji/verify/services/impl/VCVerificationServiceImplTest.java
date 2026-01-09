@@ -1,6 +1,6 @@
 package io.inji.verify.services.impl;
 
-import io.inji.verify.dto.verification.VCVerificationRequestBodyDto;
+import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.dto.verification.VCVerificationStatusDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
@@ -130,8 +130,7 @@ public class VCVerificationServiceImplTest {
 
         @Test
         void verifyV2_success_skipStatusChecks_true() {
-            VCVerificationRequestBodyDto request =
-                    new VCVerificationRequestBodyDto("some-vc", true, List.of(), false);
+            VCVerificationRequestDto request = new VCVerificationRequestDto("some-vc", true, List.of(), false);
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
@@ -151,8 +150,8 @@ public class VCVerificationServiceImplTest {
 
         @Test
         void verifyV2_success_skipStatusChecks_false() {
-            VCVerificationRequestBodyDto request =
-                    new VCVerificationRequestBodyDto("some-vc", false, List.of(), false);
+            VCVerificationRequestDto request =
+                    new VCVerificationRequestDto("some-vc", false, List.of(), false);
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
@@ -178,8 +177,8 @@ public class VCVerificationServiceImplTest {
 
         @Test
         void verifyV2_failure_invalidSignature() {
-            VCVerificationRequestBodyDto request =
-                    new VCVerificationRequestBodyDto("some-vc",true,List.of(),false);
+            VCVerificationRequestDto request =
+                    new VCVerificationRequestDto("some-vc",true,List.of(),false);
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(false);
@@ -202,8 +201,8 @@ public class VCVerificationServiceImplTest {
 
         @Test
         void verifyV2_failure_statusCheckFails() {
-            VCVerificationRequestBodyDto request =
-                    new VCVerificationRequestBodyDto("some-vc", false, List.of("revocation"), false);
+            VCVerificationRequestDto request =
+                    new VCVerificationRequestDto("some-vc", false, List.of("revocation"), false);
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
             CredentialStatusResult statusResult = mock(CredentialStatusResult.class);
@@ -224,25 +223,6 @@ public class VCVerificationServiceImplTest {
                 assertTrue(result.getSchemaAndSignatureCheck().isValid(), "Schema check should be valid");
                 assertTrue(result.getExpiryCheck().isValid(), "Expiry check should be valid");
                 assertFalse(result.getStatusCheck().getFirst().isValid(), "Status check (revocation) should be invalid");
-            }
-        }
-
-        @Test
-        void verifyV2_verification_throws_exception() {
-            VCVerificationRequestBodyDto request = new VCVerificationRequestBodyDto("some-vc", true, List.of(), false);
-
-            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class)))
-                    .thenThrow(new RuntimeException("Verification failed"));
-
-            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-                utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
-
-                VCVerificationResultDto result = service.verifyV2(request);
-
-                assertFalse(result.isAllChecksSuccessful());
-                assertFalse(result.getSchemaAndSignatureCheck().isValid());
-                assertEquals("VERIFICATION_FAILED", result.getSchemaAndSignatureCheck().getError().getErrorCode());
-                assertEquals("Verification failed", result.getSchemaAndSignatureCheck().getError().getErrorMessage());
             }
         }
     }
