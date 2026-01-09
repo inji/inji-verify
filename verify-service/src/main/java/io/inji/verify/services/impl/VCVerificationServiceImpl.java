@@ -50,7 +50,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
         CredentialVerificationSummary credentialVerificationSummary =
                 credentialsVerifier.verifyAndGetCredentialStatus(vc, format, statusPurposeList);
-        log.info("CredentialVerificationSummary: {}", credentialVerificationSummary);
+        log.debug("CredentialVerificationSummary: {}", credentialVerificationSummary);
         return new VCVerificationStatusDto(Utils.getVcVerificationStatus(credentialVerificationSummary));
     }
 
