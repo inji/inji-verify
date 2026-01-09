@@ -2,18 +2,18 @@ openapi: 3.0.0
 servers:
   - url: 'https://injiverify.collab.mosip.net/v1/verify'
 tags:
-  - name: ./well-known
-    description: API for did discovery through ./well-known endpoint
   - name: Presentation Definition Management
     description: APIs for Presentation Definition related operations
   - name: VC Submission
-    description: APIs for Verifiable Credential submission related operations
-  - name: VC verification API
+    description: APIs for Verifiable Credential Submission related operations
+  - name: VC Verification
     description: APIs for Verifiable Credential Verification related operations
-  - name: VP Request Management
+  - name: VP Request
     description: APIs for Verifiable Presentation Authorization Request related operations
   - name: VP Submission
     description: APIs for Verifiable Presentation submission related operations
+  - name: VP Results
+    description: APIs for Verifiable Presentation Results related operations
 info:
   title: OpenID4VP Verifier API - Inji Verify
   version: 1.0.2
@@ -24,11 +24,11 @@ info:
   license:
     name: MPL-2.0
     url: 'https://www.mozilla.org/en-US/MPL/2.0/'
-  description: API for OpenID4VP verifier supporting direct_post and cross-device flow
+  description: API for VC verification and OpenID4VP
 paths:
   /vp-request:
     post:
-      summary: Create a new verification request
+      summary: Create a new VP request
       description: |-
         This endpoint is used to initiate a Verifiable Presentation (VP) request. It represents the first step a verifier takes to request credentials from a wallet.
 
@@ -60,7 +60,7 @@ paths:
         - In this case, the clientId must be a valid DID URL representing the verifier.
       operationId: createVPRequest
       tags:
-        - VP Request Management
+        - VP Request
       requestBody:
         required: true
         content:
@@ -133,7 +133,7 @@ paths:
         This feature was introduced in version `0.14.x` to support Authorization Requests by reference (`request_uri`).
       operationId: getVPRequestJwt
       tags:
-        - VP Request Management
+        - VP Request
       parameters:
         - name: requestId
           description: The Request Id for which you want to retrieve the JWT.
@@ -155,11 +155,11 @@ paths:
           description: The specified Request ID does not exist.
   '/vp-request/{requestId}/status':
     get:
-      summary: Get VP Request status
+      summary: Get the VP Request status
       description: 'This endpoint is used to check the current status of a specific VP request transaction. This allows the verifier to monitor whether the request has been fulfilled, is still active, or has expired.'
       operationId: getVPRequestStatus
       tags:
-        - VP Request Management
+        - VP Request
       parameters:
         - name: requestId
           description: The Request Id for which you want to get the status.
@@ -192,7 +192,7 @@ paths:
           description: The Request ID provided is not associated with a known transaction.
   /vp-submission/direct-post:
     post:
-      summary: Submit authorization response
+      summary: Submit Authorization Response as a VP Token
       description: |-
         This endpoint is used by a wallet to submit a Verifiable Presentation (VP) via the vp_token and a presentation_submission object, typically when the response_mode is direct_post. Upon receiving the submission, the server processes the VP, stores it in the database, and updates the transaction status.
 
@@ -259,7 +259,7 @@ paths:
           description: The transaction associated with the provided Request ID was not found.
   /vc-submission:
     post:
-      summary: Submit Verifiable Credential (VC)
+      summary: Submit a Verifiable Credential (VC)
       description: |-
         This API allows a user or system to submit a Verifiable Credential (VC) to the server. If a `transactionId` is not provided in the request, the server can generate one automatically.
 
@@ -311,7 +311,7 @@ paths:
         in: path
         required: true
     get:
-      summary: Get the VP results for a  given transactionId
+      summary: Get the VP results for a  given Transaction Id
       description: |-
         This endpoint returns the final result of a Verifiable Presentation (VP) submission. After a wallet submits a VP, this endpoint can be used to retrieve the verification status of each credential.
 
@@ -319,9 +319,9 @@ paths:
 
         Starting from version `1.6.0`, the API also performs revocation checks for JSON-LD credentials. A credential’s verification status can be `SUCCESS, INVALID, EXPIRED, or REVOKED`.
 
-        Additionally, beginning with version `1.6.0`, Verifiable Presentations (VPs) can be submitted without a proof. This is mainly intended for online sharing scenarios, such as DataShare via QR codes, where adding a cryptographic proof may not be practical due to size constraints. This behavior is controlled by the acceptVPWithoutHolderProof configuration. When set to true, the API accepts unsigned VPs. When set to false (default), a valid proof is mandatory, and the API will return an error if it is missing. For DataShare use cases, this configuration is typically enabled.
+        Additionally, beginning with version `1.6.0`, the Verifiable Presentation itself may be unsigned (i.e., submitted without a proof section). This supports online sharing scenarios, such as transmitting large VCs via QR codes (DataShare), where including a cryptographic proof may not be feasible.
       tags:
-        - VP Request Management
+        - VP Results
       responses:
         '200':
           description: 'This response indicates that the submission results were successfully retrieved. The response includes the overall `vpResultStatus` and an array of `vcResults`, with each entry providing the verification status of an individual Verifiable Credential (VC).'
@@ -393,6 +393,107 @@ paths:
                     type: string
                     description: Error details message
       operationId: get-vp-result-requestId-presentations
+  '/v2/vp-results/{transactionId}':
+    post:
+      summary: Get the VP results for a  given Transaction Id (V2)
+      description: |-
+        This endpoint verifies a Verifiable Presentation (VP) identified by the provided transactionId and returns a detailed, structured
+        verification result for the Verifiable Presentation and for each Verifiable 
+        Credential (VC) contained within it.
+
+        The verification process is performed in the following stages:
+
+        1. Credential Schema and Signature Verification
+            - Each credential in the VP is independently validated for:
+                - Structural correctness
+                - Cryptographic signature integrity
+            - If this validation fails for a credential:
+                - No further checks are executed for that credential
+                - expiryCheck will be null
+                - statusChecks will be empty
+                - claims will be an empty JSON object
+
+        2. Credential Expiry Validation
+            - Performed only when schema and signature verification succeeds.
+            - Determines whether the credential is expired.
+            - A credential may be cryptographically valid but expired.
+            - Expiry failure does not prevent claims extraction.
+
+        3. Credential Status Checks (Optional)
+            - Performs issuer-defined status checks such as revocation or suspension.
+            - Status checks are skipped entirely when `skipStatusChecks=true`.
+            - If `statusCheckFilters` is empty, all status checks supported by the
+              credential are performed.
+            - If `statusCheckFilters` contains purposes not supported by the credential,
+              those purposes are ignored without error.
+
+        4. Holder Proof Verification
+            - Validates that the VP was cryptographically bound to the holder.
+            - The behavior is format-specific:
+                - JSON-LD:
+                    - Verifies the Verifiable Presentation signature.
+                    - If holder proof verification was explicitly skipped during
+                      VP request creation by seting `acceptVPWithoutHolderProof=true`, `holderProofCheck` will be null.
+                - SD-JWT:
+                    - Verifies the Key Binding JWT (KB-JWT) when supported.
+                    - If KB-JWT verification is not supported by the verifier,
+                      holderProofCheck will be null.
+                - CWT:
+                    - Holder proof verification is not currently supported and
+                      holderProofCheck will be null.
+            - If holder proof verification fails, the corresponding credential
+              result will be marked as invalid.
+          
+        5. Claims Extraction (Optional)
+            - Claims are extracted only when includeClaims=true and
+              schema and signature verification succeeds.
+            - Claims are extracted even if:
+                - the credential is expired, or
+                - one or more status checks fail.
+            - If a credential is invalid, claims will be returned as an empty
+              JSON object.
+
+        Aggregated Results:
+        - `allChecksSuccessful` at the top level is true only if
+          all credentials in the presentation have `allChecksSuccessful=true`.
+        - Verification of one credential does not affect verification of others.
+
+        Supported credential formats include JSON-LD, SD-JWT, and CWT.
+
+        This endpoint does not support VC submission or storage functionality.
+        Legacy VC submission behavior remains available only in earlier API versions.
+
+        Runtime exceptions thrown by the underlying verification libraries
+        are propagated as HTTP 500 Internal Server Error responses.
+      operationId: verifyVPResultsV2
+      tags:
+        - VP Results
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: Unique transaction identifier generated during VP flow
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VpVerificationRequest'
+      responses:
+        '200':
+          description: Detailed VP verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VpVerificationResponse'
+        '404':
+          description: Transaction not found
+        '500':
+          description: Internal server error
+      x-stoplight:
+        id: mtwcvmeae79qe
   '/vp-definition/{id}':
     parameters:
       - schema:
@@ -402,7 +503,7 @@ paths:
         in: path
         required: true
     get:
-      summary: Get presentation definition
+      summary: Get the Presentation Definition
       description: 'This API allows a user to fetch a previously stored or referenced presentation definition. A presentation definition outlines the specific data requirements for a VP, such as the required credential types and their constraints.'
       tags:
         - Presentation Definition Management
@@ -431,7 +532,7 @@ paths:
       operationId: get-presentation-id
   /vc-verification:
     post:
-      summary: Get the VC verified
+      summary: Verify a Verifiable Credential
       description: |-
         This API performs server-side verification of a Verifiable Credential (VC) to validate its integrity and authenticity. It executes checks such as cryptographic signature validation and ensures that the credential has not been altered or tampered with.
         The verification status returned can be `SUCCESS, INVALID, or EXPIRED`.
@@ -447,7 +548,7 @@ paths:
         In certain cases, the API may return a 500 Internal Server Error. This can occur if a runtime exception is encountered during VC verification or if an error occurs while performing the credential status (revocation) check. When such errors arise, the API returns a response body describing the issue along with the 500 status code.
       operationId: vc-verification
       tags:
-        - VC verification API
+        - VC Verification
       requestBody:
         required: true
         content:
@@ -545,12 +646,78 @@ paths:
                     status: 500
                     path: /v1/verify/vc-verification
                     error: 'STATUS_RETRIEVAL_ERROR - Retrieval of the status list failed: Network request failed with error response'
+  /v2/vc-verification:
+    post:
+      summary: Verify a Verifiable Credential (V2)
+      description: |
+        Verifies a single Verifiable Credential (VC) and returns a detailed
+        breakdown of verification results instead of a single final status.
+
+        The verification process is executed in the following order:
+
+        1. Schema and Signature Verification
+           - Validates credential structure and cryptographic signature.
+           - If this check fails, no further checks are executed.
+           - expiryCheck will be null, statusChecks will be empty,
+             and claims will not be extracted.
+
+        2. Expiry Check
+           - Performed only when schema and signature verification succeeds.
+           - Determines whether the credential is expired.
+           - A credential may be cryptographically valid but expired.
+           - Expiry failure does not prevent claims extraction.
+
+        3. Credential Status Checks (Optional)
+           - Includes revocation, suspension, or other issuer-defined purposes.
+           - Skipped entirely when skipStatusChecks=true.
+           - If statusCheckFilters is empty, all supported status checks
+             are performed.
+           - Unsupported or missing status purposes are ignored without error.
+          
+        4. Claims Extraction (Optional)
+           - Performed only when includeClaims=true and
+             schema and signature verification succeeds.
+           - Claims are extracted even if expiry or status checks fail.
+           - If the credential is invalid, an empty JSON object is returned.
+
+        The response contains:
+        - Individual results for each verification step
+        - Structured error codes and messages
+        - A computed `allChecksSuccessful` flag
+
+        Supported credential formats:
+        - JSON-LD
+        - CWT
+        - SD-JWT
+
+        Runtime exceptions thrown by the underlying `vc-verifier` library
+        are propagated as HTTP 500 responses.
+      operationId: verifyVCV2
+      tags:
+        - VC Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VcVerificationRequest'
+      responses:
+        '200':
+          description: Detailed VC verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VcVerificationResponse'
+        '400':
+          description: Invalid request payload
+        '500':
+          description: Internal server error
   /well-known/did.json:
     post:
       summary: Get the DID document
       description: 'This endpoint is part of a standard DID discovery mechanism, following the .well-known pattern. It is used to retrieve a DID (Decentralized Identifier) document for a given DID. A DID document contains crucial information for interacting with a DID, including public keys for authentication and service endpoints. This is introduced in version *0.14.x*.'
       tags:
-        - ./well-known
+        - VP Request
       responses:
         '200':
           description: The DID document was successfully found and returned.
@@ -1111,7 +1278,8 @@ components:
     VCVerificationSDJWTRequest:
       title: VCVerificationSDJWTRequest
       type: object
-      required: [vc]
+      required:
+        - vc
       properties:
         vc:
           type: string
@@ -1209,3 +1377,122 @@ components:
           $ref: '#/components/schemas/verificationStatus'
           description: The verification status of the specific VC.
           example: SUCCESS
+    VcVerificationRequest:
+      type: object
+      required:
+        - verifiableCredential
+      properties:
+        verifiableCredential:
+          type: string
+          description: 'Verifiable Credential to be verified (JSON-LD, CWT, SD-JWT)'
+        skipStatusChecks:
+          type: boolean
+          default: false
+          description: Skip all credential status checks when true
+        statusCheckFilters:
+          type: array
+          description: |
+            List of credential status check purposes to perform.
+            Unsupported purposes are ignored.
+          items:
+            type: string
+        includeClaims:
+          type: boolean
+          default: false
+          description: Include extracted plain claims in the response
+    VpVerificationRequest:
+      type: object
+      properties:
+        skipStatusChecks:
+          type: boolean
+          default: false
+        statusCheckFilters:
+          type: array
+          items:
+            type: string
+        includeClaims:
+          type: boolean
+          default: false
+    VcVerificationResponse:
+      type: object
+      properties:
+        allChecksSuccessful:
+          type: boolean
+          description: |
+            True only if schemaAndSignatureCheck, expiryCheck,
+            and all status checks pass.
+        schemaAndSignatureCheck:
+          $ref: '#/components/schemas/ValidationResult'
+        expiryCheck:
+          $ref: '#/components/schemas/ExpiryCheckResult'
+        statusChecks:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusCheckResult'
+        claims:
+          type: object
+          additionalProperties: true
+    VpVerificationResponse:
+      type: object
+      properties:
+        transactionId:
+          type: string
+        allChecksSuccessful:
+          type: boolean
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+        credentialResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/VpCredentialResult'
+    VpCredentialResult:
+      type: object
+      properties:
+        verifiableCredential:
+          type: string
+        allChecksSuccessful:
+          type: boolean
+        holderProofCheck:
+          $ref: '#/components/schemas/ValidationResult'
+        schemaAndSignatureCheck:
+          $ref: '#/components/schemas/ValidationResult'
+        expiryCheck:
+          $ref: '#/components/schemas/ExpiryCheckResult'
+        statusChecks:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusCheckResult'
+        claims:
+          type: object
+          additionalProperties: true
+    ValidationResult:
+      type: object
+      nullable: true
+      properties:
+        valid:
+          type: boolean
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    ExpiryCheckResult:
+      type: object
+      nullable: true
+      properties:
+        valid:
+          type: boolean
+    StatusCheckResult:
+      type: object
+      properties:
+        purpose:
+          type: string
+        valid:
+          type: boolean
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      nullable: true
+      properties:
+        code:
+          type: string
+        message:
+          type: string
