@@ -11,7 +11,6 @@ import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VerificationStatus;
-import io.mosip.vercred.vcverifier.utils.Util;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.Nested;
 import org.junit.jupiter.api.Test;
@@ -225,6 +224,25 @@ public class VCVerificationServiceImplTest {
                 assertTrue(result.getSchemaAndSignatureCheck().isValid(), "Schema check should be valid");
                 assertTrue(result.getExpiryCheck().isValid(), "Expiry check should be valid");
                 assertFalse(result.getStatusCheck().getFirst().isValid(), "Status check (revocation) should be invalid");
+            }
+        }
+
+        @Test
+        void verifyV2_verification_throws_exception() {
+            VCVerificationRequestBodyDto request = new VCVerificationRequestBodyDto("some-vc", true, List.of(), false);
+
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class)))
+                    .thenThrow(new RuntimeException("Verification failed"));
+
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+                utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
+
+                VCVerificationResultDto result = service.verifyV2(request);
+
+                assertFalse(result.isAllChecksSuccessful());
+                assertFalse(result.getSchemaAndSignatureCheck().isValid());
+                assertEquals("VERIFICATION_FAILED", result.getSchemaAndSignatureCheck().getError().getErrorCode());
+                assertEquals("Verification failed", result.getSchemaAndSignatureCheck().getError().getErrorMessage());
             }
         }
     }
