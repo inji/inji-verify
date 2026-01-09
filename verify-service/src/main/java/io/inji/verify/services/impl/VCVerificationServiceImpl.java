@@ -19,7 +19,6 @@ import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import io.mosip.vercred.vcverifier.utils.Util;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.Nullable;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -104,7 +103,6 @@ public class VCVerificationServiceImpl implements VCVerificationService {
                 .collect(Collectors.toList());
     }
 
-    @Nullable
     private static ErrorDto getErrorDto(CredentialStatusResult res) {
         return res.getError() != null
                 ? new ErrorDto(res.getError().getErrorCode().toString(), res.getError().getMessage())
