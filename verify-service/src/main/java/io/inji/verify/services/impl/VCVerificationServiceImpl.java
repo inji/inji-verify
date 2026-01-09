@@ -3,7 +3,7 @@ package io.inji.verify.services.impl;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.VCVerificationStatusDto;
-import io.inji.verify.dto.verification.VCVerificationRequestBodyDto;
+import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.StatusCheckDto;
@@ -54,7 +54,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         return new VCVerificationStatusDto(Utils.getVcVerificationStatus(credentialVerificationSummary));
     }
 
-    public VCVerificationResultDto verifyV2(VCVerificationRequestBodyDto request) {
+    public VCVerificationResultDto verifyV2(VCVerificationRequestDto request) {
         log.debug("Processing verification request with skipStatusChecks: {}, filters: {}", request.isSkipStatusChecks(), request.getStatusCheckFilters());
         String verifiableCredential = request.getVerifiableCredential();
         boolean isSdJwt = Utils.isSdJwt(verifiableCredential);

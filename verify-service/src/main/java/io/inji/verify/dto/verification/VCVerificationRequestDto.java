@@ -12,7 +12,7 @@ import java.util.List;
 @AllArgsConstructor
 @NoArgsConstructor
 @Getter
-public class VCVerificationRequestBodyDto {
+public class VCVerificationRequestDto {
     @NotNull
     private String verifiableCredential;
     private boolean skipStatusChecks = false;

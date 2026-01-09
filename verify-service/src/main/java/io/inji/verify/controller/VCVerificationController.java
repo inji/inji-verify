@@ -1,6 +1,6 @@
 package io.inji.verify.controller;
 
-import io.inji.verify.dto.verification.VCVerificationRequestBodyDto;
+import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
 import jakarta.validation.Valid;
@@ -25,7 +25,7 @@ public class VCVerificationController {
     }
 
     @PostMapping(path = "/v2/vc-verification", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public VCVerificationResultDto verifyV2(@Valid @RequestBody VCVerificationRequestBodyDto request) {
+    public VCVerificationResultDto verifyV2(@Valid @RequestBody VCVerificationRequestDto request) {
         return VCVerificationService.verifyV2(request);
     }
 }
