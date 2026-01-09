@@ -1,4 +1,4 @@
-import { decode, decodeBinary } from "@injistack/pixelpass";
+import { decode, decodeBinary } from "@mosip/pixelpass";
 import {
   HEADER_DELIMITER,
   SUPPORTED_QR_HEADERS,
