@@ -84,9 +84,9 @@ jobs:
     with:
       SERVICE_LOCATION: ./
     secrets:
-      OSSRH_USER: ${{ secrets.OSSRH_INJI_USER }}
-      OSSRH_SECRET: ${{ secrets.OSSRH_INJI_SECRET }}
-      OSSRH_URL: ${{ secrets.OSSRH_INJI_SNAPSHOT_URL }}
+      OSSRH_USER: ${{ secrets.OSSRH_USER }}
+      OSSRH_SECRET: ${{ secrets.OSSRH_SECRET }}
+      OSSRH_URL: ${{ secrets.OSSRH_CENTRAL_URL }}
       OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
       GPG_SECRET: ${{ secrets.GPG_SECRET }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
