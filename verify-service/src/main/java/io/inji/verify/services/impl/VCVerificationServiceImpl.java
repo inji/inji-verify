@@ -57,7 +57,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
     }
 
     public VCVerificationResultDto verifyV2(VCVerificationRequestBodyDto request) {
-        log.info("Processing verification request: {}", request);
+        log.debug("Processing verification request: {}", request);
         String verifiableCredential = request.getVerifiableCredential();
         boolean isSdJwt = Utils.isSdJwt(verifiableCredential);
         CredentialFormat format = isSdJwt ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
