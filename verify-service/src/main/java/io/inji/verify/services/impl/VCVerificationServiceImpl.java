@@ -51,32 +51,37 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         CredentialVerificationSummary credentialVerificationSummary =
                 credentialsVerifier.verifyAndGetCredentialStatus(vc, format, statusPurposeList);
         log.info("CredentialVerificationSummary: {}", credentialVerificationSummary);
-
         return new VCVerificationStatusDto(Utils.getVcVerificationStatus(credentialVerificationSummary));
     }
 
     public VCVerificationResultDto verifyV2(VCVerificationRequestBodyDto request) {
-        log.debug("Processing verification request: {}", request);
+        log.debug("Processing verification request with skipStatusChecks: {}, filters: {}", request.isSkipStatusChecks(), request.getStatusCheckFilters());
         String verifiableCredential = request.getVerifiableCredential();
         boolean isSdJwt = Utils.isSdJwt(verifiableCredential);
         CredentialFormat format = isSdJwt ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
         VerificationResult verificationResult = null;
         Map<String, CredentialStatusResult> credentialStatus = Map.of();
-
-        boolean skipStatusChecks = request.isSkipStatusChecks();
-        if (skipStatusChecks) {
-            verificationResult = credentialsVerifier.verify(verifiableCredential, format);
-        }  else {
-            List<String> filters = request.getStatusCheckFilters();
-            CredentialVerificationSummary credentialVerificationSummary =
-                    credentialsVerifier.verifyAndGetCredentialStatus(verifiableCredential, format, filters);
-            verificationResult = credentialVerificationSummary.getVerificationResult();
-            credentialStatus = credentialVerificationSummary.getCredentialStatus();
-        }
-
-        SchemaAndSignatureCheckDto schemaAndSignatureCheck = populateSchemaAndSignature(verificationResult); // populate
         ExpiryCheckDto expiryCheck = null;
         List<StatusCheckDto> statusCheck = List.of();
+
+        boolean skipStatusChecks = request.isSkipStatusChecks();
+        try {
+            if (skipStatusChecks) {
+                verificationResult = credentialsVerifier.verify(verifiableCredential, format);
+            } else {
+                List<String> filters = request.getStatusCheckFilters();
+                CredentialVerificationSummary credentialVerificationSummary =
+                        credentialsVerifier.verifyAndGetCredentialStatus(verifiableCredential, format, filters);
+                verificationResult = credentialVerificationSummary.getVerificationResult();
+                credentialStatus = credentialVerificationSummary.getCredentialStatus();
+            }
+        } catch (Exception e) {
+            log.error("Exception during VC verification in verifyV2", e);
+            SchemaAndSignatureCheckDto schemaAndSignatureCheck = new SchemaAndSignatureCheckDto(false, new ErrorDto("VERIFICATION_FAILED", e.getMessage()));
+            return new VCVerificationResultDto(false, schemaAndSignatureCheck, expiryCheck, statusCheck, null);
+        }
+
+        SchemaAndSignatureCheckDto schemaAndSignatureCheck = populateSchemaAndSignature(verificationResult);
         if (schemaAndSignatureCheck.isValid()) {
             expiryCheck = populateExpiryCheck(verificationResult);
             if (!skipStatusChecks) {
