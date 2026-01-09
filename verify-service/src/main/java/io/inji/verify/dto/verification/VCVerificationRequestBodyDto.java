@@ -1,0 +1,20 @@
+package io.inji.verify.dto.verification;
+
+import com.fasterxml.jackson.annotation.JsonSetter;
+import com.fasterxml.jackson.annotation.Nulls;
+import lombok.AllArgsConstructor;
+import lombok.Getter;
+import org.jetbrains.annotations.NotNull;
+import java.util.ArrayList;
+import java.util.List;
+
+@AllArgsConstructor
+@Getter
+public class VCVerificationRequestBodyDto {
+    @NotNull
+    private String verifiableCredential;
+    private boolean skipStatusChecks = false;
+    @JsonSetter(nulls = Nulls.AS_EMPTY)
+    private List<String> statusCheckFilters = new ArrayList<>();
+    private boolean includeClaims = false;
+}
