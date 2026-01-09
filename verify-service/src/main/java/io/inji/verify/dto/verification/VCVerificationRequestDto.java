@@ -2,7 +2,7 @@ package io.inji.verify.dto.verification;
 
 import com.fasterxml.jackson.annotation.JsonSetter;
 import com.fasterxml.jackson.annotation.Nulls;
-import jakarta.validation.constraints.NotBlank;
+import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -13,7 +13,7 @@ import java.util.List;
 @NoArgsConstructor
 @Getter
 public class VCVerificationRequestDto {
-    @NotBlank
+    @NotNull
     private String verifiableCredential;
     private boolean skipStatusChecks = false;
     @JsonSetter(nulls = Nulls.AS_EMPTY)
