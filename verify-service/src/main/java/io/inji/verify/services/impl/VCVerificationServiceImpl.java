@@ -98,11 +98,14 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         if (credentialStatusResult == null) return List.of();
         
         return credentialStatusResult.entrySet().stream()
+                .sorted(Map.Entry.comparingByKey())
                 .map(entry -> {
                     String purpose = entry.getKey();
                     CredentialStatusResult res = entry.getValue();
+                    if (res == null) {
+                        return new StatusCheckDto(purpose, false, new ErrorDto("NULL_STATUS_RESULT", "Credential status result was null."));
+                    }
                     ErrorDto error = getErrorDto(res);
-                    
                     return new StatusCheckDto(purpose, res.isValid(), error);
                 })
                 .collect(Collectors.toList());
