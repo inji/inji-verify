@@ -7,12 +7,12 @@ Inji Verify SDK provides ready-to-use **React components** to integrate [OpenID4
 
 ### Step 1: Install the Package
 ```bash
-npm i @mosip/react-inji-verify-sdk
+npm i @injistack/react-inji-verify-sdk
 ```
 
 ### Step 2: Import and Use
 ```javascript
-import { OpenID4VPVerification, QRCodeVerification } from "@mosip/react-inji-verify-sdk";
+import { OpenID4VPVerification, QRCodeVerification } from "@injistack/react-inji-verify-sdk";
 ```
 
 ### Step 3: Choose Your Verification Method
