@@ -9,6 +9,6 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class ExpiryCheckDto { // rename Dto
+public class ExpiryCheckDto {
     private boolean valid;
 }

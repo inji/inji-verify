@@ -10,7 +10,7 @@ import lombok.Setter;
 @Setter
 @NoArgsConstructor
 @AllArgsConstructor
-public class StatusCheckDto { // rename Dto
+public class StatusCheckDto {
     private String purpose;
     private boolean valid;
     private ErrorDto error;
