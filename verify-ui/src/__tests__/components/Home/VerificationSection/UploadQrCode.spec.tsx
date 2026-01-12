@@ -6,7 +6,7 @@ jest.mock("../../../../redux/hooks", () => ({
     useAppDispatch: jest.fn()
 }));
 
-jest.mock("@mosip/pixelpass", () => ({
+jest.mock("@injistack/pixelpass", () => ({
     decode: jest.fn()
 }))
 
