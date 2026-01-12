@@ -1,5 +1,8 @@
 import React from "react";
-import { VerificationSuccessIcon, VerificationFailedIcon } from "../../../../utils/theme-utils";
+import {
+  VerificationSuccessIcon,
+  VerificationFailedIcon,
+} from "../../../../utils/theme-utils";
 import { useTranslation } from "react-i18next";
 
 const backgroundColorMapping: any = {
@@ -16,17 +19,22 @@ const ResultSummary = ({
 }) => {
   const bgColor = backgroundColorMapping[status];
   const { t } = useTranslation("ResultSummary");
+
   return (
     <div
-      className={`flex flex-col items-center justify-center h-[170px] lg:h-[186px] ${bgColor}`}
+      data-testid="result-summary-container"
+      className={`flex flex-col items-center justify-center h-[170px] lg:h-[186px] ${
+        bgColor ?? ""
+      }`}
     >
       <div className={`block mb-2.5 text-white`}>
         {status === "SUCCESS" ? (
-          <VerificationSuccessIcon id="success_message_icon" />
+          <VerificationSuccessIcon data-testid="success-icon" />
         ) : (
-          <VerificationFailedIcon />
+          <VerificationFailedIcon data-testid="failed-icon" />
         )}
       </div>
+
       <div className={`rounded-xl p-1`}>
         <p
           id="vc-result-display-message"

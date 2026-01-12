@@ -22,5 +22,5 @@
   },
   "include": [
     "src"
-  ]
+, "__mocks__/svgMock.js"  ]
 }

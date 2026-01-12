@@ -6,7 +6,10 @@ function Header(props: any) {
   const { t } = useTranslation("Header");
   return (
     <div>
-      <div className={`w-full bg-${window._env_.DEFAULT_THEME}-lighter-gradient py-[26px] lg:py-9 max-w-[100vw] text-center`}>
+      <div
+        data-testid="header-container"
+        className={`w-full bg-${window._env_.DEFAULT_THEME}-lighter-gradient py-[26px] lg:py-9 max-w-[100vw] text-center`}
+      >
         <p
           id="verify-credentials-heading"
           className="mx-auto my-1.5 font-bold text-lgMediumTextSize lg:text-lgBoldTextSize max-w-[80vw] text-headerLabelText"

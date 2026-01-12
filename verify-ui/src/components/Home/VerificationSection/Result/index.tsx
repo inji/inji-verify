@@ -15,15 +15,19 @@ import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
 
 const Result = () => {
-  const { vc, vcStatus } = useVerificationFlowSelector((state) => state.verificationResult ?? { vc: null, vcStatus: null });
-  const { method } = useVerificationFlowSelector((state) => ({ method: state.method }));
+  const { vc, vcStatus } = useVerificationFlowSelector(
+    (state) => state.verificationResult ?? { vc: null, vcStatus: null }
+  );
+  const { method } = useVerificationFlowSelector((state) => ({
+    method: state.method,
+  }));
   const [isModalOpen, setModalOpen] = useState(false);
   const [claims, setClaims] = useState<AnyVc | null>(null);
   const [credentialType, setCredentialType] = useState<string>("");
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
-  
+
   const handleVerifyAnotherQrCode = () => {
     if (method === "SCAN") {
       dispatch(qrReadInit({ method: "SCAN" }));
@@ -34,23 +38,38 @@ const Result = () => {
       }, 50);
     }
   };
-  
+
   useEffect(() => {
     const fetchDecodedClaims = async () => {
+      if (!vc) {
+        setClaims(null);
+        return;
+      }
+
       if (typeof vc === "string") {
         const claims = await decodeSdJwtToken(vc);
         setClaims(claims as SdJwtVc);
-        setCredentialType(claims.regularClaims.vct);
-      } else {
+        setCredentialType(claims.regularClaims?.vct ?? "");
+      }
+
+      // Handle LDP VC objects
+      if (typeof vc === "object") {
         setClaims(vc as LdpVc);
-        const typeEntry = vc.type[1];
+
+        const typeEntry = Array.isArray(vc.type) ? vc.type[1] : null;
+
         if (typeof typeEntry === "string") {
           setCredentialType(typeEntry);
-        } else if (typeof typeEntry === "object" && "_value" in typeEntry) {
+        } else if (
+          typeEntry &&
+          typeof typeEntry === "object" &&
+          "_value" in typeEntry
+        ) {
           setCredentialType(typeEntry._value);
         }
       }
     };
+
     fetchDecodedClaims();
   }, [vc]);
 
@@ -64,7 +83,7 @@ const Result = () => {
   useEffect(() => {
     clearTimer();
     timerRef.current = setTimeout(() => {
-       dispatch(goToHomeScreen({}));
+      dispatch(goToHomeScreen({}));
     }, DisplayTimeout);
 
     return () => clearTimer();

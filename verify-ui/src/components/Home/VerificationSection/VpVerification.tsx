@@ -11,13 +11,16 @@ import {
   verificationSubmissionComplete,
 } from "../../../redux/features/verify/vpVerificationState";
 import { VCShareType, VpSubmissionResultInt } from "../../../types/data-types";
-import { closeAlert, raiseAlert } from "../../../redux/features/alerts/alerts.slice";
+import {
+  closeAlert,
+  raiseAlert,
+} from "../../../redux/features/alerts/alerts.slice";
 import { AlertMessages } from "../../../utils/config";
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 import { Button } from "./commons/Button";
 import { useTranslation } from "react-i18next";
-import {VerificationResults} from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
-import {decodeSdJwtToken} from "../../../utils/decodeSdJwt";
+import type { VerificationResults } from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
+import { decodeSdJwtToken } from "../../../utils/decodeSdJwt";
 
 const DisplayActiveStep = () => {
   const { t } = useTranslation("Verify");
@@ -25,16 +28,23 @@ const DisplayActiveStep = () => {
   const sharingType = useVerifyFlowSelector((state) => state.sharingType);
   const isSingleVc = sharingType === VCShareType.SINGLE;
   const selectedClaims = useVerifyFlowSelector((state) => state.selectedClaims);
-  const verifiedVcs: VpSubmissionResultInt[] = useVerifyFlowSelector((state) => state.verificationSubmissionResult );
-  const unverifiedClaims = useVerifyFlowSelector((state) => state.unVerifiedClaims );
-  const presentationDefinition = useVerifyFlowSelector((state) => state.presentationDefinition );
+  const verifiedVcs: VpSubmissionResultInt[] = useVerifyFlowSelector(
+    (state) => state.verificationSubmissionResult
+  );
+  const unverifiedClaims = useVerifyFlowSelector(
+    (state) => state.unVerifiedClaims
+  );
+  const presentationDefinition = useVerifyFlowSelector(
+    (state) => state.presentationDefinition
+  );
   const qrSize = window.innerWidth <= 1024 ? 240 : 320;
   const activeScreen = useVerifyFlowSelector((state) => state.activeScreen);
   const showResult = useVerifyFlowSelector((state) => state.isShowResult);
   const flowType = useVerifyFlowSelector((state) => state.flowType);
-  const incorrectCredentialShared = selectedClaims.length === 1 && unverifiedClaims.length === 1 && isSingleVc;
+  const incorrectCredentialShared =
+    selectedClaims.length === 1 && unverifiedClaims.length === 1 && isSingleVc;
   const sdkInstanceKey = useVerifyFlowSelector((state) => state.sdkInstanceKey);
-  
+
   const dispatch = useAppDispatch();
 
   const handleRequestCredentials = () => {
@@ -51,15 +61,17 @@ const DisplayActiveStep = () => {
 
   const handleOnVpProcessed = async (vpResults: VerificationResults) => {
     const decodedVpResults = await Promise.all(
-        vpResults.map(async (vpResult) => {
-          if (typeof vpResult?.vc === 'string') {
-            const decodedSdJwt = await decodeSdJwtToken(vpResult.vc);
-            return { ...vpResult, vc: decodedSdJwt };
-          }
-          return vpResult;
-        })
+      vpResults.map(async (vpResult) => {
+        if (typeof vpResult?.vc === "string") {
+          const decodedSdJwt = await decodeSdJwtToken(vpResult.vc);
+          return { ...vpResult, vc: decodedSdJwt };
+        }
+        return vpResult;
+      })
     );
-    dispatch(verificationSubmissionComplete({ verificationResult: decodedVpResults }));
+    dispatch(
+      verificationSubmissionComplete({ verificationResult: decodedVpResults })
+    );
   };
 
   const handleOnQrExpired = () => {
@@ -71,21 +83,40 @@ const DisplayActiveStep = () => {
     dispatch(closeAlert({}));
     dispatch(resetVpRequest());
     if (error.errorCode) {
-      error.message = "We’re unable to complete your request. Please contact support for assistance.";
+      error.message =
+        "We’re unable to complete your request. Please contact support for assistance.";
     }
-    dispatch(raiseAlert({ title: "Request Failed", errorCode:error.errorCode, errorReason: error.errorMessage, message: error.message, referenceId: error.transactionId, severity: "error", open: true, autoHideDuration: 120000 }));
+    dispatch(
+      raiseAlert({
+        title: "Request Failed",
+        errorCode: error.errorCode,
+        errorReason: error.errorMessage,
+        message: error.message,
+        referenceId: error.transactionId,
+        severity: "error",
+        open: true,
+        autoHideDuration: 120000,
+      })
+    );
   };
 
   const getClientId = () => {
-    return (isSingleVc && selectedClaims[0]?.clientIdScheme === "pre_registered") ? window._env_.CLIENT_ID : window._env_.CLIENT_ID_DID;
-  }
+    return isSingleVc && selectedClaims[0]?.clientIdScheme === "pre_registered"
+      ? window._env_.CLIENT_ID
+      : window._env_.CLIENT_ID_DID;
+  };
 
   useEffect(() => {
     if (selectedClaims.length > 0 && activeScreen === 3) {
       setTimeout(() => {
-        const triggerElement = document.getElementById("OpenID4VPVerification_trigger");
+        const triggerElement = document.getElementById(
+          "OpenID4VPVerification_trigger"
+        );
         if (triggerElement) {
-          const event = new MouseEvent("click", { bubbles: true, cancelable: true });
+          const event = new MouseEvent("click", {
+            bubbles: true,
+            cancelable: true,
+          });
           triggerElement.dispatchEvent(event);
         }
       }, 100); // Delay to ensure the DOM is updated
@@ -94,8 +125,8 @@ const DisplayActiveStep = () => {
 
   if (isLoading) {
     return <Loader className="absolute lg:top-[200px] right-[100px]" />;
-  } 
-  
+  }
+
   if (incorrectCredentialShared) {
     dispatch(resetVpRequest());
     dispatch(
@@ -130,8 +161,18 @@ const DisplayActiveStep = () => {
               >
                 <OpenID4VPVerification
                   key={`${flowType}-${sdkInstanceKey}`}
-                  triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                  triggerElement={
+                    <QrIcon
+                      id="OpenID4VPVerification_trigger"
+                      className="w-[78px] lg:w-[100px]"
+                      aria-disabled={
+                        presentationDefinition.input_descriptors.length === 0
+                      }
+                    />
+                  }
+                  verifyServiceUrl={
+                    window.location.origin + window._env_.VERIFY_SERVICE_API_URL
+                  }
                   presentationDefinition={presentationDefinition}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}
@@ -141,13 +182,13 @@ const DisplayActiveStep = () => {
                   isSameDeviceFlowEnabled={false}
                 />
               </div>
-              <Button	
-                id="request-credentials-button"	
-                title={t("rqstButton")}	
-                className={`w-[300px] mx-auto lg:ml-[76px] mt-10 lg:hidden`}	
-                variant="fill"	
-                onClick={handleRequestCredentials}	
-                disabled={activeScreen === 3 }	
+              <Button
+                id="request-credentials-button"
+                title={t("rqstButton")}
+                className={`w-[300px] mx-auto lg:ml-[76px] mt-10 lg:hidden`}
+                variant="fill"
+                onClick={handleRequestCredentials}
+                disabled={activeScreen === 3}
               />
             </div>
           </div>
@@ -167,8 +208,18 @@ const DisplayActiveStep = () => {
               >
                 <OpenID4VPVerification
                   key={`${flowType}-${sdkInstanceKey}`}
-                  triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                  triggerElement={
+                    <QrIcon
+                      id="OpenID4VPVerification_trigger"
+                      className="w-[78px] lg:w-[100px]"
+                      aria-disabled={
+                        presentationDefinition.input_descriptors.length === 0
+                      }
+                    />
+                  }
+                  verifyServiceUrl={
+                    window.location.origin + window._env_.VERIFY_SERVICE_API_URL
+                  }
                   presentationDefinition={presentationDefinition}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}
