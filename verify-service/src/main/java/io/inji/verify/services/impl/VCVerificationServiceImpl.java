@@ -8,6 +8,7 @@ import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
+import io.inji.verify.exception.InvalidCredentialException;
 import io.inji.verify.services.VCVerificationService;
 import io.inji.verify.shared.Constants;
 import io.inji.verify.utils.Utils;
@@ -51,15 +52,15 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
         CredentialVerificationSummary credentialVerificationSummary =
                 credentialsVerifier.verifyAndGetCredentialStatus(vc, format, statusPurposeList);
-        log.debug("CredentialVerificationSummary: {}", credentialVerificationSummary);
+        log.debug("CredentialVerificationResult: {}", credentialVerificationSummary.getVerificationResult());
         return new VCVerificationStatusDto(Utils.getVcVerificationStatus(credentialVerificationSummary));
     }
 
+    @Override
     public VCVerificationResultDto verifyV2(VCVerificationRequestDto request) {
         log.debug("Processing verification request with skipStatusChecks: {}, filters: {}", request.isSkipStatusChecks(), request.getStatusCheckFilters());
         String verifiableCredential = request.getVerifiableCredential();
-        boolean isSdJwt = Utils.isSdJwt(verifiableCredential);
-        CredentialFormat format = isSdJwt ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
+        CredentialFormat format = getCredentialFormat(verifiableCredential);
         VerificationResult verificationResult = null;
         Map<String, CredentialStatusResult> credentialStatus = null;
         ExpiryCheckDto expiryCheck = null;
@@ -89,11 +90,20 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, new JSONObject());
     }
 
+    private static CredentialFormat getCredentialFormat(String verifiableCredential) {
+        boolean isSdJwt;
+        try {
+            isSdJwt = Utils.isSdJwt(verifiableCredential);
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to determine credential type.", e);
+        }
+        return isSdJwt ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
+    }
+
     private List<StatusCheckDto> populateStatusCheck(Map<String, CredentialStatusResult> credentialStatusResult) {
         if (credentialStatusResult == null) return List.of();
         
         return credentialStatusResult.entrySet().stream()
-                .sorted(Map.Entry.comparingByKey())
                 .map(entry -> {
                     String purpose = entry.getKey();
                     CredentialStatusResult res = entry.getValue();
