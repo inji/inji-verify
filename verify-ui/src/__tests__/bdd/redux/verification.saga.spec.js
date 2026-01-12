@@ -2,11 +2,11 @@ import { expectSaga } from 'redux-saga-test-plan';
 import verificationSaga from "../../../redux/features/verification/verification.saga";
 import verificationReducer, {verificationInit} from "../../../redux/features/verification/verification.slice";
 import {VerificationSteps} from "../../../utils/config";
-import '@mosip/pixelpass';
-import {decode} from "@mosip/pixelpass";
+import '@injistack/pixelpass';
+import {decode} from "@injistack/pixelpass";
 import {verifyCredential} from "verification-sdk";
 
-jest.mock('@mosip/pixelpass', () => ({
+jest.mock('@injistack/pixelpass', () => ({
     decode: jest.fn()
 }));
 jest.mock('verification-sdk', () => ({

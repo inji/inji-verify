@@ -1,82 +1,23 @@
-# INJI VERIFY SDK (🛑 **Deprecated — Still Usable**)
+# INJI VERIFY SDK
 
-> **⚠️ Deprecation Notice**
->
-> This package is **deprecated** and **no longer actively maintained**, but it will continue to **function as-is** for existing consumers.
->
-> It has been replaced by:
->
-> ```
-> @injistack/react-inji-verify-sdk
-> ```
->
-> Future updates, bug fixes, security patches, and enhancements will be provided only under the new package.
->
-> See the **Migration Guide** below if you want to switch.
+Inji Verify SDK provides ready-to-use **React components** to integrate [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html)-based **Verifiable Credential (VC) and Verifiable Presentation (VP) verification** into any React TypeScript web application.
 
----
+## Usage Guide
 
-Inji Verify SDK provides ready-to-use **React components** to integrate [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html)-based **Verifiable Credential (VC)** and **Verifiable Presentation (VP)** verification into any React TypeScript web application.
-
----
-
-## 🚀 Usage Guide (Deprecated Package — Still Works)
-
-### Step 1: Install
+### Step 1: Install the Package
 
 ```bash
-npm i @mosip/react-inji-verify-sdk
+npm i @injistack/react-inji-verify-sdk
 ```
 
-### Step 2: Import Components
+### Step 2: Import and Use
 
-```ts
+```javascript
 import {
   OpenID4VPVerification,
   QRCodeVerification,
-} from "@mosip/react-inji-verify-sdk";
+} from "@injistack/react-inji-verify-sdk";
 ```
-
-(Usage examples remain the same and are omitted for brevity.)
-
----
-
-# 🔄 Migration Guide — `@mosip` → `@injistack`
-
-### 📌 **Why migrate?**
-
-- Active support & maintenance moved to `@injistack`
-- Future enhancements will not land in the deprecated package
-
----
-
-## 1. Uninstall old package (optional)
-
-```bash
-npm uninstall @mosip/react-inji-verify-sdk
-```
-
-## 2. Install new package
-
-```bash
-npm install @injistack/react-inji-verify-sdk
-```
-
-## 3. Update imports
-
-**Before:**
-
-```ts
-import { QRCodeVerification } from "@mosip/react-inji-verify-sdk";
-```
-
-**After:**
-
-```ts
-import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-```
-
----
 
 ### Step 3: Choose Your Verification Method
 
