@@ -6,7 +6,7 @@ import {
   verificationComplete
 } from "../../../redux/features/verification/verification.slice";
 import { raiseAlert } from "../../../redux/features/alerts/alerts.slice";
-import { QRCodeVerification } from "@mosip/react-inji-verify-sdk";
+import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
 import { getClientId, isVPSubmissionSupported } from "../../../utils/commonUtils";
 
 function QrScanner({ onClose, scannerActive }: {
