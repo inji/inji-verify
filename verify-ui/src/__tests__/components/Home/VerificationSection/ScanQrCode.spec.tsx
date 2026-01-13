@@ -11,7 +11,7 @@ jest.mock("../../../../redux/features/verification/verification.selector", () =>
     useVerificationFlowSelector: jest.fn(),
 }));
 
-jest.mock("@mosip/pixelpass", () => ({
+jest.mock("@injistack/pixelpass", () => ({
     decode: jest.fn()
 }))
 
