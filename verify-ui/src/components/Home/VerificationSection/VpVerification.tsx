@@ -19,8 +19,8 @@ import { AlertMessages } from "../../../utils/config";
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 import { Button } from "./commons/Button";
 import { useTranslation } from "react-i18next";
-import type { VerificationResults } from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
-import { decodeSdJwtToken } from "../../../utils/decodeSdJwt";
+import {VerificationResults} from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
+import {decodeSdJwtToken} from "../../../utils/decodeSdJwt";
 
 const DisplayActiveStep = () => {
   const { t } = useTranslation("Verify");
