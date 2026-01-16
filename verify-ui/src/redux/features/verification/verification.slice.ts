@@ -23,8 +23,6 @@ const verificationSlice = createSlice({
         },
         verificationInit: (state, action) => {
             state.activeScreen = VerificationSteps[state.method].Verifying;
-            state.qrReadResult = action.payload.qrReadResult;
-            state.ovp = action.payload;
         },
         verificationComplete: (state, action) => {
             state.activeScreen = VerificationSteps[state.method].DisplayResult;
