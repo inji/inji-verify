@@ -110,7 +110,7 @@
             <version>${jsonld-common-java.version}</version>
         </dependency>
         <dependency>
-            <groupId>io.mosip</groupId>
+            <groupId>io.inji</groupId>
             <artifactId>vcverifier-jar</artifactId>
             <version>${vcverifier-jar.version}</version>
         </dependency>
