@@ -489,7 +489,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/VpVerificationResponse'
         '404':
-          description: Transaction not found
+          description: |-
+            This response indicates that an `error` occurred during the Verifiable Presentation (VP) request processing in the wallet, which is sent to the Verifier.
+            Clients can use this information to display the outcome or status of the VP request to the end user.
+          content:
+            application/json:
+              schema:
+                type: object
+                x-examples:
+                  Example 1:
+                    error: string
+                    errorDescription: string
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+                    description: The error code sent by the wallet during VP submission
+                  errorDescription:
+                    type: string
+                    description: The optional error message
         '500':
           description: Internal server error
       x-stoplight:
@@ -1439,8 +1458,6 @@ components:
           type: string
         allChecksSuccessful:
           type: boolean
-        error:
-          $ref: '#/components/schemas/ErrorDetail'
         credentialResults:
           type: array
           items:
