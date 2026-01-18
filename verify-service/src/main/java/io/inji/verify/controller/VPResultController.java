@@ -74,7 +74,7 @@ public class VPResultController {
     }
 
     @PostMapping(path = "/v2/vp-results/{transactionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getVPResultV2(@PathVariable String transactionId, @Valid @RequestBody VerificationRequestDto request, HttpServletRequest httpServletRequest) throws TokenMatchingFailedException {
+    public ResponseEntity<Object> getVPResultV2(@PathVariable String transactionId, @Valid @RequestBody VerificationRequestDto request) {
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
         log.info("Fetching VP result for requestId: {}", requestIds);
         try {
@@ -87,6 +87,9 @@ public class VPResultController {
             return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF));
         } catch (VPSubmissionWalletError e) {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(e.getErrorCode(), e.getErrorDescription()));
+        } catch (TokenMatchingFailedException e) {
+            log.error(e.getMessage());
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.TOKEN_MATCHING_FAILED));
         }
     }
 }
