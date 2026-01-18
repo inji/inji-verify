@@ -115,7 +115,7 @@ public final class Utils {
 
     private static ErrorDto populateErrorDto(CredentialStatusResult res) {
         return res.getError() != null
-                ? new ErrorDto(res.getError().getErrorCode().toString(), res.getError().getMessage())
+                ? new ErrorDto(res.getError().getErrorCode().toString(), res.getError().getErrorMessage())
                 : null;
     }
 
