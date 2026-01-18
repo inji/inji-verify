@@ -76,7 +76,9 @@ public class VPResultController {
     @PostMapping(path = "/v2/vp-results/{transactionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getVPResultV2(@PathVariable String transactionId, @Valid @RequestBody VerificationRequestDto request) {
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
+        if (requestIds.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
         log.info("Fetching VP result for requestId: {}", requestIds);
+
         try {
             VPVerificationResultDto resultDto = verifiablePresentationSubmissionService.getDetailVPResult(request, requestIds, transactionId);
             return ResponseEntity.status(HttpStatus.OK).body(resultDto);
