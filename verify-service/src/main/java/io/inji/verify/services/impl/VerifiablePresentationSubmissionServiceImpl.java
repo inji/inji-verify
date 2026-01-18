@@ -43,6 +43,7 @@ import java.util.List;
 import java.util.Optional;
 import java.util.Map;
 import java.util.Base64;
+import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import static io.inji.verify.utils.Utils.isSdJwt;
 import static io.inji.verify.utils.Utils.populateStatusCheck;
@@ -318,9 +319,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private List<CredentialResultsDto> processSignedVPToken(JSONObject vpToken, @Valid VerificationRequestDto request) {
-        VerificationSummary verificationSummary = verifySignedPresentation(vpToken, request);
-
+        List<VerificationSummary> verificationSummaryList = verifySignedPresentation(vpToken, request);
         List<CredentialResultsDto> results = new ArrayList<>();
+
+        for (VerificationSummary verificationSummary : verificationSummaryList) {
         List<StatusCheckDto> statusCheck = populateStatusCheck(verificationSummary.getCredentialStatus());
         HolderProofCheckDto holderProofCheck = populateHolderProof(verificationSummary.getProofVerificationStatus());
         SchemaAndSignatureCheckDto schemaAndSignatureCheck = populateSchemaAndSignatureCheckDto(verificationSummary.getVerificationStatus());
@@ -328,6 +330,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, holderProofCheck);
         results.add(populateCredentialResultDto(verificationSummary.getCredential(), holderProofCheck, allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, null));
+        }
+
         return results;
     }
 
@@ -337,29 +341,28 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 : new SchemaAndSignatureCheckDto(true, null);
     }
 
-    private VerificationSummary verifySignedPresentation(JSONObject vpToken, VerificationRequestDto request) {
-        VPVerificationStatus proofVerificationStatus;
-        String credential;
-        VerificationStatus verificationStatus;
-        Map<String, CredentialStatusResult> credentialStatus = null;
+    private List<VerificationSummary> verifySignedPresentation(JSONObject vpToken, VerificationRequestDto request) {
 
         if (request.isSkipStatusChecks()) {
-            PresentationVerificationResult presentationVerificationResult = presentationVerifier.verify(vpToken.toString());
-            log.info("presentationVerificationResult: {}", presentationVerificationResult);
-            proofVerificationStatus = presentationVerificationResult.getProofVerificationStatus();
-            credential = presentationVerificationResult.getVcResults().getFirst().getVc();
-            verificationStatus = presentationVerificationResult.getVcResults().getFirst().getStatus();
+            PresentationVerificationResult result = presentationVerifier.verify(vpToken.toString());
+            return result.getVcResults().stream()
+                    .map(vcRes -> new VerificationSummary(
+                            result.getProofVerificationStatus(),
+                            vcRes.getVc(),
+                            vcRes.getStatus(),
+                            null))
+                    .collect(Collectors.toList());
         } else {
-            List<String> statusPurposeList = request.getStatusCheckFilters();
-            PresentationResultWithCredentialStatus presentationResultWithCredentialStatus = presentationVerifier.verifyAndGetCredentialStatus(vpToken.toString(), statusPurposeList);
-            log.info("presentationResultWithCredentialStatus: {}", presentationResultWithCredentialStatus);
-            proofVerificationStatus = presentationResultWithCredentialStatus.getProofVerificationStatus();
-            credential = presentationResultWithCredentialStatus.getVcResults().getFirst().getVc();
-            verificationStatus = presentationResultWithCredentialStatus.getVcResults().getFirst().getStatus();
-            credentialStatus = presentationResultWithCredentialStatus.getVcResults().getFirst().getCredentialStatus();
+            List<String> filters = request.getStatusCheckFilters();
+            PresentationResultWithCredentialStatus result = presentationVerifier.verifyAndGetCredentialStatus(vpToken.toString(), filters);
+            return result.getVcResults().stream()
+                    .map(vcRes -> new VerificationSummary(
+                            result.getProofVerificationStatus(),
+                            vcRes.getVc(),
+                            vcRes.getStatus(),
+                            vcRes.getCredentialStatus()))
+                    .collect(Collectors.toList());
         }
-
-        return new VerificationSummary(proofVerificationStatus, credential, verificationStatus, credentialStatus);
     }
 
     private CredentialResultsDto verifyCredential(VerificationRequestDto request, Object vc) {
