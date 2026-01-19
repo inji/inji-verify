@@ -29,15 +29,20 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
         const isImage = BIOMETRIC_KEYS.includes(label.key);
         const isEven = index % 2 === 0;
         const normalizeKey = (key: string) => key.toLowerCase().trim();
-        const hasDisclosedClaims =
+        const disclosedClaims =
           vc &&
           typeof vc === "object" &&
           vc !== null &&
-          "disclosedClaims" in vc &&
-          vc.disclosedClaims;
+          "disclosedClaims" in vc
+            ? (vc as { disclosedClaims?: unknown }).disclosedClaims
+            : undefined;
+        const hasDisclosedClaims =
+          disclosedClaims &&
+          typeof disclosedClaims === "object" &&
+          !Array.isArray(disclosedClaims);
 
         const isDisclosed = hasDisclosedClaims
-          ? Object.keys(vc.disclosedClaims).some(
+          ? Object.keys(disclosedClaims as Record<string, unknown>).some(
               (key) => normalizeKey(key) === normalizeKey(label.key),
             )
           : false;

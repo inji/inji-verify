@@ -126,7 +126,11 @@ export const getDetailsOrder = (vc: any, currentLanguage: string): { key: string
     return [];
   }
 
-  // Ensure parsedVc is an object, not a string
+  // Ensure parsedVc is a non-null object (not an array)
+  if (Array.isArray(parsedVc)) {
+    console.error("Invalid VC format: expected an object");
+    return [];
+  }
   if (typeof parsedVc !== "object" || parsedVc === null) {
     console.error("Invalid VC format: expected an object");
     return [];
@@ -189,7 +193,13 @@ export const getDetailsOrder = (vc: any, currentLanguage: string): { key: string
         .map((key) => ({
           key,
           value: getValue(credential[key], currentLanguage),
-        }));
+        }))
+        .filter(
+          (entry) =>
+            entry.value !== undefined &&
+            entry.value !== null &&
+            entry.value !== ""
+        );
 
     default:
       // Filter out unwanted keys and parse nested objects
