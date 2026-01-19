@@ -35,6 +35,7 @@ import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
 import { isSdJwt } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
+import { isCWT } from "../../utils/cborUtils";
 
 const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   scannerActive = true,
@@ -449,7 +450,14 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
       if (typeof data === "string") {
         const decoded = await decodeQrData(new TextEncoder().encode(data));
-        return JSON.parse(decoded);
+        try {
+          if (isCWT(decoded)) {
+            return decoded;
+          }
+          return JSON.parse(decoded);
+        } catch (err) {
+          return decoded;
+        }
       }
       throw new Error("Unable to access the shared VC, due to unsupported QR data format");
     } catch (error) {
