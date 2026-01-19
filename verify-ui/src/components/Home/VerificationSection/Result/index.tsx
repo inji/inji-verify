@@ -13,6 +13,7 @@ import {
 import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
 import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
+import { extractMappedClaim, isCWT } from "../../../../utils/cborUtils";
 
 const Result = () => {
   const { vc, vcStatus } = useVerificationFlowSelector((state) => state.verificationResult ?? { vc: null, vcStatus: null });
@@ -34,10 +35,13 @@ const Result = () => {
       }, 50);
     }
   };
-  
+
   useEffect(() => {
     const fetchDecodedClaims = async () => {
-      if (typeof vc === "string") {
+      if (isCWT(vc)) {
+        const claims = extractMappedClaim(vc, 169);
+        setClaims(claims as LdpVc);
+      } else if (typeof vc === "string") {
         const claims = await decodeSdJwtToken(vc);
         setClaims(claims as SdJwtVc);
         setCredentialType(claims.regularClaims.vct);
