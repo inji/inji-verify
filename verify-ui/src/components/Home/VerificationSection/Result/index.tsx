@@ -13,7 +13,7 @@ import {
 import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
 import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
-import { extractMappedClaim, isCWT } from "../../../../utils/cborUtils";
+import { extractMappedClaim, isCWT, uint8ArrayToHex } from "../../../../utils/cborUtils";
 
 const Result = () => {
   const { vc, vcStatus } = useVerificationFlowSelector((state) => state.verificationResult ?? { vc: null, vcStatus: null });
@@ -39,7 +39,13 @@ const Result = () => {
   useEffect(() => {
     const fetchDecodedClaims = async () => {
       if (isCWT(vc)) {
-        const claims = extractMappedClaim(vc, 169);
+          const cwtHex =
+          vc instanceof Uint8Array
+            ? uint8ArrayToHex(vc)
+            : vc instanceof ArrayBuffer
+            ? uint8ArrayToHex(new Uint8Array(vc))
+            : (vc as string);
+        const claims = extractMappedClaim(cwtHex, 169);
         setClaims(claims as LdpVc);
       } else if (typeof vc === "string") {
         const claims = await decodeSdJwtToken(vc);
