@@ -69,6 +69,15 @@
 		</classes>
 	</test>
 
+	<test name="VcRevocationStatus">
+		<parameter name="ymlFile"
+			value="injiverify/VcRevocationStatus/VcRevocationStatus.yml" />
+		<classes>
+			<class
+				name="io.mosip.testrig.apirig.injiverify.testscripts.SimplePost" />
+		</classes>
+	</test>
+
     <test name="CreateVpRequestWithSDJWT">
 		<parameter name="ymlFile"
 			value="injiverify/CreateVpRequestWithSDJWT/CreateVpRequestWithSDJWT.yml" />
