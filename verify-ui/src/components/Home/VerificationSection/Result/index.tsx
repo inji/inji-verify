@@ -14,6 +14,7 @@ import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
 import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
 import { extractMappedClaim, isCWT, uint8ArrayToHex } from "../../../../utils/cborUtils";
+import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
 
 const Result = () => {
   const { vc, vcStatus } = useVerificationFlowSelector((state) => state.verificationResult ?? { vc: null, vcStatus: null });
@@ -48,9 +49,14 @@ const Result = () => {
         const claims = extractMappedClaim(cwtHex, 169);
         setClaims(claims as LdpVc);
       } else if (typeof vc === "string") {
-        const claims = await decodeSdJwtToken(vc);
-        setClaims(claims as SdJwtVc);
-        setCredentialType(claims.regularClaims.vct);
+        try {
+          const claims = await decodeSdJwtToken(vc);
+          setClaims(claims as SdJwtVc);
+          setCredentialType(claims.regularClaims.vct);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          dispatch(raiseAlert({ message, type: "error" }));
+        }
       } else {
         setClaims(vc as LdpVc);
         const typeEntry = vc.type[1];
