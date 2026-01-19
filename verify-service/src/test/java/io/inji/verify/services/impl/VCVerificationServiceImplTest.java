@@ -141,6 +141,7 @@ public class VCVerificationServiceImplTest {
                 assertEquals(VerificationStatus.SUCCESS, statusDto.getVerificationStatus());
             }
         }
+
         @Test
         public void shouldReturnExpiredForVerifiedCWTVcWhichIsExpired() throws CredentialStatusCheckException {
             CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
@@ -158,6 +159,7 @@ public class VCVerificationServiceImplTest {
                 assertEquals(VerificationStatus.EXPIRED, statusDto.getVerificationStatus());
             }
         }
+
         @Test
         public void shouldReturnInvalidForCWTVcWhichIsInvalid() throws CredentialStatusCheckException {
             CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
@@ -175,6 +177,7 @@ public class VCVerificationServiceImplTest {
                 assertEquals(VerificationStatus.INVALID, statusDto.getVerificationStatus());
             }
         }
+
         @Test
         public void shouldReturnRevokedForRevokedCWTVc() throws CredentialStatusCheckException {
             CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
