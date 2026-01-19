@@ -188,3 +188,37 @@ VpSubmission:
       output: '{
       "responseCode": "400"
 }'
+
+  Injiverify_VpSubmissionWithProof_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting the authorization response
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_WithProof_01
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmissionWithProofRequest
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state":"$ID:CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid_requestId$",
+      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+
+  Injiverify_VpSubmissionWithOutProof_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting the authorization response
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_WithProof_02
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmissionWithProofRequest
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state":"$ID:CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid_requestId$",
+      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
