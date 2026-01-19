@@ -41,7 +41,6 @@ import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
-import java.util.Map;
 import java.util.Base64;
 import java.util.stream.Collectors;
 import java.util.stream.IntStream;
@@ -73,18 +72,13 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         verifiablePresentationRequestService.invokeVpRequestStatusListener(vpSubmissionDto.getState());
     }
 
-    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId) throws VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
+    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId) {
         log.info("Processing VP submission");
 
         List<VCResultDto> verificationResults = new ArrayList<>();
         List<VPVerificationStatus> vpVerificationStatuses = new ArrayList<>();
 
         try {
-            Optional<String> error = Optional.ofNullable(vpSubmission.getError()).filter(e -> !e.isEmpty());
-            if (error.isPresent()) {
-                log.info("VP submission from wallet has error");
-                throw new VPSubmissionWalletError(vpSubmission.getError(), vpSubmission.getErrorDescription());
-            }
             AuthorizationRequestCreateResponse request = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
 
             log.info("Processing VP token matching");
@@ -160,7 +154,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
     }
 
-    private void addVerificationResults(String vc, List<VCResultDto> verificationResults, CredentialFormat  credentialFormat) throws CredentialStatusCheckException{
+    private void addVerificationResults(String vc, List<VCResultDto> verificationResults, CredentialFormat  credentialFormat) {
         List<String> statusPurposeList = new ArrayList<>();
         statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
         CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList);
@@ -229,13 +223,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionNotFoundException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException {
-        List<VPSubmission> vpSubmissions = vpSubmissionRepository.findAllById(requestIds);
-
-        if (vpSubmissions.isEmpty()) {
-            throw new VPSubmissionNotFoundException();
-        }
-        VPSubmission vpSubmission = vpSubmissions.getFirst();
+    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) {
+        VPSubmission vpSubmission = getValidVpSubmission(requestIds);
         return processSubmission(vpSubmission, transactionId);
     }
 
@@ -264,8 +253,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    public VPVerificationResultDto getDetailVPResult(@Valid VerificationRequestDto request, List<String> requestIds, String transactionId) throws VPSubmissionWalletError, TokenMatchingFailedException, VPWithoutProofException, VPSubmissionNotFoundException {
-        VPSubmission vpSubmission = getVpSubmission(requestIds);
+    public VPVerificationResultDto getVPResultV2(@Valid VerificationRequestDto request, List<String> requestIds, String transactionId) {
+        VPSubmission vpSubmission = getValidVpSubmission(requestIds);
         AuthorizationRequestCreateResponse authorizationRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
         checkVPTokenMatching(vpSubmission, authorizationRequest);
 
@@ -289,7 +278,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return new VPVerificationResultDto(transactionId, allChecksSuccessful, credentialResults);
     }
 
-    private List<CredentialResultsDto> verifyJsonVPToken(VerificationRequestDto request, JSONObject vpToken, AuthorizationRequestCreateResponse authorizationRequest) throws VPWithoutProofException {
+    private List<CredentialResultsDto> verifyJsonVPToken(VerificationRequestDto request, JSONObject vpToken, AuthorizationRequestCreateResponse authorizationRequest) {
         if (!isVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
 
         boolean isSigned = isVerifiablePresentationSigned(vpToken);
@@ -378,7 +367,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return populateCredentialResultDto(vc.toString(), null, allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, claims);
     }
 
-    private VPSubmission getVpSubmission(List<String> requestIds) throws VPSubmissionNotFoundException, VPSubmissionWalletError {
+    private VPSubmission getValidVpSubmission(List<String> requestIds) {
         VPSubmission submission = vpSubmissionRepository.findAllById(requestIds)
                 .stream()
                 .findFirst()
@@ -388,7 +377,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return submission;
     }
 
-    private void validateVpSubmission(VPSubmission vpSubmission) throws VPSubmissionWalletError {
+    private void validateVpSubmission(VPSubmission vpSubmission) {
         if (vpSubmission.getError() != null && !vpSubmission.getError().isEmpty()) {
             throw new VPSubmissionWalletError(
                     vpSubmission.getError(),
@@ -397,7 +386,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
     }
 
-    private void checkVPTokenMatching(VPSubmission vpSubmission, AuthorizationRequestCreateResponse authorizationRequest) throws TokenMatchingFailedException {
+    private void checkVPTokenMatching(VPSubmission vpSubmission, AuthorizationRequestCreateResponse authorizationRequest) {
         if (!isVPTokenMatching(vpSubmission, authorizationRequest)) {
             throw new TokenMatchingFailedException();
         }
