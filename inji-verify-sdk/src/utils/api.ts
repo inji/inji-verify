@@ -3,10 +3,9 @@ import {
   PresentationDefinition,
   VPRequestBody,
 } from "../components/openid4vp-verification/OpenID4VPVerification.types";
-import {
-  vcSubmissionBody
-} from "../components/qrcode-verification/QRCodeVerification.types";
+import { vcSubmissionBody } from "../components/qrcode-verification/QRCodeVerification.types";
 import { QrData } from "../types/OVPSchemeQrData";
+import { isCWT } from "./cborUtils";
 
 const generateNonce = (): string => {
   return btoa(Date.now().toString());
@@ -15,7 +14,12 @@ const generateNonce = (): string => {
 export const vcVerification = async (credential: unknown, url: string) => {
   let body: string;
   let contentType: string;
-  if (typeof credential === "string") {
+
+  if (isCWT(credential)) {
+    body = credential as string;
+    contentType = "application/vc+cwt";
+  }
+  else if (typeof credential === "string") {
     body = credential;
     contentType = "application/vc+sd-jwt";
   } else {
