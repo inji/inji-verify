@@ -109,17 +109,38 @@ function processFarmerLandCredential(credential: any, currentLanguage: string): 
 }
 
 export const getDetailsOrder = (vc: any, currentLanguage: string): { key: string; value: any }[] => {
-  if (!vc || (typeof vc === "object" && Object.keys(vc).length === 0)) {
+  // Validate and parse VC if it's a string
+  let parsedVc = vc;
+  
+  if (typeof vc === "string") {
+    try {
+      parsedVc = JSON.parse(vc);
+    } catch (e) {
+      console.error("Failed to parse VC string:", e);
+      return [];
+    }
+  }
+
+  // Check if VC is null, undefined, or empty
+  if (!parsedVc || (typeof parsedVc === "object" && Object.keys(parsedVc).length === 0)) {
+    return [];
+  }
+
+  // Ensure parsedVc is an object, not a string
+  if (typeof parsedVc !== "object" || parsedVc === null) {
+    console.error("Invalid VC format: expected an object");
     return [];
   }
 
   const credential =
-    vc?.regularClaims && vc?.disclosedClaims
-      ? { ...vc.regularClaims, ...vc.disclosedClaims }
-      : vc?.credentialSubject ?? vc;
+    parsedVc?.regularClaims && parsedVc?.disclosedClaims
+      ? { ...parsedVc.regularClaims, ...parsedVc.disclosedClaims }
+      : parsedVc?.credentialSubject ?? parsedVc;
 
   const type =
-    vc?.regularClaims && vc?.disclosedClaims ? "SdJwtVC" : vc?.type?.find((t: string) => t !== "VerifiableCredential");
+    parsedVc?.regularClaims && parsedVc?.disclosedClaims 
+      ? "SdJwtVC" 
+      : parsedVc?.type?.find((t: string) => t !== "VerifiableCredential");
 
   switch (type) {
     case "InsuranceCredential":
@@ -155,28 +176,49 @@ export const getDetailsOrder = (vc: any, currentLanguage: string): { key: string
     case "farmer":
       return processFarmerLandCredential(credential, currentLanguage);
 
-        case "SdJwtVC":
-            return Object.keys(credential)
-                .filter(
-                    (key) =>
-                        key !== "id" &&
-                        credential[key] !== null &&
-                        credential[key] !== undefined &&
-                        credential[key] !== "" &&
-                        !EXCLUDE_KEYS_SD_JWT_VC.includes(key.toLowerCase())
-                )
-                .map((key) => ({
-                    key,
-                    value: getValue(credential[key], currentLanguage),
-                }));
-
-    default:
+    case "SdJwtVC":
       return Object.keys(credential)
         .filter(
           (key) =>
-            key !== "id" && credential[key] != null && credential[key] !== undefined && credential[key] !== ""
+            key !== "id" &&
+            credential[key] !== null &&
+            credential[key] !== undefined &&
+            credential[key] !== "" &&
+            !EXCLUDE_KEYS_SD_JWT_VC.includes(key.toLowerCase())
         )
-        .map((key) => createKeyValueEntry(key, credential[key], currentLanguage))
+        .map((key) => ({
+          key,
+          value: getValue(credential[key], currentLanguage),
+        }));
+
+    default:
+      // Filter out unwanted keys and parse nested objects
+      return Object.keys(credential)
+        .filter(
+          (key) =>
+            key !== "id" && 
+            credential[key] != null && 
+            credential[key] !== undefined && 
+            credential[key] !== ""
+        )
+        .map((key) => {
+          const value = credential[key];
+          
+          // Handle nested biometric objects - only return if not already processed
+          if (
+            typeof value === "object" && 
+            value !== null &&
+            "Data" in value &&
+            "Data format" in value
+          ) {
+            return {
+              key,
+              value, // Return the entire object for VcDetailsGrid to handle
+            };
+          }
+          
+          return createKeyValueEntry(key, value, currentLanguage);
+        })
         .filter(
           (entry): entry is { key: string; value: any } => entry !== null
         );

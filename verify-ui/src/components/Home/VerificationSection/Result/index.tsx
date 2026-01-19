@@ -14,6 +14,7 @@ import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
 import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
 import { extractMappedClaim, isCWT } from "../../../../utils/cborUtils";
+import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
 
 const Result = () => {
   const { vc, vcStatus } = useVerificationFlowSelector((state) => state.verificationResult ?? { vc: null, vcStatus: null });
@@ -39,8 +40,17 @@ const Result = () => {
   useEffect(() => {
     const fetchDecodedClaims = async () => {
       if (isCWT(vc)) {
-        const claims = extractMappedClaim(vc, 169);
-        setClaims(claims as LdpVc);
+        try {
+          const claims = extractMappedClaim(vc, 169);
+          setClaims(claims as LdpVc);
+        } catch (err) {
+          dispatch(
+            raiseAlert({
+              message: err,
+              type: "error",
+            }),
+          );
+        }
       } else if (typeof vc === "string") {
         const claims = await decodeSdJwtToken(vc);
         setClaims(claims as SdJwtVc);
@@ -56,7 +66,7 @@ const Result = () => {
       }
     };
     fetchDecodedClaims();
-  }, [vc]);
+  }, [dispatch, vc]);
 
   const clearTimer = () => {
     if (timerRef.current) {
