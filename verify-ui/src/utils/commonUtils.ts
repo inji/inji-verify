@@ -193,44 +193,23 @@ export const getDetailsOrder = (vc: any, currentLanguage: string): { key: string
         .map((key) => ({
           key,
           value: getValue(credential[key], currentLanguage),
-        }))
-        .filter(
-          (entry) =>
-            entry.value !== undefined &&
-            entry.value !== null &&
-            entry.value !== ""
-        );
+        }));
 
     default:
       // Filter out unwanted keys and parse nested objects
       return Object.keys(credential)
         .filter(
           (key) =>
-            key !== "id" && 
-            credential[key] != null && 
-            credential[key] !== undefined && 
+            key !== "id" &&
+            credential[key] != null &&
+            credential[key] !== undefined &&
             credential[key] !== ""
         )
-        .map((key) => {
-          const value = credential[key];
-          
-          // Handle nested biometric objects - only return if not already processed
-          if (
-            typeof value === "object" && 
-            value !== null &&
-            "Data" in value &&
-            "Data format" in value
-          ) {
-            return {
-              key,
-              value, // Return the entire object for VcDetailsGrid to handle
-            };
-          }
-          
-          return createKeyValueEntry(key, value, currentLanguage);
-        })
+        .map((key) =>
+          createKeyValueEntry(key, credential[key], currentLanguage),
+        )
         .filter(
-          (entry): entry is { key: string; value: any } => entry !== null
+          (entry): entry is { key: string; value: any } => entry !== null,
         );
   }
 };
