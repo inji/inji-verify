@@ -97,7 +97,7 @@ public final class Utils {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(credentialStatusErrorDto);
     }
 
-    public static List<StatusCheckDto> populateStatusCheck(Map<String, CredentialStatusResult> credentialStatusResult) {
+    public static List<StatusCheckDto> createStatusCheckDtoList(Map<String, CredentialStatusResult> credentialStatusResult) {
         if (credentialStatusResult == null) return List.of();
 
         return credentialStatusResult.entrySet().stream()

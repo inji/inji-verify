@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
-import static io.inji.verify.utils.Utils.populateStatusCheck;
+import static io.inji.verify.utils.Utils.createStatusCheckDtoList;
 
 @Slf4j
 @Service
@@ -81,7 +81,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         if (schemaAndSignatureCheck.isValid()) {
             expiryCheck = populateExpiryCheck(verificationResult);
             if (!skipStatusChecks) {
-                statusCheck = populateStatusCheck(credentialStatus);
+                statusCheck = createStatusCheckDtoList(credentialStatus);
             }
         }
 
