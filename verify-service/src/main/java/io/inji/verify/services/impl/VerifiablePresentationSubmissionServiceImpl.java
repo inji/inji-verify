@@ -163,7 +163,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     public VPTokenDto extractTokens(String vpTokenString) {
-        if (vpTokenString == null) return null;
+        if (vpTokenString == null) throw new InvalidVpTokenException();
         List<JSONObject> jsonVpTokens = new ArrayList<>();
         List<String> sdJwtVpTokens = new ArrayList<>();
 
@@ -237,7 +237,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    public VPVerificationResultDto getVPResultV2(@Valid VerificationRequestDto request, List<String> requestIds, String transactionId) {
+    public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId) {
         VPSubmission vpSubmission = getValidVpSubmission(requestIds);
         boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(vpSubmission, transactionId);
 
@@ -284,7 +284,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return results;
     }
 
-    private List<CredentialResultsDto> verifySignedPresentations(JSONObject vpToken, @Valid VerificationRequestDto request) {
+    private List<CredentialResultsDto> verifySignedPresentations(JSONObject vpToken, VerificationRequestDto request) {
         List<VerificationSummary> list;
         if (request.isSkipStatusChecks()) {
             PresentationVerificationResult result = presentationVerifier.verify(vpToken.toString());
