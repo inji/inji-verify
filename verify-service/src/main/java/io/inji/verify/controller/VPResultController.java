@@ -7,21 +7,26 @@ import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
-import io.inji.verify.exception.*;
+import io.inji.verify.exception.TokenMatchingFailedException;
+import io.inji.verify.exception.VPWithoutProofException;
+import io.inji.verify.exception.InvalidVpTokenException;
+import io.inji.verify.exception.VPSubmissionWalletError;
+import io.inji.verify.exception.VPSubmissionNotFoundException;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
-import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.*;
-
+import org.springframework.web.bind.annotation.ExceptionHandler;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
+import org.springframework.web.bind.annotation.RequestBody;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.RestController;
 import java.util.List;
-
-import static io.inji.verify.utils.Utils.getResponseEntityForCredentialStatusException;
 
 @RestController
 @Slf4j
@@ -85,11 +90,6 @@ public class VPResultController {
     public ResponseEntity<ErrorDto> handleBadRequest(TokenMatchingFailedException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.TOKEN_MATCHING_FAILED));
-    }
-
-    @ExceptionHandler(CredentialStatusCheckException.class)
-    public ResponseEntity<Object> handleStatusException(CredentialStatusCheckException ex, HttpServletRequest request) {
-        return getResponseEntityForCredentialStatusException(ex, request);
     }
 
     @ExceptionHandler(InvalidVpTokenException.class)
