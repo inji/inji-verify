@@ -248,7 +248,7 @@ const findType = (types: any[]): string | undefined =>
   types?.map((type) => extractType(type)).find((t) => t !== undefined);
 
 export const getCredentialType = (credential: any): string => {
-  const sdType = credential?.regularClaims?.type || credential?.regularClaims?.vct;
+   const sdType = credential?.regularClaims?.vct || credential?.regularClaims?.type;
 
   if (sdType) {
     if (Array.isArray(sdType)) {
