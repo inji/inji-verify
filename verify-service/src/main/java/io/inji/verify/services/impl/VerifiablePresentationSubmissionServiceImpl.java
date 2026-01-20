@@ -158,6 +158,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 // for a VPToken without proof, do verification for all credentials
                 Object verifiableCredential = vpToken.opt("verifiableCredential");
                 if (verifiableCredential instanceof JSONArray array) {
+                    if (array.isEmpty()) throw new InvalidVpTokenException();
                     for (Object vc : array) {
                         credentialResults.add(verifySingleCredential(request, vc, false));
                     }
