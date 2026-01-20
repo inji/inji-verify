@@ -1,0 +1,34 @@
+CreateNewVerificationRequestWithProof:
+  Injiverify_CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vp-request
+      description: Submitting the authorization response with proof
+      uniqueIdentifier: TC_InjiVerify_VcRevocationStatus_WithProof_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateNewVerifcationRequestWithProof
+      outputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateNewVerificationRequestResultWithOutProof
+      input: '{
+      }'
+      output: '{
+    "acceptVPWithoutHolderProof": "true",
+    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
+    "id": "$PRESENTATIONDEFINITIONID$"
+}'
+
+  Injiverify_CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vp-request
+      description: Submitting the authorization response with out proof
+      uniqueIdentifier: TC_InjiVerify_VcRevocationStatus_WithProof_02
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateNewVerifcationRequestWithOutProof
+      outputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateNewVerificationRequestResultWithOutProof
+      input: '{
+      }'
+      output: '{
+    "acceptVPWithoutHolderProof": "false",
+    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
+    "id": "$PRESENTATIONDEFINITIONID$"
+}'
+
+
