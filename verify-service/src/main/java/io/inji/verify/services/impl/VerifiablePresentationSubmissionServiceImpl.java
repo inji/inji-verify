@@ -85,8 +85,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                     VPVerificationStatus proofVerificationStatus = presentationResultWithCredentialStatus.getProofVerificationStatus();
                     vpVerificationStatuses.add(proofVerificationStatus);
 
+                    List<VCResultWithCredentialStatus> vcResultsWithStatus = presentationResultWithCredentialStatus.getVcResults();
+                    if (vcResultsWithStatus.isEmpty()) throw new InvalidVpTokenException();
                     List<VCResultDto> vcResults = new ArrayList<>();
-                    for (var vcResult : presentationResultWithCredentialStatus.getVcResults()) {
+                    for (var vcResult : vcResultsWithStatus) {
                         VerificationStatus vcStatus = Utils.applyRevocationStatus(vcResult.getStatus(), vcResult.getCredentialStatus());
                         vcResults.add(new VCResultDto(vcResult.getVc(), vcStatus));
                     }
