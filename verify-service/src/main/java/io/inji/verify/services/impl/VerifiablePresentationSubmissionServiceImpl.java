@@ -167,7 +167,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return proof != null;
     }
 
-    private VPTokenDto extractTokens(String vpTokenString) {
+    public VPTokenDto extractTokens(String vpTokenString) {
         if (vpTokenString == null) return null;
         List<JSONObject> jsonVpTokens = new ArrayList<>();
         List<String> sdJwtVpTokens = new ArrayList<>();
