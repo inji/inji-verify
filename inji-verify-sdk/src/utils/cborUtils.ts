@@ -37,10 +37,6 @@ export function isCWT(vc: unknown): boolean {
 
     return false;
   } catch (err) {
-    console.warn(
-      "Failed to validate CWT format:",
-      err instanceof Error ? err.message : String(err)
-    );
     return false;
   }
 }
