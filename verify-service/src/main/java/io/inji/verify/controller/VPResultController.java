@@ -7,11 +7,7 @@ import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
-import io.inji.verify.exception.VPWithoutProofException;
-import io.inji.verify.exception.VPSubmissionWalletError;
-import io.inji.verify.exception.VPSubmissionNotFoundException;
-import io.inji.verify.exception.CredentialStatusCheckException;
-import io.inji.verify.exception.TokenMatchingFailedException;
+import io.inji.verify.exception.*;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -94,5 +90,11 @@ public class VPResultController {
     @ExceptionHandler(CredentialStatusCheckException.class)
     public ResponseEntity<Object> handleStatusException(CredentialStatusCheckException ex, HttpServletRequest request) {
         return getResponseEntityForCredentialStatusException(ex, request);
+    }
+
+    @ExceptionHandler(InvalidVpTokenException.class)
+    public ResponseEntity<ErrorDto> invalidVpToken(InvalidVpTokenException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.INVALID_VP_TOKEN));
     }
 }
