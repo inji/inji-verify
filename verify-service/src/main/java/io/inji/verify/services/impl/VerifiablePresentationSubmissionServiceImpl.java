@@ -1,7 +1,6 @@
 package io.inji.verify.services.impl;
 
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
-import io.inji.verify.dto.authorizationrequest.VPResultDto;
 import io.inji.verify.dto.result.*;
 import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.dto.submission.VPSubmissionDto;
@@ -80,37 +79,33 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             log.info("Processing VP verification");
 
             for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
-                boolean isVerifiablePresentation = isVerifiablePresentation(vpToken);
-                boolean isVerifiablePresentationSigned =  isVerifiablePresentationSigned(vpToken);
+                if (!isVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
+                boolean isSigned = isVerifiablePresentationSigned(vpToken);
 
-                if (isVerifiablePresentation) {
-                    if (isVerifiablePresentationSigned) {
-                        List<String> statusPurposeList = new ArrayList<>();
-                        statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
-                        PresentationResultWithCredentialStatus presentationResultWithCredentialStatus = presentationVerifier.verifyAndGetCredentialStatus(vpToken.toString(), statusPurposeList);
-                        VPVerificationStatus proofVerificationStatus = presentationResultWithCredentialStatus.getProofVerificationStatus();
-                        vpVerificationStatuses.add(proofVerificationStatus);
+                if (isSigned) {
+                    List<String> statusPurposeList = new ArrayList<>();
+                    statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
+                    PresentationResultWithCredentialStatus presentationResultWithCredentialStatus = presentationVerifier.verifyAndGetCredentialStatus(vpToken.toString(), statusPurposeList);
+                    VPVerificationStatus proofVerificationStatus = presentationResultWithCredentialStatus.getProofVerificationStatus();
+                    vpVerificationStatuses.add(proofVerificationStatus);
 
-                        List<VCResultDto> vcResults = new ArrayList<>();
-                        for (var vcResult : presentationResultWithCredentialStatus.getVcResults()) {
-                            VerificationStatus vcStatus = Utils.applyRevocationStatus(vcResult.getStatus(), vcResult.getCredentialStatus());
-                            vcResults.add(new VCResultDto(vcResult.getVc(), vcStatus));
-                        }
-                        verificationResults.addAll(vcResults);
-                    } else if (acceptVPWithoutHolderProof) {
-                        Object verifiableCredential = vpToken.opt("verifiableCredential");
-                        if (verifiableCredential instanceof JSONArray array) {
-                            for (Object vc : array) {
-                                addVerificationResults(vc.toString(), verificationResults, CredentialFormat.LDP_VC);
-                            }
-                        } else {
-                            throw new InvalidVpTokenException();
+                    List<VCResultDto> vcResults = new ArrayList<>();
+                    for (var vcResult : presentationResultWithCredentialStatus.getVcResults()) {
+                        VerificationStatus vcStatus = Utils.applyRevocationStatus(vcResult.getStatus(), vcResult.getCredentialStatus());
+                        vcResults.add(new VCResultDto(vcResult.getVc(), vcStatus));
+                    }
+                    verificationResults.addAll(vcResults);
+                } else if (acceptVPWithoutHolderProof) {
+                    Object verifiableCredential = vpToken.opt("verifiableCredential");
+                    if (verifiableCredential instanceof JSONArray array) {
+                        for (Object vc : array) {
+                            addVerificationResults(vc.toString(), verificationResults, CredentialFormat.LDP_VC);
                         }
                     } else {
-                        throw new VPWithoutProofException();
+                        throw new InvalidVpTokenException();
                     }
                 } else {
-                    throw new InvalidVpTokenException();
+                    throw new VPWithoutProofException();
                 }
             }
 
@@ -264,7 +259,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     private List<CredentialResultsDto> verifyPresentations(VerificationRequestDto request, JSONObject vpToken, boolean acceptVPWithoutHolderProof) {
         if (!isVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
-
         boolean isSigned = isVerifiablePresentationSigned(vpToken);
 
         if (isSigned) {
