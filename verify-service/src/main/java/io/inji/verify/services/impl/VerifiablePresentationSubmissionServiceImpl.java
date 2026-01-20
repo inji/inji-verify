@@ -72,12 +72,16 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         List<VPVerificationStatus> vpVerificationStatuses = new ArrayList<>();
 
         try {
-            boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(vpSubmission, transactionId);
+            AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
+
+            log.info("Processing VP token matching");
+            if (!isVPTokenMatching(vpSubmission, authRequest))
+                throw new TokenMatchingFailedException();
 
             VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
 
             log.info("Processing VP verification");
-
+            boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(authRequest);
             for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
                 if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
                 boolean isSigned = isVerifiablePresentationSigned(vpToken);
@@ -127,15 +131,17 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
         List<CredentialResultsDto> credentialResults = new ArrayList<>();
 
-        boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(vpSubmission, transactionId);
+        AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
+
+        log.info("Processing VP token matching V2");
+        if (!isVPTokenMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
 
         VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
 
         log.info("Processing VP verification V2");
-
+        boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(authRequest);
         for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
-            if (isInvalidVerifiablePresentation(vpToken))
-                throw new InvalidVpTokenException();
+            if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
             boolean isSigned = isVerifiablePresentationSigned(vpToken);
 
             if (isSigned) {
@@ -193,13 +199,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return new VPVerificationResultDto(transactionId, allChecksSuccessful, credentialResults);
     }
 
-    private boolean isAcceptVPWithoutHolderProof(VPSubmission vpSubmission, String transactionId) {
-        AuthorizationRequestCreateResponse request = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
-
-        log.info("Processing VP token matching");
-        if (!isVPTokenMatching(vpSubmission, request))
-            throw new TokenMatchingFailedException();
-
+    private boolean isAcceptVPWithoutHolderProof(AuthorizationRequestCreateResponse request) {
         return Optional.ofNullable(request.getAuthorizationDetails()).map(AuthorizationRequestResponseDto::isAcceptVPWithoutHolderProof).orElse(false);
     }
 
