@@ -492,7 +492,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testIsVPTokenMatching_AllValidConditions() {
+    public void testIsVPTokenNotMatching_AllValidConditions() {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
 
