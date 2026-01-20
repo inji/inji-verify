@@ -10,6 +10,7 @@ import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
+import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
 import io.inji.verify.exception.*;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
@@ -27,13 +28,8 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.stereotype.Service;
-
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Optional;
-import java.util.Base64;
+import java.util.*;
 import java.util.stream.IntStream;
-
 import static io.inji.verify.utils.Utils.isSdJwt;
 import static io.inji.verify.utils.Utils.createStatusCheckDtoList;
 import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
@@ -351,7 +347,13 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 credentialResults.setHolderProofCheck(new HolderProofCheckDto(true, null));
             } else {
                 ErrorDto errorDto = schemaAndSignatureCheck.getError();
-                credentialResults.setHolderProofCheck(new HolderProofCheckDto(false, errorDto));
+                if (errorDto != null) {
+                    for (KBJwtErrorCodes errorCode : KBJwtErrorCodes.values()) {
+                        if (errorCode.name().equals(errorDto.getErrorCode())) {
+                            credentialResults.setHolderProofCheck(new HolderProofCheckDto(false, errorDto));
+                        }
+                    }
+                }
             }
         } else {
             credentialResults.setHolderProofCheck(null);
