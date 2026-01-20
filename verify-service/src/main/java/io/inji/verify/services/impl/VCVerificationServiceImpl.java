@@ -20,12 +20,12 @@ import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import io.mosip.vercred.vcverifier.utils.Util;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.stream.Collectors;
+import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
+import static io.inji.verify.utils.Utils.createStatusCheckDtoList;
 
 @Slf4j
 @Service
@@ -83,16 +83,16 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         if (schemaAndSignatureCheck.isValid()) {
             expiryCheck = populateExpiryCheck(verificationResult);
             if (!skipStatusChecks) {
-                statusCheck = populateStatusCheck(credentialStatus);
+                statusCheck = createStatusCheckDtoList(credentialStatus);
             }
         }
 
-        boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck);
+        boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);
 
-        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, new JSONObject());
+        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, null);
     }
 
-    private static CredentialFormat getCredentialFormat(String verifiableCredential) {
+    private CredentialFormat getCredentialFormat(String verifiableCredential) {
         boolean isSdJwt;
         try {
             isSdJwt = Utils.isSdJwt(verifiableCredential);
@@ -100,28 +100,6 @@ public class VCVerificationServiceImpl implements VCVerificationService {
             throw new InvalidCredentialException("Failed to determine credential type.", e);
         }
         return isSdJwt ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
-    }
-
-    private List<StatusCheckDto> populateStatusCheck(Map<String, CredentialStatusResult> credentialStatusResult) {
-        if (credentialStatusResult == null) return List.of();
-        
-        return credentialStatusResult.entrySet().stream()
-                .map(entry -> {
-                    String purpose = entry.getKey();
-                    CredentialStatusResult res = entry.getValue();
-                    if (res == null) {
-                        return new StatusCheckDto(purpose, false, new ErrorDto("NULL_STATUS_RESULT", "Credential status result was null."));
-                    }
-                    ErrorDto error = populateErrorDto(res);
-                    return new StatusCheckDto(purpose, res.isValid(), error);
-                })
-                .collect(Collectors.toList());
-    }
-
-    private static ErrorDto populateErrorDto(CredentialStatusResult res) {
-        return res.getError() != null
-                ? new ErrorDto(res.getError().getErrorCode().toString(), res.getError().getMessage())
-                : null;
     }
 
     private ExpiryCheckDto populateExpiryCheck(VerificationResult verificationResult) {
@@ -136,18 +114,5 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         ErrorDto error = isValid ? null : new ErrorDto(verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());
         
         return new SchemaAndSignatureCheckDto(isValid, error);
-    }
-
-    private boolean populateAllChecksSuccessful(
-            SchemaAndSignatureCheckDto schemaAndSignatureCheckDto,
-            ExpiryCheckDto expiryCheckDto,
-            List<StatusCheckDto> statusCheckDto) {
-
-        return schemaAndSignatureCheckDto != null
-                && schemaAndSignatureCheckDto.isValid()
-                && (expiryCheckDto == null || expiryCheckDto.isValid())
-                && (statusCheckDto == null
-                || statusCheckDto.isEmpty()
-                || statusCheckDto.stream().allMatch(c -> c != null && c.isValid()));
     }
 }

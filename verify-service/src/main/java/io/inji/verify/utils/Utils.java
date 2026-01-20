@@ -1,6 +1,11 @@
 package io.inji.verify.utils;
 
 import io.inji.verify.dto.core.CredentialStatusErrorDto;
+import io.inji.verify.dto.core.ErrorDto;
+import io.inji.verify.dto.result.HolderProofCheckDto;
+import io.inji.verify.dto.verification.ExpiryCheckDto;
+import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
+import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.shared.Constants;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
@@ -16,9 +21,11 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.time.Instant;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.UUID;
+import java.util.stream.Collectors;
 
 @Slf4j
 public final class Utils {
@@ -88,5 +95,42 @@ public final class Utils {
         CredentialStatusErrorDto credentialStatusErrorDto =
                 new CredentialStatusErrorDto(Instant.now().toString(), 500, request.getRequestURI(), errorMessage);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(credentialStatusErrorDto);
+    }
+
+    public static List<StatusCheckDto> createStatusCheckDtoList(Map<String, CredentialStatusResult> credentialStatusResult) {
+        if (credentialStatusResult == null) return List.of();
+
+        return credentialStatusResult.entrySet().stream()
+                .map(entry -> {
+                    String purpose = entry.getKey();
+                    CredentialStatusResult res = entry.getValue();
+                    if (res == null) {
+                        return new StatusCheckDto(purpose, false, new ErrorDto("NULL_STATUS_RESULT", "Credential status result was null."));
+                    }
+                    ErrorDto error = populateErrorDto(res);
+                    return new StatusCheckDto(purpose, res.isValid(), error);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static ErrorDto populateErrorDto(CredentialStatusResult res) {
+        return res.getError() != null
+                ? new ErrorDto(res.getError().getErrorCode().toString(), res.getError().getErrorMessage())
+                : null;
+    }
+
+    public static boolean populateAllChecksSuccessful(
+            SchemaAndSignatureCheckDto schemaAndSignatureCheckDto,
+            ExpiryCheckDto expiryCheckDto,
+            List<StatusCheckDto> statusCheckDto,
+            HolderProofCheckDto holderProofCheckDto) {
+
+        return schemaAndSignatureCheckDto != null
+                && schemaAndSignatureCheckDto.isValid()
+                && (expiryCheckDto == null || expiryCheckDto.isValid())
+                && (statusCheckDto == null
+                || statusCheckDto.isEmpty()
+                || statusCheckDto.stream().allMatch(c -> c != null && c.isValid()))
+                && (holderProofCheckDto == null || holderProofCheckDto.isValid());
     }
 }
