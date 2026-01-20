@@ -220,7 +220,7 @@ public class VCVerificationServiceImplTest {
                         .thenReturn(false);
                 utilsMock.when(() -> Utils.getVcVerificationStatus(summary))
                         .thenReturn(VerificationStatus.REVOKED);
-                utilsMock.when(() -> Utils.populateStatusCheck(summary.getCredentialStatus()))
+                utilsMock.when(() -> Utils.createStatusCheckDtoList(summary.getCredentialStatus()))
                         .thenReturn(List.of(new StatusCheckDto("revocation", false, null)));
                 VCVerificationResultDto result = service.verifyV2(request);
 

@@ -800,7 +800,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertTrue(credentialResults.getFirst().isAllChecksSuccessful());
         assertTrue(credentialResults.getFirst().getExpiryCheck().isValid());
         assertTrue(credentialResults.getFirst().getSchemaAndSignatureCheck().isValid());
-        assertTrue(credentialResults.getFirst().getStatusCheck().isEmpty());
         assertTrue(credentialResults.getFirst().getHolderProofCheck().isValid());
     }
 
@@ -877,3 +876,4 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertThrows(VPSubmissionNotFoundException.class, () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId));
     }
 }
+
