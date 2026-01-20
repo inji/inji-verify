@@ -151,7 +151,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             if (isSigned) {
                 if (request.isSkipStatusChecks()) {
                     PresentationVerificationResult result = presentationVerifier.verify(vpToken.toString());
-                    for (VCResult vcRes : result.getVcResults()) {
+                    List<VCResult> vcResults = result.getVcResults();
+                    if (vcResults.isEmpty()) throw new InvalidVpTokenException();
+                    for (VCResult vcRes : vcResults) {
                         CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
                         credentialResultsDto.setVerifiableCredential(vcRes.getVc());
                         credentialResultsDto.setHolderProofCheck(createHolderProofDto(result.getProofVerificationStatus()));
@@ -164,7 +166,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 } else {
                     List<String> filters = request.getStatusCheckFilters();
                     PresentationResultWithCredentialStatus result = presentationVerifier.verifyAndGetCredentialStatus(vpToken.toString(), filters);
-                    for (VCResultWithCredentialStatus vcResWithStatus : result.getVcResults()) {
+                    List<VCResultWithCredentialStatus> vcResults = result.getVcResults();
+                    if (vcResults.isEmpty()) throw new InvalidVpTokenException();
+                    for (VCResultWithCredentialStatus vcResWithStatus : vcResults) {
                         CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
                         credentialResultsDto.setVerifiableCredential(vcResWithStatus.getVc());
                         credentialResultsDto.setHolderProofCheck(createHolderProofDto(result.getProofVerificationStatus()));
