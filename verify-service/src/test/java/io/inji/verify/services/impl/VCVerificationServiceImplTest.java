@@ -24,6 +24,7 @@ public class VCVerificationServiceImplTest {
 
     static VCVerificationServiceImpl service;
     static CredentialsVerifier mockCredentialsVerifier;
+    private final String TEST_CWT_VC_STRING ="d83dd2845831a2012604582b5455444c4e4e516b30324a766c4a6d376174774847414332644d363351333259482d2d6d3976574f42746ba058efa501782e68747470733a2f2f3232316633386363336666632e6e67726f6b2d667265652e6170702f76312f63657274696679041a6a57282b051a6969da2b061a6969da2b18a958a7ac016a33393138353932343338020a046c4a616e61726468616e204253086a30342d31382d3139383409010a78294e657720486f7573652c204e656172204d6574726f204c696e652c2042656e67616c7572752c204b410b756a616e61726468616e406578616d706c652e636f6d0c6d2b3931393837363534333231300d62494e183ea3006435323439010002001841a3006435323439010202006568656c6c6f65776f726c64584040a10df719e0fa3079a0ecceb08d4dc6877c4c8c622bf760169a89ee4059b8989e64d733ac28096927c6ac38176cfe50036f2ff3dedcf789116285ff9f18ce0a";
 
     @BeforeAll
     public static void beforeAll() {
@@ -123,6 +124,77 @@ public class VCVerificationServiceImplTest {
             }
         }
 
+        @Test
+        public void shouldReturnSuccessForCWTVerifiedVc() throws CredentialStatusCheckException {
+            CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
+            when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
+                    eq(TEST_CWT_VC_STRING),
+                    eq(CredentialFormat.CWT_VC),
+                    anyList())
+            ).thenReturn(mockSummary);
+
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+                utilsMock.when(() -> Utils.getVcVerificationStatus(mockSummary))
+                        .thenReturn(VerificationStatus.SUCCESS);
+
+                VCVerificationStatusDto statusDto = service.verify(TEST_CWT_VC_STRING, "application/vc+cwt");
+                assertEquals(VerificationStatus.SUCCESS, statusDto.getVerificationStatus());
+            }
+        }
+
+        @Test
+        public void shouldReturnExpiredForVerifiedCWTVcWhichIsExpired() throws CredentialStatusCheckException {
+            CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
+            when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
+                    eq(TEST_CWT_VC_STRING),
+                    eq(CredentialFormat.CWT_VC),
+                    anyList())
+            ).thenReturn(mockSummary);
+
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+                utilsMock.when(() -> Utils.getVcVerificationStatus(mockSummary))
+                        .thenReturn(VerificationStatus.EXPIRED);
+
+                VCVerificationStatusDto statusDto = service.verify(TEST_CWT_VC_STRING, "application/vc+cwt");
+                assertEquals(VerificationStatus.EXPIRED, statusDto.getVerificationStatus());
+            }
+        }
+
+        @Test
+        public void shouldReturnInvalidForCWTVcWhichIsInvalid() throws CredentialStatusCheckException {
+            CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
+            when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
+                    eq(TEST_CWT_VC_STRING),
+                    eq(CredentialFormat.CWT_VC),
+                    anyList())
+            ).thenReturn(mockSummary);
+
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+                utilsMock.when(() -> Utils.getVcVerificationStatus(mockSummary))
+                        .thenReturn(VerificationStatus.INVALID);
+
+                VCVerificationStatusDto statusDto = service.verify(TEST_CWT_VC_STRING, "application/vc+cwt");
+                assertEquals(VerificationStatus.INVALID, statusDto.getVerificationStatus());
+            }
+        }
+
+        @Test
+        public void shouldReturnRevokedForRevokedCWTVc() throws CredentialStatusCheckException {
+            CredentialVerificationSummary mockSummary = mock(CredentialVerificationSummary.class);
+            when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
+                    eq(TEST_CWT_VC_STRING),
+                    eq(CredentialFormat.CWT_VC),
+                    anyList())
+            ).thenReturn(mockSummary);
+
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+                utilsMock.when(() -> Utils.getVcVerificationStatus(mockSummary))
+                        .thenReturn(VerificationStatus.REVOKED);
+
+                VCVerificationStatusDto statusDto = service.verify(TEST_CWT_VC_STRING, "application/vc+cwt");
+                assertEquals(VerificationStatus.REVOKED, statusDto.getVerificationStatus());
+            }
+        }
     }
 
     @Nested
