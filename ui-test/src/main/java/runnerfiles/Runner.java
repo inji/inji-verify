@@ -69,6 +69,9 @@ public class Runner extends AbstractTestNGCucumberTests{
 			suiteSetup(getRunType());
 			setLogLevels();
 
+			KeycloakUserManager.removeUser();
+			KeycloakUserManager.createUsers();
+			KeycloakUserManager.closeKeycloakInstance();
 			AdminTestUtil.getRequiredField();
 
 			startTestRunner();
