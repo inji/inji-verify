@@ -97,7 +97,7 @@ public final class Utils {
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(credentialStatusErrorDto);
     }
 
-    public static List<StatusCheckDto> createStatusCheckDtoList(Map<String, CredentialStatusResult> credentialStatusResult) {
+    public static List<StatusCheckDto> populateStatusCheckDtoList(Map<String, CredentialStatusResult> credentialStatusResult) {
         if (credentialStatusResult == null) return List.of();
 
         return credentialStatusResult.entrySet().stream()
@@ -117,6 +117,21 @@ public final class Utils {
         return res.getError() != null
                 ? new ErrorDto(res.getError().getErrorCode().toString(), res.getError().getErrorMessage())
                 : null;
+    }
+
+    public static SchemaAndSignatureCheckDto populateSchemaAndSignature(VerificationResult verificationResult) {
+        boolean isValid = verificationResult.getVerificationStatus();
+        ErrorDto error = isValid ? null : new ErrorDto(verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());
+
+        return new SchemaAndSignatureCheckDto(isValid, error);
+    }
+
+    public static ExpiryCheckDto populateExpiryCheck(VerificationResult verificationResult, SchemaAndSignatureCheckDto schemaAndSignatureCheckDto) {
+        if (!schemaAndSignatureCheckDto.isValid()) return null;
+        VerificationStatus verificationStatus = Util.INSTANCE.getVerificationStatus(verificationResult);
+        boolean isValid = verificationStatus != VerificationStatus.EXPIRED;
+
+        return new ExpiryCheckDto(isValid);
     }
 
     public static boolean populateAllChecksSuccessful(

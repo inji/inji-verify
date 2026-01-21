@@ -1,6 +1,5 @@
 package io.inji.verify.services.impl;
 
-import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.VCVerificationStatusDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
@@ -17,15 +16,15 @@ import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
-import io.mosip.vercred.vcverifier.data.VerificationStatus;
-import io.mosip.vercred.vcverifier.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
-import static io.inji.verify.utils.Utils.createStatusCheckDtoList;
+import static io.inji.verify.utils.Utils.populateStatusCheckDtoList;
+import static io.inji.verify.utils.Utils.populateSchemaAndSignature;
+import static io.inji.verify.utils.Utils.populateExpiryCheck;
 
 @Slf4j
 @Service
@@ -63,7 +62,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         log.debug("Processing verification request with skipStatusChecks: {}, filters: {}", request.isSkipStatusChecks(), request.getStatusCheckFilters());
         String verifiableCredential = request.getVerifiableCredential();
         CredentialFormat format = getCredentialFormat(verifiableCredential);
-        VerificationResult verificationResult = null;
+        VerificationResult verificationResult;
         Map<String, CredentialStatusResult> credentialStatus = null;
         ExpiryCheckDto expiryCheck = null;
         List<StatusCheckDto> statusCheck = List.of();
@@ -80,11 +79,9 @@ public class VCVerificationServiceImpl implements VCVerificationService {
             }
 
         SchemaAndSignatureCheckDto schemaAndSignatureCheck = populateSchemaAndSignature(verificationResult);
-        if (schemaAndSignatureCheck.isValid()) {
-            expiryCheck = populateExpiryCheck(verificationResult);
-            if (!skipStatusChecks) {
-                statusCheck = createStatusCheckDtoList(credentialStatus);
-            }
+        expiryCheck = populateExpiryCheck(verificationResult, schemaAndSignatureCheck);
+        if (schemaAndSignatureCheck.isValid() && !skipStatusChecks) {
+                statusCheck = populateStatusCheckDtoList(credentialStatus);
         }
 
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);
@@ -100,19 +97,5 @@ public class VCVerificationServiceImpl implements VCVerificationService {
             throw new InvalidCredentialException("Failed to determine credential type.", e);
         }
         return isSdJwt ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
-    }
-
-    private ExpiryCheckDto populateExpiryCheck(VerificationResult verificationResult) {
-        VerificationStatus verificationStatus = Util.INSTANCE.getVerificationStatus(verificationResult);
-        boolean isValid = verificationStatus != VerificationStatus.EXPIRED;
-
-        return new ExpiryCheckDto(isValid);
-    }
-
-    private SchemaAndSignatureCheckDto populateSchemaAndSignature(VerificationResult verificationResult) {
-        boolean isValid = verificationResult.getVerificationStatus();
-        ErrorDto error = isValid ? null : new ErrorDto(verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());
-        
-        return new SchemaAndSignatureCheckDto(isValid, error);
     }
 }
