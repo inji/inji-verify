@@ -1,9 +1,6 @@
 package io.inji.verify.services.impl;
 
-import io.inji.verify.dto.verification.StatusCheckDto;
-import io.inji.verify.dto.verification.VCVerificationRequestDto;
-import io.inji.verify.dto.verification.VCVerificationStatusDto;
-import io.inji.verify.dto.verification.VCVerificationResultDto;
+import io.inji.verify.dto.verification.*;
 import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.utils.Utils;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
@@ -214,6 +211,8 @@ public class VCVerificationServiceImplTest {
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
                 utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
+                utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(true, null));
+                utilsMock.when(() -> Utils.populateExpiryCheck(any(), any())).thenReturn(new ExpiryCheckDto(true));
                 utilsMock.when(() -> Utils.populateAllChecksSuccessful(any(), any(), any(), any())).thenCallRealMethod();
                 VCVerificationResultDto result = service.verifyV2(request);
 
@@ -240,6 +239,8 @@ public class VCVerificationServiceImplTest {
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
                 utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
+                utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(true, null));
+                utilsMock.when(() -> Utils.populateExpiryCheck(any(), any())).thenReturn(new ExpiryCheckDto(true));
                 VCVerificationResultDto result = service.verifyV2(request);
 
                 assertFalse(result.isAllChecksSuccessful());
@@ -265,6 +266,7 @@ public class VCVerificationServiceImplTest {
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
                 utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
+                utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(false, null));
 
                 VCVerificationResultDto result = service.verifyV2(request);
 
@@ -288,12 +290,11 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(CredentialFormat.class), anyList()))
                     .thenReturn(summary);
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-                utilsMock.when(() -> Utils.isSdJwt(anyString()))
-                        .thenReturn(false);
-                utilsMock.when(() -> Utils.getVcVerificationStatus(summary))
-                        .thenReturn(VerificationStatus.REVOKED);
-                utilsMock.when(() -> Utils.createStatusCheckDtoList(summary.getCredentialStatus()))
-                        .thenReturn(List.of(new StatusCheckDto("revocation", false, null)));
+                utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
+                utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(true, null));
+                utilsMock.when(() -> Utils.populateExpiryCheck(any(), any())).thenReturn(new ExpiryCheckDto(true));
+                utilsMock.when(() -> Utils.getVcVerificationStatus(summary)).thenReturn(VerificationStatus.REVOKED);
+                utilsMock.when(() -> Utils.populateStatusCheckDtoList(summary.getCredentialStatus())).thenReturn(List.of(new StatusCheckDto("revocation", false, null)));
                 VCVerificationResultDto result = service.verifyV2(request);
 
                 assertFalse(result.isAllChecksSuccessful(), "Overall check should fail");

@@ -784,13 +784,16 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(new AuthorizationRequestCreateResponse());
 
-        PresentationVerificationResult presentationVerificationResult = mock(PresentationVerificationResult.class);
-        when(presentationVerificationResult.getProofVerificationStatus()).thenReturn(VPVerificationStatus.VALID);
-        VCResult vcResult = new VCResult("{\"type\":[\"VerifiableCredential\"], \"credentialSubject\": {\"name\":\"John Doe\"}}", VerificationStatus.SUCCESS);
-        List<VCResult> vcResults = new ArrayList<>();
+        PresentationVerificationResultV2 presentationVerificationResult = mock(PresentationVerificationResultV2.class);
+        VerificationResult proofVerificationResult = mock(VerificationResult.class);
+        when(presentationVerificationResult.getProofVerificationResult()).thenReturn(proofVerificationResult);
+        when(proofVerificationResult.getVerificationStatus()).thenReturn(true);
+        VerificationResult verificationResult = new VerificationResult(true, "", "");
+        VCResultV2 vcResult = new VCResultV2("{\"type" + "\":[\"VerifiableCredential" + "\"], \"credentialSubject\": {\"name\":\"John Doe\"}}", verificationResult);
+        List<VCResultV2> vcResults = new ArrayList<>();
         vcResults.add(vcResult);
         when(presentationVerificationResult.getVcResults()).thenReturn(vcResults);
-        when(presentationVerifier.verify(anyString())).thenReturn(presentationVerificationResult);
+        when(presentationVerifier.verifyV2(anyString())).thenReturn(presentationVerificationResult);
 
         VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId);
         List<CredentialResultsDto> credentialResults =  result.getCredentialResults();
