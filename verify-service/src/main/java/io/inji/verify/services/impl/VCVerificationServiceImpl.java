@@ -81,8 +81,8 @@ public class VCVerificationServiceImpl implements VCVerificationService {
             }
 
         SchemaAndSignatureCheckDto schemaAndSignatureCheck = populateSchemaAndSignature(verificationResult);
-        expiryCheck = populateExpiryCheck(verificationResult, schemaAndSignatureCheck);
         if (schemaAndSignatureCheck.isValid()) {
+            expiryCheck = populateExpiryCheck(verificationResult);
             statusCheck = (!skipStatusChecks) ? populateStatusCheckDtoList(credentialStatus) : List.of();
             claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format) : Map.of();
         }
