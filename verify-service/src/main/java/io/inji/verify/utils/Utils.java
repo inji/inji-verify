@@ -164,7 +164,8 @@ public final class Utils {
 
     private static Map<String, Object> extractLdpClaims(String verifiableCredential) {
         JSONObject vcObject = new JSONObject(verifiableCredential);
-        return vcObject.optJSONObject("credentialSubject").toMap();
+        JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
+        return credentialSubject != null ? credentialSubject.toMap() : Map.of();
     }
 
     private static Map<String, Object> extractSdJwtClaims(String verifiableCredential) {
