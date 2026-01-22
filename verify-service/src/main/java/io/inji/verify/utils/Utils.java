@@ -127,8 +127,7 @@ public final class Utils {
         return new SchemaAndSignatureCheckDto(isValid, error);
     }
 
-    public static ExpiryCheckDto populateExpiryCheck(VerificationResult verificationResult, SchemaAndSignatureCheckDto schemaAndSignatureCheckDto) {
-        if (!schemaAndSignatureCheckDto.isValid()) return null;
+    public static ExpiryCheckDto populateExpiryCheck(VerificationResult verificationResult) {
         VerificationStatus verificationStatus = Util.INSTANCE.getVerificationStatus(verificationResult);
         boolean isValid = verificationStatus != VerificationStatus.EXPIRED;
 
