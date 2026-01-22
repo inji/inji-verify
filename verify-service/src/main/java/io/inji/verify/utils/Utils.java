@@ -3,8 +3,6 @@ package io.inji.verify.utils;
 import com.authlete.cbor.CBORDecoder;
 import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORTaggedItem;
-import com.upokecenter.cbor.CBOREncodeOptions;
-import com.upokecenter.cbor.CBORObject;
 import io.inji.verify.dto.core.CredentialStatusErrorDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.HolderProofCheckDto;
