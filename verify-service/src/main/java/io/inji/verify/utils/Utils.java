@@ -1,5 +1,8 @@
 package io.inji.verify.utils;
 
+import com.authlete.cbor.CBORDecoder;
+import com.authlete.cbor.CBORItem;
+import com.authlete.cbor.CBORTaggedItem;
 import io.inji.verify.dto.core.CredentialStatusErrorDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.HolderProofCheckDto;
@@ -7,6 +10,7 @@ import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
+import io.inji.verify.exception.InvalidCredentialException;
 import io.inji.verify.shared.Constants;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
@@ -22,10 +26,7 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.time.Instant;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
@@ -49,6 +50,56 @@ public final class Utils {
         String typ = new JSONObject(header).optString("typ", "");
         return VALID_SD_JWT_TYPES.contains(typ);
     }
+
+    public static boolean isCwt(String credential) {
+
+        if (credential.contains(".")) {
+            return false;
+        }
+
+        if (credential.trim().startsWith("{")) {
+            return false;
+        }
+
+        try {
+            byte[] data = hexToBytes(credential);
+
+            CBORDecoder decoder = new CBORDecoder(data);
+            CBORItem item = decoder.next();
+
+            return item instanceof CBORTaggedItem
+                    && ((CBORTaggedItem) item).getTagNumber().intValue() == 61;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static byte[] hexToBytes(String hex) {
+        if (hex == null) {
+            throw new IllegalArgumentException("Hex string is null");
+        }
+
+
+        String cleanHex = hex.replaceAll("\\s", "");
+
+        if (cleanHex.length() % 2 != 0) {
+            throw new IllegalArgumentException("Invalid hex length");
+        }
+
+        int len = cleanHex.length();
+        byte[] result = new byte[len / 2];
+
+        for (int i = 0; i < len; i += 2) {
+            result[i / 2] = (byte) Integer.parseInt(
+                    cleanHex.substring(i, i + 2),
+                    16
+            );
+        }
+
+        return result;
+    }
+
 
     private static String decodeBase64Json(String encoded)  {
         byte[] decodedBytes = new Base64Decoder().decodeFromBase64Url(encoded);
@@ -170,5 +221,22 @@ public final class Utils {
 
     private static Map<String, Object> extractSdJwtClaims(String verifiableCredential) {
         return null;
+    }
+
+    public static CredentialFormat getCredentialFormat(String verifiableCredential) {
+        try {
+            if (Utils.isCwt(verifiableCredential)) {
+                return CredentialFormat.CWT_VC;
+            }
+
+            if (Utils.isSdJwt(verifiableCredential)) {
+                return CredentialFormat.VC_SD_JWT;
+            }
+
+            return CredentialFormat.LDP_VC;
+
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to determine credential type.", e);
+        }
     }
 }

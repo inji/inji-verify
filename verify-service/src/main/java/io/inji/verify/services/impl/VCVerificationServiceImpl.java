@@ -17,6 +17,7 @@ import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -62,7 +63,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
     public VCVerificationResultDto verifyV2(VCVerificationRequestDto request) {
         log.debug("Processing verification request with skipStatusChecks: {}, filters: {}", request.isSkipStatusChecks(), request.getStatusCheckFilters());
         String verifiableCredential = request.getVerifiableCredential();
-        CredentialFormat format = getCredentialFormat(verifiableCredential);
+        CredentialFormat format = Utils.getCredentialFormat(verifiableCredential);
         VerificationResult verificationResult;
         Map<String, CredentialStatusResult> credentialStatus = null;
         ExpiryCheckDto expiryCheck = null;
@@ -90,15 +91,5 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);
 
         return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, claims);
-    }
-
-    private CredentialFormat getCredentialFormat(String verifiableCredential) {
-        boolean isSdJwt;
-        try {
-            isSdJwt = Utils.isSdJwt(verifiableCredential);
-        } catch (Exception e) {
-            throw new InvalidCredentialException("Failed to determine credential type.", e);
-        }
-        return isSdJwt ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
     }
 }
