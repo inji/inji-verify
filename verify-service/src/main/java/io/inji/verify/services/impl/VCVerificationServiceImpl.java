@@ -25,6 +25,7 @@ import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
 import static io.inji.verify.utils.Utils.populateStatusCheckDtoList;
 import static io.inji.verify.utils.Utils.populateSchemaAndSignature;
 import static io.inji.verify.utils.Utils.populateExpiryCheck;
+import static io.inji.verify.utils.Utils.extractClaims;
 
 @Slf4j
 @Service
@@ -66,6 +67,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         Map<String, CredentialStatusResult> credentialStatus = null;
         ExpiryCheckDto expiryCheck = null;
         List<StatusCheckDto> statusCheck = List.of();
+        Map<String, Object> claims = Map.of();
 
         boolean skipStatusChecks = request.isSkipStatusChecks();
             if (skipStatusChecks) {
@@ -80,13 +82,14 @@ public class VCVerificationServiceImpl implements VCVerificationService {
 
         SchemaAndSignatureCheckDto schemaAndSignatureCheck = populateSchemaAndSignature(verificationResult);
         expiryCheck = populateExpiryCheck(verificationResult, schemaAndSignatureCheck);
-        if (schemaAndSignatureCheck.isValid() && !skipStatusChecks) {
-                statusCheck = populateStatusCheckDtoList(credentialStatus);
+        if (schemaAndSignatureCheck.isValid()) {
+            statusCheck = (!skipStatusChecks) ? populateStatusCheckDtoList(credentialStatus) : List.of();
+            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format) : Map.of();
         }
 
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);
 
-        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, null);
+        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, claims);
     }
 
     private CredentialFormat getCredentialFormat(String verifiableCredential) {
