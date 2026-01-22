@@ -178,8 +178,7 @@ public final class Utils {
         return new SchemaAndSignatureCheckDto(isValid, error);
     }
 
-    public static ExpiryCheckDto populateExpiryCheck(VerificationResult verificationResult, SchemaAndSignatureCheckDto schemaAndSignatureCheckDto) {
-        if (!schemaAndSignatureCheckDto.isValid()) return null;
+    public static ExpiryCheckDto populateExpiryCheck(VerificationResult verificationResult) {
         VerificationStatus verificationStatus = Util.INSTANCE.getVerificationStatus(verificationResult);
         boolean isValid = verificationStatus != VerificationStatus.EXPIRED;
 
@@ -201,6 +200,29 @@ public final class Utils {
                 && (holderProofCheckDto == null || holderProofCheckDto.isValid());
     }
 
+    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format) {
+        return switch (format) {
+            case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential);
+            case LDP_VC -> extractLdpClaims(verifiableCredential);
+            case CWT_VC -> extractCwtClaims(verifiableCredential);
+            default -> null;
+        };
+    }
+
+    private static Map<String, Object> extractCwtClaims(String verifiableCredential) {
+        return null;
+    }
+
+    private static Map<String, Object> extractLdpClaims(String verifiableCredential) {
+        JSONObject vcObject = new JSONObject(verifiableCredential);
+        JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
+        return credentialSubject != null ? credentialSubject.toMap() : Map.of();
+    }
+
+    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential) {
+        return null;
+    }
+
     public static CredentialFormat getCredentialFormat(String verifiableCredential) {
         try {
             if (Utils.isCwt(verifiableCredential)) {
@@ -217,5 +239,4 @@ public final class Utils {
             throw new InvalidCredentialException("Failed to determine credential type.", e);
         }
     }
-
 }

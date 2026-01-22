@@ -6,6 +6,7 @@ import io.inji.verify.dto.result.*;
 import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.dto.submission.VPSubmissionDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
+import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
@@ -29,11 +30,8 @@ import org.json.JSONTokener;
 import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.IntStream;
-import static io.inji.verify.utils.Utils.isSdJwt;
-import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
-import static io.inji.verify.utils.Utils.populateSchemaAndSignature;
-import static io.inji.verify.utils.Utils.populateExpiryCheck;
-import static io.inji.verify.utils.Utils.populateStatusCheckDtoList;
+
+import static io.inji.verify.utils.Utils.*;
 
 @Service
 @Slf4j
@@ -149,7 +147,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
             if (isSigned) {
                 if (request.isSkipStatusChecks()) {
-                    verifyPresentation(vpToken, credentialResults);
+                    verifyPresentation(request, vpToken, credentialResults);
                 } else {
                     verifyPresentationWithCredentialStatusChecks(request, vpToken, credentialResults);
                 }
@@ -189,7 +187,12 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             credentialResultsDto.setVerifiableCredential(vcResWithStatus.getVc());
             credentialResultsDto.setHolderProofCheck(populateHolderProofDto(result.getProofVerificationResult()));
             credentialResultsDto.setSchemaAndSignatureCheck(populateSchemaAndSignature(vcResWithStatus.getVerificationResult()));
-            credentialResultsDto.setExpiryCheck(populateExpiryCheck(vcResWithStatus.getVerificationResult(), credentialResultsDto.getSchemaAndSignatureCheck()));
+            ExpiryCheckDto expiryCheckDto =
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid()) ? populateExpiryCheck(vcResWithStatus.getVerificationResult()) : null;
+            Map<String, Object> claims =
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcResWithStatus.getVc(), CredentialFormat.LDP_VC) : Map.of();
+            credentialResultsDto.setExpiryCheck(expiryCheckDto);
+            credentialResultsDto.setClaims(claims);
             credentialResultsDto.setStatusCheck(populateStatusCheckDtoList(vcResWithStatus.getCredentialStatus()));
             boolean allChecksSuccessful = populateAllChecksSuccessful(credentialResultsDto.getSchemaAndSignatureCheck(), credentialResultsDto.getExpiryCheck(), credentialResultsDto.getStatusCheck(), credentialResultsDto.getHolderProofCheck());
             credentialResultsDto.setAllChecksSuccessful(allChecksSuccessful);
@@ -197,7 +200,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
     }
 
-    private void verifyPresentation(JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
+    private void verifyPresentation(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
         PresentationVerificationResultV2 result = presentationVerifier.verifyV2(vpToken.toString());
         List<VCResultV2> vcResults = result.getVcResults();
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
@@ -206,7 +209,12 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             credentialResultsDto.setVerifiableCredential(vcRes.getVc());
             credentialResultsDto.setHolderProofCheck(populateHolderProofDto(result.getProofVerificationResult()));
             credentialResultsDto.setSchemaAndSignatureCheck(populateSchemaAndSignature(vcRes.getVerificationResult()));
-            credentialResultsDto.setExpiryCheck(populateExpiryCheck(vcRes.getVerificationResult(), credentialResultsDto.getSchemaAndSignatureCheck()));
+            ExpiryCheckDto expiryCheckDto =
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid()) ? populateExpiryCheck(vcRes.getVerificationResult()) : null;
+            Map<String, Object> claims =
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcRes.getVc(), CredentialFormat.LDP_VC) : Map.of();
+            credentialResultsDto.setExpiryCheck(expiryCheckDto);
+            credentialResultsDto.setClaims(claims);
             boolean allChecksSuccessful = populateAllChecksSuccessful(credentialResultsDto.getSchemaAndSignatureCheck(), credentialResultsDto.getExpiryCheck(), credentialResultsDto.getStatusCheck(), credentialResultsDto.getHolderProofCheck());
             credentialResultsDto.setAllChecksSuccessful(allChecksSuccessful);
             credentialResults.add(credentialResultsDto);
