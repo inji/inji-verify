@@ -84,11 +84,8 @@ public class VCVerificationServiceImpl implements VCVerificationService {
                 statusCheck = populateStatusCheckDtoList(credentialStatus);
         }
 
-        if (schemaAndSignatureCheck.isValid()) {
-            claims = extractClaims(request.getVerifiableCredential(), format);
-        }
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);
 
-        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, claims);
+        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, null);
     }
 }

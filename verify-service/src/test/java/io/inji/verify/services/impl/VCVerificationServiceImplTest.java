@@ -238,7 +238,7 @@ public class VCVerificationServiceImplTest {
                     .thenReturn(summary);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-                utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
+                utilsMock.when(() -> Utils.getCredentialFormat(vc)).thenReturn(CredentialFormat.LDP_VC);
                 utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(true, null));
                 utilsMock.when(() -> Utils.populateExpiryCheck(any(), any())).thenReturn(new ExpiryCheckDto(true));
                 VCVerificationResultDto result = service.verifyV2(request);
@@ -290,7 +290,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(CredentialFormat.class), anyList()))
                     .thenReturn(summary);
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-                utilsMock.when(() -> Utils.isSdJwt(anyString())).thenReturn(false);
+                utilsMock.when(() -> Utils.getCredentialFormat(vc)).thenReturn(CredentialFormat.LDP_VC);
                 utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(true, null));
                 utilsMock.when(() -> Utils.populateExpiryCheck(any(), any())).thenReturn(new ExpiryCheckDto(true));
                 utilsMock.when(() -> Utils.getVcVerificationStatus(summary)).thenReturn(VerificationStatus.REVOKED);
