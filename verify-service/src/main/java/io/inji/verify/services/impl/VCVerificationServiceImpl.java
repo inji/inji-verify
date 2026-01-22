@@ -17,14 +17,13 @@ import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
 import lombok.extern.slf4j.Slf4j;
+import org.json.JSONObject;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
-import static io.inji.verify.utils.Utils.populateStatusCheckDtoList;
-import static io.inji.verify.utils.Utils.populateSchemaAndSignature;
-import static io.inji.verify.utils.Utils.populateExpiryCheck;
+
+import static io.inji.verify.utils.Utils.*;
 
 @Slf4j
 @Service
@@ -61,11 +60,12 @@ public class VCVerificationServiceImpl implements VCVerificationService {
     public VCVerificationResultDto verifyV2(VCVerificationRequestDto request) {
         log.debug("Processing verification request with skipStatusChecks: {}, filters: {}", request.isSkipStatusChecks(), request.getStatusCheckFilters());
         String verifiableCredential = request.getVerifiableCredential();
-        CredentialFormat format = getCredentialFormat(verifiableCredential);
+        CredentialFormat format = Utils.getCredentialFormat(verifiableCredential);
         VerificationResult verificationResult;
         Map<String, CredentialStatusResult> credentialStatus = null;
         ExpiryCheckDto expiryCheck = null;
         List<StatusCheckDto> statusCheck = List.of();
+        JSONObject claims = null;
 
         boolean skipStatusChecks = request.isSkipStatusChecks();
             if (skipStatusChecks) {
@@ -84,18 +84,11 @@ public class VCVerificationServiceImpl implements VCVerificationService {
                 statusCheck = populateStatusCheckDtoList(credentialStatus);
         }
 
+        if (schemaAndSignatureCheck.isValid()) {
+            claims = extractClaims(request.getVerifiableCredential(), format);
+        }
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);
 
-        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, null);
-    }
-
-    private CredentialFormat getCredentialFormat(String verifiableCredential) {
-        boolean isSdJwt;
-        try {
-            isSdJwt = Utils.isSdJwt(verifiableCredential);
-        } catch (Exception e) {
-            throw new InvalidCredentialException("Failed to determine credential type.", e);
-        }
-        return isSdJwt ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
+        return new VCVerificationResultDto(allChecksSuccessful, schemaAndSignatureCheck, expiryCheck, statusCheck, claims);
     }
 }

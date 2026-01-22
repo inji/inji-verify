@@ -44,8 +44,7 @@ public class VCSubmissionServiceImpl implements VCSubmissionService {
         Optional<VCSubmission> vcSubmission = vcSubmissionRepository.findById(transactionId);
         if (vcSubmission.isPresent()) {
             String vc = vcSubmission.get().getVc();
-            boolean isSdJwtVc = isSdJwt(vc);
-            CredentialFormat credentialFormat = isSdJwtVc ? CredentialFormat.VC_SD_JWT : CredentialFormat.LDP_VC;
+            CredentialFormat credentialFormat = Utils.getCredentialFormat(vc);
             List<String> statusPurposeList = new ArrayList<>();
             statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
             CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList);
