@@ -8,6 +8,7 @@ import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.shared.Constants;
+import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
@@ -147,5 +148,27 @@ public final class Utils {
                 || statusCheckDto.isEmpty()
                 || statusCheckDto.stream().allMatch(c -> c != null && c.isValid()))
                 && (holderProofCheckDto == null || holderProofCheckDto.isValid());
+    }
+
+    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format) {
+        return switch (format) {
+            case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential);
+            case LDP_VC -> extractLdpClaims(verifiableCredential);
+            case CWT_VC -> extractCwtClaims(verifiableCredential);
+            default -> null;
+        };
+    }
+
+    private static Map<String, Object> extractCwtClaims(String verifiableCredential) {
+        return null;
+    }
+
+    private static Map<String, Object> extractLdpClaims(String verifiableCredential) {
+        JSONObject vcObject = new JSONObject(verifiableCredential);
+        return vcObject.optJSONObject("credentialSubject").toMap();
+    }
+
+    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential) {
+        return null;
     }
 }
