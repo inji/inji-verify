@@ -109,8 +109,7 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-            utilsMock.when(() -> Utils.isSdJwt(TEST_VC_STRING))
-                    .thenReturn(false);
+            utilsMock.when(() -> Utils.getCredentialFormat(TEST_VC_STRING)).thenReturn(CredentialFormat.LDP_VC);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.SUCCESS);
 
@@ -143,8 +142,7 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-            utilsMock.when(() -> Utils.isSdJwt(TEST_SDJWT_VC_STRING))
-                    .thenReturn(true);
+            utilsMock.when(() -> Utils.getCredentialFormat(TEST_SDJWT_VC_STRING)).thenReturn(CredentialFormat.VC_SD_JWT);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.SUCCESS);
 
@@ -178,8 +176,8 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-            utilsMock.when(() -> Utils.isSdJwt(TEST_VC_STRING))
-                    .thenReturn(false);
+            utilsMock.when(() -> Utils.getCredentialFormat(TEST_VC_STRING))
+                    .thenReturn(CredentialFormat.LDP_VC);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.EXPIRED);
 
@@ -213,8 +211,8 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-            utilsMock.when(() -> Utils.isSdJwt(TEST_SDJWT_VC_STRING))
-                    .thenReturn(true);
+            utilsMock.when(() -> Utils.getCredentialFormat(TEST_SDJWT_VC_STRING))
+                    .thenReturn(CredentialFormat.VC_SD_JWT);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.EXPIRED);
 
@@ -247,8 +245,8 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-            utilsMock.when(() -> Utils.isSdJwt(TEST_VC_STRING))
-                    .thenReturn(false);
+            utilsMock.when(() -> Utils.getCredentialFormat(TEST_VC_STRING))
+                    .thenReturn(CredentialFormat.LDP_VC);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.INVALID);
 
@@ -282,8 +280,8 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-            utilsMock.when(() -> Utils.isSdJwt(TEST_SDJWT_VC_STRING))
-                    .thenReturn(true);
+            utilsMock.when(() -> Utils.getCredentialFormat(TEST_SDJWT_VC_STRING))
+                    .thenReturn(CredentialFormat.VC_SD_JWT);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.INVALID);
 
@@ -328,8 +326,8 @@ public class VCSubmissionServiceImplTest {
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
-            utilsMock.when(() -> Utils.isSdJwt(TEST_VC_STRING))
-                    .thenReturn(false);
+            utilsMock.when(() -> Utils.getCredentialFormat(TEST_VC_STRING))
+                    .thenReturn(CredentialFormat.LDP_VC);
             utilsMock.when(() -> Utils.getVcVerificationStatus(credentialVerificationSummary))
                     .thenReturn(VerificationStatus.REVOKED);
 
