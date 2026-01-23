@@ -1,20 +1,13 @@
-import React, { useState } from "react";
-import Loader from "../../commons/Loader";
+import React, {useEffect, useState} from "react";
 import QrScanner from "./QrScanner";
 import { Button } from "./commons/Button";
 import { useAppDispatch } from "../../../redux/hooks";
 import { goToHomeScreen } from "../../../redux/features/verification/verification.slice";
-import { VerificationSteps } from "../../../utils/config";
-import { useVerificationFlowSelector } from "../../../redux/features/verification/verification.selector";
 import { ScanOutline } from "../../../utils/theme-utils";
 import { useTranslation } from "react-i18next";
 
 const Verification = () => {
   const dispatch = useAppDispatch();
-  const { activeScreen, method } = useVerificationFlowSelector((state) => ({
-    activeScreen: state.activeScreen,
-    method: state.method,
-  }));
   const {t} = useTranslation()
   const [scannerActive, setScannerActive] = useState(true);
 
@@ -24,6 +17,10 @@ const Verification = () => {
       dispatch(goToHomeScreen({}));
     }, 80);
   };
+    useEffect(() => {
+        const pathName = sessionStorage.getItem("pathName");
+        if(pathName) setScannerActive(false);
+        }, []);
 
   return (
     <div className="grid grid-cols-12 mx-auto pt-1 pb-[100px] px-[16px] lg:py-[42px] lg:px-[104px] text-center content-center justify-center">
@@ -33,11 +30,7 @@ const Verification = () => {
           backgroundImage: `url(${ScanOutline})`,
         }}
       >
-        {activeScreen === VerificationSteps[method].Verifying ? (
-          <Loader innerBg="bg-white"/>
-        ) : (
           <QrScanner scannerActive={scannerActive} onClose={handleBack}/>
-        )}
       </div>
       <div className="col-span-12">
         <Button

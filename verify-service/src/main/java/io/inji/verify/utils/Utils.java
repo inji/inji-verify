@@ -1,8 +1,18 @@
 package io.inji.verify.utils;
 
+import com.authlete.cbor.CBORDecoder;
+import com.authlete.cbor.CBORItem;
+import com.authlete.cbor.CBORTaggedItem;
 import io.inji.verify.dto.core.CredentialStatusErrorDto;
+import io.inji.verify.dto.core.ErrorDto;
+import io.inji.verify.dto.result.HolderProofCheckDto;
+import io.inji.verify.dto.verification.ExpiryCheckDto;
+import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
+import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
+import io.inji.verify.exception.InvalidCredentialException;
 import io.inji.verify.shared.Constants;
+import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
@@ -16,9 +26,8 @@ import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import java.time.Instant;
-import java.util.Map;
-import java.util.Set;
-import java.util.UUID;
+import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 public final class Utils {
@@ -41,6 +50,56 @@ public final class Utils {
         String typ = new JSONObject(header).optString("typ", "");
         return VALID_SD_JWT_TYPES.contains(typ);
     }
+
+    public static boolean isCwt(String credential) {
+
+        if (credential.contains(".")) {
+            return false;
+        }
+
+        if (credential.trim().startsWith("{")) {
+            return false;
+        }
+
+        try {
+            byte[] data = hexToBytes(credential);
+
+            CBORDecoder decoder = new CBORDecoder(data);
+            CBORItem item = decoder.next();
+
+            return item instanceof CBORTaggedItem
+                    && ((CBORTaggedItem) item).getTagNumber().intValue() == 61;
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private static byte[] hexToBytes(String hex) {
+        if (hex == null) {
+            throw new IllegalArgumentException("Hex string is null");
+        }
+
+
+        String cleanHex = hex.replaceAll("\\s", "");
+
+        if (cleanHex.length() % 2 != 0) {
+            throw new IllegalArgumentException("Invalid hex length");
+        }
+
+        int len = cleanHex.length();
+        byte[] result = new byte[len / 2];
+
+        for (int i = 0; i < len; i += 2) {
+            result[i / 2] = (byte) Integer.parseInt(
+                    cleanHex.substring(i, i + 2),
+                    16
+            );
+        }
+
+        return result;
+    }
+
 
     private static String decodeBase64Json(String encoded)  {
         byte[] decodedBytes = new Base64Decoder().decodeFromBase64Url(encoded);
@@ -88,5 +147,96 @@ public final class Utils {
         CredentialStatusErrorDto credentialStatusErrorDto =
                 new CredentialStatusErrorDto(Instant.now().toString(), 500, request.getRequestURI(), errorMessage);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(credentialStatusErrorDto);
+    }
+
+    public static List<StatusCheckDto> populateStatusCheckDtoList(Map<String, CredentialStatusResult> credentialStatusResult) {
+        if (credentialStatusResult == null) return List.of();
+
+        return credentialStatusResult.entrySet().stream()
+                .map(entry -> {
+                    String purpose = entry.getKey();
+                    CredentialStatusResult res = entry.getValue();
+                    if (res == null) {
+                        return new StatusCheckDto(purpose, false, new ErrorDto("NULL_STATUS_RESULT", "Credential status result was null."));
+                    }
+                    ErrorDto error = populateErrorDto(res);
+                    return new StatusCheckDto(purpose, res.isValid(), error);
+                })
+                .collect(Collectors.toList());
+    }
+
+    private static ErrorDto populateErrorDto(CredentialStatusResult res) {
+        return res.getError() != null
+                ? new ErrorDto(res.getError().getErrorCode().toString(), res.getError().getErrorMessage())
+                : null;
+    }
+
+    public static SchemaAndSignatureCheckDto populateSchemaAndSignature(VerificationResult verificationResult) {
+        boolean isValid = verificationResult.getVerificationStatus();
+        ErrorDto error = isValid ? null : new ErrorDto(verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());
+
+        return new SchemaAndSignatureCheckDto(isValid, error);
+    }
+
+    public static ExpiryCheckDto populateExpiryCheck(VerificationResult verificationResult) {
+        VerificationStatus verificationStatus = Util.INSTANCE.getVerificationStatus(verificationResult);
+        boolean isValid = verificationStatus != VerificationStatus.EXPIRED;
+
+        return new ExpiryCheckDto(isValid);
+    }
+
+    public static boolean populateAllChecksSuccessful(
+            SchemaAndSignatureCheckDto schemaAndSignatureCheckDto,
+            ExpiryCheckDto expiryCheckDto,
+            List<StatusCheckDto> statusCheckDto,
+            HolderProofCheckDto holderProofCheckDto) {
+
+        return schemaAndSignatureCheckDto != null
+                && schemaAndSignatureCheckDto.isValid()
+                && (expiryCheckDto == null || expiryCheckDto.isValid())
+                && (statusCheckDto == null
+                || statusCheckDto.isEmpty()
+                || statusCheckDto.stream().allMatch(c -> c != null && c.isValid()))
+                && (holderProofCheckDto == null || holderProofCheckDto.isValid());
+    }
+
+    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format) {
+        return switch (format) {
+            case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential);
+            case LDP_VC -> extractLdpClaims(verifiableCredential);
+            case CWT_VC -> extractCwtClaims(verifiableCredential);
+            default -> null;
+        };
+    }
+
+    private static Map<String, Object> extractCwtClaims(String verifiableCredential) {
+        return null;
+    }
+
+    private static Map<String, Object> extractLdpClaims(String verifiableCredential) {
+        JSONObject vcObject = new JSONObject(verifiableCredential);
+        JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
+        return credentialSubject != null ? credentialSubject.toMap() : Map.of();
+    }
+
+    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential) {
+        return null;
+    }
+
+    public static CredentialFormat getCredentialFormat(String verifiableCredential) {
+        try {
+            if (Utils.isCwt(verifiableCredential)) {
+                return CredentialFormat.CWT_VC;
+            }
+
+            if (Utils.isSdJwt(verifiableCredential)) {
+                return CredentialFormat.VC_SD_JWT;
+            }
+
+            return CredentialFormat.LDP_VC;
+
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to determine credential type.", e);
+        }
     }
 }

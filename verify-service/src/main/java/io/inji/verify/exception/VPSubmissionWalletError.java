@@ -3,7 +3,7 @@ package io.inji.verify.exception;
 import lombok.Getter;
 
 @Getter
-public class VPSubmissionWalletError extends Exception {
+public class VPSubmissionWalletError extends RuntimeException {
     private final String errorCode;
     private final String errorDescription;
 
