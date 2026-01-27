@@ -7,10 +7,10 @@ import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
-import io.inji.verify.exception.InvalidCredentialException;
 import io.inji.verify.services.VCVerificationService;
 import io.inji.verify.shared.Constants;
 import io.inji.verify.utils.Utils;
+import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
@@ -33,9 +33,11 @@ import static io.inji.verify.utils.Utils.extractClaims;
 public class VCVerificationServiceImpl implements VCVerificationService {
 
     private final CredentialsVerifier credentialsVerifier;
+    private final PixelPass pixelPass;
 
-    public VCVerificationServiceImpl(CredentialsVerifier credentialsVerifier) {
+    public VCVerificationServiceImpl(CredentialsVerifier credentialsVerifier, PixelPass pixelPass) {
         this.credentialsVerifier = credentialsVerifier;
+        this.pixelPass = pixelPass;
     }
 
     @Override
@@ -85,7 +87,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         if (schemaAndSignatureCheck.isValid()) {
             expiryCheck = populateExpiryCheck(verificationResult);
             statusCheck = (!skipStatusChecks) ? populateStatusCheckDtoList(credentialStatus) : List.of();
-            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format) : Map.of();
+            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format, pixelPass) : Map.of();
         }
 
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);

@@ -19,6 +19,7 @@ import io.inji.verify.repository.VPSubmissionRepository;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
 import io.inji.verify.shared.Constants;
 import io.inji.verify.utils.Utils;
+import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
@@ -42,13 +43,15 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     final PresentationVerifier presentationVerifier;
     final VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService;
     final VCVerificationServiceImpl vcVerificationService;
+    final PixelPass pixelPass;
 
-    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService) {
+    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService, PixelPass pixelPass) {
         this.vpSubmissionRepository = vpSubmissionRepository;
         this.credentialsVerifier = credentialsVerifier;
         this.presentationVerifier = presentationVerifier;
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
         this.vcVerificationService = vcVerificationService;
+        this.pixelPass = pixelPass;
     }
 
     @Override
@@ -190,7 +193,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             ExpiryCheckDto expiryCheckDto =
                     (credentialResultsDto.getSchemaAndSignatureCheck().isValid()) ? populateExpiryCheck(vcResWithStatus.getVerificationResult()) : null;
             Map<String, Object> claims =
-                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcResWithStatus.getVc(), CredentialFormat.LDP_VC) : Map.of();
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcResWithStatus.getVc(), CredentialFormat.LDP_VC, pixelPass) : Map.of();
             credentialResultsDto.setExpiryCheck(expiryCheckDto);
             credentialResultsDto.setClaims(claims);
             credentialResultsDto.setStatusCheck(populateStatusCheckDtoList(vcResWithStatus.getCredentialStatus()));
@@ -212,7 +215,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             ExpiryCheckDto expiryCheckDto =
                     (credentialResultsDto.getSchemaAndSignatureCheck().isValid()) ? populateExpiryCheck(vcRes.getVerificationResult()) : null;
             Map<String, Object> claims =
-                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcRes.getVc(), CredentialFormat.LDP_VC) : Map.of();
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcRes.getVc(), CredentialFormat.LDP_VC, pixelPass) : Map.of();
             credentialResultsDto.setExpiryCheck(expiryCheckDto);
             credentialResultsDto.setClaims(claims);
             boolean allChecksSuccessful = populateAllChecksSuccessful(credentialResultsDto.getSchemaAndSignatureCheck(), credentialResultsDto.getExpiryCheck(), credentialResultsDto.getStatusCheck(), credentialResultsDto.getHolderProofCheck());

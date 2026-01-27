@@ -17,6 +17,7 @@ import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
+import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.data.*;
 import io.inji.verify.repository.VPSubmissionRepository;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
@@ -64,10 +65,13 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     @InjectMocks
     private VerifiablePresentationSubmissionServiceImpl verifiablePresentationSubmissionService;
 
+    @Mock
+    private PixelPass pixelPass;
+
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        verifiablePresentationSubmissionService = new VerifiablePresentationSubmissionServiceImpl(vpSubmissionRepository, credentialsVerifier, presentationVerifier, verifiablePresentationRequestService, vcVerificationService);
+        verifiablePresentationSubmissionService = new VerifiablePresentationSubmissionServiceImpl(vpSubmissionRepository, credentialsVerifier, presentationVerifier, verifiablePresentationRequestService, vcVerificationService, pixelPass);
     }
 
     @Test
