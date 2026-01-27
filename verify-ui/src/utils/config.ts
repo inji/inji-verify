@@ -215,9 +215,11 @@ export const EXCLUDE_KEYS_SD_JWT_VC = [
 export const getStepConfig = (method: VerificationMethod | string) => {
     switch (method) {
         case "SCAN":
+            return VerificationSteps.SCAN;
         case "UPLOAD":
+            return VerificationSteps.UPLOAD;
         case "VERIFY":
-            return VerificationSteps[method];
+            return VerificationSteps.VERIFY;
         default:
             return null;
     }
