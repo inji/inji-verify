@@ -230,9 +230,10 @@ public final class Utils {
             for (Disclosure disclosure : disclosures) {
                 claims.put(disclosure.getClaimName(), disclosure.getClaimValue());
             }
-            for (String metaClaim : metaClaims) {
-                log.info("metaClaim: {}", metaClaim);
-                claims.remove(metaClaim);
+            for (String metaClaim : Optional.ofNullable(metaClaims).orElseGet(List::of)) {
+                if (metaClaim != null) {
+                    claims.remove(metaClaim.trim());
+                }
             }
             return claims;
         } catch (Exception e) {
