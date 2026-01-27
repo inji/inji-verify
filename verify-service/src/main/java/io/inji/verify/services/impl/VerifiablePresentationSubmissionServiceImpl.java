@@ -27,6 +27,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.json.JSONTokener;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.util.*;
 import java.util.stream.IntStream;
@@ -36,6 +37,9 @@ import static io.inji.verify.utils.Utils.*;
 @Service
 @Slf4j
 public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePresentationSubmissionService {
+
+    @Value("${inji.verify.meta-claims}")
+    List<String> metaClaims;
 
     final VPSubmissionRepository vpSubmissionRepository;
     final CredentialsVerifier credentialsVerifier;
@@ -190,7 +194,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             ExpiryCheckDto expiryCheckDto =
                     (credentialResultsDto.getSchemaAndSignatureCheck().isValid()) ? populateExpiryCheck(vcResWithStatus.getVerificationResult()) : null;
             Map<String, Object> claims =
-                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcResWithStatus.getVc(), CredentialFormat.LDP_VC) : Map.of();
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcResWithStatus.getVc(), CredentialFormat.LDP_VC, metaClaims) : Map.of();
             credentialResultsDto.setExpiryCheck(expiryCheckDto);
             credentialResultsDto.setClaims(claims);
             credentialResultsDto.setStatusCheck(populateStatusCheckDtoList(vcResWithStatus.getCredentialStatus()));
@@ -212,7 +216,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             ExpiryCheckDto expiryCheckDto =
                     (credentialResultsDto.getSchemaAndSignatureCheck().isValid()) ? populateExpiryCheck(vcRes.getVerificationResult()) : null;
             Map<String, Object> claims =
-                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcRes.getVc(), CredentialFormat.LDP_VC) : Map.of();
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcRes.getVc(), CredentialFormat.LDP_VC, metaClaims) : Map.of();
             credentialResultsDto.setExpiryCheck(expiryCheckDto);
             credentialResultsDto.setClaims(claims);
             boolean allChecksSuccessful = populateAllChecksSuccessful(credentialResultsDto.getSchemaAndSignatureCheck(), credentialResultsDto.getExpiryCheck(), credentialResultsDto.getStatusCheck(), credentialResultsDto.getHolderProofCheck());
