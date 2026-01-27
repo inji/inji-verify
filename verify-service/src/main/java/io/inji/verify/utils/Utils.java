@@ -315,8 +315,9 @@ public final class Utils {
                     finalClaimsJson.put(key, baseClaimsJson.get(key));
                 }
             });
-            excludeMetaClaims(metaClaims, finalClaimsJson.toMap());
-            return finalClaimsJson.toMap();
+            Map<String, Object> finalClaimsMap = finalClaimsJson.toMap();
+            excludeMetaClaims(metaClaims, finalClaimsMap);
+            return finalClaimsMap;
         } catch (Exception e) {
             throw new InvalidCredentialException("Failed to determine credential type.", e);
         }
