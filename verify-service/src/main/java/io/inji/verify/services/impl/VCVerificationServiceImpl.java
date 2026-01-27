@@ -7,7 +7,6 @@ import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
-import io.inji.verify.exception.InvalidCredentialException;
 import io.inji.verify.services.VCVerificationService;
 import io.inji.verify.shared.Constants;
 import io.inji.verify.utils.Utils;
@@ -17,7 +16,7 @@ import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import java.util.ArrayList;
 import java.util.List;
@@ -31,6 +30,9 @@ import static io.inji.verify.utils.Utils.extractClaims;
 @Slf4j
 @Service
 public class VCVerificationServiceImpl implements VCVerificationService {
+
+    @Value("${inji.verify.meta-claims}")
+    List<String> metaClaims;
 
     private final CredentialsVerifier credentialsVerifier;
 
@@ -85,7 +87,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         if (schemaAndSignatureCheck.isValid()) {
             expiryCheck = populateExpiryCheck(verificationResult);
             statusCheck = (!skipStatusChecks) ? populateStatusCheckDtoList(credentialStatus) : List.of();
-            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format) : Map.of();
+            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format, metaClaims) : Map.of();
         }
 
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);
