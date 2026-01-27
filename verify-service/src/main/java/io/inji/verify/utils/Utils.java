@@ -3,6 +3,8 @@ package io.inji.verify.utils;
 import com.authlete.cbor.CBORDecoder;
 import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORTaggedItem;
+import com.authlete.sd.Disclosure;
+import com.authlete.sd.SDJWT;
 import io.inji.verify.dto.core.CredentialStatusErrorDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.HolderProofCheckDto;
@@ -200,9 +202,9 @@ public final class Utils {
                 && (holderProofCheckDto == null || holderProofCheckDto.isValid());
     }
 
-    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format) {
+    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format, List<String> metaClaims) {
         return switch (format) {
-            case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential);
+            case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential, metaClaims);
             case LDP_VC -> extractLdpClaims(verifiableCredential);
             case CWT_VC -> extractCwtClaims(verifiableCredential);
             default -> null;
@@ -219,8 +221,24 @@ public final class Utils {
         return credentialSubject != null ? credentialSubject.toMap() : Map.of();
     }
 
-    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential) {
-        return null;
+    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential, List<String> metaClaims) {
+        try {
+            SDJWT sdjwt = SDJWT.parse(verifiableCredential);
+            String payloadJson = decodeBase64Json(sdjwt.getCredentialJwt().split("\\.")[1]);
+            Map<String, Object> claims = new HashMap<>(new JSONObject(payloadJson).toMap());
+            List<Disclosure> disclosures = sdjwt.getDisclosures();
+            for (Disclosure disclosure : disclosures) {
+                claims.put(disclosure.getClaimName(), disclosure.getClaimValue());
+            }
+            for (String metaClaim : metaClaims) {
+                log.info("metaClaim: {}", metaClaim);
+                claims.remove(metaClaim);
+            }
+            return claims;
+        } catch (Exception e) {
+            log.error("Failed to extract SD-JWT claims", e);
+            return Map.of();
+        }
     }
 
     public static CredentialFormat getCredentialFormat(String verifiableCredential) {
