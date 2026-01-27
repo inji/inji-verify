@@ -230,15 +230,19 @@ public final class Utils {
             List<Disclosure> disclosures = sdjwt.getDisclosures();
             SDObjectDecoder decoder = new SDObjectDecoder();
             Map<String, Object> claims = new HashMap<>(decoder.decode(payloadClaims, disclosures));
-            for (String metaClaim : Optional.ofNullable(metaClaims).orElseGet(List::of)) {
-                if (metaClaim != null) {
-                    claims.remove(metaClaim.trim());
-                }
-            }
+            excludeMetaClaims(metaClaims, claims);
             return claims;
         } catch (Exception e) {
             log.error("Failed to extract SD-JWT claims", e);
             return Map.of();
+        }
+    }
+
+    private static void excludeMetaClaims(List<String> metaClaims, Map<String, Object> claims) {
+        for (String metaClaim : Optional.ofNullable(metaClaims).orElseGet(List::of)) {
+            if (metaClaim != null) {
+                claims.remove(metaClaim.trim());
+            }
         }
     }
 
