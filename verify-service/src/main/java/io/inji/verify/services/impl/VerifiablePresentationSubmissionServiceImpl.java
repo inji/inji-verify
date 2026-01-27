@@ -174,6 +174,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             credentialResults.add(verifySingleCredential(request, sdJwtVpToken, true));
         }
 
+        for (String cwtVpToken : vpTokenDto.getCwtVpTokens()) {
+            credentialResults.add(verifySingleCredential(request, cwtVpToken, false));
+        }
+
         boolean allChecksSuccessful = credentialResults.stream().allMatch(CredentialResultsDto::isAllChecksSuccessful);
 
         log.info("VP submission processing done V2");
@@ -263,28 +267,32 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         if (vpTokenString == null) throw new InvalidVpTokenException();
         List<JSONObject> jsonVpTokens = new ArrayList<>();
         List<String> sdJwtVpTokens = new ArrayList<>();
+        List<String> cwtVpTokens = new ArrayList<>();
 
         Object vpTokenRaw = new JSONTokener(vpTokenString).nextValue();
 
         if (vpTokenRaw instanceof JSONArray array) {
-            IntStream.range(0, array.length()).forEach(i -> processSingleToken(array.get(i), jsonVpTokens, sdJwtVpTokens));
+            IntStream.range(0, array.length()).forEach(i -> processSingleToken(array.get(i), jsonVpTokens, sdJwtVpTokens, cwtVpTokens));
         } else {
-            processSingleToken(vpTokenRaw, jsonVpTokens, sdJwtVpTokens);
+            processSingleToken(vpTokenRaw, jsonVpTokens, sdJwtVpTokens, cwtVpTokens);
         }
 
         log.debug("Number of VP tokens to verify: {}", jsonVpTokens.size() + ":" + sdJwtVpTokens.size());
-        if (jsonVpTokens.isEmpty() && sdJwtVpTokens.isEmpty())
+        if (jsonVpTokens.isEmpty() && sdJwtVpTokens.isEmpty() && cwtVpTokens.isEmpty()) {
             throw new InvalidVpTokenException();
-
-        return new VPTokenDto(jsonVpTokens, sdJwtVpTokens);
+        }
+        return new VPTokenDto(jsonVpTokens, sdJwtVpTokens, cwtVpTokens);
     }
 
-    private void processSingleToken(Object item, List<JSONObject> jsonVpTokens, List<String> sdJwtVpTokens) {
+    private void processSingleToken(Object item, List<JSONObject> jsonVpTokens, List<String> sdJwtVpTokens, List<String> cwtVpTokens) {
         switch (item) {
             case String itemString -> {
                 if (isSdJwt(itemString)) {
                     sdJwtVpTokens.add(itemString);
-                } else {
+                } else if (isCwt(itemString)) {
+                    cwtVpTokens.add(itemString);
+                }
+                else {
                     try {
                         String decodedJson = new String(Base64.getUrlDecoder().decode(itemString));
                         Object decodedRaw = new JSONTokener(decodedJson).nextValue();
