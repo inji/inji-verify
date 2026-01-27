@@ -77,12 +77,12 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         public void testSubmit_Success() {
                 VPSubmissionDto vpSubmissionDto = new VPSubmissionDto("vpToken123",
                                 new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
-                                "state123", null, null);
+                                "req123", null, null);
 
                 verifiablePresentationSubmissionService.submit(vpSubmissionDto);
 
                 verify(vpSubmissionRepository, times(1)).save(any(VPSubmission.class));
-                verify(verifiablePresentationRequestService, times(1)).invokeVpRequestStatusListener("state123");
+                verify(verifiablePresentationRequestService, times(1)).invokeVpRequestStatusListener("req123");
         }
 
         @Test
@@ -94,7 +94,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 String transactionId = "tx123";
 
                 VPSubmission vpSubmission = new VPSubmission(
-                                "state123",
+                                "req123",
                                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[{\"type\":[\"VerifiablePresentation\"]}]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path",
@@ -123,7 +123,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 String base64Token = Base64.getUrlEncoder().encodeToString(vpTokenJson.getBytes());
                 List<VCResultWithCredentialStatus> vcResults = List.of(
                                 new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new HashMap<>()));
-                VPSubmission vpSubmission = new VPSubmission("state123", "\"" + base64Token + "\"",
+                VPSubmission vpSubmission = new VPSubmission("req123", "\"" + base64Token + "\"",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
                                                                 "format", "path")))),
@@ -148,7 +148,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<VCResultWithCredentialStatus> vcResults2 = List.of(
                                 new VCResultWithCredentialStatus("vc2", VerificationStatus.SUCCESS, new HashMap<>()));
                 VPSubmission vpSubmission = new VPSubmission(
-                                "state123",
+                                "req123",
                                 "[" +
                                                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]},"
                                                 +
@@ -187,7 +187,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<VCResultWithCredentialStatus> vcResults = List.of(
                                 new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new HashMap<>()));
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "[\"" + base64Token1
                                                 + "\", \"{\\\"type\\\":[\\\"VerifiablePresentation\\\"],\\\"proof\\\":{\\\"type\\\":\\\"Ed25519Signature2018\\\"},\\\"VerifiablePresentation\\\":[{\\\"type\\\":[\\\"VerifiablePresentation\\\"]}]}\"]",
                                 new PresentationSubmissionDto("id", "dId", List.of(
@@ -225,7 +225,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
@@ -255,7 +255,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                                 new VCResultWithCredentialStatus("",
                                                 VerificationStatus.INVALID, new HashMap<>()));
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
@@ -284,7 +284,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                                 new VCResultWithCredentialStatus("",
                                                 VerificationStatus.SUCCESS, new HashMap<>()));
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
@@ -309,7 +309,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123", "null",
+                VPSubmission vpSubmission = new VPSubmission("req123", "null",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
                                                                 "format", "path")))),
@@ -331,7 +331,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
@@ -354,7 +354,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                                 new PresentationSubmissionDto("id", "dId", new ArrayList<>()), null, null);
 
@@ -374,7 +374,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                                 new PresentationSubmissionDto("id", "dId", null), null, null);
 
@@ -394,7 +394,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
@@ -418,7 +418,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123", "12345", // Invalid format (number)
+                VPSubmission vpSubmission = new VPSubmission("req123", "12345", // Invalid format (number)
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
                                                                 "format", "path")))),
@@ -440,7 +440,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123", "[123, \"invalid\"]", // Invalid array items
+                VPSubmission vpSubmission = new VPSubmission("req123", "[123, \"invalid\"]", // Invalid array items
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
                                                                 "format", "path")))),
@@ -462,7 +462,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123", "[\"invalid-base64!!!\"]",
+                VPSubmission vpSubmission = new VPSubmission("req123", "[\"invalid-base64!!!\"]",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
                                                                 "format", "path")))),
@@ -484,7 +484,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123", "\"invalid-base64!!!\"",
+                VPSubmission vpSubmission = new VPSubmission("req123", "\"invalid-base64!!!\"",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
                                                                 "format", "path")))),
@@ -506,7 +506,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"VerifiablePresentation\":[{\"type\":[\"VerifiablePresentation\"]}]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
@@ -531,7 +531,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
                 List<VCResultWithCredentialStatus> vcResults = List.of(
                                 new VCResultWithCredentialStatus("", VerificationStatus.SUCCESS, new HashMap<>()));
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"VerifiablePresentation\":[{\"type\":[\"VerifiablePresentation\"]}]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
@@ -558,7 +558,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
@@ -587,7 +587,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path", new PathNestedDto(
@@ -621,7 +621,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                                                 new HashMap<>()));
 
                 VPSubmission vpSubmission = new VPSubmission(
-                                "state123",
+                                "req123",
                                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2020\"},\"verifiableCredential\":[{\"type\":[\"VerifiablePresentation\"]}]}",
                                 new PresentationSubmissionDto("id", "dId",
                                                 List.of(new DescriptorMapDto("id", "format", "path",
@@ -666,7 +666,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                                 .of(new VCResultWithCredentialStatus("vc_invalid", VerificationStatus.INVALID,
                                                 new HashMap<>()));
 
-                VPSubmission vpSubmission = new VPSubmission("state123",
+                VPSubmission vpSubmission = new VPSubmission("req123",
                                 "[{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"VerifiablePresentation\":[{\"type\":[\"VerifiablePresentation\"]}]}, "
                                                 +
                                                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"VerifiablePresentation\":[{\"type\":[\"VerifiablePresentation\"]}]}, "
@@ -715,7 +715,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 jsonVpTokens.add(vc);
 
                 VPSubmission vpSubmission = new VPSubmission(
-                                "state123",
+                                "req123",
                                 vc.toString(),
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path",
@@ -756,7 +756,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 String signature = Base64.getUrlEncoder().encodeToString("signature".getBytes());
                 String sdJwtToken = header + "." + payload + "." + signature;
                 VPSubmission vpSubmission = new VPSubmission(
-                                "state123",
+                                "req123",
                                 "\"" + sdJwtToken + "\"",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path",
@@ -822,7 +822,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 String transactionId = "tx123";
 
                 VPSubmission vpSubmission = new VPSubmission(
-                                "state123",
+                                "req123",
                                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2020\"},\"verifiableCredential\":[{\"type\":[\"VerifiablePresentation\"]}]}",
                                 new PresentationSubmissionDto("id", "dId", List.of(
                                                 new DescriptorMapDto("id", "format", "path",
@@ -850,7 +850,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 String transactionId = "tx123";
                 VerificationRequestDto verificationRequestDto = new VerificationRequestDto(true, List.of(), false);
                 String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[{\"type\":[\"VerifiableCredential\"], \"credentialSubject\": {\"name\":\"John Doe\"}}]}";
-                VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
+                VPSubmission vpSubmission = new VPSubmission("req123", vpToken,
                                 new PresentationSubmissionDto("id", "dId",
                                                 List.of(new DescriptorMapDto("id", "format", "path",
                                                                 new PathNestedDto("format", "path")))),
@@ -949,7 +949,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 String transactionId = "tx123";
                 VerificationRequestDto verificationRequestDto = new VerificationRequestDto();
                 String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"verifiableCredential\":[\"testVC\"]}";
-                VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
+                VPSubmission vpSubmission = new VPSubmission("req123", vpToken,
                                 new PresentationSubmissionDto("id", "dId",
                                                 List.of(new DescriptorMapDto("id", "format", "path",
                                                                 new PathNestedDto("format", "path")))),
@@ -988,7 +988,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 List<String> requestIds = List.of("req123");
                 String transactionId = "tx123";
                 VerificationRequestDto verificationRequestDto = new VerificationRequestDto();
-                VPSubmission vpSubmission = new VPSubmission("state123", null, null, "user_cancelled",
+                VPSubmission vpSubmission = new VPSubmission("req123", null, null, "user_cancelled",
                                 "User cancelled the operation");
                 when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
 
@@ -1002,7 +1002,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 String transactionId = "tx123";
                 VerificationRequestDto verificationRequestDto = new VerificationRequestDto();
                 String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[{\"type\":[\"VerifiableCredential\"], \"credentialSubject\": {\"name\":\"John Doe\"}}]}";
-                VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
+                VPSubmission vpSubmission = new VPSubmission("req123", vpToken,
                                 new PresentationSubmissionDto("id", "dId", new ArrayList<>()), null, null);
                 when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
                 when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
@@ -1020,7 +1020,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 String transactionId = "tx123";
                 VerificationRequestDto verificationRequestDto = new VerificationRequestDto();
                 String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"verifiableCredential\":[\"testVC\"]}";
-                VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
+                VPSubmission vpSubmission = new VPSubmission("req123", vpToken,
                                 new PresentationSubmissionDto("id", "dId",
                                                 List.of(new DescriptorMapDto("id", "format", "path",
                                                                 new PathNestedDto("format", "path")))),

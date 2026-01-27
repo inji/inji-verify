@@ -303,13 +303,13 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     @Override
     public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException {
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, transactionId);
         return processSubmission(vpSubmission, transactionId);
     }
 
     @Override
     public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId) {
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, transactionId);
         return processSubmissionV2(request, transactionId, vpSubmission);
     }
 
