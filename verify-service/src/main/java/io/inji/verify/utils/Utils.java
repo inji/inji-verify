@@ -217,9 +217,13 @@ public final class Utils {
     }
 
     private static Map<String, Object> extractLdpClaims(String verifiableCredential) {
-        JSONObject vcObject = new JSONObject(verifiableCredential);
-        JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
-        return credentialSubject != null ? credentialSubject.toMap() : Map.of();
+        try {
+            JSONObject vcObject = new JSONObject(verifiableCredential);
+            JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
+            return credentialSubject != null ? credentialSubject.toMap() : Map.of();
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to extract JSON claims", e);
+        }
     }
 
     private static Map<String, Object> extractSdJwtClaims(String verifiableCredential, List<String> metaClaims) {
@@ -233,8 +237,7 @@ public final class Utils {
             excludeMetaClaims(metaClaims, claims);
             return claims;
         } catch (Exception e) {
-            log.error("Failed to extract SD-JWT claims", e);
-            return Map.of();
+            throw new InvalidCredentialException("Failed to extract SD-JWT claims", e);
         }
     }
 
