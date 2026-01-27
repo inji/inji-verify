@@ -5,6 +5,7 @@ import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORTaggedItem;
 import com.authlete.sd.Disclosure;
 import com.authlete.sd.SDJWT;
+import com.authlete.sd.SDObjectDecoder;
 import io.inji.verify.dto.core.CredentialStatusErrorDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.HolderProofCheckDto;
@@ -225,11 +226,10 @@ public final class Utils {
         try {
             SDJWT sdjwt = SDJWT.parse(verifiableCredential);
             String payloadJson = decodeBase64Json(sdjwt.getCredentialJwt().split("\\.")[1]);
-            Map<String, Object> claims = new HashMap<>(new JSONObject(payloadJson).toMap());
+            Map<String, Object> payloadClaims = new JSONObject(payloadJson).toMap();
             List<Disclosure> disclosures = sdjwt.getDisclosures();
-            for (Disclosure disclosure : disclosures) {
-                claims.put(disclosure.getClaimName(), disclosure.getClaimValue());
-            }
+            SDObjectDecoder decoder = new SDObjectDecoder();
+            Map<String, Object> claims = new HashMap<>(decoder.decode(payloadClaims, disclosures));
             for (String metaClaim : Optional.ofNullable(metaClaims).orElseGet(List::of)) {
                 if (metaClaim != null) {
                     claims.remove(metaClaim.trim());
