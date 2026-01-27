@@ -277,7 +277,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             processSingleToken(vpTokenRaw, jsonVpTokens, sdJwtVpTokens, cwtVpTokens);
         }
 
-        log.debug("Number of VP tokens to verify: {}", jsonVpTokens.size() + ":" + sdJwtVpTokens.size());
+        log.debug("Number of VP tokens to verify: {}", jsonVpTokens.size() + ":" + sdJwtVpTokens.size() + ":" + cwtVpTokens.size());
         if (jsonVpTokens.isEmpty() && sdJwtVpTokens.isEmpty() && cwtVpTokens.isEmpty()) {
             throw new InvalidVpTokenException();
         }
