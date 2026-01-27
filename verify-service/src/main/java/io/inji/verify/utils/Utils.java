@@ -252,43 +252,48 @@ public final class Utils {
 
     public static Map<String, Object> extractCwtClaims(String credential, PixelPass pixelPass) {
 
-        CBORObject cwt = decodeCwt(credential);
-        CBORObject claims = decodeCwtClaims(cwt);
+        try {
 
-        JSONObject finalClaimsJson;
+            CBORObject cwt = decodeCwt(credential);
+            CBORObject claims = decodeCwtClaims(cwt);
 
-        CBORObject claim169 = claims.get(CBORObject.FromObject(169));
-        if (claim169 != null) {
+            JSONObject finalClaimsJson;
 
-            CBORObject decodedClaim169 = CBORObject.DecodeFromBytes(
-                    claim169.GetByteString(),
-                    new CBOREncodeOptions("allowduplicatekeys=false")
+            CBORObject claim169 = claims.get(CBORObject.FromObject(169));
+            if (claim169 != null) {
+
+                CBORObject decodedClaim169 = CBORObject.DecodeFromBytes(
+                        claim169.GetByteString(),
+                        new CBOREncodeOptions("allowduplicatekeys=false")
+                );
+
+                String claim169Hex = bytesToHex(decodedClaim169.EncodeToBytes());
+                String decodedClaim169Json = pixelPass.decodeMappedData(claim169Hex);
+
+                claims.Remove(CBORObject.FromObject(169));
+
+                finalClaimsJson = new JSONObject(decodedClaim169Json);
+            } else {
+                finalClaimsJson = new JSONObject();
+            }
+
+            String decodedClaimsJson = pixelPass.decodeMappedData(
+                    bytesToHex(claims.EncodeToBytes()),
+                    CWT_CLAIM_MAPPER
             );
 
-            String claim169Hex = bytesToHex(decodedClaim169.EncodeToBytes());
-            String decodedClaim169Json = pixelPass.decodeMappedData(claim169Hex);
+            JSONObject baseClaimsJson = new JSONObject(decodedClaimsJson);
 
-            claims.Remove(CBORObject.FromObject(169));
+            baseClaimsJson.keys().forEachRemaining(key -> {
+                if (!finalClaimsJson.has(key)) {
+                    finalClaimsJson.put(key, baseClaimsJson.get(key));
+                }
+            });
 
-            finalClaimsJson = new JSONObject(decodedClaim169Json);
-        } else {
-            finalClaimsJson = new JSONObject();
+            return finalClaimsJson.toMap();
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to determine credential type.", e);
         }
-
-        String decodedClaimsJson = pixelPass.decodeMappedData(
-                bytesToHex(claims.EncodeToBytes()),
-                CWT_CLAIM_MAPPER
-        );
-
-        JSONObject baseClaimsJson = new JSONObject(decodedClaimsJson);
-
-        baseClaimsJson.keys().forEachRemaining(key -> {
-            if (!finalClaimsJson.has(key)) {
-                finalClaimsJson.put(key, baseClaimsJson.get(key));
-            }
-        });
-
-        return finalClaimsJson.toMap();
     }
 
     private static CBORObject decodeCwt(String credential) {
