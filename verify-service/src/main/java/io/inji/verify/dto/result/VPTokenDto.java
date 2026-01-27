@@ -11,5 +11,4 @@ import java.util.List;
 public class VPTokenDto {
     List<JSONObject> jsonVpTokens;
     List<String> sdJwtVpTokens;
-    List<String> cwtVpTokens;
 }

@@ -1,6 +1,7 @@
 package io.inji.verify.config;
 
 import com.nimbusds.jose.shaded.gson.Gson;
+import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;
 import org.springframework.context.annotation.Bean;
@@ -17,6 +18,9 @@ public class AppConfig {
     public PresentationVerifier presentationVerifier() {
         return new PresentationVerifier();
     }
+
+    @Bean
+    public PixelPass pixelPass() { return new PixelPass(); }
 
     @Bean
     public Gson Gson() {
