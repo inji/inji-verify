@@ -5,6 +5,9 @@ import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORTaggedItem;
 import com.upokecenter.cbor.CBOREncodeOptions;
 import com.upokecenter.cbor.CBORObject;
+import com.authlete.sd.Disclosure;
+import com.authlete.sd.SDJWT;
+import com.authlete.sd.SDObjectDecoder;
 import io.inji.verify.dto.core.CredentialStatusErrorDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.HolderProofCheckDto;
@@ -214,23 +217,46 @@ public final class Utils {
                 && (holderProofCheckDto == null || holderProofCheckDto.isValid());
     }
 
-    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format, PixelPass pixelPass) {
+    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format, List<String> metaClaims, PixelPass pixelPass) {
         return switch (format) {
-            case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential);
+            case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential, metaClaims);
             case LDP_VC -> extractLdpClaims(verifiableCredential);
-            case CWT_VC -> extractCwtClaims(verifiableCredential, pixelPass);
+            case CWT_VC -> extractCwtClaims(verifiableCredential, pixelPass, metaClaims);
             default -> null;
         };
     }
 
     private static Map<String, Object> extractLdpClaims(String verifiableCredential) {
-        JSONObject vcObject = new JSONObject(verifiableCredential);
-        JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
-        return credentialSubject != null ? credentialSubject.toMap() : Map.of();
+        try {
+            JSONObject vcObject = new JSONObject(verifiableCredential);
+            JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
+            return credentialSubject != null ? credentialSubject.toMap() : Map.of();
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to extract JSON claims", e);
+        }
     }
 
-    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential) {
-        return null;
+    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential, List<String> metaClaims) {
+        try {
+            SDJWT sdjwt = SDJWT.parse(verifiableCredential);
+            String payloadJson = decodeBase64Json(sdjwt.getCredentialJwt().split("\\.")[1]);
+            Map<String, Object> payloadClaims = new JSONObject(payloadJson).toMap();
+            List<Disclosure> disclosures = sdjwt.getDisclosures();
+            SDObjectDecoder decoder = new SDObjectDecoder();
+            Map<String, Object> claims = new HashMap<>(decoder.decode(payloadClaims, disclosures));
+            excludeMetaClaims(metaClaims, claims);
+            return claims;
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to extract SD-JWT claims", e);
+        }
+    }
+
+    private static void excludeMetaClaims(List<String> metaClaims, Map<String, Object> claims) {
+        for (String metaClaim : Optional.ofNullable(metaClaims).orElseGet(List::of)) {
+            if (metaClaim != null) {
+                claims.remove(metaClaim.trim());
+            }
+        }
     }
 
     public static CredentialFormat getCredentialFormat(String verifiableCredential) {
@@ -250,7 +276,7 @@ public final class Utils {
         }
     }
 
-    public static Map<String, Object> extractCwtClaims(String credential, PixelPass pixelPass) {
+    public static Map<String, Object> extractCwtClaims(String credential, PixelPass pixelPass, List<String> metaClaims) {
 
         try {
 
@@ -289,7 +315,7 @@ public final class Utils {
                     finalClaimsJson.put(key, baseClaimsJson.get(key));
                 }
             });
-
+            excludeMetaClaims(metaClaims, finalClaimsJson.toMap());
             return finalClaimsJson.toMap();
         } catch (Exception e) {
             throw new InvalidCredentialException("Failed to determine credential type.", e);
