@@ -373,13 +373,29 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return credentialResults;
     }
 
-    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds) {
-        VPSubmission submission = vpSubmissionRepository.findAllById(requestIds)
-                .stream()
+    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String transactionId) {
+        List<VPSubmission> submissions = vpSubmissionRepository.findAllById(requestIds);
+
+        if (submissions.size() > 1) {
+            log.debug("Multiple submissions found for transactionId: {}, selecting latest", transactionId);
+        }
+
+        // Create a map for quick lookup
+        Map<String, VPSubmission> submissionMap = submissions.stream()
+                .collect(java.util.stream.Collectors.toMap(VPSubmission::getRequestId, s -> s));
+
+        // Iterate explicitly through the prioritized requestIds to find the latest
+        // valid submission, avoiding race conditions where findAllById returns
+        // arbitrary order
+
+        VPSubmission submission = requestIds.stream()
+                .map(submissionMap::get)
+                .filter(Objects::nonNull)
                 .findFirst()
                 .orElseThrow(VPSubmissionNotFoundException::new);
 
-        if (submission.getError() != null && !submission.getError().isEmpty()) throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());
+        if (submission.getError() != null && !submission.getError().isEmpty())
+            throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());
 
         return submission;
     }
