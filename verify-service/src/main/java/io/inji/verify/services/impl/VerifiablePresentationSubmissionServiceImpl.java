@@ -39,7 +39,7 @@ import static io.inji.verify.utils.Utils.*;
 @Slf4j
 public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePresentationSubmissionService {
 
-    @Value("${inji.verify.claims-with-meta-deta}")
+    @Value("${inji.verify.claims-with-meta-data}")
     List<String> metaClaims;
 
     final VPSubmissionRepository vpSubmissionRepository;

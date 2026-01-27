@@ -32,7 +32,7 @@ import static io.inji.verify.utils.Utils.extractClaims;
 @Service
 public class VCVerificationServiceImpl implements VCVerificationService {
 
-    @Value("${inji.verify.claims-with-meta-deta}")
+    @Value("${inji.verify.claims-with-meta-data}")
     List<String> metaClaims;
 
     private final CredentialsVerifier credentialsVerifier;
