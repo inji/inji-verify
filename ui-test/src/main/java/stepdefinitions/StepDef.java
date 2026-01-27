@@ -2,6 +2,8 @@
 package stepdefinitions;
 
 import com.aventstack.extentreports.ExtentTest;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
@@ -27,6 +29,7 @@ import pages.ScanQRCodePage;
 import pages.UploadQRCode;
 import pages.VpVerification;
 import utils.BaseTest;
+import utils.BasePage;
 import java.util.Base64;
 import java.io.OutputStream;
 import java.time.LocalDate;
@@ -56,6 +59,7 @@ import javax.imageio.ImageIO;
 
 public class StepDef {
 
+	private static final Logger logger = LoggerFactory.getLogger(StepDef.class);
 	String pageTitle;
 	public WebDriver driver;
 	public BaseTest baseTest;
@@ -86,6 +90,15 @@ public class StepDef {
 
 	}
 	
+	// Helper method to replace Thread.sleep with configurable timeout
+	private void waitForConfiguredTimeout(long millis) {
+		try {
+			Thread.sleep(millis);
+		} catch (InterruptedException e) {
+			logger.error("Thread interrupted while waiting: {}", e.getMessage());
+			Thread.currentThread().interrupt();
+		}
+	}
 	
     public static void logFailure(ExtentTest test, WebDriver driver, String message, Exception e) {
         test.log(Status.FAIL, message + ": " + e.getMessage());
@@ -1830,13 +1843,9 @@ public class StepDef {
 	@Given("User search the issuers with {string}")
 	public void user_search_the_issuers_with(String string) {
 	    try {
-	        Thread.sleep(6000);
+	        waitForConfiguredTimeout(BasePage.getTimeout() * 2);
 	        homePage.enterIssuersInSearchBox(string);
 	        test.log(Status.PASS, "Successfully entered issuers: " + string + " in the search box.");
-	    } catch (InterruptedException e) {
-	        test.log(Status.FAIL, "Interrupted while waiting to enter issuers in search box: " + e.getMessage());
-	        Thread.currentThread().interrupt();
-	        throw new RuntimeException(e);
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while entering issuers in search box", e);
 	        throw e;
@@ -1849,13 +1858,9 @@ public class StepDef {
 	@When("User search the VC with {string}")
 	public void user_search_the_Vc_with(String string) {
 	    try {
-	        Thread.sleep(6000);
+	        waitForConfiguredTimeout(BasePage.getTimeout() * 2);
 	        vpverification.enterVcInSearchBox(string);
 	        test.log(Status.PASS, "Successfully entered VC: " + string + " in the search box.");
-	    } catch (InterruptedException e) {
-	        test.log(Status.FAIL, "Interrupted while waiting to enter VC in search box: " + e.getMessage());
-	        Thread.currentThread().interrupt(); // Restore interrupted state
-	        throw new RuntimeException(e);
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while entering VC in search box", e);
 	        throw e;
@@ -1871,11 +1876,11 @@ public class StepDef {
         try {
             String issuerText = System.getenv("Issuer_Text_sunbird");
             if (issuerText == null || issuerText.isEmpty()) {
-                String[] string = baseTest.fetchIssuerTexts();
-                issuerText = string[1];
+                String[] issuerTexts = BaseTest.fetchIssuerTexts();
+                issuerText = issuerTexts[1];
             }
             homePage.enterIssuersInSearchBox(issuerText);
-            Thread.sleep(6000);
+            waitForConfiguredTimeout(BasePage.getTimeout() * 2);
             test.log(Status.PASS, "Searched issuers with: " + issuerText);
         } catch (NoSuchElementException e) {
             test.log(Status.FAIL, "Element not found while searching issuers: " + e.getMessage());
@@ -1996,7 +2001,7 @@ public class StepDef {
     @Then("User enter the policy number")
     public void user_enter_the_policy_number() {
         try {
-            Thread.sleep(3000); // Consider using WebDriverWait instead of Thread.sleep for better efficiency.
+            waitForConfiguredTimeout(BasePage.getTimeout());
             homePage.enterPolicyNumer(policynumber);
             test.log(Status.PASS, "User successfully entered the policy number: " + policynumber);
         } catch (NoSuchElementException e) {
@@ -2004,11 +2009,6 @@ public class StepDef {
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
             ScreenshotUtil.attachScreenshot(driver, "FailureScreenshot");
             throw e;
-        } catch (InterruptedException e) {
-            test.log(Status.FAIL, "Thread was interrupted while waiting to enter the policy number: " + e.getMessage());
-            test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
-            Thread.currentThread().interrupt(); // Restore interrupted state
-            throw new RuntimeException(e);
         } catch (Exception e) {
             test.log(Status.FAIL, "Unexpected error while entering the policy number: " + e.getMessage());
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
@@ -2049,13 +2049,9 @@ public class StepDef {
 	@When("User enter the otp {string}")
 	public void user_enter_the_otp(String otpString) {
 	    try {
-	        Thread.sleep(3000);
+	        waitForConfiguredTimeout(BasePage.getTimeout());
 	        homePage.enterOtp(otpString);
 	        test.log(Status.PASS, "Successfully entered OTP: " + otpString);
-	    } catch (InterruptedException e) {
-	        test.log(Status.FAIL, "Interrupted while waiting to enter OTP: " + e.getMessage());
-	        Thread.currentThread().interrupt(); // Restore interrupted state
-	        throw new RuntimeException(e);
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while entering OTP", e);
 	        throw e;
@@ -2097,7 +2093,7 @@ public class StepDef {
 	@When("User verify pdf is downloaded")
 	public void user_verify_pdf_is_downloaded() throws IOException {
 	    try {
-	        Thread.sleep(10000);
+	        waitForConfiguredTimeout(BasePage.getTimeout() * 3);
 	        boolean fileExists = (boolean) baseTest.getJse().executeScript("browserstack_executor: {\"action\": \"fileExists\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
 	        assertTrue("PDF file 'InsuranceCredential.pdf' was not found on BrowserStack.", fileExists);
 	        test.log(Status.PASS, "PDF file 'InsuranceCredential.pdf' exists on BrowserStack."); 
@@ -2182,13 +2178,9 @@ public class StepDef {
 	@When("User enter the policy number {string}")
 	public void user_enter_the_policy_number(String string) {
 	    try {
-	        Thread.sleep(3000);
+	        waitForConfiguredTimeout(BasePage.getTimeout());
 	        homePage.enterPolicyNumer(string);
 	        test.log(Status.PASS, "Successfully entered policy number: " + string);
-	    } catch (InterruptedException e) {
-	        test.log(Status.FAIL, "Interrupted while waiting to enter policy number: " + e.getMessage());
-	        Thread.currentThread().interrupt(); // Restore interrupted state
-	        throw new RuntimeException(e);
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while entering policy number", e);
 	        throw e;
@@ -3036,13 +3028,9 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	@Then("User enter the credential type {string}")
 	public void user_enter_the_credential_type(String credentialType) {
 	    try {
-	        Thread.sleep(3000); 
+	        waitForConfiguredTimeout(BasePage.getTimeout());
 	        vpverification.enterCredentialType(credentialType);
 	        test.log(Status.PASS, "Successfully entered credential type: " + credentialType);
-	    } catch (InterruptedException e) {
-	        Thread.currentThread().interrupt(); // Restore interrupt status
-	        logFailure(test, driver, "Thread was interrupted while entering credential type", e);
-	        throw new RuntimeException(e);
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while entering credential type: " + credentialType, e);
 	        throw e;

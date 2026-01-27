@@ -1,6 +1,8 @@
 package pages;
 
 import java.util.List;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
@@ -11,10 +13,8 @@ import api.InjiVerifyConfigManager;
 
 import org.openqa.selenium.By;
 import org.openqa.selenium.JavascriptExecutor;
-import org.openqa.selenium.JavascriptException;
 import java.util.Set;
 import org.openqa.selenium.Keys;
-import org.openqa.selenium.NoSuchElementException;
 
 
 
@@ -23,8 +23,8 @@ import utils.WaitUtil;
 
 public class HomePage extends BasePage {
 
+    private static final Logger logger = LoggerFactory.getLogger(HomePage.class);
     private static final String stayProtectedIssuer = InjiVerifyConfigManager.getproperty("stayProtectedIssuer");
-    private static final String stayProtectedIssuerCredentialType = InjiVerifyConfigManager.getproperty("stayProtectedIssuerCredentialType");
 
 	public HomePage(WebDriver driver) {
 		super(driver);
@@ -344,19 +344,20 @@ public class HomePage extends BasePage {
 
 	public Boolean isMosipNationalIdDisplayed() {
 		try {
-			Thread.sleep(2000);
+			Thread.sleep((getTimeout() * 1000) / 15);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			logger.error("Thread interrupted during wait: {}", e.getMessage());
+			Thread.currentThread().interrupt();
 		}
 		return isElementIsVisible(driver, isMosipNationalId);
 	}
 
 	public void clickOnMosipNationalId() {
 		try {
-			Thread.sleep(2000);
+			Thread.sleep((getTimeout() * 1000) / 15);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Thread interrupted during wait: {}", e.getMessage());
+			Thread.currentThread().interrupt();
 		}
 		clickOnElement(driver, isMosipNationalId);
 	}
@@ -370,10 +371,10 @@ public class HomePage extends BasePage {
 
 	public void clickOnOnProceed() {
 		try {
-			Thread.sleep(2000);
+			Thread.sleep((getTimeout() * 1000) / 15);
 		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			logger.error("Thread interrupted during wait: {}", e.getMessage());
+			Thread.currentThread().interrupt();
 		}
 		clickOnElement(driver, getOnOnProceed);
 	}
@@ -387,8 +388,10 @@ public class HomePage extends BasePage {
 	}
 	public void enterOtp( String otpString) {
 		try {
-			Thread.sleep(3000);
+			Thread.sleep((getTimeout() * 1000) / 10);
 		} catch (InterruptedException e) {
+			logger.error("Thread interrupted while waiting to enter OTP: {}", e.getMessage());
+			Thread.currentThread().interrupt();
 			throw new RuntimeException(e);
 		}
 		for (int i = 0; i < otpString.length(); i++) {
@@ -407,11 +410,11 @@ public class HomePage extends BasePage {
 
 	    while (retryCount < 2) {
 	        try {
-	            Thread.sleep(9000);
-	        } catch (InterruptedException e) {
-	            e.printStackTrace();
-	        }
-
+                Thread.sleep((getTimeout() * 1000) / 3);
+            } catch (InterruptedException e) {
+                logger.error("Thread interrupted during wait: {}", e.getMessage());
+                Thread.currentThread().interrupt();
+            }
 	        message = getText(driver, succsessMessage);
 	        if ("Success!".equalsIgnoreCase(message.trim())) {
 	            break;
@@ -468,10 +471,10 @@ public class HomePage extends BasePage {
         driver.findElement(By.xpath("//input[@id='_form_fullName']")).sendKeys(Keys.TAB);
         driver.findElement(By.id("_form_dob")).sendKeys(string);
         try {
-            Thread.sleep(2000);
+            Thread.sleep((getTimeout() * 1000) / 15);
         } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            logger.error("Thread interrupted during wait: {}", e.getMessage());
+            Thread.currentThread().interrupt();
         }
     }
 

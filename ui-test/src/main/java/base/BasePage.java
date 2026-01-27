@@ -55,7 +55,7 @@ public class BasePage {
                 logger.error("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
                 attempts++;
                 try {
-                    Thread.sleep(900);
+                    Thread.sleep((getTimeout() * 1000) / 33);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     return false;
@@ -74,14 +74,14 @@ public class BasePage {
 
         while (attempts < maxRetries) {
             try {
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(getTimeout() * 4)); // scaling for idle
+                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(getTimeout() * 4));
                 wait.until(ExpectedConditions.visibilityOf(element));
                 return element.isDisplayed();
             } catch (StaleElementReferenceException e) {
                 logger.error("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
                 attempts++;
                 try {
-                    Thread.sleep(900);
+                    Thread.sleep((getTimeout() * 1000) / 33);
                 } catch (InterruptedException ie) {
                     Thread.currentThread().interrupt();
                     return false;
@@ -141,7 +141,7 @@ public class BasePage {
                 return;
             } catch (StaleElementReferenceException e) {
                 logger.error("⚠️ Caught stale element exception, retrying...");
-                try { Thread.sleep(1000); } catch (InterruptedException ie) {
+                try { Thread.sleep((getTimeout() * 1000) / 30); } catch (InterruptedException ie) {
                 Thread.currentThread().interrupt();
                 }
             }
@@ -178,7 +178,7 @@ public class BasePage {
                 return;
             } catch (StaleElementReferenceException e) {
                 logger.error("⚠️ Caught stale element exception, retrying...");
-                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
+                try { Thread.sleep((getTimeout() * 1000) / 30); } catch (InterruptedException ignored) {}
             }
         }
 

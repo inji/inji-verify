@@ -247,10 +247,14 @@ public class BaseTest {
 		executeLsCommand(System.getProperty("user.dir") + "/utils/");
 		executeLsCommand(System.getProperty("user.dir") + "/screenshots/");
 
+		// Wait for report file to be completely written before processing
+		long timeout = Long.parseLong(System.getProperty("explicitWaitTimeout", "30"));
+		long waitMillis = timeout * 1000 * 2; // Multiply by 2 for file processing
 		try {
-			Thread.sleep(20000);
+			Thread.sleep(waitMillis);
 		} catch (InterruptedException e) {
-			e.printStackTrace();
+			logger.error("Interrupted while waiting for report processing: {}", e.getMessage());
+			Thread.currentThread().interrupt();
 		}
 
 		executeLsCommand(System.getProperty("user.dir") + "/test-output/");
