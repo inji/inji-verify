@@ -19,6 +19,7 @@ import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
+import io.mosip.pixelpass.PixelPass;
 import io.inji.verify.utils.Utils;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.*;
@@ -59,10 +60,13 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     @InjectMocks
     private VerifiablePresentationSubmissionServiceImpl verifiablePresentationSubmissionService;
 
+    @Mock
+    private PixelPass pixelPass;
+
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        verifiablePresentationSubmissionService = new VerifiablePresentationSubmissionServiceImpl(vpSubmissionRepository, credentialsVerifier, presentationVerifier, verifiablePresentationRequestService, vcVerificationService);
+        verifiablePresentationSubmissionService = new VerifiablePresentationSubmissionServiceImpl(vpSubmissionRepository, credentialsVerifier, presentationVerifier, verifiablePresentationRequestService, vcVerificationService, pixelPass);
     }
 
     @Test
@@ -900,7 +904,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             utilsMock.when(() -> Utils.populateAllChecksSuccessful(any(), any(), any(), any())).thenCallRealMethod();
 
             Map<String, Object> expectedClaims = Map.of("name", "John Doe", "email", "john@example.com");
-            utilsMock.when(() -> Utils.extractClaims(eq(vpToken), any(), any()))
+            utilsMock.when(() -> Utils.extractClaims(eq(vpToken), any(), any(), any()))
                     .thenReturn(expectedClaims);
             VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId);
             List<CredentialResultsDto> credentialResults = result.getCredentialResults();

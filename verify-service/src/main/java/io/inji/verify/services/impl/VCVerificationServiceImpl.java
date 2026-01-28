@@ -10,6 +10,7 @@ import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.services.VCVerificationService;
 import io.inji.verify.shared.Constants;
 import io.inji.verify.utils.Utils;
+import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
@@ -31,13 +32,15 @@ import static io.inji.verify.utils.Utils.extractClaims;
 @Service
 public class VCVerificationServiceImpl implements VCVerificationService {
 
-    @Value("${inji.verify.meta-claims}")
-    List<String> metaClaims;
+    @Value("${inji.verify.claims-with-meta-data}")
+    List<String> claimsWithMetaData;
 
     private final CredentialsVerifier credentialsVerifier;
+    private final PixelPass pixelPass;
 
-    public VCVerificationServiceImpl(CredentialsVerifier credentialsVerifier) {
+    public VCVerificationServiceImpl(CredentialsVerifier credentialsVerifier, PixelPass pixelPass) {
         this.credentialsVerifier = credentialsVerifier;
+        this.pixelPass = pixelPass;
     }
 
     @Override
@@ -87,7 +90,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         if (schemaAndSignatureCheck.isValid()) {
             expiryCheck = populateExpiryCheck(verificationResult);
             statusCheck = (!skipStatusChecks) ? populateStatusCheckDtoList(credentialStatus) : List.of();
-            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format, metaClaims) : Map.of();
+            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format, claimsWithMetaData, pixelPass) : Map.of();
         }
 
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);
