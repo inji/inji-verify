@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "ba140b4e-78ab-4402-9299-3d0325c52909",
+    "_postman_id": "06f4066f-0282-47f0-a449-af3b8afe5873",
     "name": "Inji_Verify_Postman_Collection",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "47128896"
@@ -74,6 +74,49 @@
             "body": {
               "mode": "raw",
               "raw": "eyJ0eXAiOiJ2YytzZC1qd3QiLCJhbGciOiJFUzI1NiIsIng1YyI6WyJNSUlCNVRDQ0FZdWdBd0lCQWdJUUdVZEYwa0JpUUdEYXdwKzBkQlNTNWpBS0JnZ3Foa2pPUFFRREFqQWRNUTR3REFZRFZRUURFd1ZCYm1sdGJ6RUxNQWtHQTFVRUJoTUNUa3d3SGhjTk1qVXdOREV5TVRReU16TXdXaGNOTWpZd05UQXlNVFF5TXpNd1dqQWhNUkl3RUFZRFZRUURFd2xqY21Wa2J5QmtZM014Q3pBSkJnTlZCQVlUQWs1TU1Ga3dFd1lIS29aSXpqMENBUVlJS29aSXpqMERBUWNEUWdBRUZYVk5BMGxhYSs1UDJuazVQSkZvdjh4aEJGTno1VU9KQklWc3lrMFNLU2ZxVGZLTUI2UitjRkROaWpkbUJZeXVFYVVnTWd1VWM4aE9Wbm5yZVc5dGhLT0JxRENCcFRBZEJnTlZIUTRFRmdRVVlSOHZGUVRsa2pmMS9ObktlWnh2WTBaejNhQXdEZ1lEVlIwUEFRSC9CQVFEQWdlQU1CVUdBMVVkSlFFQi93UUxNQWtHQnlpQmpGMEZBUUl3SHdZRFZSMGpCQmd3Rm9BVUw5OHdhTll2OVFueElIYjVDRmd4anZaVXRVc3dJUVlEVlIwU0JCb3dHSVlXYUhSMGNITTZMeTltZFc1clpTNWhibWx0Ynk1cFpEQVpCZ05WSFJFRUVqQVFnZzVtZFc1clpTNWhibWx0Ynk1cFpEQUtCZ2dxaGtqT1BRUURBZ05JQURCRkFpQkJ3ZFMvY0ZCczNhd3RmUDlHRlZrZ1NPSVRRZFBCTUxoc0pCeWpnN2wyTFFJaEFQUUpXeTdxUXNmcTJHcmRwY0dYSHJEVkswdy9YblBGMlhBVDZyVFg4dUNQIiwiTUlJQnp6Q0NBWFdnQXdJQkFnSVFWd0FGb2xXUWltOTRnbXlDaWMzYkNUQUtCZ2dxaGtqT1BRUURBakFkTVE0d0RBWURWUVFERXdWQmJtbHRiekVMTUFrR0ExVUVCaE1DVGt3d0hoY05NalF3TlRBeU1UUXlNek13V2hjTk1qZ3dOVEF5TVRReU16TXdXakFkTVE0d0RBWURWUVFERXdWQmJtbHRiekVMTUFrR0ExVUVCaE1DVGt3d1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFRQy9ZeUJwY1JRWDhaWHBIZnJhMVROZFNiUzdxemdIWUhKM21zYklyOFRKTFBOWkk4VWw4ekpsRmRRVklWbHM1KzVDbENiTitKOUZVdmhQR3M0QXpBK280R1dNSUdUTUIwR0ExVWREZ1FXQkJRdjN6Qm8xaS8xQ2ZFZ2R2a0lXREdPOWxTMVN6QU9CZ05WSFE4QkFmOEVCQU1DQVFZd0lRWURWUjBTQkJvd0dJWVdhSFIwY0hNNkx5OW1kVzVyWlM1aGJtbHRieTVwWkRBU0JnTlZIUk1CQWY4RUNEQUdBUUgvQWdFQU1Dc0dBMVVkSHdRa01DSXdJS0Flb0J5R0dtaDBkSEJ6T2k4dlpuVnVhMlV1WVc1cGJXOHVhV1F2WTNKc01Bb0dDQ3FHU000OUJBTUNBMGdBTUVVQ0lRQ1RnODBBbXFWSEpMYVp0MnV1aEF0UHFLSVhhZlAyZ2h0ZDlPQ21kRDUxWndJZ0t2VmtyZ1RZbHhTUkFibUtZNk1sa0g4bU0zU05jbkVKazlmR1Z3SkcrKzA9Il19.eyJjcmVkZW50aWFsX3R5cGUiOiJNU0lTRE4iLCJuYmYiOjE3NTI5ODQ3MzcsImV4cCI6MTc4NTM4NDczNywidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkubXNpc2RuLjEiLCJjbmYiOnsia2lkIjoiZGlkOmp3azpleUpyZEhraU9pSkZReUlzSW1OeWRpSTZJbEF0TWpVMklpd2llQ0k2SWxKUk5XSkRiMngzUkZKV1pHUjRhbkk1TFUweUxVNUtPRVZ1TjFwSE1tTXpVbkZzVTJKVVR6TlJUMFVpTENKNUlqb2lZVlpFVVZkak5TMUJZbmhIYmxoV2JYRk1WMkphWmpGR1ZsWjFOVEF5TW0xaGFHdHpSVTh3VTJSZmR5SXNJblZ6WlNJNkluTnBaeUo5IzAifSwiaXNzIjoiaHR0cHM6Ly9mdW5rZS5hbmltby5pZCIsImlhdCI6MTc1Mzk0MjUyNywiX3NkIjpbIjI5SXE0b29UNzhGMkI1bFI1RzhGSGhGWWJKWmlER29vRHEySUpicFpCVG8iLCIzZVNTOEtZcUZzQVVHZVhIVWhwU21qd1k2TG5XaVJCMTVXYXRLY0ZTNzhJIiwiNE9mZGdDalZPUTJMbzhESXpTUEpodVVWT25yWGhjX1dkTGpCZDcwRGJFUSIsIkFwMWVweTdtVThiRkdrNXZkWXdlMjZma2pUY2taaW1uMDlncFlSR25XY3ciLCJEU0NWZHY3WklSOEZNNTR4c05MVlZqYndJc0JjcE9EUllHRTlCOTFra19RIiwiRnMwbGVHT0VMUU85ejhYblZsbVJTdXRUX0d3dDRTOWNubUJLcDF4TnRyQSIsIlFTbjl3dUx3LUJKY3VLRF9URHl0NGcyZlR4LU1KcmNyVzM0bVpKdHhtc0kiLCJfZDkyZVNKcW9FemdhQlctcFU2NUY2N3FOUno2Y2owRkJObDJYcTFmRWdFIiwia3VwOXhVUjZYMDZ5X3RiVVBPTzJ4VWxiWHJReG1qalRiVE9zMktYUUM4YyIsInBIYmh1eWxJbkZnaGtPY3hqcHVKb0o0S0hITUhfT2JSOWxYX0ZUa2Vmb2ciLCJ4YW1wZmJkRHJfd05LUllKN1F6NlAxZEZJcGJvMTJFdHRfZkMzYko4MDFvIl0sIl9zZF9hbGciOiJzaGEtMjU2In0.pf3MHMEAma64_-8mfmPdLCNzgzz5K0_EianTPd5IUzMlkXhB1v4NtQmRiARlLvTd9kkUChhW4lascAkW8TOnSA~WyI4NzY3MzA2NTE3OTE1MTMzMTI2NDI5MTUiLCJwaG9uZV9udW1iZXIiLCI0OTE1MTEyMzQ1NjciXQ~WyIyNzgzODk0ODU5Mjc2ODY0NTY1NjkxNzUiLCJyZWdpc3RlcmVkX2ZhbWlseV9uYW1lIiwiTXVzdGVybWFuIl0~WyI5Njk4OTYzODY5MDAwMTE3MzM0MTE0NDQiLCJyZWdpc3RlcmVkX2dpdmVuX25hbWUiLCJKb2huIE1pY2hhZWwiXQ~WyIxMDE3NzAzNzY5OTU2Mzc0MjI4NTIwMDQ4IiwiY29udHJhY3Rfb3duZXIiLHRydWVd~WyIxMTcwMTg2ODQ0MTkyNTczMzQyOTYyNDg5IiwiZW5kX3VzZXIiLGZhbHNlXQ~WyI0MzI1MjkxNDE2MzczOTU0MzgxNDM5NTUiLCJtb2JpbGVfb3BlcmF0b3IiLCJUZWxla29tX0RFIl0~WyI2ODA1NjkyNDQ3MTA1NjQ3ODc1ODQxNzUiLCJpc3N1aW5nX29yZ2FuaXphdGlvbiIsIlRlbE9yZyJd~WyI5MzE5ODU3NzkxNTk0Njc0ODE2NTg4ODciLCJ2ZXJpZmljYXRpb25fZGF0ZSIsIjIwMjMtMDgtMjUiXQ~WyI2MTkxMTk5NjI3Mzg2MDQ5MjI4ODkwMjEiLCJ2ZXJpZmljYXRpb25fbWV0aG9kX2luZm9ybWF0aW9uIiwiTnVtYmVyVmVyaWZ5Il0~WyIzNzM2NzUzNDQwNDA1ODI4Mzc2MTE0MjQiLCJpc3N1YW5jZV9kYXRlIiwiMjAyNS0wNy0yMFQwNDoxMjoxNy4wODlaIl0~WyI1NjU0NDMyNzk2MjEwMjQ2ODk0NjQ3MDgiLCJleHBpcnlfZGF0ZSIsIjIwMjYtMDctMzBUMDQ6MTI6MTcuMDg5WiJd~",
+              "options": {
+                "raw": {
+                  "language": "text"
+                }
+              }
+            },
+            "url": {
+              "raw": "https://{{base_url}}/v1/verify/vc-verification",
+              "protocol": "https",
+              "host": [
+                "{{base_url}}"
+              ],
+              "path": [
+                "v1",
+                "verify",
+                "vc-verification"
+              ]
+            }
+          },
+          "response": []
+        },
+        {
+          "name": "cwt vc",
+          "protocolProfileBehavior": {
+            "disabledSystemHeaders": {
+              "content-type": true
+            }
+          },
+          "request": {
+            "auth": {
+              "type": "noauth"
+            },
+            "method": "POST",
+            "header": [
+              {
+                "key": "Content-Type",
+                "value": "application/vc+cwt",
+                "type": "text"
+              }
+            ],
+            "body": {
+              "mode": "raw",
+              "raw": "d83dd2845831a2012604582b4b52394b495f493864433365635a4f77766e37795f46544b734a73444d6b6961576b6d74626c425f71776ba05870a501783168747470733a2f2f696e6a69636572746966792d6661726d65722e6465762d696e742d696e6a692e6d6f7369702e6e6574041a6a5b151b051a696dc71b061a696dc71b18a95825a3046a4d61727920536d697468086a313938352d31312d31320c6a38373635343332313039584056e3b7da2333e716b7e9317b4f3f4c7459343ff830aafb847349150ec7ed5bc76ed6a65e46cc737b738e4195eb6594fbb9a77f9064b699e0eb6122a097dd2a78",
               "options": {
                 "raw": {
                   "language": "text"
@@ -1087,123 +1130,6 @@
                             {
                               "key": "vp_token",
                               "value": "eyJhbGciOiJFUzI1NiIsInR5cCI6InZjK3NkLWp3dCIsIng1YyI6WyJNSUlCSkRDQnlxQURBZ0VDQWhSNE5xOStNUjVyTFZFS242U1FSd0daRHh3SWpUQUtCZ2dxaGtqT1BRUURBakFTTVJBd0RnWURWUVFEREFkRlExOVVaWE4wTUI0WERUSTFNRGt3TXpFd01qVXhPVm9YRFRJMU1Ea3dNekV3TWpreE9Wb3dFakVRTUE0R0ExVUVBd3dIUlVOZlZHVnpkREJaTUJNR0J5cUdTTTQ5QWdFR0NDcUdTTTQ5QXdFSEEwSUFCTXJvelh2R2tuZm5SRnFDMG8vcWRwK3Zpd1lvT2drVmRRZkpuWFZMMlJjYUFHL0dOSEVYMkxPVWxJY3JtVDZNS1o4WkhFWXdWMU9tUTB5OUNOd0ViRlF3Q2dZSUtvWkl6ajBFQXdJRFNRQXdSZ0loQU9VSjkvTXdJUGVvYnJMRERhT2pLQkVuSDJoTjVTekY4dnRmOTBVZTY5NHJBaUVBeFFXeGo5dUt1MlliK2pDYk03a0lxaFcrNkNVYWk5WGNLWG9MdFNwanJEYz0iXX0.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiYWRtaW4iOnRydWUsImlhdCI6MTY5MDAwMDAwMCwiaWQiOiIxMjM0IiwidmN0IjoiVGVzdENyZWRlbnRpYWxfU0RfSldUIiwiX3NkIjpbImJEVFJ2bTUtWW4tSEc3Y3FwVlI1T1ZSSVhzU2FCazU3SmdpT3FfajFWSTQiLCJldDNVZlJ5bHdWcmZYZFBLemc3OWhjakQxSXR6b1E5b0JvWFJHdE1vc0ZrIiwieldmWk5TMTlBdGJSU1RibzdzSlJuMEJaUXZXUmRjaG9DN1VaYWJGcmpZOCJdLCJfc2RfYWxnIjoic2hhLTI1NiIsImlzcyI6Imh0dHBzOi8vaXNzdWVyLmV4YW1wbGUuY29tIiwibmJmIjoxNjkwMDAzNjAwLCJleHAiOjE2OTAwODAwMDB9.P5tm14I5pja6G0spZQ07HbYBZwGZCeNH86VqyfRrWYgZrx5fv75ndJdiCEV-Mvj84p8ZWLFgeY5uPoS_ypT17A~",
-                              "type": "text"
-                            },
-                            {
-                              "key": "state",
-                              "value": "{{reqIdForOpenID4VP}}",
-                              "type": "text"
-                            },
-                            {
-                              "key": "presentation_submission",
-                              "value": "{ \"id\": \"a30e3b91-fb77-4d22-95fa-871689c322e2\",\n    \"definition_id\": \"32f54163-7166-48f1-93d8-ff217bdb0653\",\n    \"descriptor_map\": [\n      {\n        \"id\": \"citizenship_input_1\",\n        \"format\": \"ldp_vc\",\n        \"path\": \"$.verifiableCredential[2]\"\n      }\n    ]\n  }",
-                              "type": "text"
-                            },
-                            {
-                              "key": "error",
-                              "value": "Invalid_Request",
-                              "type": "text",
-                              "disabled": true
-                            },
-                            {
-                              "key": "error_description",
-                              "value": "User denied authorization to share credentials",
-                              "type": "text",
-                              "disabled": true
-                            }
-                          ]
-                        },
-                        "url": {
-                          "raw": "https://{{base_url}}/v1/verify/vp-submission/direct-post",
-                          "protocol": "https",
-                          "host": [
-                            "{{base_url}}"
-                          ],
-                          "path": [
-                            "v1",
-                            "verify",
-                            "vp-submission",
-                            "direct-post"
-                          ]
-                        }
-                      },
-                      "response": []
-                    }
-                  ]
-                },
-                {
-                  "name": "cwt",
-                  "item": [
-                    {
-                      "name": "vp submission valid signature",
-                      "request": {
-                        "auth": {
-                          "type": "noauth"
-                        },
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                          "mode": "urlencoded",
-                          "urlencoded": [
-                            {
-                              "key": "vp_token",
-                              "value": "d83dd2845831a2012604582b4b52394b495f493864433365635a4f77766e37795f46544b734a73444d6b6961576b6d74626c425f71776ba05870a501783168747470733a2f2f696e6a69636572746966792d6661726d65722e6465762d696e742d696e6a692e6d6f7369702e6e6574041a6a5b151b051a696dc71b061a696dc71b18a95825a3046a4d61727920536d697468086a313938352d31312d31320c6a38373635343332313039584056e3b7da2333e716b7e9317b4f3f4c7459343ff830aafb847349150ec7ed5bc76ed6a65e46cc737b738e4195eb6594fbb9a77f9064b699e0eb6122a097dd2a78",
-                              "type": "text"
-                            },
-                            {
-                              "key": "state",
-                              "value": "{{reqIdForOpenID4VP}}",
-                              "type": "text"
-                            },
-                            {
-                              "key": "presentation_submission",
-                              "value": "{ \"id\": \"a30e3b91-fb77-4d22-95fa-871689c322e2\",\n    \"definition_id\": \"32f54163-7166-48f1-93d8-ff217bdb0653\",\n    \"descriptor_map\": [\n      {\n        \"id\": \"citizenship_input_1\",\n        \"format\": \"ldp_vc\",\n        \"path\": \"$.verifiableCredential[2]\"\n      }\n    ]\n  }",
-                              "type": "text"
-                            },
-                            {
-                              "key": "error",
-                              "value": "Invalid_Request",
-                              "type": "text",
-                              "disabled": true
-                            },
-                            {
-                              "key": "error_description",
-                              "value": "User denied authorization to share credentials",
-                              "type": "text",
-                              "disabled": true
-                            }
-                          ]
-                        },
-                        "url": {
-                          "raw": "https://{{base_url}}/v1/verify/vp-submission/direct-post",
-                          "protocol": "https",
-                          "host": [
-                            "{{base_url}}"
-                          ],
-                          "path": [
-                            "v1",
-                            "verify",
-                            "vp-submission",
-                            "direct-post"
-                          ]
-                        }
-                      },
-                      "response": []
-                    },
-                    {
-                      "name": "vp submission invalid signature",
-                      "request": {
-                        "auth": {
-                          "type": "noauth"
-                        },
-                        "method": "POST",
-                        "header": [],
-                        "body": {
-                          "mode": "urlencoded",
-                          "urlencoded": [
-                            {
-                              "key": "vp_token",
-                              "value": "d83dd2845833a20139010004582b596d427779565435346f4e4530496d596a7a714e396b375073685a544165456e674a4d6942754d61594f67a058efa501782e68747470733a2f2f6561616264373830643733382e6e67726f6b2d667265652e6170702f76312f63657274696679041a6a5508bd051a6967babd061a6967babd18a958a7ac016a33393138353932343338020a046c4a616e61726468616e204253086a30342d31382d3139383409010a78294e657720486f7573652c204e656172204d6574726f204c696e652c2042656e67616c7572752c204b410b756a616e61726468616e406578616d706c652e636f6d0c6d2b3931393837363534333231300d62494e183ea3006435323439010002001841a3006435323439010202006568656c6c6f65776f726c64590100896a500faf13493a4e04e14740d2ab796cb7d350ede9b0e7ecf156ce54fa5ddbeeb73388e38554b7a6b9f6007443870c072b3096c71409db6e0c5cc43b06448b9a1bf1ff091b2e8b53c96a3f0bff76bd059b6f2f3c333f8cc524172fe452f17bc391a1de37779b736d36294401a53892187b31f4a5f3d3cb92778eb31c7823d9610dafc195c006414f2164f533e268e650953e30af780b21d388036bacbe7a452be8648166f2b7dfada4672e298c29aeaa61a53e83aa522bbd2b3c0de85766395ac3e33756967f2025c11c615ac983bd6c13e458d2e464bc56ecf033716f8033b9e4ac62d9b34837042fbed27d2c570887e16734d7a5154b1adcf9f9bcba77ab",
                               "type": "text"
                             },
                             {
