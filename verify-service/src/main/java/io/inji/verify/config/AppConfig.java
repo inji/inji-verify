@@ -20,7 +20,9 @@ public class AppConfig {
     }
 
     @Bean
-    public PixelPass pixelPass() { return new PixelPass(); }
+    public PixelPass pixelPass() {
+        return new PixelPass();
+    }
 
     @Bean
     public Gson Gson() {
