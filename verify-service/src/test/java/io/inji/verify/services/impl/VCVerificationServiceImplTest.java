@@ -377,5 +377,71 @@ public class VCVerificationServiceImplTest {
                 assertTrue(result.getClaims().isEmpty());
             }
         }
+
+        @Test
+        void verifyV2_success_shouldReturnExtractedClaims_forCwt() {
+            VCVerificationRequestDto request = new VCVerificationRequestDto(TEST_CWT_VC_STRING);
+            request.setSkipStatusChecks(true);
+            request.setIncludeClaims(true);
+
+            Map<String, Object> expectedClaims =
+                    Map.of("VID", 9876543210L, "email", "siddhartha.km@gmail.com");
+
+            VerificationResult verificationResult = mock(VerificationResult.class);
+            when(verificationResult.getVerificationStatus()).thenReturn(true);
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class)))
+                    .thenReturn(verificationResult);
+
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+
+                utilsMock.when(() -> Utils.getCredentialFormat(TEST_CWT_VC_STRING))
+                        .thenReturn(CredentialFormat.CWT_VC);
+
+                utilsMock.when(() -> Utils.populateSchemaAndSignature(any()))
+                        .thenReturn(new SchemaAndSignatureCheckDto(true, null));
+
+                utilsMock.when(() -> Utils.populateExpiryCheck(any()))
+                        .thenReturn(new ExpiryCheckDto(true));
+
+                utilsMock.when(() -> Utils.populateAllChecksSuccessful(any(), any(), any(), any()))
+                        .thenCallRealMethod();
+
+                utilsMock.when(() ->
+                                Utils.extractClaims(anyString(), any(), any(), any()))
+                        .thenReturn(expectedClaims);
+
+                VCVerificationResultDto result = service.verifyV2(request);
+
+                assertFalse(result.getClaims().isEmpty());
+                assertEquals(9876543210L, result.getClaims().get("VID"));
+                assertEquals("siddhartha.km@gmail.com", result.getClaims().get("email"));
+            }
+        }
+
+        @Test
+        void verifyV2_success_shouldNotIncludeClaims_forCwt_whenFlagIsFalse() {
+            VCVerificationRequestDto request = new VCVerificationRequestDto(TEST_CWT_VC_STRING);
+            request.setIncludeClaims(false);
+            request.setSkipStatusChecks(true);
+
+            VerificationResult verificationResult = mock(VerificationResult.class);
+            when(verificationResult.getVerificationStatus()).thenReturn(true);
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class)))
+                    .thenReturn(verificationResult);
+
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+
+                utilsMock.when(() -> Utils.getCredentialFormat(TEST_CWT_VC_STRING))
+                        .thenReturn(CredentialFormat.CWT_VC);
+
+                utilsMock.when(() -> Utils.populateSchemaAndSignature(any()))
+                        .thenReturn(new SchemaAndSignatureCheckDto(true, null));
+
+                VCVerificationResultDto result = service.verifyV2(request);
+
+                assertTrue(result.getClaims().isEmpty());
+            }
+        }
+
     }
 }

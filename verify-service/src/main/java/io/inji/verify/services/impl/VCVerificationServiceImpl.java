@@ -33,7 +33,7 @@ import static io.inji.verify.utils.Utils.extractClaims;
 public class VCVerificationServiceImpl implements VCVerificationService {
 
     @Value("${inji.verify.claims-with-meta-data}")
-    List<String> metaClaims;
+    List<String> claimsWithMetaData;
 
     private final CredentialsVerifier credentialsVerifier;
     private final PixelPass pixelPass;
@@ -90,7 +90,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         if (schemaAndSignatureCheck.isValid()) {
             expiryCheck = populateExpiryCheck(verificationResult);
             statusCheck = (!skipStatusChecks) ? populateStatusCheckDtoList(credentialStatus) : List.of();
-            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format, metaClaims, pixelPass) : Map.of();
+            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format, claimsWithMetaData, pixelPass) : Map.of();
         }
 
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);

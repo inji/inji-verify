@@ -40,7 +40,7 @@ import static io.inji.verify.utils.Utils.*;
 public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePresentationSubmissionService {
 
     @Value("${inji.verify.claims-with-meta-data}")
-    List<String> metaClaims;
+    List<String> claimsWithMetaData;
 
     final VPSubmissionRepository vpSubmissionRepository;
     final CredentialsVerifier credentialsVerifier;
@@ -197,7 +197,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             ExpiryCheckDto expiryCheckDto =
                     (credentialResultsDto.getSchemaAndSignatureCheck().isValid()) ? populateExpiryCheck(vcResWithStatus.getVerificationResult()) : null;
             Map<String, Object> claims =
-                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcResWithStatus.getVc(), CredentialFormat.LDP_VC, metaClaims, pixelPass) : Map.of();
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcResWithStatus.getVc(), CredentialFormat.LDP_VC, claimsWithMetaData, pixelPass) : Map.of();
             credentialResultsDto.setExpiryCheck(expiryCheckDto);
             credentialResultsDto.setClaims(claims);
             credentialResultsDto.setStatusCheck(populateStatusCheckDtoList(vcResWithStatus.getCredentialStatus()));
@@ -219,7 +219,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             ExpiryCheckDto expiryCheckDto =
                     (credentialResultsDto.getSchemaAndSignatureCheck().isValid()) ? populateExpiryCheck(vcRes.getVerificationResult()) : null;
             Map<String, Object> claims =
-                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcRes.getVc(), CredentialFormat.LDP_VC, metaClaims, pixelPass) : Map.of();
+                    (credentialResultsDto.getSchemaAndSignatureCheck().isValid() && request.isIncludeClaims()) ? extractClaims(vcRes.getVc(), CredentialFormat.LDP_VC, claimsWithMetaData, pixelPass) : Map.of();
             credentialResultsDto.setExpiryCheck(expiryCheckDto);
             credentialResultsDto.setClaims(claims);
             boolean allChecksSuccessful = populateAllChecksSuccessful(credentialResultsDto.getSchemaAndSignatureCheck(), credentialResultsDto.getExpiryCheck(), credentialResultsDto.getStatusCheck(), credentialResultsDto.getHolderProofCheck());

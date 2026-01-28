@@ -42,16 +42,6 @@ import static io.ipfs.multibase.Base16.bytesToHex;
 @Component
 public final class Utils {
 
-    public static final Map<String, String> CWT_CLAIM_MAPPER = Map.of(
-            "1", "iss",
-            "2", "sub",
-            "3", "aud",
-            "4", "exp",
-            "5", "nbf",
-            "6", "iat",
-            "7", "cti"
-    );
-
     private static final Set<String> VALID_SD_JWT_TYPES = Set.of("vc+sd-jwt", "dc+sd-jwt");
 
     public static String generateID(String prefix) {
@@ -296,25 +286,11 @@ public final class Utils {
                 String claim169Hex = bytesToHex(decodedClaim169.EncodeToBytes());
                 String decodedClaim169Json = pixelPass.decodeMappedData(claim169Hex);
 
-                claims.Remove(CBORObject.FromObject(169));
-
                 finalClaimsJson = new JSONObject(decodedClaim169Json);
             } else {
                 finalClaimsJson = new JSONObject();
             }
 
-            String decodedClaimsJson = pixelPass.decodeMappedData(
-                    bytesToHex(claims.EncodeToBytes()),
-                    CWT_CLAIM_MAPPER
-            );
-
-            JSONObject baseClaimsJson = new JSONObject(decodedClaimsJson);
-
-            baseClaimsJson.keys().forEachRemaining(key -> {
-                if (!finalClaimsJson.has(key)) {
-                    finalClaimsJson.put(key, baseClaimsJson.get(key));
-                }
-            });
             Map<String, Object> finalClaimsMap = finalClaimsJson.toMap();
             excludeMetaClaims(metaClaims, finalClaimsMap);
             return finalClaimsMap;
