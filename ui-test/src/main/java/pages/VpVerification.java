@@ -1,7 +1,9 @@
 package pages;
 
 import org.openqa.selenium.By;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebDriver;
+import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
@@ -180,14 +182,15 @@ public class VpVerification extends BasePage {
 					+ "if(copyright) { copyright.style.display = 'none'; }");
 
 			// Wait a bit for the viewport changes to take effect
-		Thread.sleep((getTimeout() * 1000) / 60);
+			Thread.sleep(500);
 
-		// Scroll the button into view
-		((JavascriptExecutor) driver).executeScript(
-				"arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", verifiableCredentialsButton);
+			// Scroll the button into view
+			((JavascriptExecutor) driver).executeScript(
+					"arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", verifiableCredentialsButton);
 
-		// Wait for scroll
-		Thread.sleep((getTimeout() * 1000) / 60);
+			// Wait for scroll
+			Thread.sleep(500);
+
 			// Click the button
 			((JavascriptExecutor) driver).executeScript("arguments[0].click();", verifiableCredentialsButton);
 
