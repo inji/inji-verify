@@ -3,6 +3,11 @@ package io.inji.verify.utils;
 import com.authlete.cbor.CBORDecoder;
 import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORTaggedItem;
+import com.upokecenter.cbor.CBOREncodeOptions;
+import com.upokecenter.cbor.CBORObject;
+import com.authlete.sd.Disclosure;
+import com.authlete.sd.SDJWT;
+import com.authlete.sd.SDObjectDecoder;
 import io.inji.verify.dto.core.CredentialStatusErrorDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.HolderProofCheckDto;
@@ -12,6 +17,7 @@ import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.exception.InvalidCredentialException;
 import io.inji.verify.shared.Constants;
+import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
@@ -25,17 +31,18 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Component;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.ipfs.multibase.Base16.bytesToHex;
+
 @Slf4j
+@Component
 public final class Utils {
 
     private static final Set<String> VALID_SD_JWT_TYPES = Set.of("vc+sd-jwt", "dc+sd-jwt");
-
-    private Utils() {
-    }
 
     public static String generateID(String prefix) {
         return prefix + "_" + UUID.randomUUID();
@@ -200,27 +207,46 @@ public final class Utils {
                 && (holderProofCheckDto == null || holderProofCheckDto.isValid());
     }
 
-    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format) {
+    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format, List<String> metaClaims, PixelPass pixelPass) {
         return switch (format) {
-            case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential);
+            case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential, metaClaims);
             case LDP_VC -> extractLdpClaims(verifiableCredential);
-            case CWT_VC -> extractCwtClaims(verifiableCredential);
+            case CWT_VC -> extractCwtClaims(verifiableCredential, pixelPass, metaClaims);
             default -> null;
         };
     }
 
-    private static Map<String, Object> extractCwtClaims(String verifiableCredential) {
-        return null;
-    }
-
     private static Map<String, Object> extractLdpClaims(String verifiableCredential) {
-        JSONObject vcObject = new JSONObject(verifiableCredential);
-        JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
-        return credentialSubject != null ? credentialSubject.toMap() : Map.of();
+        try {
+            JSONObject vcObject = new JSONObject(verifiableCredential);
+            JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
+            return credentialSubject != null ? credentialSubject.toMap() : Map.of();
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to extract JSON claims", e);
+        }
     }
 
-    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential) {
-        return null;
+    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential, List<String> metaClaims) {
+        try {
+            SDJWT sdjwt = SDJWT.parse(verifiableCredential);
+            String payloadJson = decodeBase64Json(sdjwt.getCredentialJwt().split("\\.")[1]);
+            Map<String, Object> payloadClaims = new JSONObject(payloadJson).toMap();
+            List<Disclosure> disclosures = sdjwt.getDisclosures();
+            SDObjectDecoder decoder = new SDObjectDecoder();
+            Map<String, Object> claims = new HashMap<>(decoder.decode(payloadClaims, disclosures));
+            excludeMetaClaims(metaClaims, claims);
+            return claims;
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to extract SD-JWT claims", e);
+        }
+    }
+
+    private static void excludeMetaClaims(List<String> metaClaims, Map<String, Object> claims) {
+        for (String metaClaim : Optional.ofNullable(metaClaims).orElseGet(List::of)) {
+            if (metaClaim != null) {
+                claims.remove(metaClaim.trim());
+            }
+        }
     }
 
     public static CredentialFormat getCredentialFormat(String verifiableCredential) {
@@ -238,5 +264,51 @@ public final class Utils {
         } catch (Exception e) {
             throw new InvalidCredentialException("Failed to determine credential type.", e);
         }
+    }
+
+    public static Map<String, Object> extractCwtClaims(String credential, PixelPass pixelPass, List<String> metaClaims) {
+
+        try {
+
+            CBORObject cwt = decodeCwt(credential);
+            CBORObject claims = decodeCwtClaims(cwt);
+
+            JSONObject finalClaimsJson;
+
+            CBORObject claim169 = claims.get(CBORObject.FromObject(169));
+            if (claim169 != null) {
+
+                CBORObject decodedClaim169 = CBORObject.DecodeFromBytes(
+                        claim169.GetByteString(),
+                        new CBOREncodeOptions("allowduplicatekeys=false")
+                );
+
+                String claim169Hex = bytesToHex(decodedClaim169.EncodeToBytes());
+                String decodedClaim169Json = pixelPass.decodeMappedData(claim169Hex);
+
+                finalClaimsJson = new JSONObject(decodedClaim169Json);
+            } else {
+                finalClaimsJson = new JSONObject();
+            }
+
+            Map<String, Object> finalClaimsMap = finalClaimsJson.toMap();
+            excludeMetaClaims(metaClaims, finalClaimsMap);
+            return finalClaimsMap;
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to determine credential type.", e);
+        }
+    }
+
+    private static CBORObject decodeCwt(String credential) {
+        byte[] decodedBytes = hexToBytes(credential);
+        return CBORObject.DecodeFromBytes(decodedBytes);
+    }
+
+    private static CBORObject decodeCwtClaims(CBORObject coseObj) {
+        byte[] payloadBytes = coseObj.get(2).GetByteString();
+        return CBORObject.DecodeFromBytes(
+                payloadBytes,
+                new CBOREncodeOptions("allowduplicatekeys=false")
+        );
     }
 }
