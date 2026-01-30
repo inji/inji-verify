@@ -586,7 +586,7 @@ paths:
 
         From `0.17.x` onwards, 
         - This endpoint also supports verification of CWT (CBOR Web Token with Claim 169 mapped fields) format VCs.
-        - To verify a CWT VC, set the request header: `Content-Type: application/vc+cwt`
+        - To verify a CWT VC, set the request header: `Content-Type: application/vc+cwt` and VC should be sent as HEX value of CBOR.
         - V2 Version of `/vc-verification` endpoint has been added which performs verification of a credential and returns a detailed breakdown of verification results instead of a single final status.
       operationId: vc-verification
       tags:
@@ -1351,7 +1351,7 @@ components:
       properties:
         vc:
           type: string
-          description: The complete verifiable credential object to be verified by the server.
+          description: VC should be string with HEX value of CBOR
           example: d83dd2845831a2012604....
     VpTokenResult:
       title: VpTokenResult
@@ -1452,7 +1452,7 @@ components:
       properties:
         verifiableCredential:
           type: string
-          description: 'Verifiable Credential to be verified (JSON-LD, CWT, SD-JWT)'
+          description: 'Verifiable Credential to be verified (JSON-LD, CWT, SD-JWT)'. For CWT format send HEX value of CBOR.
         skipStatusChecks:
           type: boolean
           default: false
