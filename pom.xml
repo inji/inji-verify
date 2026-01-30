@@ -58,7 +58,7 @@
             <snapshots>
                 <enabled>true</enabled>
             </snapshots>
-        </repository>        
+        </repository>
         <repository>
             <id>central</id>
             <name>MavenCentral</name>
@@ -152,9 +152,7 @@
                         <configuration>
                             <addOutputDirectory>false</addOutputDirectory>
                             <sourceDirectory>src/main/java</sourceDirectory>
-                            <outputDirectory>
-                                ${project.build.directory}/delombok
-                            </outputDirectory>
+                            <outputDirectory>${project.build.directory}/delombok</outputDirectory>
                         </configuration>
                     </execution>
                 </executions>
@@ -217,10 +215,6 @@
             </plugin>
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-javadoc-plugin</artifactId>
-            </plugin>
-            <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-war-plugin</artifactId>
                 <version>${maven.war.plugin.version}</version>
                 <configuration>
@@ -240,15 +234,15 @@
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-jar-plugin</artifactId>
                 <version>${maven.jar.plugin.version}</version>
-	<executions>
-        <execution>
-            <id>default-jar</id>
-            <phase>package</phase>
-            <goals>
-                <goal>jar</goal>
-            </goals>
-        	</execution>
-    	</executions>
+                <executions>
+                    <execution>
+                        <id>default-jar</id>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                    </execution>
+                </executions>
                 <configuration>
                     <archive>
                         <manifest>
@@ -272,21 +266,21 @@
                     <autoPublish>false</autoPublish>
                 </configuration>
             </plugin>
-	    <plugin>
+            <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-javadoc-plugin</artifactId>
-                <version>3.2.0</version>
+                <version>${maven.javadoc.version}</version>
                 <executions>
-                      <execution>
+                    <execution>
                         <id>attach-javadocs</id>
                         <goals>
-                              <goal>jar</goal>
+                            <goal>jar</goal>
                         </goals>
-                      </execution>
+                    </execution>
                 </executions>
                 <configuration>
                     <doclint>none</doclint>
-                    <sourcepath>target/generated-sources/delombok</sourcepath>
+                    <sourcepath>${project.build.directory}/delombok</sourcepath>
                 </configuration>
             </plugin>
             <plugin>
