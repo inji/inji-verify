@@ -57,7 +57,7 @@ paths:
         - For getting Authorization Requests by value, `clientId` can be simply be the client’s name.
 
         From `0.17.x` onwards,
-        - Added a new attribute `acceptVPWithoutHolderProof` in the request. 
+        - Added a new attribute `acceptVPWithoutHolderProof` in the request. Default value is `false`.
         - If this is `true`, then Verifiable Presentation Token submmited by the wallet can be unsigned (without proof).
         - If this is `false`, then the Verifiable Presentation submmited by the wallet cannot be unsigned (without proof). 
           And if wallet submits the Verifiable Presentation without proof, the the `/vp-results` endpoint will throw an error.  
@@ -626,6 +626,14 @@ paths:
                 summary: Example SD-JWT format VC to be verified
                 value:
                   vc: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+          application/vc+cwt:
+            schema:
+              $ref: '#/components/schemas/VCVerificationCWTRequest'
+            examples:
+              example:
+                summary: Example CWT format VC to be verified
+                value:
+                  vc: d83dd2845831a2012604582b4b52394b495f49386443...
         description: The Verifiable Credential to be verified.
       responses:
         '200':
@@ -911,6 +919,10 @@ components:
           type: string
           description: ID of the client asking to create a new Verifiable Presentation request. This identifies the verifier application.
           example: client123
+        acceptVPWithoutHolderProof:
+          type: boolean
+          description: 'If this is `true`, then Verifiable Presentation Token submmited by the wallet can be unsigned (without proof).Default value is false.'
+          example: false
         presentationDefinitionId:
           type: string
           description: Either presentationDefinitionId or presentationDefinition should be passed. A predefined presentation definition Id so that the user does not need to pass the presentation definition.
@@ -1329,6 +1341,18 @@ components:
           type: string
           description: The complete verifiable credential object to be verified by the server.
           example: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+    VCVerificationCWTRequest:
+      title: VCVerificationCWTRequest
+      x-stoplight:
+        id: 23487178cda3e
+      type: object
+      required:
+        - vc
+      properties:
+        vc:
+          type: string
+          description: The complete verifiable credential object to be verified by the server.
+          example: d83dd2845831a2012604....
     VpTokenResult:
       title: VpTokenResult
       type: object
