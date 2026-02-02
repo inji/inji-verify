@@ -305,6 +305,15 @@ Feature: Inji Verify upload qr code testing
     And Upload SVG rendered VC
     And Verify message for valid QR code
 
+  @smoke @verifyuploadValidClaim169qrcode
+  Scenario: Verify upload valid claim 169 qr code
+    And Verify browser refresh
+    And Verify upload QR code step2 label
+    And Verify upload QR code step3 label
+    And Verify that Upload button visible
+    And Upload claim 169 VC
+    And Verify message for valid QR code
+
   @smoke @verifyVcVerificationStatusExpiry
   Scenario: Verify valid vc verification status expire after countdown
     And Open inji web in new tab

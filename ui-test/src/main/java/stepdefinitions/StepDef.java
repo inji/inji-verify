@@ -694,6 +694,23 @@ public class StepDef {
 	        throw e;
 	    }
 	}
+
+    @Then("Upload claim 169 VC")
+	public void upload_claim_169_VC_code() {
+        try {
+            uploadqrcode.clickOnUploadClaim169QRCode();
+	        test.log(Status.PASS, "Successfully uploaded claim 169 VC.");
+	    } catch (AssertionError e) {
+	        test.log(Status.FAIL, "Verification failed: Upload of claim 169 VC QR code did not behave as expected.");
+	        throw e;
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while uploading claim 169 VC QR code", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error occurred while uploading claim 169 VC QR code", e);
+	        throw e;
+	    }
+	}
 	
     @When("Upload another QR code file png")
     public void uploadAnotherQRCodeFile() {

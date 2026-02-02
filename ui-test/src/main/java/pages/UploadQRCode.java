@@ -177,6 +177,11 @@ public class UploadQRCode extends BasePage {
 
 	}
 
+	public void clickOnUploadClaim169QRCode() {
+		uploadFileForStaticQr(driver, UploadQRCodeButton, "claim.PNG");
+
+	}
+
 	public void clickOnUploadInvalidPdf() {
 		uploadFileForStaticQr(driver, UploadQRCodeButton, "invalid.pdf");
 
