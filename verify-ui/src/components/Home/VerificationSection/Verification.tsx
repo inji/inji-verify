@@ -17,10 +17,11 @@ const Verification = () => {
       dispatch(goToHomeScreen({}));
     }, 80);
   };
-    useEffect(() => {
-        const pathName = sessionStorage.getItem("pathName");
-        if(pathName) setScannerActive(false);
-        }, []);
+
+  useEffect(() => {
+    const pathName = sessionStorage.getItem("pathName");
+    if (pathName) setScannerActive(false);
+  }, []);
 
   return (
     <div className="grid grid-cols-12 mx-auto pt-1 pb-[100px] px-[16px] lg:py-[42px] lg:px-[104px] text-center content-center justify-center">
@@ -30,7 +31,7 @@ const Verification = () => {
           backgroundImage: `url(${ScanOutline})`,
         }}
       >
-          <QrScanner scannerActive={scannerActive} onClose={handleBack}/>
+        <QrScanner scannerActive={scannerActive} onClose={handleBack}/>
       </div>
       <div className="col-span-12">
         <Button
