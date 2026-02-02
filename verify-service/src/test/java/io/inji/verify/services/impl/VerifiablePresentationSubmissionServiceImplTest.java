@@ -1013,7 +1013,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     @Test
      void testVerifySingleCredential_SdJwt_InvalidWithError() {
         VerificationRequestDto request = new VerificationRequestDto();
-        String validEnumName = KBJwtErrorCodes.values()[0].name();
+        String validEnumName = KBJwtErrorCodes.ERR_INVALID_KB_SIGNATURE.name();
 
         ErrorDto errorDto = new ErrorDto(validEnumName, "Key binding failed");
         SchemaAndSignatureCheckDto signatureCheck = new SchemaAndSignatureCheckDto(false, errorDto);

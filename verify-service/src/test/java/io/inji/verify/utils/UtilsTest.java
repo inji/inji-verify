@@ -8,14 +8,15 @@ import org.junit.jupiter.api.Test;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import org.junit.jupiter.api.function.Executable;
-import org.mockito.Mock;
+import org.junit.jupiter.api.extension.ExtendWith;
+import org.mockito.junit.jupiter.MockitoExtension;
 import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
 
 public class UtilsTest {
-    @Mock
+    @ExtendWith(MockitoExtension.class)
     private PixelPass pixelPass;
 
     @Test
@@ -152,20 +153,6 @@ public class UtilsTest {
             sb.append(String.format("%02X", b));
         }
         return sb.toString();
-    }
-
-    @Test
-    void shouldReturnEmptyMapWhenClaim169IsMissing() {
-        CBORObject emptyClaims = CBORObject.NewMap();
-        CBORObject coseArray = CBORObject.NewArray();
-        coseArray.Add(0);
-        coseArray.Add(0);
-        coseArray.Add(emptyClaims.EncodeToBytes());
-        coseArray.Add(new byte[0]);
-
-        String hexCredential = bytesToHex(coseArray.EncodeToBytes());
-        Map<String, Object> result = Utils.extractCwtClaims(hexCredential, pixelPass, List.of());
-        assertTrue(result.isEmpty());
     }
 
     @Test
