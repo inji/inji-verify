@@ -9,6 +9,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 
 import java.io.Serializable;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 
 @Getter
 @Entity
@@ -24,7 +26,8 @@ public class AuthorizationRequestCreateResponse implements Serializable {
 
     @NotNull
     @Convert(converter = AuthorizationRequestResponseDtoConverter.class)
-    @Column(columnDefinition = "TEXT")
+    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private final AuthorizationRequestResponseDto authorizationDetails;
 
     @NotNull
