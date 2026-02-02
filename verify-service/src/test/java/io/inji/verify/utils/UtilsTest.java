@@ -1,14 +1,22 @@
 package io.inji.verify.utils;
 
+import com.upokecenter.cbor.CBORObject;
+import io.inji.verify.exception.InvalidCredentialException;
+import io.mosip.pixelpass.PixelPass;
+import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import org.junit.jupiter.api.Test;
-
 import java.lang.reflect.Constructor;
-
-import static org.junit.jupiter.api.Assertions.assertDoesNotThrow;
+import java.lang.reflect.Method;
 import org.junit.jupiter.api.function.Executable;
+import org.mockito.Mock;
+import java.util.*;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.Mockito.*;
 
 
 public class UtilsTest {
+    @Mock
+    private PixelPass pixelPass;
 
     @Test
     void coverPrivateConstructor() throws Exception {
@@ -16,5 +24,168 @@ public class UtilsTest {
         constructor.setAccessible(true);
         Executable exec = () -> constructor.newInstance();
         assertDoesNotThrow(exec);
+    }
+    @Test
+    void isCwt_shouldReturnFalse_whenCredentialContainsDot() {
+        assertFalse(Utils.isCwt("abc.def"));
+    }
+
+    @Test
+    void isCwt_shouldReturnFalse_whenCredentialStartsWithJson() {
+        assertFalse(Utils.isCwt("{ \"key\": \"value\" }"));
+    }
+
+    @Test
+    void isCwt_shouldReturnFalse_whenHexIsInvalid() {
+        assertFalse(Utils.isCwt("ABC"));
+    }
+
+    @Test
+    void isCwt_shouldReturnFalse_whenHexIsValidButNotCBOR() {
+        assertFalse(Utils.isCwt("0A0B0C"));
+    }
+
+    @Test
+    void hexToBytes_shouldThrowException_whenHexIsNull() throws Exception {
+        Method method = Utils.class.getDeclaredMethod("hexToBytes", String.class);
+        method.setAccessible(true);
+
+        Exception ex = assertThrows(Exception.class, () -> method.invoke(null, (Object) null));
+        assertTrue(ex.getCause() instanceof IllegalArgumentException);
+        assertEquals("Hex string is null", ex.getCause().getMessage());
+    }
+
+    @Test
+    void hexToBytes_shouldThrowException_whenHexLengthIsOdd() throws Exception {
+        Method method = Utils.class.getDeclaredMethod("hexToBytes", String.class);
+        method.setAccessible(true);
+
+        Exception ex = assertThrows(Exception.class, () -> method.invoke(null, "ABC"));
+        assertTrue(ex.getCause() instanceof IllegalArgumentException);
+        assertEquals("Invalid hex length", ex.getCause().getMessage());
+    }
+
+    @Test
+    void hexToBytes_shouldWork_forValidHex() throws Exception {
+        Method method = Utils.class.getDeclaredMethod("hexToBytes", String.class);
+        method.setAccessible(true);
+
+        byte[] result = (byte[]) method.invoke(null, "0A0B");
+        assertArrayEquals(new byte[]{0x0A, 0x0B}, result);
+    }
+
+    @Test
+    void hexToBytes_shouldIgnoreSpaces() throws Exception {
+        Method method = Utils.class.getDeclaredMethod("hexToBytes", String.class);
+        method.setAccessible(true);
+
+        byte[] result = (byte[]) method.invoke(null, "0A 0B");
+        assertArrayEquals(new byte[]{0x0A, 0x0B}, result);
+    }
+
+    @Test
+    void testExcludeMetaClaimsCoverage() throws Exception {
+            Method method = Utils.class.getDeclaredMethod("excludeMetaClaims", List.class, Map.class);
+            method.setAccessible(true);
+
+            Map<String, Object> claims = new HashMap<>();
+            claims.put("stay", "safe");
+            claims.put("remove", "meta");
+
+            assertDoesNotThrow(() -> method.invoke(null, null, claims));
+
+            List<String> metaWithNull = Collections.singletonList(null);
+            assertDoesNotThrow(() -> method.invoke(null, metaWithNull, claims));
+
+            List<String> validMeta = List.of("  remove  ");
+            method.invoke(null, validMeta, claims);
+
+            assertFalse(claims.containsKey("remove"), "Claim should be removed");
+            assertEquals(1, claims.size());
+
+    }
+    @Test
+    void shouldReturnCwtFormatByMocking() {
+        try (var mockedUtils = mockStatic(Utils.class)) {
+            mockedUtils.when(() -> Utils.isCwt("abcabcabcbabc")).thenReturn(true);
+            mockedUtils.when(() -> Utils.getCredentialFormat("abcabcabcbabc")).thenCallRealMethod();
+
+            assertEquals(CredentialFormat.CWT_VC, Utils.getCredentialFormat("abcabcabcbabc"));
+        }
+    }
+
+    @Test
+    void shouldReturnSdJwtFormatForValidSdJwtString() {
+        String sdJwt = "eyJ0eXAiOiJ2YytzZC1qd3QifQ.payload.signature~disclosure";
+        CredentialFormat format = Utils.getCredentialFormat(sdJwt);
+        assertEquals(CredentialFormat.VC_SD_JWT, format);
+    }
+
+    @Test
+    void shouldReturnLdpVcForStandardJson() {
+        String safeJson = "eyJuYW1lIjogInRlc3QifQ==.payload.signature";
+        CredentialFormat format = Utils.getCredentialFormat(safeJson);
+        assertEquals(CredentialFormat.LDP_VC, format);
+    }
+
+    @Test
+    void shouldThrowInvalidCredentialExceptionOnNull() {
+        assertThrows(InvalidCredentialException.class, () -> {
+            Utils.getCredentialFormat(null);
+        });
+    }
+
+    @Test
+    void testDecodeCwt_Success() throws Exception {
+        String hexInput = "A1616101";
+        Method method = Utils.class.getDeclaredMethod("decodeCwt", String.class);
+        method.setAccessible(true);
+
+        CBORObject result = (CBORObject) method.invoke(null, hexInput);
+
+        assertNotNull(result);
+        assertEquals(1, result.get(CBORObject.FromObject("a")).AsInt32());
+    }
+    private String bytesToHex(byte[] bytes) {
+        StringBuilder sb = new StringBuilder();
+        for (byte b : bytes) {
+            sb.append(String.format("%02X", b));
+        }
+        return sb.toString();
+    }
+
+    @Test
+    void shouldReturnEmptyMapWhenClaim169IsMissing() {
+        CBORObject emptyClaims = CBORObject.NewMap();
+        CBORObject coseArray = CBORObject.NewArray();
+        coseArray.Add(0);
+        coseArray.Add(0);
+        coseArray.Add(emptyClaims.EncodeToBytes());
+        coseArray.Add(new byte[0]);
+
+        String hexCredential = bytesToHex(coseArray.EncodeToBytes());
+        Map<String, Object> result = Utils.extractCwtClaims(hexCredential, pixelPass, List.of());
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void testDecodeCwtClaims_Success() throws Exception {
+        CBORObject payload = CBORObject.NewMap();
+        payload.Add("sub", "123");
+        byte[] payloadBytes = payload.EncodeToBytes();
+
+        CBORObject coseArray = CBORObject.NewArray();
+        coseArray.Add(0);
+        coseArray.Add(0);
+        coseArray.Add(payloadBytes);
+        coseArray.Add(new byte[0]);
+
+        Method method = Utils.class.getDeclaredMethod("decodeCwtClaims", CBORObject.class);
+        method.setAccessible(true);
+
+        CBORObject result = (CBORObject) method.invoke(null, coseArray);
+
+        assertNotNull(result);
+        assertEquals("123", result.get(CBORObject.FromObject("sub")).AsString());
     }
 }

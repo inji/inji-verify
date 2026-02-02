@@ -49,4 +49,18 @@ public class VpFormatsTest {
         assertNotNull(retrievedProofTypes, "The proofType list should not be null.");
         assertTrue(retrievedProofTypes.isEmpty(), "The proofType list should be empty.");
     }
+    @Test
+     void testVpFormats_WithSdJwt() {
+        List<String> algs = Arrays.asList("EdDSA");
+        List<String> proofTypes = Arrays.asList("JwtProof2020");
+
+        SdJwt sdJwt = new SdJwt(algs, proofTypes);
+
+        VpFormats vpFormats = new VpFormats(null, sdJwt);
+
+        assertNotNull(vpFormats.getSdJwt(), "The SdJwt object should not be null.");
+        assertEquals(sdJwt, vpFormats.getSdJwt(), "The SdJwt object should match the one set in the constructor.");
+    }
+
+
 }

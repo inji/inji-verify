@@ -1,5 +1,6 @@
 package io.inji.verify.services.impl;
 
+import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.CredentialResultsDto;
 import io.inji.verify.dto.result.VPTokenDto;
 import io.inji.verify.dto.submission.VPSubmissionDto;
@@ -9,6 +10,7 @@ import io.inji.verify.dto.submission.PathNestedDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
+import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
 import io.inji.verify.exception.*;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
@@ -21,7 +23,6 @@ import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.mosip.pixelpass.PixelPass;
 import io.inji.verify.utils.Utils;
-import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.*;
 import io.inji.verify.repository.VPSubmissionRepository;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
@@ -34,6 +35,7 @@ import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
+import org.springframework.test.util.ReflectionTestUtils;
 
 import java.util.*;
 
@@ -132,6 +134,31 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPTokenResultDto resultDto = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.SUCCESS, resultDto.getVpResultStatus());
+    }
+    @Test
+     void testProcessSubmission_NoProof_Accepted() {
+        String vpToken = "{\"type\":\"VerifiablePresentation\",\"verifiableCredential\":[\"vc1\"]}";
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId", "respType", null, "nonce", "state", true);
+
+        AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+        when(auth.getAuthorizationDetails()).thenReturn(authDetails);
+
+        PresentationSubmissionDto submissionDto = new PresentationSubmissionDto("id", "defId", new ArrayList<>());
+
+        when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(any())).thenReturn(auth);
+        when(vpSubmissionRepository.findAllById(any())).thenReturn(List.of(
+                new VPSubmission("st", vpToken, submissionDto, null, null)));
+
+        CredentialVerificationSummary summary = mock(CredentialVerificationSummary.class);
+        VerificationResult vResult = mock(VerificationResult.class);
+        when(summary.getVerificationResult()).thenReturn(vResult);
+        when(vResult.getVerificationStatus()).thenReturn(true);
+
+        when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(), anyList()))
+                .thenReturn(summary);
+
+        assertDoesNotThrow(() -> verifiablePresentationSubmissionService.getVPResult(List.of("id"), "tx"));
     }
 
     @Test
@@ -942,6 +969,108 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertEquals(1, result.getCredentialResults().size());
         assertNull(result.getCredentialResults().getFirst().getHolderProofCheck());
         assertNull(result.getCredentialResults().getFirst().getClaims());
+    }
+
+    @Test
+    void testVerifySingleCredential_NonSdJwt() {
+        VerificationRequestDto request = new VerificationRequestDto();
+        String vcData = "jwt.vc.data";
+
+        VCVerificationResultDto mockResult = new VCVerificationResultDto();
+        mockResult.setAllChecksSuccessful(true);
+        mockResult.setSchemaAndSignatureCheck(new SchemaAndSignatureCheckDto(true, null));
+
+        when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class))).thenReturn(mockResult);
+
+        CredentialResultsDto results = ReflectionTestUtils.invokeMethod(
+                verifiablePresentationSubmissionService,
+                "verifySingleCredential",
+                request, vcData, false);
+
+        assertNotNull(results);
+        assertNull(results.getHolderProofCheck(), "HolderProof should be null for non-SD-JWT");
+        assertEquals(vcData, results.getVerifiableCredential());
+    }
+
+    @Test
+     void testVerifySingleCredential_SdJwt_Valid() {
+        VerificationRequestDto request = new VerificationRequestDto();
+
+        VCVerificationResultDto mockResult = new VCVerificationResultDto();
+        mockResult.setSchemaAndSignatureCheck(new SchemaAndSignatureCheckDto(true, null));
+
+        when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class))).thenReturn(mockResult);
+
+        CredentialResultsDto results = ReflectionTestUtils.invokeMethod(
+                verifiablePresentationSubmissionService,
+                "verifySingleCredential",
+                request, "sd-jwt-content", true);
+
+        assertTrue(results.getHolderProofCheck().isValid());
+        assertNull(results.getHolderProofCheck().getError());
+    }
+
+    @Test
+     void testVerifySingleCredential_SdJwt_InvalidWithError() {
+        VerificationRequestDto request = new VerificationRequestDto();
+        String validEnumName = KBJwtErrorCodes.values()[0].name();
+
+        ErrorDto errorDto = new ErrorDto(validEnumName, "Key binding failed");
+        SchemaAndSignatureCheckDto signatureCheck = new SchemaAndSignatureCheckDto(false, errorDto);
+
+        VCVerificationResultDto mockResult = new VCVerificationResultDto();
+        mockResult.setSchemaAndSignatureCheck(signatureCheck);
+
+        when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class))).thenReturn(mockResult);
+
+        CredentialResultsDto results = ReflectionTestUtils.invokeMethod(
+                verifiablePresentationSubmissionService,
+                "verifySingleCredential",
+                request, "sd-jwt-content", true);
+
+        assertNotNull(results.getHolderProofCheck(), "HolderProofCheck should not be null if the error code matched an enum");
+        assertFalse(results.getHolderProofCheck().isValid());
+        assertEquals(validEnumName, results.getHolderProofCheck().getError().getErrorCode());
+    }
+
+    @Test
+    void testVerifyPresentationWithCredentialStatusChecks_Fixed() {
+        VerificationRequestDto request = new VerificationRequestDto();
+        request.setStatusCheckFilters(List.of("revocation"));
+        request.setIncludeClaims(true);
+
+        JSONObject vpToken = new JSONObject("{\"type\":\"VerifiablePresentation\"}");
+        List<CredentialResultsDto> credentialResults = new ArrayList<>();
+
+        String validVcJson = "{\"credentialSubject\":{\"name\":\"John Doe\"}}";
+        VCResultWithCredentialStatusV2 mockVcRes = mock(VCResultWithCredentialStatusV2.class);
+        VerificationResult mockVcVerifyResult = mock(VerificationResult.class);
+
+        when(mockVcRes.getVc()).thenReturn(validVcJson);
+        when(mockVcRes.getVerificationResult()).thenReturn(mockVcVerifyResult);
+        when(mockVcVerifyResult.getVerificationStatus()).thenReturn(true);
+        when(mockVcRes.getCredentialStatus()).thenReturn(new HashMap<>());
+
+        PresentationResultWithCredentialStatusV2 mockResult = mock(PresentationResultWithCredentialStatusV2.class);
+        VerificationResult mockProofResult = mock(VerificationResult.class);
+
+        when(mockResult.getVcResults()).thenReturn(List.of(mockVcRes));
+        when(mockResult.getProofVerificationResult()).thenReturn(mockProofResult);
+        when(mockProofResult.getVerificationStatus()).thenReturn(true);
+
+        when(presentationVerifier.verifyAndGetCredentialStatusV2(anyString(), anyList()))
+                .thenReturn(mockResult);
+
+        assertDoesNotThrow(() -> {
+            ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService,
+                    "verifyPresentationWithCredentialStatusChecks",
+                    request, vpToken, credentialResults
+            );
+        });
+        assertFalse(credentialResults.isEmpty());
+        assertNotNull(credentialResults.get(0).getClaims());
+        assertTrue(credentialResults.get(0).isAllChecksSuccessful());
     }
 }
 
