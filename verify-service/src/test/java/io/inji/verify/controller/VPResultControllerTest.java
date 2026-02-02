@@ -98,7 +98,7 @@ public class VPResultControllerTest {
     }
 
     @Test
-    public void testGetVPResult_InternalServerError_VPWithoutProofException() throws Exception {
+    void testGetVPResult_InternalServerError_VPWithoutProofException() throws Exception {
         String transactionId = "tx101";
         List<String> requestIds = new ArrayList<>();
         requestIds.add("req112");

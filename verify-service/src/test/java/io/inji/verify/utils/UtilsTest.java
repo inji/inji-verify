@@ -2,7 +2,6 @@ package io.inji.verify.utils;
 
 import com.upokecenter.cbor.CBORObject;
 import io.inji.verify.exception.InvalidCredentialException;
-import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import org.junit.jupiter.api.Test;
 import java.lang.reflect.Constructor;
@@ -14,10 +13,8 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
-
+@ExtendWith(MockitoExtension.class)
 public class UtilsTest {
-    @ExtendWith(MockitoExtension.class)
-    private PixelPass pixelPass;
 
     @Test
     void coverPrivateConstructor() throws Exception {
@@ -146,13 +143,6 @@ public class UtilsTest {
 
         assertNotNull(result);
         assertEquals(1, result.get(CBORObject.FromObject("a")).AsInt32());
-    }
-    private String bytesToHex(byte[] bytes) {
-        StringBuilder sb = new StringBuilder();
-        for (byte b : bytes) {
-            sb.append(String.format("%02X", b));
-        }
-        return sb.toString();
     }
 
     @Test
