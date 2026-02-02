@@ -58,9 +58,8 @@ paths:
 
         From `0.17.x` onwards,
         - Added a new attribute `acceptVPWithoutHolderProof` in the request. Default value is `false`.
-        - If this is `true`, then Verifiable Presentation Token submmited by the wallet can be unsigned (without proof).
-        - If this is `false`, then the Verifiable Presentation submmited by the wallet cannot be unsigned (without proof). 
-          And if wallet submits the Verifiable Presentation without proof, the the `/vp-results` endpoint will throw an error.  
+        - If this is `true`, then Verifiable Presentation submitted by the wallet can be unsigned (without proof).
+        - If this is `false`, then the Verifiable Presentation submitted by the wallet cannot be unsigned (without proof). If the wallet submits a Verifiable Presentation without proof, then the `/vp-results` endpoint will throw an error. 
       operationId: createVPRequest
       tags:
         - VP Request
@@ -631,9 +630,9 @@ paths:
               $ref: '#/components/schemas/VCVerificationCWTRequest'
             examples:
               example:
-                summary: Example CWT format VC to be verified
+                summary: Example hex-encoded CWT to be verified
                 value:
-                  vc: d83dd2845831a2012604582b4b52394b495f49386443...
+                  vc: d83dd2845831a2012604582b4b52394b495f49386443
         description: The Verifiable Credential to be verified.
       responses:
         '200':
@@ -1351,8 +1350,9 @@ components:
       properties:
         vc:
           type: string
-          description: VC should be string with HEX value of CBOR
-          example: d83dd2845831a2012604....
+          description: Hex-encoded CWT (CBOR bytes) to be verified by the server.
+          pattern: '^[0-9a-fA-F]+$'
+          example: d83dd2845831a2012604
     VpTokenResult:
       title: VpTokenResult
       type: object
@@ -1452,7 +1452,7 @@ components:
       properties:
         verifiableCredential:
           type: string
-          description: 'Verifiable Credential to be verified (JSON-LD, CWT, SD-JWT)'. For CWT format send HEX value of CBOR.
+          description: 'Verifiable Credential to be verified (JSON-LD, CWT, SD-JWT). For CWT format send HEX value of CBOR.'
         skipStatusChecks:
           type: boolean
           default: false
