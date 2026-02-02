@@ -30,7 +30,7 @@ Prerequisites:
 
 # Folder Structure:
 
-Once the repo is cloned, following folders can be found under the inji-verify repository folder:
+Once the repository is cloned, following folders can be found under the inji-verify repository folder:
 
 - **api-test:** contains the API automation tests
 - **db_scripts:** contains the database scripts for the Inji Verify application
