@@ -48,17 +48,17 @@ You can access the test automation code using either of the following methods:
 
 ### From Browser
 
-1. Clone or download the repository as a zip file from [GitHub](https://github.com/mosip/inji-verify).
+1. Clone or download the repository as a zip file from [GitHub](https://github.com/inji/inji-verify).
 2. Unzip the contents to your local machine.
 3. Open a terminal (Linux) or command prompt (Windows) and continue with the following steps.
 
 ### From Git Bash
 
-1. Copy the Git repository URL: `https://github.com/mosip/inji-verify`
+1. Copy the Git repository URL: `https://github.com/inji/inji-verify`
 2. Open **Git Bash** on your local machine.
 3. Run the following command to clone the repository:
    ```sh
-   git clone https://github.com/mosip/inji-verify
+   git clone https://github.com/inji/inji-verify
    ```
 
 ---
@@ -130,7 +130,7 @@ To execute the tests using Eclipse IDE, use the following steps:
    - Go to `Run` > `Run Configurations`.
    - In the **Run Configurations** window, create a new configuration for your tests:
      - Right-click on **Java Application** and select **New**.
-     - In the **Main** tab, select the project by browsing the location where the `api-test` folder is saved, and select the **Main class** as `io.mosip.testrig.apirig.injiverify.testrunner.MosipTestRunner`.
+     - In the **Main** tab, select the project by browsing the location where the `api-test` folder is saved, and select the **Main class** as `io.inji.testrig.apirig.injiverify.testrunner.InjiTestRunner`.
    - In the **Arguments** tab, add the necessary **VM arguments**:
      - **VM Arguments**:
        ```
@@ -172,4 +172,4 @@ To run the tests for both **Smoke** and **Regression**:
 
 ## License
 
-This project is licensed under the terms of the [Mozilla Public License 2.0](https://github.com/mosip/mosip-platform/blob/master/LICENSE)
+This project is licensed under the terms of the [Mozilla Public License 2.0](https://github.com/inji/inji-verify/blob/master/LICENSE)
