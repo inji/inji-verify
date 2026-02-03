@@ -102,6 +102,7 @@ public class UtilsTest {
             assertEquals(1, claims.size());
 
     }
+
     @Test
     void shouldReturnCwtFormatByMocking() {
         try (var mockedUtils = mockStatic(Utils.class)) {

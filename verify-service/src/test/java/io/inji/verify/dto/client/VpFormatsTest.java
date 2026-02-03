@@ -3,7 +3,6 @@ package io.inji.verify.dto.client;
 import org.junit.jupiter.api.Test;
 import java.util.Arrays;
 import java.util.List;
-
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
@@ -61,6 +60,4 @@ public class VpFormatsTest {
         assertNotNull(vpFormats.getSdJwt(), "The SdJwt object should not be null.");
         assertEquals(sdJwt, vpFormats.getSdJwt(), "The SdJwt object should match the one set in the constructor.");
     }
-
-
 }

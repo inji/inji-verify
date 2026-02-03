@@ -15,10 +15,8 @@ import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -117,27 +115,23 @@ public class VPResultControllerTest {
     }
 
     @Test
-    public void testGetVPResult_NotFound_WalletError() throws Exception {
-        String transactionId = "tx_wallet_fail";
-        List<String> requestIds = List.of("req_wallet_001");
+    void testGetVPResult_NotFound_WalletError() throws Exception {
+        String transactionId = "tx_id";
+        List<String> requestIds = List.of("req001");
 
-        ErrorCode errorCodeEnum = ErrorCode.INVALID_TRANSACTION_ID;
-        String code = errorCodeEnum.getErrorCode();
-        String description = "Wallet provider error";
-
-        VPSubmissionWalletError walletError = new VPSubmissionWalletError(code, description);
-
+        String expectedCode = "Invalid request" ;
+        String expectedMessage = "No requests found for given transaction ID.";
+        ErrorDto errorDto = new ErrorDto(expectedCode, expectedMessage);
         when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
                 .thenReturn(requestIds);
-        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId))
-                .thenThrow(walletError);
 
-        ErrorDto expectedError = new ErrorDto(code, description);
+        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId))
+                .thenThrow(new VPSubmissionWalletError(expectedCode, expectedMessage));
 
         mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
                         .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(objectMapper.writeValueAsString(expectedError)));
+                .andExpect(content().string(objectMapper.writeValueAsString(errorDto)));
 
         verify(verifiablePresentationSubmissionService, times(1)).getVPResult(requestIds, transactionId);
     }
