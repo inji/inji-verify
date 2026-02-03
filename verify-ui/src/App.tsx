@@ -3,7 +3,7 @@ import "./App.css";
 import Home from "./pages/Home";
 import Offline from "./pages/Offline";
 import { Scan } from "./pages/Scan";
-import { RouterProvider, createBrowserRouter, redirect } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import AlertMessage from "./components/commons/AlertMessage";
 import PreloadImages from "./components/commons/PreloadImages";
 import PageNotFound404 from "./pages/PageNotFound404";
