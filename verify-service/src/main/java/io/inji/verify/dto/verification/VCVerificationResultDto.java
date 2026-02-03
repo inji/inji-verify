@@ -4,8 +4,8 @@ import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
 import lombok.AllArgsConstructor;
-import org.json.JSONObject;
 import java.util.List;
+import java.util.Map;
 
 @Getter
 @Setter
@@ -16,5 +16,5 @@ public class VCVerificationResultDto {
     private SchemaAndSignatureCheckDto schemaAndSignatureCheck;
     private ExpiryCheckDto expiryCheck;
     private List<StatusCheckDto> statusCheck;
-    private JSONObject claims;
+    private Map<String, Object> claims;
 }

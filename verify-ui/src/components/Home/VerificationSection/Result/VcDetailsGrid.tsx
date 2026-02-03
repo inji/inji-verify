@@ -10,15 +10,15 @@ interface VcDetailsGridProps {
 
 const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   orderedDetails,
-  vc ,
+  vc
 }) => {
-  const BIOMETRIC_KEYS  = ["face", "portrait", "signature_usual_mark"];
+  const BIOMETRIC_KEYS = ["face", "portrait", "signature_usual_mark"].map((key) => key.toLowerCase());
 
   const biometricItems = orderedDetails.filter((item) =>
-    BIOMETRIC_KEYS.includes(item.key)
+    BIOMETRIC_KEYS.includes(item.key.toLocaleLowerCase())
   );
   const otherItems = orderedDetails.filter(
-    (item) => !BIOMETRIC_KEYS.includes(item.key)
+    (item) => !BIOMETRIC_KEYS.includes(item.key.toLocaleLowerCase())
   );
 
   const renderingItems = [...biometricItems, ...otherItems];
@@ -26,15 +26,28 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   return (
     <div className="grid relative lg:grid-cols-12 lg:gap-y-4">
       {renderingItems.map((label, index) => {
-        const isImage = BIOMETRIC_KEYS.includes(label.key);
+        const isImage = BIOMETRIC_KEYS.includes(label.key.toLocaleLowerCase());
         const isEven = index % 2 === 0;
         const normalizeKey = (key: string) => key.toLowerCase().trim();
-        const isDisclosed =
-          vc && "disclosedClaims" in vc && vc.disclosedClaims
-            ? Object.keys(vc.disclosedClaims).some(
-                (key) => normalizeKey(key) === normalizeKey(label.key)
-              )
-            : false;
+        const disclosedClaims =
+          vc &&
+          typeof vc === "object" &&
+          vc !== null &&
+          "disclosedClaims" in vc
+            ? (vc as { disclosedClaims?: unknown }).disclosedClaims
+            : undefined;
+        const hasDisclosedClaims =
+          disclosedClaims &&
+          typeof disclosedClaims === "object" &&
+          !Array.isArray(disclosedClaims);
+
+        const isDisclosed = hasDisclosedClaims
+          ? Object.keys(disclosedClaims as Record<string, unknown>).some(
+              (key) => normalizeKey(key) === normalizeKey(label.key),
+            )
+          : false;
+
+          const faceData = Array.isArray(label.value) && label.value.length > 0 ? label.value[0] : label.value;
 
         return (
           <div
@@ -47,7 +60,7 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
           >
             {isImage ? (
               <img
-                src={label.value}
+                src={faceData}
                 alt={label.key}
                 style={{
                   width: 80,

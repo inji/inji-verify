@@ -13,6 +13,8 @@ import {
 import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
 import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
+import { extractMappedClaim, isCWT, uint8ArrayToHex } from "../../../../utils/cborUtils";
+import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
 
 const Result = () => {
   const { vc, vcStatus } = useVerificationFlowSelector(
@@ -41,19 +43,25 @@ const Result = () => {
 
   useEffect(() => {
     const fetchDecodedClaims = async () => {
-      if (!vc) {
-        setClaims(null);
-        return;
-      }
-
-      if (typeof vc === "string") {
-        const claims = await decodeSdJwtToken(vc);
-        setClaims(claims as SdJwtVc);
-        setCredentialType(claims.regularClaims?.vct ?? "");
-      }
-
-      // Handle LDP VC objects
-      if (typeof vc === "object") {
+      if (isCWT(vc)) {
+          const cwtHex =
+          vc instanceof Uint8Array
+            ? uint8ArrayToHex(vc)
+            : vc instanceof ArrayBuffer
+            ? uint8ArrayToHex(new Uint8Array(vc))
+            : (vc as string);
+        const claims = extractMappedClaim(cwtHex, 169);
+        setClaims(claims as LdpVc);
+      } else if (typeof vc === "string") {
+        try {
+          const claims = await decodeSdJwtToken(vc);
+          setClaims(claims as SdJwtVc);
+          setCredentialType(claims.regularClaims.vct);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          dispatch(raiseAlert({ message, type: "error" }));
+        }
+      } else {
         setClaims(vc as LdpVc);
 
         const typeEntry = Array.isArray(vc.type) ? vc.type[1] : null;
@@ -71,7 +79,7 @@ const Result = () => {
     };
 
     fetchDecodedClaims();
-  }, [vc]);
+  }, [dispatch, vc]);
 
   const clearTimer = () => {
     if (timerRef.current) {

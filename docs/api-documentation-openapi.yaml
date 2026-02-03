@@ -29,7 +29,7 @@ paths:
   /vp-request:
     post:
       summary: Create a new VP request
-      description: |-
+      description: |
         This endpoint is used to initiate a Verifiable Presentation (VP) request. It represents the first step a verifier takes to request credentials from a wallet.
 
         **Request**
@@ -40,15 +40,11 @@ paths:
 
         **Response**
 
-        The `response` from this endpoint is used by the UI application to generate a QR code for the wallet to consume.
-
-        Note: As of version `0.16.x`, the response may include a mix of camelCase and snake_case attributes. *It is the responsibility of the UI application to convert any snake_case attributes before generating the QR code.*
-
-        The response provides the Authorization Request in one of two ways:
-
-        - By value — the full request object is returned.
-
-        - By reference — a `request_uri` is returned, pointing to the request.
+        - The `response` from this endpoint is used by the UI application to generate a QR code for the wallet to consume.
+        - Note: As of latest release`0.17.x`, the response will include a mix of camelCase and snake_case attributes. *It is the responsibility of the UI application to convert any snake_case attributes before generating the QR code.*
+        - The response provides the Authorization Request in one of two ways: 
+        1. By value — the full request object is returned.
+        2. By reference — a `request_uri` is returned, pointing to the request.
 
         **Version-specific behavior:**
 
@@ -57,7 +53,13 @@ paths:
 
         From `0.14.x` onwards, 
         - Authorization Requests can be returned by reference (`request_uri`) as well. 
-        - In this case, the clientId must be a valid DID URL representing the verifier.
+        - In this case, the `clientId` must be a valid DID URL representing the verifier.
+        - For getting Authorization Requests by value, `clientId` can be simply be the client’s name.
+
+        From `0.17.x` onwards,
+        - Added a new attribute `acceptVPWithoutHolderProof` in the request. Default value is `false`.
+        - If this is `true`, then Verifiable Presentation submitted by the wallet can be unsigned (without proof).
+        - If this is `false`, then the Verifiable Presentation submitted by the wallet cannot be unsigned (without proof). If the wallet submits a Verifiable Presentation without proof, then the `/vp-results` endpoint will throw an error. 
       operationId: createVPRequest
       tags:
         - VP Request
@@ -315,11 +317,22 @@ paths:
       description: |-
         This endpoint returns the final result of a Verifiable Presentation (VP) submission. After a wallet submits a VP, this endpoint can be used to retrieve the verification status of each credential.
 
-        Since version `1.5.0`, the endpoint supports credentials in both JSON-LD and SD-JWT formats.
+        **Version-specific behavior:**
 
-        Starting from version `1.6.0`, the API also performs revocation checks for JSON-LD credentials. A credential’s verification status can be `SUCCESS, INVALID, EXPIRED, or REVOKED`.
+        From `0.15.x` onwards,
+        - the endpoint supports credentials in both JSON-LD and SD-JWT formats.
 
-        Additionally, beginning with version `1.6.0`, the Verifiable Presentation itself may be unsigned (i.e., submitted without a proof section). This supports online sharing scenarios, such as transmitting large VCs via QR codes (DataShare), where including a cryptographic proof may not be feasible.
+        From `0.16.x` onwards,
+        - the API also performs revocation checks for JSON-LD credentials. 
+        - A credential’s verification status can be `SUCCESS, INVALID, EXPIRED, or REVOKED`.
+        - Also the Verifiable Presentation itself may be unsigned (i.e., submitted without a proof section). This supports online sharing scenarios, such as transmitting large VCs via QR codes (DataShare), where including a cryptographic proof may not be feasible.
+
+        From `0.17.x` onwards,
+
+        - Added a new attribute `acceptVPWithoutHolderProof` in the `/vp-request` request body.
+        - If this is `true`, then Verifiable Presentation submitted by the wallet can be unsigned (without proof).
+        - If this is `false`, then the Verifiable Presentation submitted by the wallet cannot be unsigned (without proof). If the wallet submits a Verifiable Presentation without proof, then the `/vp-results` endpoint will throw an error.
+        - V2 Version of `/vp-results` endpoint has been added which verifies a Verifiable Presentation (VP) identified by the provided `transactionId` and returns a detailed, structured verification result for the Verifiable Presentation and for each Verifiable Credential (VC) contained within it.
       tags:
         - VP Results
       responses:
@@ -397,7 +410,9 @@ paths:
     post:
       summary: Get the VP results for a  given Transaction Id (V2)
       description: |-
-        This endpoint verifies a Verifiable Presentation (VP) identified by the provided transactionId and returns a detailed, structured
+        This endpoint was introduced in `0.17.0` version. 
+
+        This endpoint verifies a Verifiable Presentation (VP) identified by the provided `transactionId` and returns a detailed, structured
         verification result for the Verifiable Presentation and for each Verifiable 
         Credential (VC) contained within it.
 
@@ -489,7 +504,26 @@ paths:
               schema:
                 $ref: '#/components/schemas/VpVerificationResponse'
         '404':
-          description: Transaction not found
+          description: |-
+            This response indicates that an `error` occurred during the Verifiable Presentation (VP) request processing in the wallet, which is sent to the Verifier.
+            Clients can use this information to display the outcome or status of the VP request to the end user.
+          content:
+            application/json:
+              schema:
+                type: object
+                x-examples:
+                  Example 1:
+                    error: string
+                    errorDescription: string
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+                    description: The error code sent by the wallet during VP submission
+                  errorDescription:
+                    type: string
+                    description: The optional error message
         '500':
           description: Internal server error
       x-stoplight:
@@ -537,15 +571,22 @@ paths:
         This API performs server-side verification of a Verifiable Credential (VC) to validate its integrity and authenticity. It executes checks such as cryptographic signature validation and ensures that the credential has not been altered or tampered with.
         The verification status returned can be `SUCCESS, INVALID, or EXPIRED`.
 
-        Starting from version `1.5.0`, the API supports verification of both JSON-LD and SD-JWT formatted VCs.
+        **Version-specific behavior:**
 
-        To verify a JSON-LD VC, set the request header: `Content-Type: application/vc+ld+json`
+        From `0.15.x` onwards, 
+        - This endpoint supports verification of both JSON-LD and SD-JWT formatted VCs.
+        - To verify a JSON-LD VC, set the request header: `Content-Type: application/vc+ld+json`
+        - To verify an SD-JWT VC, set the request header: `Content-Type: application/vc+sd-jwt`
 
-        To verify an SD-JWT VC, set the request header: `Content-Type: application/vc+sd-jwt`
+        From `0.16.x` onwards, 
+        - This endpoint also performs revocation checks for JSON-LD credentials. 
+        - When a credential is found to be revoked, the verification status will be `REVOKED`.
+        - If a runtime exception is encountered during VC verification or if an error occurs while performing the credential status (revocation) check, in theses cases, this endpoint may return a 500 Internal Server Error. 
 
-        As of version `1.6.0`, the API also performs revocation checks for JSON-LD credentials. When a credential is found to be revoked, the verification status may additionally be `REVOKED`.
-
-        In certain cases, the API may return a 500 Internal Server Error. This can occur if a runtime exception is encountered during VC verification or if an error occurs while performing the credential status (revocation) check. When such errors arise, the API returns a response body describing the issue along with the 500 status code.
+        From `0.17.x` onwards, 
+        - This endpoint also supports verification of CWT (CBOR Web Token with Claim 169 mapped fields) format VCs.
+        - To verify a CWT VC, set the request header: `Content-Type: application/vc+cwt` and VC should be sent as HEX value of CBOR.
+        - V2 Version of `/vc-verification` endpoint has been added which performs verification of a credential and returns a detailed breakdown of verification results instead of a single final status.
       operationId: vc-verification
       tags:
         - VC Verification
@@ -584,6 +625,14 @@ paths:
                 summary: Example SD-JWT format VC to be verified
                 value:
                   vc: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+          application/vc+cwt:
+            schema:
+              $ref: '#/components/schemas/VCVerificationCWTRequest'
+            examples:
+              example:
+                summary: Example hex-encoded CWT to be verified
+                value:
+                  vc: d83dd2845831a2012604582b4b52394b495f49386443
         description: The Verifiable Credential to be verified.
       responses:
         '200':
@@ -650,6 +699,8 @@ paths:
     post:
       summary: Verify a Verifiable Credential (V2)
       description: |
+        This endpoint was introduced in `0.17.0` version. 
+
         Verifies a single Verifiable Credential (VC) and returns a detailed
         breakdown of verification results instead of a single final status.
 
@@ -687,7 +738,7 @@ paths:
 
         Supported credential formats:
         - JSON-LD
-        - CWT
+        - CWT (CBOR Web Token with Claim 169 mapped fields)
         - SD-JWT
 
         Runtime exceptions thrown by the underlying `vc-verifier` library
@@ -867,6 +918,10 @@ components:
           type: string
           description: ID of the client asking to create a new Verifiable Presentation request. This identifies the verifier application.
           example: client123
+        acceptVPWithoutHolderProof:
+          type: boolean
+          description: 'If this is `true`, then Verifiable Presentation Token submmited by the wallet can be unsigned (without proof).Default value is false.'
+          example: false
         presentationDefinitionId:
           type: string
           description: Either presentationDefinitionId or presentationDefinition should be passed. A predefined presentation definition Id so that the user does not need to pass the presentation definition.
@@ -1285,6 +1340,19 @@ components:
           type: string
           description: The complete verifiable credential object to be verified by the server.
           example: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+    VCVerificationCWTRequest:
+      title: VCVerificationCWTRequest
+      x-stoplight:
+        id: 23487178cda3e
+      type: object
+      required:
+        - vc
+      properties:
+        vc:
+          type: string
+          description: Hex-encoded CWT (CBOR bytes) to be verified by the server.
+          pattern: '^[0-9a-fA-F]+$'
+          example: d83dd2845831a2012604
     VpTokenResult:
       title: VpTokenResult
       type: object
@@ -1384,7 +1452,7 @@ components:
       properties:
         verifiableCredential:
           type: string
-          description: 'Verifiable Credential to be verified (JSON-LD, CWT, SD-JWT)'
+          description: 'Verifiable Credential to be verified (JSON-LD, CWT, SD-JWT). For CWT format send HEX value of CBOR.'
         skipStatusChecks:
           type: boolean
           default: false
@@ -1439,8 +1507,6 @@ components:
           type: string
         allChecksSuccessful:
           type: boolean
-        error:
-          $ref: '#/components/schemas/ErrorDetail'
         credentialResults:
           type: array
           items:

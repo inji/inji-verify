@@ -45,3 +45,35 @@ GetVpTokenForRequest:
     output: '{
     "responseCode": "404"
     }'
+
+  Injiverify_GetVpTokenForRequestWithProof_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-result/{transactionId}
+      description: Getting the VP token for the Request
+      uniqueIdentifier: TC_InjiVerify_GetVpTokenForRequest_04
+      role: noauth
+      restMethod: get
+      inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
+      outputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequestResult
+      input: '{
+      "transactionId":"$ID:CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+    "transactionId": "$ID:CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid_transactionId$",
+    "vpResultStatus": "SUCCESS"
+}'
+
+  Injiverify_GetVpTokenForRequestWithOutProof_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-result/{transactionId}
+      description: Getting the VP token for the Request
+      uniqueIdentifier: TC_InjiVerify_GetVpTokenForRequest_05
+      role: noauth
+      restMethod: get
+      inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
+      outputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequestError
+      input: '{
+      "transactionId":"$ID:CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+      "errorCode": "VP_WITHOUT_PROOF",
+   "errorMessage": "Invalid VP Submission since VP is without proof"
+}'  

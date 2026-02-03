@@ -16,7 +16,7 @@ function installing_inji-verify-service() {
 
   echo Istio label
   kubectl label ns $NS istio-injection=enabled --overwrite
-  helm repo add mosip https://mosip.github.io/mosip-helm
+  helm repo add inji https://inji.github.io/helm
   helm repo update
 
   echo Copy configmaps
@@ -42,7 +42,6 @@ function installing_inji-verify-service() {
   # Check if INJIVERIFY_HOST is present under configmap/inji-stack-config of configserver
   if echo "$DEFAULT_INJIVERIFY_HOST" | grep -q "INJIVERIFY_HOST"; then
     echo "INJIVERIFY_HOST is already present in configmap/inji-stack-config of configserver"
-    MOSIP_INJIVERIFY_HOST=$DEFAULT_INJIVERIFY_HOST
   else
     read -p "Please provide injiverifyhost (eg: injiverify.sandbox.xyz.net): " INJIVERIFY_HOST
 
@@ -61,8 +60,8 @@ function installing_inji-verify-service() {
   INJIVERIFY_HOST=$(kubectl get cm inji-stack-config -o jsonpath={.data.injiverify-host})
 
   echo Installing inji-verify-service
-  helm -n $NS install inji-verify-service mosip/inji-verify-service \
-    --version $CHART_VERSION $ENABLE_INSECURE \
+  helm -n $NS install inji-verify-service inji/inji-verify-service \
+    --version $CHART_VERSION  \
     --set extraEnv[0].name=INJI_VP_SUBMISSION_BASE_URL \
     --set extraEnv[0].value="https://${INJIVERIFY_HOST}/v1/verify" \
     --set extraEnv[1].name=INJI_DID_VERIFY_URI \
