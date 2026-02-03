@@ -51,7 +51,7 @@ service:
 
 image:
   registry: docker.io
-  repository: injistackdev/inji-verify-ui
+  repository: injistackqa/inji-verify-ui
   tag: 0.17.x
 
   ## Specify a imagePullPolicy

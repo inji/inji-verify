@@ -19,7 +19,7 @@ modules:
     enabled: true
     image:
       registry: docker.io
-      repository: mosipqa/uitest-verify
+      repository: injistackqa/uitest-verify
       tag: 0.17.x
 
 crontime: "0 3 * * *"    ## run cronjob every day at 3 AM (time hr: 0-23 )
