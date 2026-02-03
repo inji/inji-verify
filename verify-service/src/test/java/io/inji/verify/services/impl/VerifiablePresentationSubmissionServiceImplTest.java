@@ -1056,16 +1056,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(mockVcRes.getVerificationResult()).thenReturn(mockVcVerifyResult);
         when(mockVcVerifyResult.getVerificationStatus()).thenReturn(true);
 
-        PresentationResultWithCredentialStatusV2 mockResult = mock(PresentationResultWithCredentialStatusV2.class);
-        VerificationResult mockProofResult = mock(VerificationResult.class);
-
-        when(mockResult.getVcResults()).thenReturn(List.of(mockVcRes));
-        when(mockResult.getProofVerificationResult()).thenReturn(mockProofResult);
-        when(mockProofResult.getVerificationStatus()).thenReturn(true);
-
-        when(presentationVerifier.verifyAndGetCredentialStatusV2(anyString(), anyList()))
-                .thenReturn(mockResult);
-
         assertFalse(credentialResults.getFirst().isAllChecksSuccessful(), "Should be false when a status check fails");
         assertFalse(credentialResults.getFirst().getStatusCheck().getFirst().isValid(), "Should be false when a status is revoked");
     }
