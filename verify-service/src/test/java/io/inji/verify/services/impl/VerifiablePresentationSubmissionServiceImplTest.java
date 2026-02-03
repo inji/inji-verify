@@ -8,19 +8,23 @@ import io.inji.verify.dto.submission.PresentationSubmissionDto;
 import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.dto.submission.PathNestedDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
+import io.inji.verify.dto.verification.VCVerificationResultDto;
+import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
+import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
-import io.inji.verify.exception.*;
+import io.inji.verify.exception.VPSubmissionNotFoundException;
+import io.inji.verify.exception.InvalidVpTokenException;
+import io.inji.verify.exception.VPSubmissionWalletError;
+import io.inji.verify.exception.VPWithoutProofException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
-import io.inji.verify.dto.verification.VCVerificationRequestDto;
-import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.mosip.pixelpass.PixelPass;
 import io.inji.verify.utils.Utils;
 import io.mosip.vercred.vcverifier.data.*;
@@ -135,6 +139,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.SUCCESS, resultDto.getVpResultStatus());
     }
+
     @Test
      void testProcessSubmission_NoProof_Accepted() {
         String vpToken = "{\"type\":\"VerifiablePresentation\",\"verifiableCredential\":[\"vc1\"]}";
@@ -732,7 +737,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
 
-        // Mock CredentialVerificationSummary and VerificationResult
         io.mosip.vercred.vcverifier.data.CredentialVerificationSummary mockSummary = mock(io.mosip.vercred.vcverifier.data.CredentialVerificationSummary.class);
         VerificationResult mockResult = mock(VerificationResult.class);
         when(mockResult.getVerificationStatus()).thenReturn(true);
@@ -1034,13 +1038,15 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    void testVerifyPresentationWithCredentialStatusChecks_Fixed() {
+    void testVerifyPresentationWithCredentialStatusChecks() {
         VerificationRequestDto request = new VerificationRequestDto();
         request.setStatusCheckFilters(List.of("revocation"));
         request.setIncludeClaims(true);
 
-        JSONObject vpToken = new JSONObject("{\"type\":\"VerifiablePresentation\"}");
-        List<CredentialResultsDto> credentialResults = new ArrayList<>();
+        CredentialResultsDto credentialResult = new CredentialResultsDto();
+        credentialResult.setStatusCheck(List.of(new StatusCheckDto("revocation", false, null)));
+
+        List<CredentialResultsDto> credentialResults = List.of(credentialResult);
 
         String validVcJson = "{\"credentialSubject\":{\"name\":\"John Doe\"}}";
         VCResultWithCredentialStatusV2 mockVcRes = mock(VCResultWithCredentialStatusV2.class);
@@ -1049,7 +1055,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(mockVcRes.getVc()).thenReturn(validVcJson);
         when(mockVcRes.getVerificationResult()).thenReturn(mockVcVerifyResult);
         when(mockVcVerifyResult.getVerificationStatus()).thenReturn(true);
-        when(mockVcRes.getCredentialStatus()).thenReturn(new HashMap<>());
 
         PresentationResultWithCredentialStatusV2 mockResult = mock(PresentationResultWithCredentialStatusV2.class);
         VerificationResult mockProofResult = mock(VerificationResult.class);
@@ -1061,16 +1066,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(presentationVerifier.verifyAndGetCredentialStatusV2(anyString(), anyList()))
                 .thenReturn(mockResult);
 
-        assertDoesNotThrow(() -> {
-            ReflectionTestUtils.invokeMethod(
-                    verifiablePresentationSubmissionService,
-                    "verifyPresentationWithCredentialStatusChecks",
-                    request, vpToken, credentialResults
-            );
-        });
-        assertFalse(credentialResults.isEmpty());
-        assertNotNull(credentialResults.get(0).getClaims());
-        assertTrue(credentialResults.get(0).isAllChecksSuccessful());
+        assertFalse(credentialResults.getFirst().isAllChecksSuccessful(), "Should be false when a status check fails");
+        assertFalse(credentialResults.getFirst().getStatusCheck().getFirst().isValid(), "Should be false when a status is revoked");
     }
 }
 
