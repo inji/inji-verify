@@ -18,37 +18,27 @@ import PageTemplate from "./components/PageTemplate";
 import { verificationInit } from "./redux/features/verification/verification.slice";
 
 function switchToVerificationMethod(method: VerificationMethod) {
-  const sessionStoragePath = sessionStorage.getItem('pathName');
-  let methodPath = "";
-  switch (method) {
-    case "UPLOAD":
-      methodPath = Pages.Home;
-      break;
-    case "SCAN":
-      methodPath = Pages.Scan;
-      break;
-    case "VERIFY":
-      methodPath = Pages.VerifyCredentials;
-      break;
-    default:
-      methodPath = "";
+  const transactionId = sessionStorage.getItem("transactionId");
+  const requestId = sessionStorage.getItem("requestId");
+
+  if (transactionId && requestId) {
+    if (method === "SCAN") {
+      store.dispatch(selectMethod({method}));
+      store.dispatch(
+        verificationInit({
+          qrReadResult: {status: "READ"},
+          ovp: {},
+        })
+      );
+    }
+    return null;
   }
-  if (sessionStoragePath && sessionStoragePath !== methodPath) {
+  if (method !== "UPLOAD") {
     sessionStorage.removeItem("pathName");
     sessionStorage.removeItem("transactionId");
     sessionStorage.removeItem("requestId");
   }
-  if (sessionStoragePath?.includes(Pages.Scan) && method === "SCAN") {
-    store.dispatch(selectMethod({ method: "SCAN" }));
-    store.dispatch(
-      verificationInit({
-        qrReadResult: {status: "READ"},
-        ovp: {},
-      })
-    );
-    return null;
-  }
-  store.dispatch(goToHomeScreen({ method }));
+  store.dispatch(goToHomeScreen({method}));
   return null;
 }
 
@@ -56,12 +46,6 @@ const router = createBrowserRouter([
   {
     path: "/",
     element: <PageTemplate />,
-    loader: ({ request }) => {
-      const url = new URL(request.url);
-      const sessionStoragePath = sessionStorage.getItem('pathName');
-      if (url.pathname === Pages.Home && sessionStoragePath?.includes(Pages.Scan)) return redirect(Pages.Scan);
-      return null;
-    },
     children: [
       {
         path: Pages.Home,
