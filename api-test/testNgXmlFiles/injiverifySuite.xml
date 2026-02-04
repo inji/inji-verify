@@ -129,4 +129,12 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
 		</classes>
 	</test>
+		<test name="GetVpRequestStatusV2">
+		<parameter name="ymlFile"
+			value="injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2.yml" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
+		</classes>
+	</test>
 </suite>

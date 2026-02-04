@@ -1,0 +1,18 @@
+GetVpRequestStatusV2.yml:
+  Injiverify_GetVpRequestStatus_V2_All_Valid_Smoke:
+      endPoint: /v1/verify/v2/vp-results/$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$
+      description: Verify VP results in V2 end point
+      uniqueIdentifier: TC_InjiVerify_GetVpRequestStatus_V2_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2
+      outputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2Result
+      input: '{
+      }'
+      output: '{
+      "allChecksSuccessful": true
+}'
+ 
+
+
+
