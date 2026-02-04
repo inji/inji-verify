@@ -37,17 +37,9 @@ const DisplayActiveStep = () => {
   
   const dispatch = useAppDispatch();
 
-  const handleRequestCredentials = () => {
-    dispatch(setSelectCredential());
-  };
-
-  const handleMissingCredentials = () => {
-    dispatch(getVpRequest({ selectedClaims: unverifiedClaims }));
-  };
-
-  const handleRestartProcess = () => {
-    dispatch(resetVpRequest());
-  };
+    const handleRequestCredentials = () => dispatch(setSelectCredential());
+    const handleMissingCredentials = () => dispatch(getVpRequest({ selectedClaims: unverifiedClaims }));
+    const handleRestartProcess = () => dispatch(resetVpRequest());
 
   const handleOnVpProcessed = async (vpResults: VerificationResults) => {
     const decodedVpResults = await Promise.all(
@@ -67,14 +59,24 @@ const DisplayActiveStep = () => {
     dispatch(resetVpRequest());
   };
 
-  const handleOnError = (error: any) => {
-    dispatch(closeAlert({}));
-    dispatch(resetVpRequest());
-    if (error.errorCode) {
-      error.message = "We’re unable to complete your request. Please contact support for assistance.";
-    }
-    dispatch(raiseAlert({ title: "Request Failed", errorCode:error.errorCode, errorReason: error.errorMessage, message: error.message, referenceId: error.transactionId, severity: "error", open: true, autoHideDuration: 120000 }));
-  };
+    const handleOnError = (error: any) => {
+        dispatch(closeAlert({}));
+        dispatch(resetVpRequest());
+        let errorMessage = error.message;
+        if (error.errorCode) {
+            errorMessage = "We’re unable to complete your request. Please contact support for assistance.";
+        }
+        dispatch(raiseAlert({
+            title: "Request Failed",
+            errorCode: error.errorCode,
+            errorReason: error.errorMessage,
+            message: errorMessage,
+            referenceId: error.transactionId,
+            severity: "error",
+            open: true,
+            autoHideDuration: 120000
+        }));
+    };
 
   const getClientId = () => {
     return (isSingleVc && selectedClaims[0]?.clientIdScheme === "pre_registered") ? window._env_.CLIENT_ID : window._env_.CLIENT_ID_DID;
@@ -92,104 +94,79 @@ const DisplayActiveStep = () => {
     }
   }, [selectedClaims, activeScreen]);
 
-  if (isLoading) {
-    return <Loader className="absolute lg:top-[200px] right-[100px]" />;
-  } 
-  
-  if (incorrectCredentialShared) {
-    dispatch(resetVpRequest());
-    dispatch(
-      raiseAlert({ ...AlertMessages().incorrectCredential, open: true })
-    );
+    if (isLoading) return <Loader className="absolute lg:top-[200px] right-[100px]" />;
+
+    if (incorrectCredentialShared) {
+        dispatch(resetVpRequest());
+        dispatch(raiseAlert({ ...AlertMessages().incorrectCredential, open: true }));
+        return null;
+    }
+
+    if (showResult) {
+        return (
+            <div className="w-[100vw] lg:w-[50vw] display-flex flex-col items-center justify-center">
+                <VpSubmissionResult
+                    verifiedVcs={verifiedVcs}
+                    unverifiedClaims={unverifiedClaims}
+                    requestCredentials={handleRequestCredentials}
+                    requestMissingCredentials={handleMissingCredentials}
+                    restart={handleRestartProcess}
+                    isSingleVc={isSingleVc}
+                />
+            </div>
+        );
+    }
+
+    if (flowType === "crossDevice" || flowType === "sameDevice") {
+        const isCrossDevice = flowType === "crossDevice";
+
+        return (
+            <div className="flex flex-col mt-10 lg:mt-0 pt-0 pb-[100px] lg:py-[42px] px-0 lg:px-[104px] text-center content-center justify-center">
+                <div className="xs:col-end-13">
+                    <div className="relative grid content-center justify-center w-[275px] h-auto lg:w-[360px] aspect-square my-1.5 mx-auto">
+                        <div className="flex flex-col items-center">
+                            <div className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}>
+                                <OpenID4VPVerification
+                                    key={`${flowType}-${sdkInstanceKey}`}
+                                    triggerElement={
+                                        <QrIcon
+                                            id="OpenID4VPVerification_trigger"
+                                            className="w-[78px] lg:w-[100px]"
+                                            aria-disabled={presentationDefinition.input_descriptors.length === 0}
+                                        />
+                                    }
+                                    verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                                    presentationDefinition={presentationDefinition}
+                                    onVPProcessed={handleOnVpProcessed}
+                                    onQrCodeExpired={handleOnQrExpired}
+                                    onError={handleOnError}
+                                    qrCodeStyles={isCrossDevice ? { size: qrSize } : undefined}
+                                    clientId={getClientId()}
+                                    isSameDeviceFlowEnabled={!isCrossDevice}
+                                />
+                            </div>
+                            {isCrossDevice && (
+                                <Button
+                                    id="request-credentials-button"
+                                    title={t("rqstButton")}
+                                    className="w-[300px] mx-auto lg:ml-[76px] mt-10 lg:hidden"
+                                    variant="fill"
+                                    onClick={handleRequestCredentials}
+                                    disabled={activeScreen === 3}
+                                />
+                            )}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        );
+    }
+
     return null;
-  }
-
-  if (showResult) {
-    return (
-      <div className="w-[100vw] lg:w-[50vw] display-flex flex-col items-center justify-center">
-        <VpSubmissionResult
-          verifiedVcs={verifiedVcs}
-          unverifiedClaims={unverifiedClaims}
-          requestCredentials={handleRequestCredentials}
-          requestMissingCredentials={handleMissingCredentials}
-          restart={handleRestartProcess}
-          isSingleVc={isSingleVc}
-        />
-      </div>
-    );
-  } else if (flowType === "crossDevice") {
-    return (
-      <div className="flex flex-col mt-10 lg:mt-0 pt-0 pb-[100px] lg:py-[42px] px-0 lg:px-[104px] text-center content-center justify-center">
-        <div className="xs:col-end-13">
-          <div
-            className={`relative grid content-center justify-center w-[275px] h-auto lg:w-[360px] aspect-square my-1.5 mx-auto`}
-          >
-            <div className="flex flex-col items-center">
-              <div
-                className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
-              >
-                <OpenID4VPVerification
-                  key={`${flowType}-${sdkInstanceKey}`}
-                  triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
-                  presentationDefinition={presentationDefinition}
-                  onVPProcessed={handleOnVpProcessed}
-                  onQrCodeExpired={handleOnQrExpired}
-                  onError={handleOnError}
-                  qrCodeStyles={{ size: qrSize }}
-                  clientId={getClientId()}
-                  isSameDeviceFlowEnabled={false}
-                />
-              </div>
-              <Button	
-                id="request-credentials-button"	
-                title={t("rqstButton")}	
-                className={`w-[300px] mx-auto lg:ml-[76px] mt-10 lg:hidden`}	
-                variant="fill"	
-                onClick={handleRequestCredentials}	
-                disabled={activeScreen === 3 }	
-              />
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  } else if (flowType === "sameDevice") {
-    return (
-      <div className="flex flex-col mt-10 lg:mt-0 pt-0 pb-[100px] lg:py-[42px] px-0 lg:px-[104px] text-center content-center justify-center">
-        <div className="xs:col-end-13">
-          <div
-            className={`relative grid content-center justify-center w-[275px] h-auto lg:w-[360px] aspect-square my-1.5 mx-auto`}
-          >
-            <div className="flex flex-col items-center">
-              <div
-                className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
-              >
-                <OpenID4VPVerification
-                  key={`${flowType}-${sdkInstanceKey}`}
-                  triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
-                  presentationDefinition={presentationDefinition}
-                  onVPProcessed={handleOnVpProcessed}
-                  onQrCodeExpired={handleOnQrExpired}
-                  onError={handleOnError}
-                  clientId={getClientId()}
-                />
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    );
-  } else {
-    return <></>;
-  }
 };
 
-export const VpVerification = () => {
-  return (
+export const VpVerification = () => (
     <div>
-      <DisplayActiveStep />
+        <DisplayActiveStep />
     </div>
-  );
-};
+);
