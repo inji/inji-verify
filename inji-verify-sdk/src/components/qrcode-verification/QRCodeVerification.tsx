@@ -464,7 +464,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const resetState = () => {
     sessionStorage.removeItem("transactionId");
     sessionStorage.removeItem("requestId");
-    sessionStorage.removeItem("pathName");
     hasFetchedVPResultRef.current = false;
     scanSessionCompletedRef.current = true;
     frameProcessingRef.current = false;
