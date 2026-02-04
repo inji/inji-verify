@@ -20,44 +20,45 @@ import {VerificationResults} from "@injistack/react-inji-verify-sdk/dist/compone
 import {decodeSdJwtToken} from "../../../utils/decodeSdJwt";
 
 const DisplayActiveStep = () => {
-  const { t } = useTranslation("Verify");
-  const isLoading = useVerifyFlowSelector((state) => state.isLoading);
-  const sharingType = useVerifyFlowSelector((state) => state.sharingType);
-  const isSingleVc = sharingType === VCShareType.SINGLE;
-  const selectedClaims = useVerifyFlowSelector((state) => state.selectedClaims);
-  const verifiedVcs: VpSubmissionResultInt[] = useVerifyFlowSelector((state) => state.verificationSubmissionResult );
-  const unverifiedClaims = useVerifyFlowSelector((state) => state.unVerifiedClaims );
-  const presentationDefinition = useVerifyFlowSelector((state) => state.presentationDefinition );
-  const qrSize = window.innerWidth <= 1024 ? 240 : 320;
-  const activeScreen = useVerifyFlowSelector((state) => state.activeScreen);
-  const showResult = useVerifyFlowSelector((state) => state.isShowResult);
-  const flowType = useVerifyFlowSelector((state) => state.flowType);
-  const incorrectCredentialShared = selectedClaims.length === 1 && unverifiedClaims.length === 1 && isSingleVc;
-  const sdkInstanceKey = useVerifyFlowSelector((state) => state.sdkInstanceKey);
-  
-  const dispatch = useAppDispatch();
+    const { t } = useTranslation("Verify");
+    const isLoading = useVerifyFlowSelector((state) => state.isLoading);
+    const sharingType = useVerifyFlowSelector((state) => state.sharingType);
+    const isSingleVc = sharingType === VCShareType.SINGLE;
+    const selectedClaims = useVerifyFlowSelector((state) => state.selectedClaims);
+    const verifiedVcs: VpSubmissionResultInt[] = useVerifyFlowSelector((state) => state.verificationSubmissionResult);
+    const unverifiedClaims = useVerifyFlowSelector((state) => state.unVerifiedClaims);
+    const presentationDefinition = useVerifyFlowSelector((state) => state.presentationDefinition);
+    const qrSize = window.innerWidth <= 1024 ? 240 : 320;
+    const activeScreen = useVerifyFlowSelector((state) => state.activeScreen);
+    const showResult = useVerifyFlowSelector((state) => state.isShowResult);
+    const flowType = useVerifyFlowSelector((state) => state.flowType);
+    const unverifiedClaimsLength = unverifiedClaims.length;
+    const incorrectCredentialShared = selectedClaims.length === 1 && unverifiedClaimsLength === 1 && isSingleVc;
+    const sdkInstanceKey = useVerifyFlowSelector((state) => state.sdkInstanceKey);
+
+    const dispatch = useAppDispatch();
 
     const handleRequestCredentials = () => dispatch(setSelectCredential());
     const handleMissingCredentials = () => dispatch(getVpRequest({ selectedClaims: unverifiedClaims }));
     const handleRestartProcess = () => dispatch(resetVpRequest());
 
-  const handleOnVpProcessed = async (vpResults: VerificationResults) => {
-    const decodedVpResults = await Promise.all(
-        vpResults.map(async (vpResult) => {
-          if (typeof vpResult?.vc === 'string') {
-            const decodedSdJwt = await decodeSdJwtToken(vpResult.vc);
-            return { ...vpResult, vc: decodedSdJwt };
-          }
-          return vpResult;
-        })
-    );
-    dispatch(verificationSubmissionComplete({ verificationResult: decodedVpResults }));
-  };
+    const handleOnVpProcessed = async (vpResults: VerificationResults) => {
+        const decodedVpResults = await Promise.all(
+            vpResults.map(async (vpResult) => {
+                if (typeof vpResult?.vc === 'string') {
+                    const decodedSdJwt = await decodeSdJwtToken(vpResult.vc);
+                    return { ...vpResult, vc: decodedSdJwt };
+                }
+                return vpResult;
+            })
+        );
+        dispatch(verificationSubmissionComplete({ verificationResult: decodedVpResults }));
+    };
 
-  const handleOnQrExpired = () => {
-    dispatch(raiseAlert({ ...AlertMessages().sessionExpired, open: true }));
-    dispatch(resetVpRequest());
-  };
+    const handleOnQrExpired = () => {
+        dispatch(raiseAlert({ ...AlertMessages().sessionExpired, open: true }));
+        dispatch(resetVpRequest());
+    };
 
     const handleOnError = (error: any) => {
         dispatch(closeAlert({}));
@@ -94,14 +95,16 @@ const DisplayActiveStep = () => {
     }
   }, [selectedClaims, activeScreen]);
 
+    useEffect(() => {
+        if (incorrectCredentialShared) {
+            dispatch(resetVpRequest());
+            dispatch(raiseAlert({ ...AlertMessages().incorrectCredential, open: true }));
+        }
+    }, [incorrectCredentialShared, dispatch]);
+
     if (isLoading) return <Loader className="absolute lg:top-[200px] right-[100px]" />;
 
-    if (incorrectCredentialShared) {
-        dispatch(resetVpRequest());
-        dispatch(raiseAlert({ ...AlertMessages().incorrectCredential, open: true }));
-        return null;
-    }
-
+    if (incorrectCredentialShared) return null;
     if (showResult) {
         return (
             <div className="w-[100vw] lg:w-[50vw] display-flex flex-col items-center justify-center">
@@ -135,7 +138,7 @@ const DisplayActiveStep = () => {
                                             aria-disabled={presentationDefinition.input_descriptors.length === 0}
                                         />
                                     }
-                                    verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                                    verifyServiceUrl={window._env_.VERIFY_SERVICE_API_URL}
                                     presentationDefinition={presentationDefinition}
                                     onVPProcessed={handleOnVpProcessed}
                                     onQrCodeExpired={handleOnQrExpired}
