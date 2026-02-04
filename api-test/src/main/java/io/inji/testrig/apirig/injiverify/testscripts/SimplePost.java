@@ -1,11 +1,8 @@
-package io.mosip.testrig.apirig.injiverify.testscripts;
+package io.inji.testrig.apirig.injiverify.testscripts;
 
 import java.lang.reflect.Field;
-import java.time.Duration;
-import java.time.Instant;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -21,11 +18,10 @@ import org.testng.annotations.Test;
 import org.testng.internal.BaseTestMethod;
 import org.testng.internal.TestResult;
 
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.dto.OutputValidationDto;
 import io.mosip.testrig.apirig.dto.TestCaseDTO;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyConstants;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.testrunner.HealthChecker;
 import io.mosip.testrig.apirig.utils.AdminTestException;
 import io.mosip.testrig.apirig.utils.AuthenticationTestException;
@@ -35,8 +31,8 @@ import io.mosip.testrig.apirig.utils.ReportUtil;
 import io.mosip.testrig.apirig.utils.SecurityXSSException;
 import io.restassured.response.Response;
 
-public class GetWithParam extends InjiVerifyUtil implements ITest {
-	private static final Logger logger = Logger.getLogger(GetWithParam.class);
+public class SimplePost extends InjiVerifyUtil implements ITest {
+	private static final Logger logger = Logger.getLogger(SimplePost.class);
 	protected String testCaseName = "";
 	public Response response = null;
 	public boolean auditLogCheck = false;
@@ -82,36 +78,27 @@ public class GetWithParam extends InjiVerifyUtil implements ITest {
 	public void test(TestCaseDTO testCaseDTO) throws AuthenticationTestException, AdminTestException, SecurityXSSException {
 		testCaseName = testCaseDTO.getTestCaseName();
 		testCaseName = InjiVerifyUtil.isTestCaseValidForExecution(testCaseDTO);
+		auditLogCheck = testCaseDTO.isAuditLogCheck();
 		if (HealthChecker.signalTerminateExecution) {
 			throw new SkipException(
 					GlobalConstants.TARGET_ENV_HEALTH_CHECK_FAILED + HealthChecker.healthCheckFailureMapS);
 		}
 
-		auditLogCheck = testCaseDTO.isAuditLogCheck();
+		String inputJson = getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate());
 
-		if (testCaseName.contains("_Expiry")) {
-			final int MAX_DURATION_MS = Integer
-					.parseInt(InjiVerifyConfigManager.getproperty(InjiVerifyConstants.EXPIRATION_TIME));
-			
-			try {
-				TimeUnit.SECONDS.sleep(MAX_DURATION_MS);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
-			}
-		}
-		
-		response = getWithPathParamAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(),
-				getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate()), auditLogCheck,
+		response = postWithBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(), inputJson, auditLogCheck,
 				COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName());
-
 		Map<String, List<OutputValidationDto>> ouputValid = null;
 		ouputValid = OutputValidationUtil.doJsonOutputValidation(response.asString(),
 				getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate()), testCaseDTO,
 				response.getStatusCode());
 
 		Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
-		if (!OutputValidationUtil.publishOutputResult(ouputValid))
-			throw new AdminTestException("Failed at output validation");
+
+		if (!OutputValidationUtil.publishOutputResult(ouputValid)) {
+			throw new AdminTestException("Failed at otp output validation");
+		}
+
 	}
 
 	/**

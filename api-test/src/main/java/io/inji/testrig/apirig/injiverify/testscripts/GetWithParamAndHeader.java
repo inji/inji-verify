@@ -1,4 +1,4 @@
-package io.mosip.testrig.apirig.injiverify.testscripts;
+package io.inji.testrig.apirig.injiverify.testscripts;
 
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -33,10 +33,10 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 import com.itextpdf.text.pdf.PdfReader;
 import com.itextpdf.text.pdf.parser.PdfTextExtractor;
 
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.dto.OutputValidationDto;
 import io.mosip.testrig.apirig.dto.TestCaseDTO;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.testrunner.HealthChecker;
 import io.mosip.testrig.apirig.utils.AdminTestException;
 import io.mosip.testrig.apirig.utils.AdminTestUtil;

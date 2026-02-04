@@ -1,4 +1,4 @@
-package io.mosip.testrig.apirig.injiverify.testscripts;
+package io.inji.testrig.apirig.injiverify.testscripts;
 
 import java.lang.reflect.Field;
 import java.security.NoSuchAlgorithmException;
@@ -19,10 +19,10 @@ import org.testng.annotations.Test;
 import org.testng.internal.BaseTestMethod;
 import org.testng.internal.TestResult;
 
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.dto.OutputValidationDto;
 import io.mosip.testrig.apirig.dto.TestCaseDTO;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.testrunner.HealthChecker;
 import io.mosip.testrig.apirig.utils.AdminTestException;
 import io.mosip.testrig.apirig.utils.AuthenticationTestException;

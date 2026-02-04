@@ -1,4 +1,4 @@
-package io.mosip.testrig.apirig.injiverify.utils;
+package io.inji.testrig.apirig.injiverify.utils;
 
 import java.util.HashMap;
 import java.util.Map;
@@ -6,7 +6,7 @@ import java.util.Properties;
 
 import org.apache.log4j.Logger;
 
-import io.mosip.testrig.apirig.injiverify.testrunner.MosipTestRunner;
+import io.inji.testrig.apirig.injiverify.testrunner.InjiTestRunner;
 import io.mosip.testrig.apirig.utils.ConfigManager;
 
 public class InjiVerifyConfigManager extends ConfigManager {
@@ -16,7 +16,7 @@ public class InjiVerifyConfigManager extends ConfigManager {
 		Map<String, Object> moduleSpecificPropertiesMap = new HashMap<>();
 		// Load scope specific properties
 		try {
-			String path = MosipTestRunner.getGlobalResourcePath() + "/config/injiVerify.properties";
+			String path = InjiTestRunner.getGlobalResourcePath() + "/config/injiVerify.properties";
 			Properties props = getproperties(path);
 			// Convert Properties to Map and add to moduleSpecificPropertiesMap
 			for (String key : props.stringPropertyNames()) {

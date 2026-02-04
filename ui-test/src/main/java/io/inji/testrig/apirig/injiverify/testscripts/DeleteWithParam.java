@@ -1,4 +1,4 @@
-package io.mosip.testrig.apirig.injiverify.testscripts;
+package io.inji.testrig.apirig.injiverify.testscripts;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
