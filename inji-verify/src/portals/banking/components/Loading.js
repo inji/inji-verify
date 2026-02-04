@@ -5,10 +5,10 @@ const Loading = (props) => {
   const { t } = useTranslation("loading");
 
   const list = [
-    { label: t("national_id") },
-    { label: t("tan_id_check") },
-    { label: t("credit_score") },
-    { label: t("existing_loan_check") },
+    { label: t("identity_verification") },
+    { label: t("address_verification") },
+    { label: t("kyc_check") },
+    { label: t("account_setup") },
   ];
 
   const [activeIndex, setActiveIndex] = useState(-1); // Initially, all have opacity 0.25
@@ -32,7 +32,7 @@ const Loading = (props) => {
   return (
     <div className="rounded-xl bg-white shadow-md">
       <p className="text-center text-[#42307D] text-[2.5rem] font-semibold mx-auto pt-[3rem] flex justify-center">
-        {t("background_process")}
+        {t("processing_application")}
       </p>
       <img
         src="assets/gifs/loading.gif"

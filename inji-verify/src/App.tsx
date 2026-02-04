@@ -11,7 +11,7 @@ import PageNotFound404 from "./pages/PageNotFound404";
 import { Pages } from "./utils/config";
 import LandingPage from "./portals/banking/pages/LandingPage";
 import langConfigService from "./portals/banking/services/langConfigService";
-import Loan from "./portals/banking/pages/Loan";
+import AccountOpening from "./portals/banking/pages/AccountOpening";
 import Application from "./portals/banking/pages/Application";
 import NavHeader from "./portals/banking/components/NavHeader";
 import RedirectOnReload from "./portals/banking/components/RedirectOnReload";
@@ -77,8 +77,8 @@ function App() {
       element: <LandingPage />,
     },
     {
-      path: Pages.LoanPage,
-      element: <Loan />,
+      path: Pages.AccountOpeningPage,
+      element: <AccountOpening />,
     },
     {
       path: Pages.Application,

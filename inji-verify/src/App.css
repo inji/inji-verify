@@ -54,6 +54,11 @@ input[type="radio"] {
 .stepper .label {
   font-weight: 500;
   font-size: 1em;
+  white-space: normal;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  max-width: 100%;
+  line-height: 1.3;
 }
 
 .description {
@@ -66,11 +71,14 @@ input[type="radio"] {
   left: 0.5em;
   font-size: 1em;
   font-family: inherit;
-  width: max-content;
+  max-width: 100%;
   text-align: left;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  word-wrap: break-word;
+  white-space: normal;
   color: #e9d7fe;
   font-weight: 300;
+  line-height: 1.4;
 }
 
 .verticalStepper .middleStepConnector {
@@ -83,6 +91,20 @@ input[type="radio"] {
 
 .verticalStepper {
   margin: auto !important;
+  max-width: 100%;
+  width: 100%;
+}
+
+.verticalContentWrapper {
+  max-width: 100%;
+  width: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.verticalContentWrapper .label,
+.verticalContentWrapper .description {
+  max-width: 100%;
 }
 
 .scrollable-div {
@@ -184,5 +206,39 @@ a:hover, a:focus {
 @media screen and (max-width: 1023px) {
   .stepper .label {
     padding: 0px;
+  }
+  
+  .horizontalStepper .label,
+  .horizontalStepper .description {
+    max-width: 100%;
+  }
+}
+
+/* Additional responsive styles for better text wrapping */
+@media screen and (min-width: 1024px) {
+  .verticalStepper {
+    padding: 0 1rem;
+  }
+  
+  .verticalContentWrapper {
+    padding-right: 0.5rem;
+  }
+  
+  .stepper .label {
+    font-size: 0.95rem;
+  }
+  
+  .verticalContentWrapper .description {
+    font-size: 0.875rem;
+  }
+}
+
+@media screen and (min-width: 1280px) {
+  .stepper .label {
+    font-size: 1rem;
+  }
+  
+  .verticalContentWrapper .description {
+    font-size: 0.95rem;
   }
 }
