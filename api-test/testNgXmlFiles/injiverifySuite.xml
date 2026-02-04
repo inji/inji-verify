@@ -54,6 +54,14 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
 		</classes>
 	</test>
+	<test name="VcVerificationV2">
+		<parameter name="ymlFile"
+			value="injiverify/VcVerificationV2/VcVerificationV2.yml" />
+			<classes>
+			<class
+					name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
+		</classes>
+	</test>
 	<test name="GetVpRequestStatus">
 		<parameter name="ymlFile"
 			value="injiverify/GetVpRequestStatus/GetVpRequestStatus.yml" />

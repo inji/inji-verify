@@ -89,14 +89,50 @@ public class SimplePost extends InjiVerifyUtil implements ITest {
 		response = postWithBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(), inputJson, auditLogCheck,
 				COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName());
 		Map<String, List<OutputValidationDto>> ouputValid = null;
-		ouputValid = OutputValidationUtil.doJsonOutputValidation(response.asString(),
-				getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate()), testCaseDTO,
+		String expectedJson = getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate());
+		try {
+			ouputValid = OutputValidationUtil.doJsonOutputValidation(response.asString(), expectedJson, testCaseDTO,
 				response.getStatusCode());
 
-		Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
+			Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
 
-		if (!OutputValidationUtil.publishOutputResult(ouputValid)) {
-			throw new AdminTestException("Failed at otp output validation");
+			if (!OutputValidationUtil.publishOutputResult(ouputValid)) {
+				throw new AdminTestException("Failed at otp output validation");
+			}
+		} catch (org.testng.SkipException se) {
+			// handle cases where expected contains empty object/array like {"claims": {}} or {"statusCheck": []}
+			try {
+				com.fasterxml.jackson.databind.ObjectMapper mapper = new com.fasterxml.jackson.databind.ObjectMapper();
+				com.fasterxml.jackson.databind.JsonNode expectedNode = mapper.readTree(expectedJson);
+				com.fasterxml.jackson.databind.JsonNode actualNode = mapper.readTree(response.asString());
+				boolean validationDone = false;
+				// check for empty claims object
+				if (expectedNode.has("claims") && expectedNode.get("claims").isObject()
+						&& expectedNode.get("claims").size() == 0) {
+					com.fasterxml.jackson.databind.JsonNode actualClaims = actualNode.get("claims");
+					validationDone = true;
+					if (actualClaims == null || !actualClaims.isObject() || actualClaims.size() != 0) {
+						throw new AdminTestException("Output validation failed: expected 'claims' to be empty object {}");
+					}
+					Reporter.log("Manual output validation: 'claims' is empty object as expected.");
+				}
+				// check for empty statusCheck array
+				if (expectedNode.has("statusCheck") && expectedNode.get("statusCheck").isArray()
+						&& expectedNode.get("statusCheck").size() == 0) {
+					com.fasterxml.jackson.databind.JsonNode actualStatus = actualNode.get("statusCheck");
+					validationDone = true;
+					if (actualStatus == null || !actualStatus.isArray() || actualStatus.size() != 0) {
+						throw new AdminTestException("Output validation failed: expected 'statusCheck' to be empty array []");
+					}
+					Reporter.log("Manual output validation: 'statusCheck' is empty array as expected.");
+				}
+				if (!validationDone) {
+					// rethrow original SkipException if we didn't handle this case
+					throw se;
+				}
+			} catch (com.fasterxml.jackson.core.JsonProcessingException jpe) {
+				throw new AdminTestException("Failed to parse expected/actual JSON for manual validation");
+			}
 		}
 
 	}

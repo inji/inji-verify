@@ -1,0 +1,77 @@
+VcVerificationV2:
+  Injiverify_VcVerification_V2_All_Valid_Smoke:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
+      input: '{
+      }'
+      output: '{
+      "allChecksSuccessful": true
+}'
+
+  Injiverify_VcVerification_V2_WithOutVC_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_02
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationNegV2
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  Injiverify_VcVerification_V2_WithOutClaims_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_03
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2WithOutClaim
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationV2WithOutClaimResult
+      input: '{
+      }'
+      output: '{
+      "claims": "{}"
+}'
+
+  Injiverify_VcVerification_V2_WithOutStatus_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_04
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2WithOutStatusCheck
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationV2WithOutStatusResult
+      input: '{
+      }'
+      output: '{
+      "statusCheck": "[]"
+}'
+
+  Injiverify_VcVerification_V2_WithRevokedVc_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_05
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2Revoked
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationV2WithRevokedVcResult
+      input: '{
+      }'
+      output: '{
+          "statusCheck": [
+        {
+            "purpose": "revocation",
+            "valid": false,
+            "error": null
+        }
+    ]
+}'
