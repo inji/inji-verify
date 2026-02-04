@@ -60,7 +60,7 @@ apitestrig:
       scripts:
         defaultMode: 0777
         volumeMounts:
-          mountPath: '/home/mosip/scripts/'
+          mountPath: '/home/inji/scripts/'
     reports:
       name: apitestrig-reports
       storageClass: nfs-client  # nfs-client or nfs-csi
