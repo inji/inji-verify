@@ -1,4 +1,4 @@
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=develop&project=mosip_inji-verify&id=mosip_inji-verify&metric=alert_status)](https://sonarcloud.io/dashboard?branch=develop&id=mosip_inji-verify)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=develop&project=inji_inji-verify-verify-service&id=inji_inji-verify-verify-service&metric=alert_status)](https://sonarcloud.io/dashboard?branch=develop&id=inji_inji-verify-verify-service)
 # Inji Verify
 
 Injiverify is a web interface to verify the validity of the QR / credential using a browser from smartphone / tablet / computer. A user should be able to do primariliy 4 key actions - Scan, Validate, Fetch, Display.
@@ -30,7 +30,7 @@ Prerequisites:
 
 # Folder Structure:
 
-Once the repo is cloned, following folders can be found under the inji-verify repository folder:
+Once the repository is cloned, following folders can be found under the inji-verify repository folder:
 
 - **api-test:** contains the API automation tests
 - **db_scripts:** contains the database scripts for the Inji Verify application
