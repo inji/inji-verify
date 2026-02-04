@@ -33,7 +33,7 @@ function switchToVerificationMethod(method: VerificationMethod) {
     default:
       methodPath = Pages.Home;
   }
-  if (sessionStoragePath && sessionStoragePath?.includes(Pages.Scan)) {
+  if (sessionStoragePath && sessionStoragePath === Pages.Scan) {
     store.dispatch(
       verificationInit({
         qrReadResult: {status: "READ"},
@@ -58,7 +58,7 @@ const router = createBrowserRouter([
     loader: ({ request }) => {
       const url = new URL(request.url);
       const sessionStoragePath = sessionStorage.getItem('pathName');
-      if (url.pathname === Pages.Home && sessionStoragePath?.includes(Pages.Scan)) {
+      if (url.pathname === Pages.Home && sessionStoragePath === Pages.Scan) {
         store.dispatch(selectMethod({ method: "SCAN" }));
         return redirect(Pages.Scan);
       }
