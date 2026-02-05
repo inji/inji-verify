@@ -46,7 +46,7 @@ GetVpRequestStatusV2.yml:
   ]
 }'
 
-  Injiverify_GetVpRequestStatus_V2_WithoutCliams_Neg:
+  Injiverify_GetVpRequestStatus_V2_WithoutClaims_Neg:
       endPoint: /v1/verify/v2/vp-results/{requestId}
       description: Verify VP results in V2 end point without claims
       uniqueIdentifier: TC_InjiVerify_GetVpRequestStatus_V2_02
@@ -111,7 +111,17 @@ GetVpRequestStatusV2.yml:
         "valid": true
       },
       "statusCheck": [],
-      "claims": {},
+      "claims": {
+        "gender": "Male",
+        "policyName": "wallet",
+        "dob": "2025-01-01",
+        "policyNumber": "5555",
+        "mobile": "0123456789",
+        "fullName": "wallet",
+        "policyIssuedOn": "2023-04-20",
+        "policyExpiresOn": "2033-04-20",
+        "email": "abcd@gmail.com"
+      },
       "holderProofCheck": {
         "valid": true,
         "error": null
