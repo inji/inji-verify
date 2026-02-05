@@ -40,14 +40,21 @@ const Result = () => {
   useEffect(() => {
     const fetchDecodedClaims = async () => {
       if (isCWT(vc)) {
+        try {
           const cwtHex =
-          vc instanceof Uint8Array
-            ? uint8ArrayToHex(vc)
-            : vc instanceof ArrayBuffer
-            ? uint8ArrayToHex(new Uint8Array(vc))
-            : (vc as string);
-        const claims = extractMappedClaim(cwtHex, 169);
-        setClaims(claims as LdpVc);
+            vc instanceof Uint8Array
+              ? uint8ArrayToHex(vc)
+              : vc instanceof ArrayBuffer
+                ? uint8ArrayToHex(new Uint8Array(vc))
+                : (vc as string);
+          const claims = extractMappedClaim(cwtHex, 169);
+          setClaims(claims as LdpVc);
+
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          dispatch(raiseAlert({ message, type: "error" }));
+
+        }
       } else if (typeof vc === "string") {
         try {
           const claims = await decodeSdJwtToken(vc);

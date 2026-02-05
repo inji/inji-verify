@@ -26,7 +26,6 @@ import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import io.mosip.vercred.vcverifier.exception.StatusCheckException;
 import io.mosip.vercred.vcverifier.utils.Base64Decoder;
 import io.mosip.vercred.vcverifier.utils.Util;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
@@ -149,10 +148,10 @@ public final class Utils {
         return isRevoked ? VerificationStatus.REVOKED : originalStatus;
     }
 
-    public static ResponseEntity<Object> getResponseEntityForCredentialStatusException(CredentialStatusCheckException ex, HttpServletRequest request) {
+    public static ResponseEntity<Object> getResponseEntityForCredentialStatusException(CredentialStatusCheckException ex) {
         String errorMessage = ex.getErrorCode() + " - " + ex.getErrorDescription();
         CredentialStatusErrorDto credentialStatusErrorDto =
-                new CredentialStatusErrorDto(Instant.now().toString(), 500, request.getRequestURI(), errorMessage);
+                new CredentialStatusErrorDto(Instant.now().toString(), 500, errorMessage);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(credentialStatusErrorDto);
     }
 
