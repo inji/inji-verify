@@ -39,9 +39,9 @@ paths:
             - A full `presentationDefinition` object.
         2. Regarding `trasactionId`: 
             - Request body can include a `trasactionId`. Ensure that it is unique UUID.
-            - If `trasactionId` is not sent in request, then this endpoint will generate a labelled UUID with a prefix of `req_`.
+            - If `trasactionId` is not sent in request, then this endpoint will generate a labelled UUID with a prefix of `txn_`.
         3. Regarding `requestId`:
-            - For a `trasactionId`, this endpoint will generate a `requestId`, which will be a labelled UUID with a prefix of `txn_`.
+            - For a `trasactionId`, this endpoint will generate a `requestId`, which will be a labelled UUID with a prefix of `req_`.
             - This`requestId` is used in creating Authorization Request in OpenID4VP flow.
 
         **Response**
@@ -336,8 +336,8 @@ paths:
         From `0.17.x` onwards,
 
         - Added a new attribute `acceptVPWithoutHolderProof` in the `/vp-request` request body.
-        - If this is `true`, then Verifiable Presentation submmited by the wallet can be unsigned (without proof).
-        - If this is `false`, then the Verifiable Presentation submmited by the wallet cannot be unsigned (without proof). And if wallet submits Verifiable Presentation without proof, the the `/vp-results` endpoint will throw an error.
+        - If this is `true`, then Verifiable Presentation submitted by the wallet can be unsigned (without proof).
+        - If this is `false`, then the Verifiable Presentation submitted by the wallet cannot be unsigned (without proof). If the wallet submits a Verifiable Presentation without proof, then the `/vp-results` endpoint will throw an error.
         - V2 Version of `/vp-results` endpoint has been added which verifies a Verifiable Presentation (VP) identified by the provided `transactionId` and returns a detailed, structured verification result for the Verifiable Presentation and for each Verifiable Credential (VC) contained within it.
       tags:
         - VP Results
