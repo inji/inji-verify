@@ -105,10 +105,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                     verificationResults.addAll(vcResults);
                 } else if (acceptVPWithoutHolderProof) {
                     Object verifiableCredential = vpToken.opt("verifiableCredential");
-                    List<Object> vcs = normalizeVerifiableCredentials(verifiableCredential);
-                    if (vcs.isEmpty()) throw new InvalidVpTokenException();
-                    for (Object vc : vcs) {
-                        addVerificationResults(vc.toString(), verificationResults, CredentialFormat.LDP_VC);
+                    List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
+                    for (Object credential : listOfVerifiableCredentials) {
+                        addVerificationResults(credential.toString(), verificationResults, CredentialFormat.LDP_VC);
                     }
                 } else {
                     throw new VPWithoutProofException();
@@ -163,10 +162,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             } else if (acceptVPWithoutHolderProof) {
                 // for a VPToken without proof, do verification for all credentials
                 Object verifiableCredential = vpToken.opt("verifiableCredential");
-                List<Object> vcs = normalizeVerifiableCredentials(verifiableCredential);
-                if (vcs.isEmpty()) throw new InvalidVpTokenException();
-                for (Object vc : vcs) {
-                    credentialResults.add(verifySingleCredential(request, vc, false));
+                List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
+                for (Object credential : listOfVerifiableCredentials) {
+                    credentialResults.add(verifySingleCredential(request, credential, false));
                 }
             } else {
                 throw new VPWithoutProofException();
@@ -183,17 +181,18 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return new VPVerificationResultDto(transactionId, allChecksSuccessful, credentialResults);
     }
 
-    private List<Object> normalizeVerifiableCredentials(Object verifiableCredential) {
+    private List<Object> getListOfVerifiableCredentials(Object verifiableCredential) {
         if (verifiableCredential instanceof JSONArray array) {
-            if (array.isEmpty()) return List.of();
-            List<Object> out = new ArrayList<>();
-            for (Object vc : array) out.add(vc);
-            return out;
+            if (array.isEmpty()) throw new InvalidVpTokenException();
+            List<Object> verifiableCredentialsList = new ArrayList<>();
+            for (Object credential : array)
+                verifiableCredentialsList.add(credential);
+            return verifiableCredentialsList;
         }
         if (verifiableCredential instanceof JSONObject || verifiableCredential instanceof String) {
             return List.of(verifiableCredential);
         }
-        return List.of();
+        throw new InvalidVpTokenException();
     }
 
     private void verifyPresentationWithCredentialStatusChecks(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
