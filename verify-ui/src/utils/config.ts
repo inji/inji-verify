@@ -26,30 +26,30 @@ export const VerificationSteps: Record<string, Record<string, number>> = {
     }
 }
 
-const tStep = (method: string, step: string) => ({
+const verificationStep = (method: string, step: string) => ({
     label: i18next.t(`VerificationStepsContent:${method}.${step}.label`),
     description: i18next.t(`VerificationStepsContent:${method}.${step}.description`),
 });
 
 export const getVerificationStepsContent = (): VerificationStepsContentType => ({
     SCAN: [
-        tStep("SCAN", "QrCodePrompt"),
-        tStep("SCAN", "ActivateCamera"),
-        tStep("SCAN", "Verifying"),
-        tStep("SCAN", "DisplayResult"),
+        verificationStep("SCAN", "QrCodePrompt"),
+        verificationStep("SCAN", "ActivateCamera"),
+        verificationStep("SCAN", "Verifying"),
+        verificationStep("SCAN", "DisplayResult"),
     ],
     UPLOAD: [
-        tStep("UPLOAD", "QrCodePrompt"),
-        tStep("UPLOAD", "Verifying"),
-        tStep("UPLOAD", "DisplayResult"),
+        verificationStep("UPLOAD", "QrCodePrompt"),
+        verificationStep("UPLOAD", "Verifying"),
+        verificationStep("UPLOAD", "DisplayResult"),
     ],
     VERIFY: [
-        tStep("VERIFY", "InitiateVpRequest"),
-        tStep("VERIFY", "SelectCredential"),
-        tStep("VERIFY", "RequestMissingCredential"),
-        tStep("VERIFY", "ScanQrCode"),
-        tStep("VERIFY", "SelectWallet"),
-        tStep("VERIFY", "DisplayResult"),
+        verificationStep("VERIFY", "InitiateVpRequest"),
+        verificationStep("VERIFY", "SelectCredential"),
+        verificationStep("VERIFY", "RequestMissingCredential"),
+        verificationStep("VERIFY", "ScanQrCode"),
+        verificationStep("VERIFY", "SelectWallet"),
+        verificationStep("VERIFY", "DisplayResult"),
     ],
     TO_BE_SELECTED: []
 });
