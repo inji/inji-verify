@@ -128,7 +128,7 @@ const DisplayActiveStep = () => {
                 <div className="xs:col-end-13">
                     <div className="relative grid content-center justify-center w-[275px] h-auto lg:w-[360px] aspect-square my-1.5 mx-auto">
                         <div className="flex flex-col items-center">
-                            <div className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}>
+                            <div className={`grid bg-${window.location.origin + window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}>
                                 <OpenID4VPVerification
                                     key={`${flowType}-${sdkInstanceKey}`}
                                     triggerElement={
@@ -165,7 +165,7 @@ const DisplayActiveStep = () => {
         );
     }
 
-    return null;
+    return <></>;
 };
 
 export const VpVerification = () => (

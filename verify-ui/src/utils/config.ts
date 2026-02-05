@@ -1,5 +1,5 @@
 import {
-    AlertInfo,
+    AlertInfo, AlertSeverity,
     claim,
     VcStatus,
     VerificationMethod,
@@ -54,10 +54,10 @@ export const getVerificationStepsContent = (): VerificationStepsContentType => (
     TO_BE_SELECTED: []
 });
 
-const createAlert = (key: string, severity: AlertInfo["severity"], duration?: number): AlertInfo => ({
+const createAlert = (key: string, severity: AlertSeverity, autoHideDuration?: number): AlertInfo => ({
     message: i18next.t(`AlertMessages:${key}`),
     severity,
-    ...(duration && { autoHideDuration: duration }),
+    autoHideDuration
 });
 
 export const AlertMessages = () => ({
