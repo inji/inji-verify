@@ -1,0 +1,10 @@
+{
+  "skipStatusChecks": {{skipStatusChecks}},
+  "statusCheckFilters": [
+    {{#each statusCheckFilters}}
+      "{{this}}"{{#unless @last}},{{/unless}}
+    {{/each}}
+  ],
+  "includeClaims": {{includeClaims}},
+  "requestId": "{{requestId}}"
+}
