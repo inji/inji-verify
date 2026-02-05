@@ -5,7 +5,7 @@ import {
 } from "../components/openid4vp-verification/OpenID4VPVerification.types";
 import { vcSubmissionBody } from "../components/qrcode-verification/QRCodeVerification.types";
 import { QrData } from "../types/OVPSchemeQrData";
-import { isCWT } from "./cborUtils";
+import { isCWT, uint8ArrayToHex } from "./cborUtils";
 
 const generateNonce = (): string => {
   return btoa(Date.now().toString());
@@ -16,10 +16,14 @@ export const vcVerification = async (credential: unknown, url: string) => {
   let contentType: string;
 
   if (isCWT(credential)) {
-    body = credential as string;
+    body =
+      credential instanceof Uint8Array
+        ? uint8ArrayToHex(credential)
+        : credential instanceof ArrayBuffer
+          ? uint8ArrayToHex(new Uint8Array(credential))
+          : (credential as string);
     contentType = "application/vc+cwt";
-  }
-  else if (typeof credential === "string") {
+  } else if (typeof credential === "string") {
     body = credential;
     contentType = "application/vc+sd-jwt";
   } else {
@@ -37,7 +41,7 @@ export const vcVerification = async (credential: unknown, url: string) => {
   try {
     const response = await fetch(url + "/vc-verification", requestOptions);
     const data = await response.json();
-    if (response.status !== 200) throw new Error(`Failed VC Verification due to: ${ data.error || "Unknown Error" }`);
+    if (response.status !== 200) throw new Error(`Failed VC Verification due to: ${data.error || "Unknown Error"}`);
     return data.verificationStatus;
   } catch (error) {
     console.error(error);
@@ -54,8 +58,22 @@ export const vcSubmission = async (
   url: string,
   txnId?: string
 ) => {
+  let vcData: string;
+  if (isCWT(credential)) {
+    vcData =
+      credential instanceof Uint8Array
+        ? uint8ArrayToHex(credential)
+        : credential instanceof ArrayBuffer
+          ? uint8ArrayToHex(new Uint8Array(credential))
+          : (credential as string);
+  } else if (typeof credential === "string") {
+    vcData = credential;
+  } else {
+    vcData = JSON.stringify(credential);
+  }
+
   const requestBody: vcSubmissionBody = {
-    vc: JSON.stringify(credential),
+    vc: vcData,
   };
   if (txnId) requestBody.transactionId = txnId;
   const requestOptions = {
@@ -69,7 +87,7 @@ export const vcSubmission = async (
   try {
     const response = await fetch(url + "/vc-submission", requestOptions);
     const data = await response.json();
-    if (response.status !== 200) throw new Error(`Failed to Submit VC due to: ${ data.error || "Unknown Error" }`);
+    if (response.status !== 200) throw new Error(`Failed to Submit VC due to: ${data.error || "Unknown Error"}`);
     return data.transactionId;
   } catch (error) {
     console.error(error);

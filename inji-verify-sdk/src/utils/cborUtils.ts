@@ -1,3 +1,9 @@
+export function uint8ArrayToHex(uint8Array: Uint8Array): string {
+  return Array.from(uint8Array)
+    .map((b) => b.toString(16).padStart(2, "0"))
+    .join("");
+}
+
 /**
  * Converts a hex string to Uint8Array
  * @throws Error if hex string is invalid
