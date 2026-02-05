@@ -114,16 +114,16 @@ public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
 		}
 
 		else {
-			response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(), inputJson, COOKIENAME,
-					testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
-		}
-		
-		Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil
-				.doJsonOutputValidation(response.asString(), outputJson, testCaseDTO, response.getStatusCode());
-		Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
+			response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(), inputJson,
+					COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
 
-		if (!OutputValidationUtil.publishOutputResult(ouputValid))
-			throw new AdminTestException("Failed at output validation");
+			Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil
+					.doJsonOutputValidation(response.asString(), outputJson, testCaseDTO, response.getStatusCode());
+			Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
+
+			if (!OutputValidationUtil.publishOutputResult(ouputValid))
+				throw new AdminTestException("Failed at output validation");
+		}
 	}
 
 	/**
@@ -133,6 +133,16 @@ public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
 	 */
 	@AfterMethod(alwaysRun = true)
 	public void setResultTestName(ITestResult result) {
-		result.setAttribute("TestCaseName", testCaseName);
+		try {
+			Field method = TestResult.class.getDeclaredField("m_method");
+			method.setAccessible(true);
+			method.set(result, result.getMethod().clone());
+			BaseTestMethod baseTestMethod = (BaseTestMethod) result.getMethod();
+			Field f = baseTestMethod.getClass().getSuperclass().getDeclaredField("m_methodName");
+			f.setAccessible(true);
+			f.set(baseTestMethod, testCaseName);
+		} catch (Exception e) {
+			Reporter.log("Exception : " + e.getMessage());
+		}
 	}
 }
