@@ -99,13 +99,12 @@ const AccountOpening = () => {
         grant_type
       );
       setRawUserInfo(userInformation);
-      console.log("User Info: ", userInformation);
       localStorage.setItem(
         "userInfo",
         window.btoa(JSON.stringify(userInformation))
       );
     } catch (errormsg) {
-      console.log(errormsg);
+      console.error(errormsg);
     }
   };
 

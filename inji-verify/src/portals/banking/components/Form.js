@@ -49,6 +49,36 @@ const getClaimDetails = (userInfo, fieldName) => {
   return result;
 };
 
+// Helper function to normalize date to YYYY-MM-DD format
+const normalizeDateToISO = (dateString) => {
+  if (!dateString || typeof dateString !== 'string') return "";
+  
+  const trimmed = dateString.trim();
+  
+  // If already in YYYY-MM-DD format, return as is
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
+    return trimmed;
+  }
+  
+  // Handle DD-MM-YYYY format
+  const ddmmyyyyMatch = trimmed.match(/^(\d{1,2})[-\/](\d{1,2})[-\/](\d{4})$/);
+  if (ddmmyyyyMatch) {
+    const [, day, month, year] = ddmmyyyyMatch;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  
+  // Handle YYYY-MM-DD or YYYY/MM/DD format
+  const yyyymmddMatch = trimmed.match(/^(\d{4})[-\/](\d{1,2})[-\/](\d{1,2})$/);
+  if (yyyymmddMatch) {
+    const [, year, month, day] = yyyymmddMatch;
+    return `${year}-${month.padStart(2, '0')}-${day.padStart(2, '0')}`;
+  }
+  
+  // If format not recognized, return empty.
+  console.warn('Date format not recognized:', trimmed);
+  return "";
+};
+
 // Helper function to format address from various formats
 const getFormattedAddress = (userAddress) => {
   if (!userAddress) return "";
@@ -128,24 +158,65 @@ const FormField = ({ label, value, onChange, placeholder, disabled, verified, re
 );
 
 // Date input field component with validation
-const DateField = ({ label, value, onChange, placeholder, disabled, verified, required, verifiedTitle, className = "" }) => (
-  <div className={className}>
-    <span>{label}</span>
-    {verified !== undefined && <VerifiedBadge show={verified} title={verifiedTitle} />}
-    {required && <RequiredAsterisk />}
-    <input
-      type="date"
-      value={value || ""}
-      onChange={onChange}
-      placeholder={!disabled ? placeholder : ""}
-      disabled={disabled}
-      max={new Date().toISOString().split('T')[0]} // Can't select future dates
-      className={`p-3 w-full rounded-md mt-3 border ${
-        disabled ? 'text-gray-500 bg-gray-100 border-gray-100' : 'border-gray-300'
-      }`}
-    />
-  </div>
-);
+const DateField = ({ label, value, onChange, placeholder, disabled, verified, required, verifiedTitle, className = "" }) => {
+  const dateInputRef = React.useRef(null);
+
+  const handleWrapperClick = () => {
+    if (disabled || !dateInputRef.current) return;
+    try {
+      dateInputRef.current.showPicker();
+    } catch (err) {
+      dateInputRef.current.focus();
+    }
+  };
+
+  return (
+    <div className={className}>
+      <span>{label}</span>
+      {verified !== undefined && <VerifiedBadge show={verified} title={verifiedTitle} />}
+      {required && <RequiredAsterisk />}
+      <div className="relative" onClick={handleWrapperClick}>
+        {/* Display input (shows formatted date, read-only) */}
+        <input
+          type="text"
+          value={value || ""}
+          placeholder={!disabled ? placeholder : ""}
+          readOnly
+          disabled={disabled}
+          className={`p-3 w-full rounded-md mt-3 border ${
+            disabled ? 'text-gray-500 bg-gray-100 border-gray-100 cursor-not-allowed' : 'border-gray-300 cursor-pointer'
+          }`}
+        />
+        {/* Calendar icon */}
+        {!disabled && (
+          <svg
+            className="absolute right-3 top-1/2 transform -translate-y-1/2 mt-1.5 w-5 h-5 text-gray-400 pointer-events-none"
+            fill="none"
+            stroke="currentColor"
+            viewBox="0 0 24 24"
+          >
+            <path
+              strokeLinecap="round"
+              strokeLinejoin="round"
+              strokeWidth={2}
+              d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"
+            />
+          </svg>
+        )}
+        <input
+          ref={dateInputRef}
+          type="date"
+          value={value || ""}
+          onChange={onChange}
+          disabled={disabled}
+          max={new Date().toISOString().split('T')[0]}
+          className="absolute top-0 left-0 w-full h-full opacity-0 pointer-events-none"
+          tabIndex={-1}
+        />
+      </div>
+    </div>
+  );
+};
 
 // Numeric input field component
 const NumericField = ({ label, value, onChange, placeholder, disabled, verified, required, verifiedTitle, className = "", maxLength }) => (
@@ -242,7 +313,16 @@ const Form = (props) => {
 
   const rawUserInfo = useMemo(() => {
     const stored = localStorage.getItem("userInfo");
-    return stored ? JSON.parse(window.atob(stored)) : null;
+    if (!stored) return null;
+    
+    try {
+      const decoded = window.atob(stored);
+      return JSON.parse(decoded);
+    } catch (error) {
+      console.error("Failed to decode/parse userInfo:", error);
+      localStorage.removeItem("userInfo");
+      return null;
+    }
   }, []);
 
   const transactionLimitMax = useMemo(() => {
@@ -253,13 +333,15 @@ const Form = (props) => {
   const userInfo = useMemo(() => {
     if (!rawUserInfo) return null;
     const addressDetails = getClaimDetails(rawUserInfo, "address");
+    const birthdateDetails = getClaimDetails(rawUserInfo, "birthdate");
+    
     return {
       name: getClaimDetails(rawUserInfo, "name"),
       email: getClaimDetails(rawUserInfo, "email"),
       phone_number: getClaimDetails(rawUserInfo, "phone_number"),
       gender: getClaimDetails(rawUserInfo, "gender"),
       address: { value: getFormattedAddress(addressDetails.value), verified: addressDetails.verified },
-      birthdate: getClaimDetails(rawUserInfo, "birthdate"),
+      birthdate: { value: normalizeDateToISO(birthdateDetails.value), verified: birthdateDetails.verified },
       picture: getClaimDetails(rawUserInfo, "picture"),
     };
   }, [rawUserInfo]);
@@ -332,6 +414,25 @@ const Form = (props) => {
     props.onSubmit({
       accountType: formState.accountType,
       transactionLimit: formState.transactionLimit,
+      personalInfo: {
+        name: editableFields.name,
+        email: editableFields.email,
+        phone_number: editableFields.phone_number,
+        gender: editableFields.gender,
+        birthdate: editableFields.birthdate,
+        address: editableFields.address,
+        pin: editableFields.pin,
+        city: editableFields.city,
+      },
+      channelAccess: {
+        internetBanking: formState.internetBanking,
+        mobileBanking: formState.mobileBanking,
+        atmDebitCard: formState.atmDebitCard,
+      },
+      paymentCapabilities: {
+        domesticTransaction: formState.domesticTransaction,
+        internationalTransaction: formState.internationalTransaction,
+      },
     });
     localStorage.removeItem("userInfo");
   };
@@ -340,7 +441,17 @@ const Form = (props) => {
   const isFormValid = formState.isChecked && 
     formState.accountType && 
     !formState.transactionLimitError && 
-    formState.transactionLimit !== "";
+    formState.transactionLimit !== "" &&
+    editableFields.name.trim() !== "" &&
+    editableFields.birthdate.trim() !== "" &&
+    editableFields.email.trim() !== "" &&
+    editableFields.pin.trim() !== "" &&
+    editableFields.city.trim() !== "" &&
+    editableFields.gender.trim() !== "" &&
+    editableFields.phone_number.trim() !== "" &&
+    editableFields.address.trim() !== "" &&
+    (formState.internetBanking || formState.mobileBanking || formState.atmDebitCard) &&
+    (formState.domesticTransaction || formState.internationalTransaction);
 
   if (!userInfo) return null;
 
@@ -396,7 +507,10 @@ const Form = (props) => {
 
           {/* (2) Channel Access */}
           <div className="sm:mt-[2.5rem] mt-6">
-            <SectionHeader>{t("channel_access")}</SectionHeader>
+            <SectionHeader>
+              {t("channel_access")}
+              <RequiredAsterisk />
+            </SectionHeader>
             <div className="sm:flex mt-4 gap-8 items-center">
               {[
                 { id: "internet-banking", label: t("internet_banking"), key: "internetBanking" },
@@ -412,7 +526,10 @@ const Form = (props) => {
 
           {/* (3) Payment Capabilities */}
           <div className="sm:mt-[2.5rem] mt-6">
-            <SectionHeader>{t("payment_capabilities")}</SectionHeader>
+            <SectionHeader>
+              {t("payment_capabilities")}
+              <RequiredAsterisk />
+            </SectionHeader>
             <div className="sm:flex mt-4 gap-8">
               {[
                 { id: "domestic-transaction", label: t("domestic_transaction"), key: "domesticTransaction" },
@@ -461,6 +578,7 @@ const Form = (props) => {
                 <label className="block mb-3">
                   <span>{t("gender")}</span>
                   <VerifiedBadge show={userInfo.gender?.verified} title={t("verified")} />
+                  <RequiredAsterisk />
                 </label>
                 <Select
                   styles={customStyles}
@@ -506,6 +624,7 @@ const Form = (props) => {
                 disabled={hasUserData("phone_number")}
                 verified={userInfo.phone_number?.verified}
                 verifiedTitle={t("verified")}
+                required
                 type="tel"
                 className="row-span sm:col-span-1 col-span-12"
               />
@@ -524,6 +643,7 @@ const Form = (props) => {
                 disabled={hasUserData("address")}
                 verified={userInfo.address?.verified}
                 verifiedTitle={t("verified")}
+                required
                 className="sm:col-span-2 col-span-12"
               />
 
