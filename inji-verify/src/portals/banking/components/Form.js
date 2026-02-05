@@ -4,7 +4,7 @@ import { useTranslation } from "react-i18next";
 import ModalPopup from "./Modal";
 
 const TRANSACTION_LIMIT_PER_CLAIM = 1000;
-const TRANSACTION_LIMIT_REGEX = /^\d*\.?\d{0,2}$/;
+const TRANSACTION_LIMIT_REGEX = /^\d+\.?\d{0,2}$/;
 const PHONE_REGEX = /^[0-9+\-\s()]*$/;
 const PIN_REGEX = /^\d*$/;
 
@@ -291,7 +291,7 @@ const Form = (props) => {
   const [formState, setFormState] = useState({
     accountType: null,
     transactionLimit: "",
-    transactionLimitError: "",
+    hasTransactionLimitError: false,
     internetBanking: false,
     mobileBanking: false,
     atmDebitCard: false,
@@ -372,15 +372,19 @@ const Form = (props) => {
     const value = e.target.value;
     if (value === "") {
       updateFormState("transactionLimit", "");
-      updateFormState("transactionLimitError", "");
+      updateFormState("hasTransactionLimitError", false);
       return;
     }
     if (!TRANSACTION_LIMIT_REGEX.test(value)) return;
     
-    const error = parseFloat(value) > transactionLimitMax 
-      ? t("transaction_limit_error", { limit: `$${transactionLimitMax.toLocaleString()}` })
-      : "";
-    updateFormState("transactionLimitError", error);
+    const parsedValue = parseFloat(value);
+    if (!Number.isFinite(parsedValue)) {
+      updateFormState("hasTransactionLimitError", true);
+      return;
+    }
+    
+    const hasError = parsedValue > transactionLimitMax;
+    updateFormState("hasTransactionLimitError", hasError);
     updateFormState("transactionLimit", value);
   };
 
@@ -440,7 +444,7 @@ const Form = (props) => {
   // Form validation
   const isFormValid = formState.isChecked && 
     formState.accountType && 
-    !formState.transactionLimitError && 
+    !formState.hasTransactionLimitError && 
     formState.transactionLimit !== "" &&
     editableFields.name.trim() !== "" &&
     editableFields.birthdate.trim() !== "" &&
@@ -495,11 +499,13 @@ const Form = (props) => {
                   onChange={handleTransactionLimitChange}
                   placeholder={t("transaction_limit_placeholder", { limit: `$${transactionLimitMax.toLocaleString()}` })}
                   className={`p-3 w-full h-12 rounded-md border ${
-                    formState.transactionLimitError ? 'border-red-500' : 'border-gray-300'
+                    formState.hasTransactionLimitError ? 'border-red-500' : 'border-gray-300'
                   }`}
                 />
-                {formState.transactionLimitError && (
-                  <p className="text-red-500 text-sm mt-1">{formState.transactionLimitError}</p>
+                {formState.hasTransactionLimitError && (
+                  <p className="text-red-500 text-sm mt-1">
+                    {t("transaction_limit_error", { limit: `$${transactionLimitMax.toLocaleString()}` })}
+                  </p>
                 )}
               </div>
             </div>

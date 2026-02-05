@@ -73,7 +73,7 @@
     "type_of_account": "ಖಾತೆ ಪ್ರಕಾರ",
     "monthly_transaction_limit": "ಮಾಸಿಕ ವ್ಯವಹಾರ ಮಿತಿ",
     "transaction_limit_placeholder": "ಮೊತ್ತವನ್ನು ನಮೂದಿಸಿ (ಗರಿಷ್ಠ {{limit}})",
-    "transaction_limit_error": "ಕಡಿಮೆ ಭರವಸೆ ಪರಿಶೀಲನೆಗಾಗಿ, ವ್ಯವಹಾರ ಮಿತಿ {{limit}} ಮೀರಲು ಸಾಧ್ಯವಿಲ್ಲ",
+    "transaction_limit_error": "ವಹಿವಾಟಿನ ಮಿತಿ {{limit}} ಮೀರಬಾರದು.",
     "channel_access": "(2) ಚಾನೆಲ್ ಪ್ರವೇಶ",
     "internet_banking": "ಇಂಟರ್ನೆಟ್ ಬ್ಯಾಂಕಿಂಗ್",
     "mobile_banking": "ಮೊಬೈಲ್ ಬ್ಯಾಂಕಿಂಗ್ ಪ್ರವೇಶ",

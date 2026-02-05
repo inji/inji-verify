@@ -73,7 +73,7 @@
     "type_of_account": "கணக்கு வகை",
     "monthly_transaction_limit": "மாத பரிவர்த்தனை வரம்பு",
     "transaction_limit_placeholder": "தொகையை உள்ளிடவும் (அதிகபட்சம் {{limit}})",
-    "transaction_limit_error": "குறைந்த உறுதிப்பாடு சரிபார்ப்புக்கு, பரிவர்த்தனை வரம்பு {{limit}} தாண்ட முடியாது",
+    "transaction_limit_error": "பரிவர்த்தனை வரம்பு {{limit}} ஐ விட அதிகமாக இருக்கக்கூடாது.",
     "channel_access": "(2) சேனல் அணுகல்",
     "internet_banking": "இணைய வங்கி",
     "mobile_banking": "மொபைல் வங்கி அணுகல்",

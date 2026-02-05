@@ -74,7 +74,7 @@
     "type_of_account": "Tipo de Cuenta",
     "monthly_transaction_limit": "Límite de Transacción Mensual",
     "transaction_limit_placeholder": "Ingrese monto (máximo {{limit}})",
-    "transaction_limit_error": "El límite de transacción no puede exceder {{limit}} según sus reclamos verificados",
+    "transaction_limit_error": "El límite de la transacción no puede superar {{limit}}.",
     "channel_access": "(2) Acceso a Canales",
     "internet_banking": "Banca por Internet",
     "mobile_banking": "Acceso a Banca Móvil",
