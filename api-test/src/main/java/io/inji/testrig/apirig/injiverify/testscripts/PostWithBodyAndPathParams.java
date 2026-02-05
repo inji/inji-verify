@@ -1,14 +1,13 @@
-package io.mosip.testrig.apirig.injiverify.testscripts;
+package io.inji.testrig.apirig.injiverify.testscripts;
 
 import java.lang.reflect.Field;
-import java.time.Duration;
-import java.time.Instant;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import org.testng.ITest;
 import org.testng.ITestContext;
 import org.testng.ITestResult;
@@ -21,13 +20,13 @@ import org.testng.annotations.Test;
 import org.testng.internal.BaseTestMethod;
 import org.testng.internal.TestResult;
 
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.dto.OutputValidationDto;
 import io.mosip.testrig.apirig.dto.TestCaseDTO;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyConstants;
-import io.mosip.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.testrunner.HealthChecker;
 import io.mosip.testrig.apirig.utils.AdminTestException;
+import io.mosip.testrig.apirig.utils.AdminTestUtil;
 import io.mosip.testrig.apirig.utils.AuthenticationTestException;
 import io.mosip.testrig.apirig.utils.GlobalConstants;
 import io.mosip.testrig.apirig.utils.OutputValidationUtil;
@@ -35,11 +34,12 @@ import io.mosip.testrig.apirig.utils.ReportUtil;
 import io.mosip.testrig.apirig.utils.SecurityXSSException;
 import io.restassured.response.Response;
 
-public class GetWithParam extends InjiVerifyUtil implements ITest {
-	private static final Logger logger = Logger.getLogger(GetWithParam.class);
+public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
+	private static final Logger logger = Logger.getLogger(PostWithBodyAndPathParams.class);
 	protected String testCaseName = "";
+	String pathParams = null;
+	String headers = null;
 	public Response response = null;
-	public boolean auditLogCheck = false;
 
 	@BeforeClass
 	public static void setLogLevel() {
@@ -65,6 +65,8 @@ public class GetWithParam extends InjiVerifyUtil implements ITest {
 	@DataProvider(name = "testcaselist")
 	public Object[] getTestCaseList(ITestContext context) {
 		String ymlFile = context.getCurrentXmlTest().getLocalParameters().get("ymlFile");
+		pathParams = context.getCurrentXmlTest().getLocalParameters().get("pathParams");
+		headers = context.getCurrentXmlTest().getLocalParameters().get("headers");
 		logger.info("Started executing yml: " + ymlFile);
 		return getYmlTestData(ymlFile);
 	}
@@ -81,35 +83,45 @@ public class GetWithParam extends InjiVerifyUtil implements ITest {
 	@Test(dataProvider = "testcaselist")
 	public void test(TestCaseDTO testCaseDTO) throws AuthenticationTestException, AdminTestException, SecurityXSSException {
 		testCaseName = testCaseDTO.getTestCaseName();
+		String[] templateFields = testCaseDTO.getTemplateFields();
 		testCaseName = InjiVerifyUtil.isTestCaseValidForExecution(testCaseDTO);
 		if (HealthChecker.signalTerminateExecution) {
 			throw new SkipException(
 					GlobalConstants.TARGET_ENV_HEALTH_CHECK_FAILED + HealthChecker.healthCheckFailureMapS);
 		}
 
-		auditLogCheck = testCaseDTO.isAuditLogCheck();
+		testCaseDTO = AdminTestUtil.filterHbs(testCaseDTO);
+		String inputJson = getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate());
+		String outputJson = getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate());
 
-		if (testCaseName.contains("_Expiry")) {
-			final int MAX_DURATION_MS = Integer
-					.parseInt(InjiVerifyConfigManager.getproperty(InjiVerifyConstants.EXPIRATION_TIME));
-			
-			try {
-				TimeUnit.SECONDS.sleep(MAX_DURATION_MS);
-			} catch (InterruptedException e) {
-				e.printStackTrace();
+		if (testCaseDTO.getTemplateFields() != null && templateFields.length > 0) {
+			ArrayList<JSONObject> inputtestCases = AdminTestUtil.getInputTestCase(testCaseDTO);
+			ArrayList<JSONObject> outputtestcase = AdminTestUtil.getOutputTestCase(testCaseDTO);
+			for (int i = 0; i < languageList.size(); i++) {
+				response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(),
+						getJsonFromTemplate(inputtestCases.get(i).toString(), testCaseDTO.getInputTemplate()),
+						COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
+
+				Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil.doJsonOutputValidation(
+						response.asString(),
+						getJsonFromTemplate(outputtestcase.get(i).toString(), testCaseDTO.getOutputTemplate()),
+						testCaseDTO, response.getStatusCode());
+				Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
+
+				if (!OutputValidationUtil.publishOutputResult(ouputValid))
+					throw new AdminTestException("Failed at output validation");
 			}
 		}
+
+		else {
+			response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(), inputJson, COOKIENAME,
+					testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
+		}
 		
-		response = getWithPathParamAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(),
-				getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate()), auditLogCheck,
-				COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName());
-
-		Map<String, List<OutputValidationDto>> ouputValid = null;
-		ouputValid = OutputValidationUtil.doJsonOutputValidation(response.asString(),
-				getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate()), testCaseDTO,
-				response.getStatusCode());
-
+		Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil
+				.doJsonOutputValidation(response.asString(), outputJson, testCaseDTO, response.getStatusCode());
 		Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
+
 		if (!OutputValidationUtil.publishOutputResult(ouputValid))
 			throw new AdminTestException("Failed at output validation");
 	}
@@ -121,16 +133,6 @@ public class GetWithParam extends InjiVerifyUtil implements ITest {
 	 */
 	@AfterMethod(alwaysRun = true)
 	public void setResultTestName(ITestResult result) {
-		try {
-			Field method = TestResult.class.getDeclaredField("m_method");
-			method.setAccessible(true);
-			method.set(result, result.getMethod().clone());
-			BaseTestMethod baseTestMethod = (BaseTestMethod) result.getMethod();
-			Field f = baseTestMethod.getClass().getSuperclass().getDeclaredField("m_methodName");
-			f.setAccessible(true);
-			f.set(baseTestMethod, testCaseName);
-		} catch (Exception e) {
-			Reporter.log("Exception : " + e.getMessage());
-		}
+		result.setAttribute("TestCaseName", testCaseName);
 	}
 }

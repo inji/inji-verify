@@ -8,7 +8,7 @@
 		<parameter name="pathParams" value="insuranceid" />
 		<parameter name="prerequisite" value="Yes" />
 		<classes>
-			<class name="io.mosip.testrig.apirig.injiverify.testscripts.DeleteWithParam" />
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.DeleteWithParam" />
 		</classes>
 	</test>
 	

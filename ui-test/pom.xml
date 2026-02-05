@@ -5,10 +5,10 @@
    <modelVersion>4.0.0</modelVersion>
    <groupId>io.inji.verify</groupId>
    <artifactId>uitest-injiverify</artifactId>
-   <version>0.16.0</version>
+   <version>0.17.0-SNAPSHOT</version>
    <name>inji-ui-verify</name>
    <description>Parent project of ui automation of inji-verify</description>
-   <url>https://github.com/mosip/inji-verify</url>
+   <url>https://github.com/inji/inji-verify</url>
 
     <licenses>
         <license>
@@ -21,8 +21,8 @@
         <developer>
             <name>Mosip</name>
             <email>mosip.emailnotifier@gmail.com</email>
-            <organization>io.mosip</organization>
-            <organizationUrl>https://github.com/mosip/inji-verify</organizationUrl>
+            <organization>io.inji</organization>
+            <organizationUrl>https://github.com/inji/inji-verify</organizationUrl>
         </developer>
     </developers>
 

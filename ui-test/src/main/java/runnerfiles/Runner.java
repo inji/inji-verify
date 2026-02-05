@@ -30,7 +30,7 @@ import java.util.List;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-		features = {"/home/mosip/featurefiles/"},
+		features = {"/home/inji/featurefiles/"},
 		dryRun = !true,
 		glue = {"stepdefinitions", "utils"},
 		snippets = SnippetType.CAMELCASE,
@@ -103,7 +103,7 @@ public class Runner extends AbstractTestNGCucumberTests{
 			LOGGER.info("IDE :" + homeDir);
 		} else {
 			File dir = new File(System.getProperty("user.dir"));
-			homeDir = new File(dir.getParent() + "/mosip/testNgXmlFiles");
+			homeDir = new File(dir.getParent() + "/inji/testNgXmlFiles");
 			LOGGER.info("ELSE :" + homeDir);
 		}
 		File[] files = homeDir.listFiles();
@@ -205,7 +205,7 @@ public class Runner extends AbstractTestNGCucumberTests{
 	    if (os.contains("windows")) {
 	        System.setProperty("cucumber.features", "src\\test\\resources\\featurefiles\\");
 	    } else {
-	        System.setProperty("cucumber.features", "/home/mosip/featurefiles/");
+	        System.setProperty("cucumber.features", "/home/inji/featurefiles/");
 	    }
 	} 
 }

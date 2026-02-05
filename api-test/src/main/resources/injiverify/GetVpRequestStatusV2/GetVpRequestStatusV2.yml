@@ -1,0 +1,121 @@
+GetVpRequestStatusV2.yml:
+  Injiverify_GetVpRequestStatus_V2_All_Valid_Smoke:
+      endPoint: /v1/verify/v2/vp-results/{requestId}
+      description: Verify VP results in V2 end point
+      uniqueIdentifier: TC_InjiVerify_GetVpRequestStatus_V2_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2
+      outputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2Result
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "requestId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+  "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$",
+  "allChecksSuccessful": true,
+  "credentialResults": [
+    {
+      "allChecksSuccessful": true,
+      "schemaAndSignatureCheck": {
+        "valid": true,
+        "error": null
+      },
+      "expiryCheck": {
+        "valid": true
+      },
+      "statusCheck": [],
+      "claims": {
+        "gender": "Male",
+        "policyName": "wallet",
+        "dob": "2025-01-01",
+        "policyNumber": "5555",
+        "mobile": "0123456789",
+        "fullName": "wallet",
+        "policyIssuedOn": "2023-04-20",
+        "policyExpiresOn": "2033-04-20",
+        "email": "abcd@gmail.com"
+      },
+      "holderProofCheck": {
+        "valid": true,
+        "error": null
+      }
+    }
+  ]
+}'
+
+  Injiverify_GetVpRequestStatus_V2_WithoutCliams_Neg:
+      endPoint: /v1/verify/v2/vp-results/{requestId}
+      description: Verify VP results in V2 end point without claims
+      uniqueIdentifier: TC_InjiVerify_GetVpRequestStatus_V2_02
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2
+      outputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2Result
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": false,
+      "requestId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+  "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$",
+  "allChecksSuccessful": true,
+  "credentialResults": [
+    {
+      "allChecksSuccessful": true,
+      "schemaAndSignatureCheck": {
+        "valid": true,
+        "error": null
+      },
+      "expiryCheck": {
+        "valid": true
+      },
+      "statusCheck": [],
+      "claims": {},
+      "holderProofCheck": {
+        "valid": true,
+        "error": null
+      }
+    }
+  ]
+}'
+
+  Injiverify_GetVpRequestStatus_V2_WithoutStatusCheck_Neg:
+      endPoint: /v1/verify/v2/vp-results/{requestId}
+      description: Verify VP results in V2 end point without status
+      uniqueIdentifier: TC_InjiVerify_GetVpRequestStatus_V2_03
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2
+      outputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2Result
+      input: '{
+      "skipStatusChecks": true,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "requestId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+  "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$",
+  "allChecksSuccessful": true,
+  "credentialResults": [
+    {
+      "allChecksSuccessful": true,
+      "schemaAndSignatureCheck": {
+        "valid": true,
+        "error": null
+      },
+      "expiryCheck": {
+        "valid": true
+      },
+      "statusCheck": [],
+      "claims": {},
+      "holderProofCheck": {
+        "valid": true,
+        "error": null
+      }
+    }
+  ]
+}'

@@ -1,4 +1,4 @@
-package io.mosip.testrig.apirig.injiverify.utils;
+package io.inji.testrig.apirig.injiverify.utils;
 
 import static io.restassured.RestAssured.given;
 
@@ -166,6 +166,4 @@ public class InjiVerifyUtil extends AdminTestUtil {
 	        return null;
 	    }
 	}
-
-
 }

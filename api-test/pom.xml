@@ -7,8 +7,8 @@
 	<packaging>jar</packaging>
 	<name>apitest-injiverify</name>
 	<description>Parent project of inji-verify API test automation</description>
-	<url>https://github.com/mosip/inji-verify</url>
-	<version>0.16.0</version>
+	<url>https://github.com/inji/inji-verify</url>
+	<version>0.17.0-SNAPSHOT</version>
 
 	<licenses>
 		<license>
@@ -18,9 +18,9 @@
 	</licenses>
 
 	<scm>
-		<connection>scm:git:git://github.com/mosip/inji-verify.git</connection>
-		<developerConnection>scm:git:ssh://github.com:mosip/inji-verify.git</developerConnection>
-		<url>https://github.com/mosip/inji-verify</url>
+		<connection>scm:git:git://github.com/inji/inji-verify.git</connection>
+		<developerConnection>scm:git:ssh://github.com:inji/inji-verify.git</developerConnection>
+		<url>https://github.com/inji/inji-verify</url>
 		<tag>HEAD</tag>
 	</scm>
 
@@ -28,8 +28,8 @@
 		<developer>
 			<name>Mosip</name>
 			<email>mosip.emailnotifier@gmail.com</email>
-			<organization>io.mosip</organization>
-			<organizationUrl>https://github.com/mosip/inji-verify</organizationUrl>
+			<organization>io.inji</organization>
+			<organizationUrl>https://github.com/inji/inji-verify</organizationUrl>
 		</developer>
 	</developers>
 	<repositories>
@@ -90,14 +90,14 @@
 		<maven.source.plugin.version>2.2.1</maven.source.plugin.version>
 
 		<git.commit.id.plugin.version>3.0.1</git.commit.id.plugin.version>
-		<fileName>apitest-injiverify-0.16.0-jar-with-dependencies</fileName>
+		<fileName>apitest-injiverify-0.17.0-SNAPSHOT-jar-with-dependencies</fileName>
 	</properties>
 		
 	<dependencies>
 		<dependency>
 			<groupId>io.mosip.testrig.apitest.commons</groupId>
 			<artifactId>apitest-commons</artifactId>
-			<version>1.4.0-SNAPSHOT</version>
+			<version>1.4.0</version>
 		</dependency>
 	</dependencies>
 		
@@ -204,7 +204,7 @@
 								<transformer
 										implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>
-										io.mosip.testrig.apirig.injiverify.testrunner.MosipTestRunner</mainClass>
+										io.inji.testrig.apirig.injiverify.testrunner.InjiTestRunner</mainClass>
 								</transformer>
 							</transformers>
 							<!-- add this to prevent some security issues when
