@@ -7,7 +7,7 @@ export const Pages = {
     Redirect: "/redirect",
     PageNotFound: "*",
     LandingPage: "/",
-    LoanPage: "/userprofile",
+    AccountOpeningPage: "/userprofile",
     Application: "/application"
 }
 

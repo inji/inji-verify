@@ -7,9 +7,15 @@ import { useTranslation } from "react-i18next";
 
 const Application = (props) => {
   const [isChild, setChild] = useState(0);
+  const [accountData, setAccountData] = useState(null);
   const { t } = useTranslation("application");
 
-  const desktopLoanSteps = [
+  const handleFormSubmit = (data) => {
+    setAccountData(data);
+    setChild(1);
+  };
+
+  const desktopAccountSteps = [
     {
       stepLabel: t("details"),
       stepDescription: t("details_description"),
@@ -27,15 +33,15 @@ const Application = (props) => {
     },
   ];
 
-  const mobileLoanSteps = desktopLoanSteps.map((item) => {
+  const mobileAccountSteps = desktopAccountSteps.map((item) => {
     return { ...item, stepLabel: "", stepDescription: "" };
   });
 
   return (
     <div>
       <div className="lg:flex block">
-        <div className="lg:w-max bg-[#53389E] text-white lg:flex w-full block">
-          <div className="self-center m-auto">
+        <div className="lg:w-[30%] lg:min-w-[320px] lg:max-w-[400px] bg-[#53389E] text-white lg:flex w-full block">
+          <div className="self-center m-auto w-full px-4 py-6">
             {window.screen.availWidth < 1024 && (
               <p className="text-center pt-4 pb-2 font-semibold text-lg">
                 {t("header")}
@@ -44,8 +50,8 @@ const Application = (props) => {
             <Stepper
               steps={
                 window.screen.availWidth >= 1024
-                  ? desktopLoanSteps
-                  : mobileLoanSteps
+                  ? desktopAccountSteps
+                  : mobileAccountSteps
               }
               labelPosition="right"
               showDescriptionsForAllSteps
@@ -56,7 +62,7 @@ const Application = (props) => {
               renderNode={(step, stepIndex) => {
                 if (
                   stepIndex < isChild ||
-                  (desktopLoanSteps.length === stepIndex + 1 &&
+                  (desktopAccountSteps.length === stepIndex + 1 &&
                     stepIndex === isChild)
                 ) {
                   return (
@@ -89,7 +95,7 @@ const Application = (props) => {
             />
             {window.screen.availWidth < 1024 && (
               <div>
-                {desktopLoanSteps.map((item, index) => {
+                {desktopAccountSteps.map((item, index) => {
                   return (
                     isChild === index && (
                       <div>
@@ -106,9 +112,9 @@ const Application = (props) => {
           </div>
         </div>
         <div className="lg:w-[70%] bg-[#F9F5FF] lg:p-[3rem] w-full p-3">
-          {isChild === 0 && <Form child={(value) => setChild(value)} />}
+          {isChild === 0 && <Form onSubmit={handleFormSubmit} />}
           {isChild === 1 && <Loading child={(value) => setChild(value)} />}
-          {isChild === 2 && <Result langOptions={props.langOptions} />}
+          {isChild === 2 && <Result accountData={accountData} />}
         </div>
       </div>
     </div>

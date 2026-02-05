@@ -1,8 +1,8 @@
 {
   "Header": {
-    "heading": "ऋण सत्यापन पोर्टल",
+    "heading": "खाता खोलने का पोर्टल",
     "headingHighlight": "आसानी से!",
-    "description": "ओमेरा बैंक सत्यापन पोर्टल के साथ प्रमाण-पत्रों को आसानी से सत्यापित करें! बस QR कोड स्कैन करें या उसे अपलोड करें और तुरंत मान्यता प्राप्त करें, नीचे दिए गए चरणों का पालन करें।"
+    "description": "ओमेरा बैंक पोर्टल के साथ आसानी से अपना बैंक खाता खोलें! बस QR कोड स्कैन करें या तत्काल सत्यापन के लिए अपलोड करें।"
   },
   "navheader": {
     "about_us": "हमारे बारे में",
@@ -24,70 +24,82 @@
     "no_account": "क्या आपका खाता नहीं है?",
     "sign_up": "अभी साइन अप करें"
   },
-  "loan_page": {
+  "account_page": {
     "success_message": "आप eSignet का उपयोग करके ओमेरा बैंक में सफलतापूर्वक लॉग इन कर चुके हैं",
     "get_started": "स्वागत है",
-    "loan_upto": "ऋण प्राप्त करें ",
-    "amount": "$10,000/-",
-    "apply_for_loan": "ऋण के लिए आवेदन करें",
-    "subtext": "कुछ आसान चरणों में त्वरित और सरल ऋण प्राप्त करें",
-    "apply_loan": "आगे बढ़ने के लिए \"ऋण के लिए आवेदन करें\" पर क्लिक करें",
-    "avail_loan": "ऋण प्राप्त करें",
-    "fill_details": "ऋण विवरण भरें",
-    "verify_tan": "TAN आईडी सत्यापित करें"
+    "open_account": "आज ही अपना खाता खोलें",
+    "open_account_button": "खाता खोलें",
+    "subtext": "कुछ सरल चरणों में अपना बैंक खाता खोलें",
+    "step_open_account": "शुरू करने के लिए \"खाता खोलें\" पर क्लिक करें",
+    "step_verify": "अपनी पहचान सत्यापित करें",
+    "step_fill_details": "खाता विवरण भरें",
+    "step_complete": "खाता सेटअप पूरा करें"
   },
   "loading": {
-    "background_process": "विवरण सत्यापित किया जा रहा है",
+    "processing_application": "आपका आवेदन संसाधित हो रहा है",
     "please_wait": "कृपया प्रतीक्षा करें...",
-    "national_id": "राष्ट्रीय आईडी",
-    "tan_id_check": "टैन आईडी जांच",
-    "credit_score": "क्रेडिट स्कोर",
-    "existing_loan_check": "मौजूदा ऋण जांच"
+    "identity_verification": "पहचान सत्यापन",
+    "address_verification": "पता सत्यापन",
+    "kyc_check": "केवाईसी जांच",
+    "account_setup": "खाता सेटअप"
   },
-  "loan_result": {
+  "account_result": {
     "congrats": "बधाई हो!",
-    "background_process": "आपका आवेदन सत्यापित और स्वीकृत किया गया है!",
-    "approved_loan": "स्वीकृत ऋण राशि",
-    "approved_loan_value": "$10,000",
-    "roi": "ब्याज दर",
-    "roi_value": "3%",
-    "discounted_roi_value": "8%",
-    "tenure": "अवधि",
-    "tenure_value": "24 महीने"
+    "account_created_message": "आपका खाता सफलतापूर्वक बना दिया गया है!",
+    "account_type": "खाता प्रकार",
+    "account_type_value": "बचत खाता",
+    "account_number": "खाता संख्या",
+    "account_number_value": "XXXX-XXXX-1234",
+    "transaction_limit": "मासिक सीमा",
+    "transaction_limit_value": "$2,000"
   },
   "application": {
-    "details": "ऋण विवरण दर्ज करें",
-    "details_description": "शुरू करने के लिए अपनी जानकारी भरें।",
-    "eligible_check": "पात्रता जांचें",
-    "eligible_check_description": "अपना आवेदन जमा करें और जांचें कि आप पात्र हैं या नहीं।",
+    "details": "खाता विवरण दर्ज करें",
+    "details_description": "अपना खाता खोलने के लिए अपनी जानकारी भरें।",
+    "eligible_check": "विवरण सत्यापित करें",
+    "eligible_check_description": "हम आपकी जानकारी सत्यापित कर रहे हैं।",
     "result": "परिणाम देखें",
-    "result_description": "अपने ऋण स्वीकृति की स्थिति तुरंत प्राप्त करें!",
-    "header": "ऋण आवेदन"
+    "result_description": "अपने खाता खोलने की स्थिति तुरंत प्राप्त करें!",
+    "header": "खाता खोलना"
   },
   "form": {
-    "business_loan": "विकलांग व्यक्ति के लिए व्यावसायिक ऋण",
-    "agriculture_loan": "कृषि ऋण",
-    "education_loan": "शिक्षा ऋण",
+    "savings_account": "बचत खाता",
+    "checking_account": "चालू खाता",
+    "salary_account": "वेतन खाता",
+    "student_account": "छात्र / बेसिक / सीमित केवाईसी खाता",
     "fill_details": "विवरण भरें",
-    "loan_details": "(1) ऋण विवरण",
-    "details_description": "अपनी ऋण जानकारी भरें, पहले से भरे गए विवरण की समीक्षा करें, और आगे बढ़ने के लिए जमा करें।",
-    "avail_loan_before": "क्या आपने पहले ऋण लिया है?",
-    "yes": "हाँ",
-    "no": "नहीं",
-    "loan_type": "ऋण का प्रकार",
-    "loan_amount": "ऋण राशि",
-    "personal_details": "(2) व्यक्तिगत विवरण",
+    "details_description": "अपनी खाता जानकारी भरें, पहले से भरे गए विवरण की समीक्षा करें, और आगे बढ़ने के लिए जमा करें।",
+    "primary_information": "(1) प्राथमिक जानकारी",
+    "type_of_account": "खाते का प्रकार",
+    "monthly_transaction_limit": "मासिक लेनदेन सीमा",
+    "transaction_limit_placeholder": "राशि दर्ज करें (अधिकतम {{limit}})",
+    "transaction_limit_error": "ट्रांज़ैक्शन लिमिट {{limit}} से ज़्यादा नहीं हो सकती।",
+    "channel_access": "(2) चैनल एक्सेस",
+    "internet_banking": "इंटरनेट बैंकिंग",
+    "mobile_banking": "मोबाइल बैंकिंग एक्सेस",
+    "atm_debit_card": "एटीएम / डेबिट कार्ड एक्सेस",
+    "payment_capabilities": "(3) भुगतान क्षमताएं",
+    "domestic_transaction": "घरेलू लेनदेन",
+    "international_transaction": "अंतर्राष्ट्रीय लेनदेन",
+    "transfer_capabilities": "(4) ट्रांसफर क्षमताएं",
+    "transfer_capabilities_description": "आपके खाते के प्रकार और सत्यापन स्तर के आधार पर ट्रांसफर क्षमताएं सक्षम की जाएंगी।",
+    "personal_information": "(5) व्यक्तिगत जानकारी",
     "full_name": "पूरा नाम",
     "dob": "जन्म तिथि",
     "gender": "लिंग",
     "phone_number": "फोन नंबर",
     "photo": "फोटो",
     "email": "ईमेल",
-    "residential_address": "(3) आवासीय पता",
+    "verified": "सत्यापित",
+    "residential_information": "(6) आवासीय जानकारी",
     "address": "पता",
-    "declarations": "(4) घोषणा",
-    "terms&conditions": "मैं hereby घोषणा करता/करती हूँ कि दी गई सभी जानकारी सत्य और सटीक है। मैं अपनी कर प्रोफ़ाइल के आधार पर पृष्ठभूमि सत्यापन के लिए सहमति देता/देती हूँ।",
-    "proceed": "आगे बढ़ें",
+    "pin": "पिन कोड",
+    "pin_placeholder": "पिन कोड दर्ज करें",
+    "city": "शहर",
+    "city_placeholder": "शहर का नाम दर्ज करें",
+    "declarations": "(7) घोषणा",
+    "terms_and_conditions": "मैं hereby घोषणा करता/करती हूँ कि दी गई सभी जानकारी सत्य और सटीक है। मैं अपनी कर प्रोफ़ाइल के आधार पर पृष्ठभूमि सत्यापन के लिए सहमति देता/देती हूँ।",
+    "submit": "जमा करें",
     "select_option": "एक विकल्प चुनें"
   },
   "camera_access": {
@@ -122,7 +134,7 @@
   "modal": {
     "close": "बंद करें",
     "congrats": "बधाई हो!",
-    "background_process": "आपके TAN विवरण सफलतापूर्वक सत्यापित किए गए हैं, और आपका क्रेडिट स्कोर उत्कृष्ट है!"
+    "verification_success": "आपकी पहचान सफलतापूर्वक सत्यापित हो गई है और आप खाता खोलने के योग्य हैं!"
   },
   "vc_card": {
     "proceed": "आगे बढ़ें",

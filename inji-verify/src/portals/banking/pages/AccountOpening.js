@@ -1,20 +1,50 @@
-import { useEffect, useState } from "react";
+import { useEffect, useState, useMemo } from "react";
 import { useTranslation } from "react-i18next";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import relyingPartyService from "../services/relyingPartyService";
 import clientDetails from "../constants/clientDetails";
 import Loader from "../../../components/commons/Loader";
 
-const Loan = () => {
-  const { t } = useTranslation("loan_page");
+// Helper function to get claim details with verified status
+const getClaimDetails = (userInfo, fieldName) => {
+  let result = { value: null, verified: false };
+  if (userInfo?.[fieldName]) {
+    result.value = userInfo[fieldName];
+  }
+  if (userInfo?.verified_claims) {
+    for (let verifiedClaim of userInfo.verified_claims) {
+      if (verifiedClaim?.claims?.[fieldName]) {
+        result.value = verifiedClaim.claims[fieldName];
+        result.verified = true;
+        break;
+      }
+    }
+  }
+  return result;
+};
+
+const AccountOpening = () => {
+  const { t } = useTranslation("account_page");
   const navigate = useNavigate();
   const [searchParams, setSearchParams] = useSearchParams();
   const [successBanner, setSuccessBanner] = useState(true);
-  const [userInfo, setUserInfo] = useState(null);
+  const [rawUserInfo, setRawUserInfo] = useState(null);
 
   const { post_fetchUserInfo } = {
     ...relyingPartyService,
   };
+
+  // Process userInfo to extract claims with verified status
+  const userInfo = useMemo(() => {
+    if (!rawUserInfo) return null;
+    return {
+      name: getClaimDetails(rawUserInfo, "name"),
+      given_name: getClaimDetails(rawUserInfo, "given_name"),
+      family_name: getClaimDetails(rawUserInfo, "family_name"),
+      email: getClaimDetails(rawUserInfo, "email"),
+      phone_number: getClaimDetails(rawUserInfo, "phone_number"),
+    };
+  }, [rawUserInfo]);
 
   useEffect(() => {
     setSuccessBanner(true);
@@ -68,27 +98,27 @@ const Loan = () => {
         redirect_uri,
         grant_type
       );
-      setUserInfo(userInformation);
+      setRawUserInfo(userInformation);
       localStorage.setItem(
         "userInfo",
         window.btoa(JSON.stringify(userInformation))
       );
     } catch (errormsg) {
-      console.log(errormsg);
+      console.error(errormsg);
     }
   };
 
-  const handleLoan = () => {
+  const handleOpenAccount = () => {
     if (userInfo) {
-      navigate("/verification");
+      navigate("/application");
     }
   };
 
   const steps = [
-    t("apply_loan"),
-    t("verify_tan"),
-    t("fill_details"),
-    t("avail_loan"),
+    t("step_open_account"),
+    t("step_verify"),
+    t("step_fill_details"),
+    t("step_complete"),
   ];
 
   return userInfo ? (
@@ -130,7 +160,7 @@ const Loan = () => {
         <div className="lg:px-[4rem] m-auto lg:py-0 pb-6 pt-2 px-4">
           <div className="text-[2.25rem] xl:w-[100%] m-auto xl:m-0 font-bold md:flex block">
             <span>{t("get_started")}</span>
-            <p className="md:mx-4 break-words">{userInfo?.name}</p>
+            <p className="md:mx-4 break-words">{userInfo?.name?.value}</p>
           </div>
           <p className="my-3 font-semibold text-[1.75rem]">{t("subtext")}</p>
           <div className="my-4">
@@ -148,15 +178,14 @@ const Loan = () => {
             })}
           </div>
           <div className="mt-6 mb-[1rem] text-[#5A7184] font-semibold">
-            {t("loan_upto")}
-            <span className="text-[#6006A8]">{t("amount")}</span>
+            {t("open_account")}
           </div>
           <button
             type="button"
             className="bg-[#7F56D9] py-3 sm:w-80 w-full rounded-md text-white"
-            onClick={handleLoan}
+            onClick={handleOpenAccount}
           >
-            {t("apply_for_loan")}
+            {t("open_account_button")}
           </button>
         </div>
       </div>
@@ -168,4 +197,4 @@ const Loan = () => {
   );
 };
 
-export default Loan;
+export default AccountOpening;

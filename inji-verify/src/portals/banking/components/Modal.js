@@ -64,17 +64,17 @@ const ModalPopup = () => {
               </p>
               <img
                 src="assets/images/cibil.svg"
-                alt="cibil"
+                alt="verification_success"
                 className="block m-auto"
               />
               <p className="text-center font-normal text-[16px] mb-4 sm:px-[4rem]">
-                {t("background_process")}
+                {t("verification_success")}
               </p>
               <StyledButton
-                id="camer-access-denied-okay-button"
+                id="verification-success-close-button"
                 onClick={handleClose}
                 className="w-[180px] mx-auto my-[18px] !text-[#7F56D9] hover:!text-white !border-[#7F56D9] hover:!bg-[#7F56D9] !rounded-xl !px-[8rem] sm:!px-[10rem]"
-                data-testid="camera-access-denied-okay"
+                data-testid="verification-success-close"
               >
                 {t("close")}
               </StyledButton>
