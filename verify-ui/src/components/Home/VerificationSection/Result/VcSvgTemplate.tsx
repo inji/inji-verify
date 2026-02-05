@@ -28,7 +28,6 @@ const VcSvgTemplate = ({ vc, templateUrl, onError }: VcSvgTemplateProps) => {
       }
     })
     .then((url) => {
-      console.log("Generated QR code:", url.substring(0, 100));
       setQrCodeDataUrl(url);
     })
     .catch((err) => {
@@ -62,7 +61,7 @@ const VcSvgTemplate = ({ vc, templateUrl, onError }: VcSvgTemplateProps) => {
     loadTemplate();
   }, [onError, templateUrl]);
 
-  if (loader || !qrCodeDataUrl) return <Loader innerBg="bg-white" className="w-5 h-5 mt-20" />;
+  if (loader) return <Loader innerBg="bg-white" className="w-5 h-5 mt-20" />;
   if (!templateContent) return null;
 
   try {
