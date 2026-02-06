@@ -40,7 +40,7 @@ Each QR code contains its selected claims encoded as a CWT (CBOR Web Token).
 
 # Example CWT internal structure:
 
-```json
+```cbor
 COSE_Sign1 = [
   protected_header,
   unprotected_header,
