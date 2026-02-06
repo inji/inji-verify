@@ -98,7 +98,7 @@ To execute the tests using Jar, use the following steps:
 
 2. Run the automation test suite JAR file:
    ```
-   java -jar -Dmodules=injiverify -Denv.user=api-internal.<env_name> -Denv.endpoint=<base_env> -Denv.testLevel=smokeAndRegression -jar apitest-injiverify-0.17.0-jar-with-dependencies.jar
+   java -Dmodules=injiverify -Denv.user=api-internal.<env_name> -Denv.endpoint=<base_env> -Denv.testLevel=smokeAndRegression -jar apitest-injiverify-0.17.0-jar-with-dependencies.jar
    ```
    
 # Using Eclipse IDE
