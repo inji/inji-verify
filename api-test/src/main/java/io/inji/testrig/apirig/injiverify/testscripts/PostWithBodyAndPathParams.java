@@ -70,13 +70,12 @@ public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
 	}
 
 	/**
-	 * Test method for OTP Generation execution
+	 * Test method for POST requests with body and path parameters.
 	 * 
-	 * @param objTestParameters
-	 * @param testScenario
-	 * @param testcaseName
-	 * @throws AuthenticationTestException
-	 * @throws AdminTestException
+	 * `@param` testCaseDTO the test case data transfer object
+	 * `@throws` AuthenticationTestException
+	 * `@throws` AdminTestException
+	 * `@throws` SecurityXSSException
 	 */
 	@Test(dataProvider = "testcaselist")
 	public void test(TestCaseDTO testCaseDTO) throws AuthenticationTestException, AdminTestException, SecurityXSSException {
