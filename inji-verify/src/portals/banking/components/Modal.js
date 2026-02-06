@@ -50,8 +50,8 @@ const ModalPopup = ({ verifiedClaimsCount = 0, transactionLimitMax = MINIMUM_LIM
               {/* Message */}
               <p className="text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed mb-8 px-2 sm:px-4 md:px-8">
                 {hasVerifiedClaims 
-                  ? t("verified_message", { count: verifiedClaimsCount, limit: `$${transactionLimitMax.toLocaleString()}` })
-                  : t("unverified_message", { limit: `$${MINIMUM_LIMIT}` })
+                  ? t("verified_message", { limit: `$${transactionLimitMax.toLocaleString()}` })
+                  : t("unverified_message", { limit: `$${MINIMUM_LIMIT.toLocaleString()}` })
                 }
               </p>
 
