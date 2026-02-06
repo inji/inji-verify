@@ -7,21 +7,21 @@
 			value="injiverify/SunBirdR/CreatePolicySunBirdR/CreatePolicySunBirdR.yml" />
 		<parameter name="idKeyName" value="osid" />
 		<classes>
-			<class name="io.mosip.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
 		</classes>
 	</test>
 	<test name="GetPolicySunBirdR">
 		<parameter name="ymlFile"
 			value="injiverify/SunBirdR/GetPolicySunBirdR/GetPolicySunBirdR.yml" />
 		<classes>
-			<class name="io.mosip.testrig.apirig.injiverify.testscripts.GetWithParam" />
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
 		</classes>
 	</test>
 	<test name="SearchPolicySunBirdR">
 		<parameter name="ymlFile"
 			value="injiverify/SunBirdR/SearchPolicySunBirdR/SearchPolicySunBirdR.yml" />
 		<classes>
-			<class name="io.mosip.testrig.apirig.injiverify.testscripts.SimplePost" />
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
 		</classes>
 	</test>
 	

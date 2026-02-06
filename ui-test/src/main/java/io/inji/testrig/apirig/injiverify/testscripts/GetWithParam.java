@@ -1,4 +1,4 @@
-package io.mosip.testrig.apirig.injiverify.testscripts;
+package io.inji.testrig.apirig.injiverify.testscripts;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -30,8 +30,8 @@ import io.mosip.testrig.apirig.testrunner.BaseTestCase;
 import io.mosip.testrig.apirig.testrunner.HealthChecker;
 import io.restassured.response.Response;
 
-public class SimplePost extends InjiVerifyUtil implements ITest {
-	private static final Logger logger = Logger.getLogger(SimplePost.class);
+public class GetWithParam extends InjiVerifyUtil implements ITest {
+	private static final Logger logger = Logger.getLogger(GetWithParam.class);
 	protected String testCaseName = "";
 	public Response response = null;
 	public boolean sendEsignetToken = false;
@@ -68,7 +68,6 @@ public class SimplePost extends InjiVerifyUtil implements ITest {
 
 	/**
 	 * Test method for OTP Generation execution
-	 * 
 
 	 * @throws AuthenticationTestException
 	 * @throws AdminTestException
@@ -77,8 +76,6 @@ public class SimplePost extends InjiVerifyUtil implements ITest {
 	public void test(TestCaseDTO testCaseDTO) throws AuthenticationTestException, AdminTestException {
 		testCaseName = testCaseDTO.getTestCaseName();
 		testCaseDTO = InjiVerifyUtil.isTestCaseValidForTheExecution(testCaseDTO);
-		auditLogCheck = testCaseDTO.isAuditLogCheck();
-		String[] templateFields = testCaseDTO.getTemplateFields();
 		if (HealthChecker.signalTerminateExecution) {
 			throw new SkipException(
 					GlobalConstants.TARGET_ENV_HEALTH_CHECK_FAILED + HealthChecker.healthCheckFailureMapS);
@@ -90,16 +87,28 @@ public class SimplePost extends InjiVerifyUtil implements ITest {
 				throw new SkipException(GlobalConstants.VID_FEATURE_NOT_SUPPORTED);
 			}
 		}
+		auditLogCheck = testCaseDTO.isAuditLogCheck();
+		String[] templateFields = testCaseDTO.getTemplateFields();
 
-		String inputJson = getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate());
-		inputJson = InjiVerifyUtil.inputstringKeyWordHandeler(inputJson, testCaseName);
+		if (testCaseDTO.getInputTemplate().contains(GlobalConstants.$PRIMARYLANG$))
+			testCaseDTO.setInputTemplate(testCaseDTO.getInputTemplate().replace(GlobalConstants.$PRIMARYLANG$,
+					BaseTestCase.languageList.get(0)));
+		if (testCaseDTO.getOutputTemplate().contains(GlobalConstants.$PRIMARYLANG$))
+			testCaseDTO.setOutputTemplate(testCaseDTO.getOutputTemplate().replace(GlobalConstants.$PRIMARYLANG$,
+					BaseTestCase.languageList.get(0)));
+		if (testCaseDTO.getInput().contains(GlobalConstants.$PRIMARYLANG$))
+			testCaseDTO.setInput(
+					testCaseDTO.getInput().replace(GlobalConstants.$PRIMARYLANG$, BaseTestCase.languageList.get(0)));
+		if (testCaseDTO.getOutput().contains(GlobalConstants.$PRIMARYLANG$))
+			testCaseDTO.setOutput(
+					testCaseDTO.getOutput().replace(GlobalConstants.$PRIMARYLANG$, BaseTestCase.languageList.get(0)));
 
 		if (testCaseDTO.getTemplateFields() != null && templateFields.length > 0) {
 			ArrayList<JSONObject> inputTestCases = AdminTestUtil.getInputTestCase(testCaseDTO);
-			ArrayList<JSONObject> outputtestcase = AdminTestUtil.getOutputTestCase(testCaseDTO);
+			ArrayList<JSONObject> outputTestcase = AdminTestUtil.getOutputTestCase(testCaseDTO);
 			for (int i = 0; i < languageList.size(); i++) {
                 try {
-                    response = postWithBodyAndCookie(ApplnURI + testCaseDTO.getEndPoint(),
+                    response = getWithPathParamAndCookie(ApplnURI + testCaseDTO.getEndPoint(),
                             getJsonFromTemplate(inputTestCases.get(i).toString(), testCaseDTO.getInputTemplate()),
                             COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName());
                 } catch (SecurityXSSException e) {
@@ -108,7 +117,7 @@ public class SimplePost extends InjiVerifyUtil implements ITest {
 
                 Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil.doJsonOutputValidation(
 						response.asString(),
-						getJsonFromTemplate(outputtestcase.get(i).toString(), testCaseDTO.getOutputTemplate()),
+						getJsonFromTemplate(outputTestcase.get(i).toString(), testCaseDTO.getOutputTemplate()),
 						testCaseDTO, response.getStatusCode());
 				Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
 
@@ -118,13 +127,20 @@ public class SimplePost extends InjiVerifyUtil implements ITest {
 		}
 
 		else {
+			String inputJson = getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate());
+
+			inputJson = InjiVerifyUtil.inputstringKeyWordHandeler(inputJson, testCaseName);
+			
+			String outputJson = getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate());
+			outputJson = InjiVerifyUtil.inputstringKeyWordHandeler(outputJson, testCaseName);
+			
 			if (testCaseName.contains("ESignet_")) {
 				if (InjiVerifyConfigManager.isInServiceNotDeployedList(GlobalConstants.ESIGNET)) {
 					throw new SkipException("esignet is not deployed hence skipping the testcase");
 				}
 
 				String tempUrl = ApplnURI;
-				
+
 				if (testCaseDTO.getEndPoint().startsWith("$SUNBIRDBASEURL$") && testCaseName.contains("SunBirdR")) {
 
 					if (InjiVerifyConfigManager.isInServiceNotDeployedList("sunbirdrc"))
@@ -132,24 +148,25 @@ public class SimplePost extends InjiVerifyUtil implements ITest {
 
 					if (InjiVerifyConfigManager.getSunbirdBaseURL() != null && !InjiVerifyConfigManager.getSunbirdBaseURL().isBlank())
 						tempUrl = InjiVerifyConfigManager.getSunbirdBaseURL();
-					testCaseDTO.setEndPoint(testCaseDTO.getEndPoint().replace("$SUNBIRDBASEURL$", ""));
+						testCaseDTO.setEndPoint(testCaseDTO.getEndPoint().replace("$SUNBIRDBASEURL$", ""));
+					}
 
-                    try {
-                        response = postWithBodyAndCookie(tempUrl + testCaseDTO.getEndPoint(), inputJson, auditLogCheck,
-                                COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), sendEsignetToken);
-                    } catch (SecurityXSSException e) {
-                        throw new RuntimeException(e);
-                    }
-
-                }
-			} else {
                 try {
-                    response = postWithBodyAndCookie(ApplnURI + testCaseDTO.getEndPoint(), inputJson, auditLogCheck,
+                    response = getWithPathParamAndCookie(tempUrl + testCaseDTO.getEndPoint(), inputJson, auditLogCheck,
+                            COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), sendEsignetToken);
+                } catch (SecurityXSSException e) {
+                    throw new RuntimeException(e);
+                }
+
+            } else {
+                try {
+                    response = getWithPathParamAndCookie(ApplnURI + testCaseDTO.getEndPoint(), inputJson, auditLogCheck,
                             COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), sendEsignetToken);
                 } catch (SecurityXSSException e) {
                     throw new RuntimeException(e);
                 }
             }
+				
 			Map<String, List<OutputValidationDto>> ouputValid = null;
 			if (testCaseName.contains("_StatusCode")) {
 
@@ -159,22 +176,14 @@ public class SimplePost extends InjiVerifyUtil implements ITest {
 				ouputValid = new HashMap<>();
 				ouputValid.put(GlobalConstants.EXPECTED_VS_ACTUAL, List.of(customResponse));
 			} else {
-				ouputValid = OutputValidationUtil.doJsonOutputValidation(response.asString(),
-						getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate()), testCaseDTO,
+				ouputValid = OutputValidationUtil.doJsonOutputValidation(response.asString(), outputJson, testCaseDTO,
 						response.getStatusCode());
 			}
 
 			Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
-
-			if (!OutputValidationUtil.publishOutputResult(ouputValid)) {
-				if (response.asString().contains("IDA-OTA-001"))
-					throw new AdminTestException(
-							"Exceeded number of OTP requests in a given time, Increase otp.request.flooding.max-count");
-				else
-					throw new AdminTestException("Failed at otp output validation");
-			}
+			if (!OutputValidationUtil.publishOutputResult(ouputValid))
+				throw new AdminTestException("Failed at output validation");
 		}
-
 	}
 
 	/**
