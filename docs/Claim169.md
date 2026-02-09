@@ -68,7 +68,7 @@ This will ,
 ## 2. Verifiable Credential Verification:
 
 - The Verify UI  calls /vc-verification endpoint and sends:
-    - credential in CWT format
+    - credential as a CWT hex string
 
     - Content-Type: `application/vc+cwt`
 
