@@ -145,7 +145,11 @@
   "modal": {
     "close": "Fermer",
     "congrats": "Félicitations !",
-    "verification_success": "Votre identité a été vérifiée avec succès et vous êtes éligible pour ouvrir un compte !"
+    "note": "Remarque",
+    "proceed": "Continuer",
+    "verification_success": "Votre identité a été vérifiée avec succès et vous êtes éligible pour ouvrir un compte !",
+    "verified_message": "Félicitations ! En fonction de votre identité vérifiée, vous bénéficiez d'une limite de transaction mensuelle de {{limit}}. Cette limite améliorée vous permet d'accéder aux fonctionnalités bancaires premium et de profiter d'une plus grande flexibilité financière.",
+    "unverified_message": "Vous pouvez continuer avec un compte basique avec une limite de transaction mensuelle de {{limit}}. Pour débloquer des limites plus élevées et des fonctionnalités premium, nous vous recommandons de vérifier votre identité."
   },
   "vc_card": {
     "proceed": "Procéder",

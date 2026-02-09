@@ -330,6 +330,8 @@ const Form = (props) => {
     return Math.max(1, verifiedClaimsCount) * TRANSACTION_LIMIT_PER_CLAIM;
   }, [rawUserInfo]);
 
+  const verifiedClaimsCount = useMemo(() => getVerifiedClaimsCount(rawUserInfo), [rawUserInfo]);
+
   const userInfo = useMemo(() => {
     if (!rawUserInfo) return null;
     const addressDetails = getClaimDetails(rawUserInfo, "address");
@@ -461,7 +463,7 @@ const Form = (props) => {
 
   return (
     <>
-      <ModalPopup />
+      <ModalPopup verifiedClaimsCount={verifiedClaimsCount} transactionLimitMax={transactionLimitMax} />
       <div className="rounded-xl bg-white shadow-md">
         {/* Header */}
         <div className="md:p-[2rem] border-b border-b-[#D7D8E1] p-3">

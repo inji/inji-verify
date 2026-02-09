@@ -2,85 +2,71 @@ import React, { useState } from "react";
 import StyledButton from "../../../components/Home/VerificationSection/commons/StyledButton";
 import { useTranslation } from "react-i18next";
 
-const ModalPopup = () => {
+const MINIMUM_LIMIT = 500;
+
+const ModalPopup = ({ verifiedClaimsCount = 0, transactionLimitMax = MINIMUM_LIMIT }) => {
   const [isPopup, setPopup] = useState(true);
   const { t } = useTranslation("modal");
 
-  const style = {
-    position: "absolute",
-    top: "50%",
-    left: "50%",
-    transform: "translate(-50%, -50%)",
-    width: 570,
-    backgroundColor: "white",
-    display: "grid",
-    placeItems: "center",
-    borderRadius: "20px",
-    outline: "none",
-    padding: "38px",
-    display: "block"
-  };
+  const hasVerifiedClaims = verifiedClaimsCount > 0;
 
-  const Modal = ({ children }) => (
-    <div className="fixed z-10 inset-0 overflow-y-auto">
-      <div className="flex items-center justify-center min-h-screen">
-        <div className="fixed inset-0 bg-black opacity-50"></div>
-        <div className="relative bg-white max-w-[95vw] lg:max-w-md p-6 rounded-lg shadow-xl">
-          {children}
-        </div>
-      </div>
-    </div>
-  );
-
-  const Fade = ({ children }) => (
-    <div
-      x-show="isOpen"
-      className="fixed inset-0 flex items-center justify-center"
-    >
-      <div className="fixed inset-0 transition-opacity">
-        <div className="absolute inset-0 bg-black opacity-30"></div>
-      </div>
-      <div className="relative bg-white max-w-[95vw] lg:max-w-md p-6 rounded-lg shadow-xl">
-        {children}
-      </div>
-    </div>
-  );
-
-  const handleClose = () => {
+  const handleProceed = () => {
     setPopup(false);
   };
 
   return (
     isPopup && (
-      <div>
-        <Modal>
-          <Fade>
-            <div
-              className="container grid justify-items-center items-center text-center sm:max-w-xl shadow-lg max-w-xs"
-              style={style}
-            >
-              <p className="text-center font-semibold text-[36px] pb-4">
-                {t("congrats")}
+      <div className="fixed z-50 inset-0 overflow-y-auto">
+        <div className="flex items-center justify-center min-h-screen px-4 pt-4 pb-20 text-center sm:block sm:p-0">
+          {/* Background overlay */}
+          <div 
+            className="fixed inset-0 bg-black bg-opacity-50 transition-opacity" 
+            aria-hidden="true"
+            onClick={handleProceed}
+          ></div>
+
+          {/* Center modal vertically */}
+          <span className="hidden sm:inline-block sm:align-middle sm:h-screen" aria-hidden="true">
+            &#8203;
+          </span>
+
+          {/* Modal panel */}
+          <div className="inline-block align-bottom bg-white rounded-2xl text-center overflow-hidden shadow-2xl transform transition-all sm:my-8 sm:align-middle w-full max-w-[90vw] sm:max-w-lg md:max-w-xl lg:max-w-2xl">
+            <div className="bg-white px-6 sm:px-8 md:px-12 pt-8 pb-6">
+              {/* Title */}
+              <h2 className="text-2xl sm:text-3xl md:text-4xl font-semibold text-gray-900 mb-6">
+                {hasVerifiedClaims ? t("congrats") : t("note")}
+              </h2>
+
+              {/* Image */}
+              <div className="flex justify-center mb-6">
+                <img
+                  src={hasVerifiedClaims ? "assets/images/excellent_cibil.svg" : "assets/images/fair_cibil.svg"}
+                  alt={hasVerifiedClaims ? "excellent_verification" : "basic_verification"}
+                  className="w-48 h-48 sm:w-56 sm:h-56 md:w-64 md:h-64 object-contain"
+                />
+              </div>
+
+              {/* Message */}
+              <p className="text-sm sm:text-base md:text-lg text-gray-700 leading-relaxed mb-8 px-2 sm:px-4 md:px-8">
+                {hasVerifiedClaims 
+                  ? t("verified_message", { limit: `$${transactionLimitMax.toLocaleString()}` })
+                  : t("unverified_message", { limit: `$${MINIMUM_LIMIT.toLocaleString()}` })
+                }
               </p>
-              <img
-                src="assets/images/cibil.svg"
-                alt="verification_success"
-                className="block m-auto"
-              />
-              <p className="text-center font-normal text-[16px] mb-4 sm:px-[4rem]">
-                {t("verification_success")}
-              </p>
+
+              {/* Button */}
               <StyledButton
-                id="verification-success-close-button"
-                onClick={handleClose}
-                className="w-[180px] mx-auto my-[18px] !text-[#7F56D9] hover:!text-white !border-[#7F56D9] hover:!bg-[#7F56D9] !rounded-xl !px-[8rem] sm:!px-[10rem]"
-                data-testid="verification-success-close"
+                id="verification-proceed-button"
+                onClick={handleProceed}
+                className="w-full sm:w-auto min-w-[200px] sm:min-w-[280px] mx-auto !text-[#7F56D9] hover:!text-white !border-2 !border-[#7F56D9] hover:!bg-[#7F56D9] !rounded-xl !px-6 !py-3 !text-base sm:!text-lg font-medium transition-colors duration-200"
+                data-testid="verification-proceed"
               >
-                {t("close")}
+                {t("proceed")}
               </StyledButton>
             </div>
-          </Fade>
-        </Modal>
+          </div>
+        </div>
       </div>
     )
   );
