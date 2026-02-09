@@ -60,7 +60,7 @@ Refer here for full list of mappings: [Claim 169 - QR Code Specification](https:
 - Inji Verify allows users to SCAN & UPLOAD Verifiable Credential.
 
 - Once the verifier scans the QR code, it decodes the QR code using pixel_pass_library.
-This will ,
+This will:
     - Base45-decode the CWT data
     - Zlib-decompress the decoded data
     - Extract the actual CWT.
