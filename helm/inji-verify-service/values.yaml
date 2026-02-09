@@ -240,7 +240,7 @@ updateStrategy:
 ##   - name: FOO
 ##     value: "bar"
 ##
-extraEnvVars: |
+extraEnvVars:
   - name: DATABASE_HOST
     valueFrom:
       configMapKeyRef:

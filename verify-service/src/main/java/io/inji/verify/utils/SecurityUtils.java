@@ -11,9 +11,10 @@ import java.security.spec.X509EncodedKeySpec;
 
 public class SecurityUtils {
 
+    private static final SecureRandom random = new SecureRandom();
+
     public static String generateNonce()
     {
-        SecureRandom random = new SecureRandom();
         byte[] randomBytes = new byte[16];
         random.nextBytes(randomBytes);
         StringBuilder hexString = new StringBuilder();

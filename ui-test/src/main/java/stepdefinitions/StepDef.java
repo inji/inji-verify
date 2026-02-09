@@ -18,7 +18,7 @@ import io.cucumber.java.en.And;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.mosip.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId;
+import io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId;
 
 import java.io.IOException;
 import pages.BLE;

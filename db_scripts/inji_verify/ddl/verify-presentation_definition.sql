@@ -12,7 +12,7 @@
 -- ------------------------------------------------------------------------------------------
 CREATE TABLE presentation_definition(
                                                       id character varying(36) NOT NULL,
-                                                      input_descriptors jsonb NOT NULL,
+                                                      input_descriptors text NOT NULL,
                                                       name character varying(500),
                                                       purpose character varying(500),
                                                       vp_format text,

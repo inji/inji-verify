@@ -1,11 +1,10 @@
-package io.mosip.testrig.apirig.injiverify.testscripts;
+package io.inji.testrig.apirig.injiverify.testscripts;
 
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
-import io.mosip.testrig.apirig.utils.*;
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
 import org.json.JSONObject;
@@ -21,16 +20,25 @@ import org.testng.annotations.Test;
 import org.testng.internal.BaseTestMethod;
 import org.testng.internal.TestResult;
 
-import api.InjiVerifyConfigManager;
-import api.InjiVerifyUtil;
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.dto.OutputValidationDto;
 import io.mosip.testrig.apirig.dto.TestCaseDTO;
 import io.mosip.testrig.apirig.testrunner.HealthChecker;
+import io.mosip.testrig.apirig.utils.AdminTestException;
+import io.mosip.testrig.apirig.utils.AdminTestUtil;
+import io.mosip.testrig.apirig.utils.AuthenticationTestException;
+import io.mosip.testrig.apirig.utils.GlobalConstants;
+import io.mosip.testrig.apirig.utils.OutputValidationUtil;
+import io.mosip.testrig.apirig.utils.ReportUtil;
+import io.mosip.testrig.apirig.utils.SecurityXSSException;
 import io.restassured.response.Response;
 
-public class DeleteWithParam extends InjiVerifyUtil implements ITest {
-	private static final Logger logger = Logger.getLogger(DeleteWithParam.class);
+public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
+	private static final Logger logger = Logger.getLogger(PostWithBodyAndPathParams.class);
 	protected String testCaseName = "";
+	String pathParams = null;
+	String headers = null;
 	public Response response = null;
 
 	@BeforeClass
@@ -57,40 +65,44 @@ public class DeleteWithParam extends InjiVerifyUtil implements ITest {
 	@DataProvider(name = "testcaselist")
 	public Object[] getTestCaseList(ITestContext context) {
 		String ymlFile = context.getCurrentXmlTest().getLocalParameters().get("ymlFile");
+		pathParams = context.getCurrentXmlTest().getLocalParameters().get("pathParams");
+		headers = context.getCurrentXmlTest().getLocalParameters().get("headers");
 		logger.info("Started executing yml: " + ymlFile);
 		return getYmlTestData(ymlFile);
 	}
 
 	/**
 	 * Test method for OTP Generation execution
-	 *
+	 * 
+	 * @param objTestParameters
+	 * @param testScenario
+	 * @param testcaseName
 	 * @throws AuthenticationTestException
 	 * @throws AdminTestException
 	 */
 	@Test(dataProvider = "testcaselist")
-	public void test(TestCaseDTO testCaseDTO) throws AuthenticationTestException, AdminTestException {
+	public void test(TestCaseDTO testCaseDTO) throws AuthenticationTestException, AdminTestException, SecurityXSSException {
 		testCaseName = testCaseDTO.getTestCaseName();
-		testCaseDTO = InjiVerifyUtil.isTestCaseValidForTheExecution(testCaseDTO);
+		String[] templateFields = testCaseDTO.getTemplateFields();
+		testCaseName = InjiVerifyUtil.isTestCaseValidForExecution(testCaseDTO);
 		if (HealthChecker.signalTerminateExecution) {
 			throw new SkipException(
 					GlobalConstants.TARGET_ENV_HEALTH_CHECK_FAILED + HealthChecker.healthCheckFailureMapS);
 		}
-		String[] templateFields = testCaseDTO.getTemplateFields();
+
+		testCaseDTO = AdminTestUtil.filterHbs(testCaseDTO);
+		String inputJson = getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate());
+		String outputJson = getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate());
 
 		if (testCaseDTO.getTemplateFields() != null && templateFields.length > 0) {
 			ArrayList<JSONObject> inputtestCases = AdminTestUtil.getInputTestCase(testCaseDTO);
 			ArrayList<JSONObject> outputtestcase = AdminTestUtil.getOutputTestCase(testCaseDTO);
-
 			for (int i = 0; i < languageList.size(); i++) {
-                try {
-                    response = deleteWithPathParamAndCookie(ApplnURI + testCaseDTO.getEndPoint(),
-                            getJsonFromTemplate(inputtestCases.get(i).toString(), testCaseDTO.getInputTemplate()),
-                            COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName());
-                } catch (SecurityXSSException e) {
-                    throw new RuntimeException(e);
-                }
+				response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(),
+						getJsonFromTemplate(inputtestCases.get(i).toString(), testCaseDTO.getInputTemplate()),
+						COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
 
-                Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil.doJsonOutputValidation(
+				Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil.doJsonOutputValidation(
 						response.asString(),
 						getJsonFromTemplate(outputtestcase.get(i).toString(), testCaseDTO.getOutputTemplate()),
 						testCaseDTO, response.getStatusCode());
@@ -102,47 +114,13 @@ public class DeleteWithParam extends InjiVerifyUtil implements ITest {
 		}
 
 		else {
-			
-			String inputJson = getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate());
-			
-			inputJson = InjiVerifyUtil.inputstringKeyWordHandeler(inputJson, testCaseName);
+			response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(), inputJson,
+					COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
 
-			if (testCaseName.contains("ESignet_")) {
-				if (InjiVerifyConfigManager.isInServiceNotDeployedList(GlobalConstants.ESIGNET)) {
-					throw new SkipException("esignet is not deployed hence skipping the testcase");
-				}
-
-				String tempUrl = ApplnURI;
-
-				if (testCaseDTO.getEndPoint().startsWith("$SUNBIRDBASEURL$") && testCaseName.contains("SunBirdR")) {
-
-					if (InjiVerifyConfigManager.isInServiceNotDeployedList("sunbirdrc"))
-						throw new SkipException(GlobalConstants.SERVICE_NOT_DEPLOYED_MESSAGE);
-
-					if (InjiVerifyConfigManager.getSunbirdBaseURL() != null && !InjiVerifyConfigManager.getSunbirdBaseURL().isBlank())
-						tempUrl = InjiVerifyConfigManager.getSunbirdBaseURL();
-					testCaseDTO.setEndPoint(testCaseDTO.getEndPoint().replace("$SUNBIRDBASEURL$", ""));
-				}
-
-                try {
-                    response = deleteWithPathParamAndCookie(tempUrl + testCaseDTO.getEndPoint(), inputJson, COOKIENAME,
-                            testCaseDTO.getRole(), testCaseDTO.getTestCaseName());
-                } catch (SecurityXSSException e) {
-                    throw new RuntimeException(e);
-                }
-
-            } else {
-                try {
-                    response = deleteWithPathParamAndCookie(ApplnURI + testCaseDTO.getEndPoint(), inputJson, COOKIENAME,
-                            testCaseDTO.getRole(), testCaseDTO.getTestCaseName());
-                } catch (SecurityXSSException e) {
-                    throw new RuntimeException(e);
-                }
-            }
-			Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil.doJsonOutputValidation(
-					response.asString(), getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate()),
-					testCaseDTO, response.getStatusCode());
+			Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil
+					.doJsonOutputValidation(response.asString(), outputJson, testCaseDTO, response.getStatusCode());
 			Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));
+
 			if (!OutputValidationUtil.publishOutputResult(ouputValid))
 				throw new AdminTestException("Failed at output validation");
 		}
