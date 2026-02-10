@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jre-alpine
+FROM eclipse-temurin:25.0.1_8-jre-alpine
 
 ARG SOURCE
 ARG COMMIT_HASH
@@ -28,10 +28,10 @@ ENV spring_config_label_env=${spring_config_label}
 ENV spring_config_label_env=${spring_config_label}
 
 # can be passed during Docker build as build time environment for github branch to pickup configuration from.
-ARG container_user=mosip
+ARG container_user=inji
 
 # can be passed during Docker build as build time environment for github branch to pickup configuration from.
-ARG container_user_group=mosip
+ARG container_user_group=inji
 
 # can be passed during Docker build as build time environment for github branch to pickup configuration from.
 ARG container_user_uid=1002

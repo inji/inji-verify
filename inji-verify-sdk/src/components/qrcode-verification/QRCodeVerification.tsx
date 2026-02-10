@@ -35,6 +35,7 @@ import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
 import { isSdJwt } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
+import { isCWT } from "../../utils/cborUtils";
 
 const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   scannerActive = true,
@@ -347,7 +348,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const storeStates = (data: QrData) => {
     sessionStorage.setItem("transactionId", data.transactionId);
     sessionStorage.setItem("requestId", data.requestId);
-    sessionStorage.setItem("pathName", window.location.pathname);
   };
 
   const createVPRequest = async (presentationDefinition: any) => {
@@ -449,6 +449,9 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
       if (typeof data === "string") {
         const decoded = await decodeQrData(new TextEncoder().encode(data));
+        if (isCWT(decoded)) {
+          return decoded;
+        }
         return JSON.parse(decoded);
       }
       throw new Error("Unable to access the shared VC, due to unsupported QR data format");
@@ -461,7 +464,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const resetState = () => {
     sessionStorage.removeItem("transactionId");
     sessionStorage.removeItem("requestId");
-    sessionStorage.removeItem("pathName");
     hasFetchedVPResultRef.current = false;
     scanSessionCompletedRef.current = true;
     frameProcessingRef.current = false;

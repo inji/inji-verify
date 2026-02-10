@@ -28,7 +28,8 @@ public class VPSubmission {
     private final String vpToken;
 
     @Convert(converter = PresentationSubmissionDtoConverter.class)
-    @Column(columnDefinition = "TEXT")
+    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private final PresentationSubmissionDto presentationSubmission;
 
     private final String error;

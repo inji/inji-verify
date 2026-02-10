@@ -16,7 +16,7 @@ export const decodeSdJwtToken = async (
       const key = (disclosure as any).key;
       const value = (disclosure as any).value;
 
-      if (key) {
+      if (key && key !== "__proto__" && key !== "constructor" && key !== "prototype") {
         disclosedClaims[key] = value;
       }
     } catch (e) {

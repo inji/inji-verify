@@ -7,6 +7,9 @@ import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPResultStatus;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
 import io.inji.verify.exception.VPWithoutProofException;
+import io.inji.verify.exception.TokenMatchingFailedException;
+import io.inji.verify.exception.VPSubmissionWalletError;
+import io.inji.verify.exception.InvalidVpTokenException;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -16,10 +19,8 @@ import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.ArrayList;
 import java.util.List;
-
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
@@ -55,7 +56,7 @@ public class VPResultControllerTest {
         when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId)).thenReturn(resultDto);
 
         mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isOk())
                 .andExpect(content().string(objectMapper.writeValueAsString(resultDto)));
 
@@ -71,7 +72,7 @@ public class VPResultControllerTest {
         when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId)).thenReturn(requestIds);
 
         mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID))));
 
@@ -90,7 +91,7 @@ public class VPResultControllerTest {
                 .thenThrow(new VPSubmissionNotFoundException());
 
         mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
-                .contentType(MediaType.APPLICATION_JSON))
+                        .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isNotFound())
                 .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.NO_VP_SUBMISSION))));
 
@@ -99,7 +100,7 @@ public class VPResultControllerTest {
     }
 
     @Test
-    public void testGetVPResult_InternalServerError_VPWithoutProofException() throws Exception {
+    void testGetVPResult_InternalServerError_VPWithoutProofException() throws Exception {
         String transactionId = "tx101";
         List<String> requestIds = new ArrayList<>();
         requestIds.add("req112");
@@ -114,6 +115,63 @@ public class VPResultControllerTest {
                 .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF))));
 
         verify(verifiablePresentationRequestService, times(1)).getLatestRequestIdFor(transactionId);
+        verify(verifiablePresentationSubmissionService, times(1)).getVPResult(requestIds, transactionId);
+    }
+
+    @Test
+    void testGetVPResult_NotFound_WalletError() throws Exception {
+        String transactionId = "tx_id";
+        List<String> requestIds = List.of("req001");
+
+        String expectedCode = "Invalid request" ;
+        String expectedMessage = "No requests found for given transaction ID.";
+        ErrorDto errorDto = new ErrorDto(expectedCode, expectedMessage);
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(requestIds);
+
+        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId))
+                .thenThrow(new VPSubmissionWalletError(expectedCode, expectedMessage));
+
+        mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(objectMapper.writeValueAsString(errorDto)));
+
+        verify(verifiablePresentationSubmissionService, times(1)).getVPResult(requestIds, transactionId);
+    }
+
+    @Test
+    void testGetVPResult_BadRequest_TokenMatchingFailedException() throws Exception {
+        String transactionId = "tx_token_mismatch";
+        List<String> requestIds = List.of("req_888");
+
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(requestIds);
+        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId))
+                .thenThrow(new TokenMatchingFailedException());
+
+        mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.TOKEN_MATCHING_FAILED))));
+
+        verify(verifiablePresentationSubmissionService, times(1)).getVPResult(requestIds, transactionId);
+    }
+
+    @Test
+    void testGetVPResult_BadRequest_InvalidVpTokenException() throws Exception {
+        String transactionId = "tx_invalid_token";
+        List<String> requestIds = List.of("req_999");
+
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId)).thenReturn(requestIds);
+        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId))
+                .thenThrow(new InvalidVpTokenException());
+
+        mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.INVALID_VP_TOKEN))));
+
         verify(verifiablePresentationSubmissionService, times(1)).getVPResult(requestIds, transactionId);
     }
 }

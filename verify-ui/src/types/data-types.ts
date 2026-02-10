@@ -83,6 +83,7 @@ export interface claim {
   logo: string;
   essential?: boolean;
   definition: PresentationDefinition;
+  clientIdScheme?: string;
 }
 
 interface InputDescriptor {

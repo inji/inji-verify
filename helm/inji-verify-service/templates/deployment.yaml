@@ -8,8 +8,8 @@ metadata:
   name: {{ template "common.names.fullname" . }}
   annotations:
     {{- if .Values.commonAnnotations }}
-    {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
-    {{- end }}
+      {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
+      {{- end }}
 spec:
   replicas: {{ .Values.replicaCount }}
   {{- if .Values.updateStrategy }}
@@ -21,8 +21,8 @@ spec:
     metadata:
       annotations:
         {{- if or .Values.podAnnotations .Values.metrics.enabled }}
-        {{- include "inji-verify-service.podAnnotations" . | nindent 8 }}
-        {{- end }}
+          {{- include "inji-verify-service.podAnnotations" . | nindent 8 }}
+          {{- end }}
       labels: {{- include "common.labels.standard" . | nindent 8 }}
         {{- if .Values.podLabels }}
         {{- include "common.tplvalues.render" (dict "value" .Values.podLabels "context" $) | nindent 8 }}
@@ -69,9 +69,6 @@ spec:
             - name: foo
               mountPath: bar
         {{- end }}
-        {{- if .Values.enable_insecure }}
-          {{- include "common.tplvalues.render" (dict "value" .Values.initContainers "context" $) | nindent 8 }}
-        {{- end }}
       containers:
         - name: inji-verify-service
           image: {{ template "inji-verify-service.image" . }}
@@ -90,9 +87,9 @@ spec:
           {{- end }}
           env:
             - name: container_user
-              value: {{ .Values.containerSecurityContext.runAsUser }}
+              value: {{ .Values.containerSecurityContext.runAsUser | quote }}
             - name: JDK_JAVA_OPTIONS
-              value: {{ .Values.additionalResources.javaOpts }}
+              value: {{ .Values.additionalResources.javaOpts | quote }}
             {{- if .Values.extraEnv }}
             {{- include "common.tplvalues.render" (dict "value" .Values.extraEnv "context" $) | nindent 12 }}
             {{- end }}
@@ -133,17 +130,6 @@ spec:
           {{- else if .Values.customReadinessProbe }}
           readinessProbe: {{- include "common.tplvalues.render" (dict "value" .Values.customReadinessProbe "context" $) | nindent 12 }}
           {{- end }}
-          volumeMounts:
-          {{- if .Values.enable_insecure }}
-          - mountPath: /usr/local/openjdk-11/lib/security/cacerts
-            name: cacerts
-            subPath: cacerts
-          {{- end }}
         {{- if .Values.sidecars }}
         {{- include "common.tplvalues.render" ( dict "value" .Values.sidecars "context" $) | nindent 8 }}
         {{- end }}
-      volumes:
-      {{- if .Values.enable_insecure }}
-      - name: cacerts
-        emptyDir: {}
-      {{- end }}

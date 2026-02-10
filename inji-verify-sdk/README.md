@@ -2,22 +2,27 @@
 
 Inji Verify SDK provides ready-to-use **React components** to integrate [OpenID4VP](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html)-based **Verifiable Credential (VC) and Verifiable Presentation (VP) verification** into any React TypeScript web application.
 
-
 ## Usage Guide
 
 ### Step 1: Install the Package
+
 ```bash
-npm i @mosip/react-inji-verify-sdk
+npm i @injistack/react-inji-verify-sdk
 ```
 
 ### Step 2: Import and Use
+
 ```javascript
-import { OpenID4VPVerification, QRCodeVerification } from "@mosip/react-inji-verify-sdk";
+import {
+  OpenID4VPVerification,
+  QRCodeVerification,
+} from "@injistack/react-inji-verify-sdk";
 ```
 
 ### Step 3: Choose Your Verification Method
 
 **Option A: QR Code Verification (Scan & Upload)**
+
 ```javascript
 function MyApp() {
   return (
@@ -38,6 +43,7 @@ function MyApp() {
 ```
 
 **Option B: OpenID4VP Verification**
+
 ```javascript
 function MyApp() {
   return (
@@ -72,25 +78,30 @@ When verification is completed, the response received is as below:
   vpResultStatus: "SUCCESS" // Overall verification status
 }
 ```
->**Security Recommendation**
+
+> **Security Recommendation**
 >
->Avoid consuming results directly from VPProcessed or VCProcessed.
-Instead, use VPReceived or VCReceived events to capture the txnId, then retrieve the verification results securely from your backend's verification service endpoint.
-This ensures data integrity and prevents reliance on client-side verification data for final decisions.
+> Avoid consuming results directly from VPProcessed or VCProcessed.
+> Instead, use VPReceived or VCReceived events to capture the txnId, then retrieve the verification results securely from your backend's verification service endpoint.
+> This ensures data integrity and prevents reliance on client-side verification data for final decisions.
 
 ## Pre-requisites
 
 ### What You Need:
+
 1. **A React project** (TypeScript recommended)
 2. **A verification backend** - You need a server that can verify credentials
 3. **Camera permissions** - For QR scanning features
 
 ### Backend Requirements:
+
 Your backend must support the OpenID4VP protocol. You can either:
+
 - Use the official `inji-verify-service`
 - Build your own following [this specification](https://openid.net/specs/openid-4-verifiable-presentations-1_0-ID3.html)
 
 **Important:** Your backend URL should look like:
+
 ```
 https://your-backend.com
 ```
@@ -102,6 +113,7 @@ https://your-backend.com
 **Perfect for:** Scanning QR codes from documents or uploading QR codes (PNG, JPEG, JPG, PDF)
 
 #### Basic Setup:
+
 ```javascript
 <QRCodeVerification
   verifyServiceUrl="https://your-backend.com"
@@ -113,28 +125,29 @@ https://your-backend.com
 ```
 
 #### All Available Options:
+
 ```javascript
 <QRCodeVerification
   // Required
   verifyServiceUrl="https://your-backend.com"
-  onVCProcessed={(result) => console.log(result)}  // OR use onVCReceived
+  onVCProcessed={(result) => console.log(result)} // OR use onVCReceived
   onError={(error) => console.log(error)}
   clientId="CLIENT_ID"
-
   // Optional
   triggerElement={<button>Custom Trigger</button>}
-  transactionId="your-tracking-id"  //Optional
+  transactionId="your-tracking-id" //Optional
   uploadButtonId="my-upload-btn"
-  uploadButtonStyle={{ backgroundColor: 'blue' }}
-  isEnableUpload={true}        // Allow file uploads
-  isEnableScan={true}          // Allow camera scanning  
-  isEnableZoom={true}          // Allow camera zoom
-  isVPSubmissionSupported={false}  // This attribute indicates whether VP submission is supported in Inji OVP VC sharing flow. By default, it is false which means that VP token will be directly sent in response. If set to true, then VP token will be submitted to the VP_SUBMISSION_ URL.
+  uploadButtonStyle={{ backgroundColor: "blue" }}
+  isEnableUpload={true} // Allow file uploads
+  isEnableScan={true} // Allow camera scanning
+  isEnableZoom={true} // Allow camera zoom
+  isVPSubmissionSupported={false} // This attribute indicates whether VP submission is supported in Inji OVP VC sharing flow. By default, it is false which means that VP token will be directly sent in response. If set to true, then VP token will be submitted to the VP_SUBMISSION_ URL.
   acceptVPWithoutHolderProof={false} // This attribute controls whether unsigned Verifiable Presentations (VPs without proof) are allowed in the Inji OVP VC sharing flow. By default, it is set to false, meaning unsigned VP tokens are not supported and an error is thrown if an unsigned VP is received. If set to true, VP tokens without a signature (proof) are allowed and can be verified. For data-share it is set to true by default.
 />
 ```
 
 **Choose One Callback:**
+
 - `onVCProcessed`: Get full verification results immediately
 - `onVCReceived`: Get just a transaction ID (your backend handles the rest)
 
@@ -143,6 +156,7 @@ https://your-backend.com
 **Perfect for:** Integrating with digital wallets (like mobile ID apps)
 
 #### Basic Setup:
+
 ```javascript
 <OpenID4VPVerification
   verifyServiceUrl="https://your-backend.com"
@@ -155,6 +169,7 @@ https://your-backend.com
 ```
 
 #### With Presentation Definition:
+
 ```javascript
 <OpenID4VPVerification
   verifyServiceUrl="https://your-backend.com"
@@ -170,11 +185,13 @@ https://your-backend.com
 #### Define What to Verify:
 
 **Option 1: Use a predefined template**
+
 ```javascript
-presentationDefinitionId="drivers-license-check"
+presentationDefinitionId = "drivers-license-check";
 ```
 
 **Option 2: Define exactly what you want**
+
 ```javascript
 presentationDefinition={{
   id: "custom-verification",
@@ -207,19 +224,19 @@ presentationDefinition={{
 
 ### Common Props (Both Components)
 
-| Property                         | Type          | Required | Description                                 |
-|----------------------------------|---------------|----------|---------------------------------------------|
-| `verifyServiceUrl`               | string        | ✅       | Backend verification URL                    |
-| `onError`                        | function      | ✅       | Callback invoked when an error occurs       |
-| `triggerElement`                 | React element | ❌       | Custom button/element to start verification |
-| `transactionId`                  | string        | ❌       | Optional client-side tracking ID            |
-| `clientId`                       | string        | ✅       | Client identifier                           |
-| `acceptVPWithoutHolderProof`     | boolean       | ❌       | Allow unsigned Verifiable Presentations     |
+| Property                     | Type          | Required | Description                                 |
+| ---------------------------- | ------------- | -------- | ------------------------------------------- |
+| `verifyServiceUrl`           | string        | ✅       | Backend verification URL                    |
+| `onError`                    | function      | ✅       | Callback invoked when an error occurs       |
+| `triggerElement`             | React element | ❌       | Custom button/element to start verification |
+| `transactionId`              | string        | ❌       | Optional client-side tracking ID            |
+| `clientId`                   | string        | ✅       | Client identifier                           |
+| `acceptVPWithoutHolderProof` | boolean       | ❌       | Allow unsigned Verifiable Presentations     |
 
 ### QRCodeVerification Specific
 
 | Property                  | Type     | Default | Description                  |
-|---------------------------|----------|---------|------------------------------|
+| ------------------------- | -------- | ------- | ---------------------------- |
 | `onVCProcessed`           | function | -       | Get full results immediately |
 | `onVCReceived`            | function | -       | Get transaction ID only      |
 | `isEnableUpload`          | boolean  | true    | Allow file uploads           |
@@ -231,7 +248,7 @@ presentationDefinition={{
 ### OpenID4VPVerification Specific
 
 | Property                   | Type     | Default        | Description                        |
-|----------------------------|----------|----------------|------------------------------------|
+| -------------------------- | -------- | -------------- | ---------------------------------- |
 | `protocol`                 | string   | "openid4vp://" | Protocol for QR codes (optional)   |
 | `presentationDefinitionId` | string   | -              | Predefined verification template   |
 | `presentationDefinition`   | object   | -              | Custom verification rules          |

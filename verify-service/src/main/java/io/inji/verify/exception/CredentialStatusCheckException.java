@@ -4,7 +4,7 @@ import io.mosip.vercred.vcverifier.exception.StatusCheckErrorCode;
 import lombok.Getter;
 
 @Getter
-public class CredentialStatusCheckException extends Exception {
+public class CredentialStatusCheckException extends RuntimeException {
     private final StatusCheckErrorCode errorCode;
     private final String errorDescription;
 

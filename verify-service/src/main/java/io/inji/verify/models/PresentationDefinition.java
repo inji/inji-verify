@@ -9,6 +9,8 @@ import io.inji.verify.serialization.impl.ListInputDescriptorDtoConverter;
 import io.inji.verify.serialization.impl.ListSubmissionRequirementDtoConverter;
 import io.inji.verify.shared.Constants;
 import jakarta.persistence.*;
+import org.hibernate.annotations.JdbcTypeCode;
+import org.hibernate.type.SqlTypes;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -25,19 +27,23 @@ public class PresentationDefinition {
     private final String id;
 
     @Convert(converter = ListInputDescriptorDtoConverter.class)
-    @Column(columnDefinition = "TEXT")
+    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private final List<InputDescriptorDto> inputDescriptors;
 
     private final String name;
 
     private final String purpose;
 
-    @Column(columnDefinition = "TEXT", name = "vp_format")
+    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(name = "vp_format")
     @Convert(converter = FormatDtoConverter.class)
     private final FormatDto format;
 
     @Convert(converter = ListSubmissionRequirementDtoConverter.class)
-    @Column(columnDefinition = "TEXT")
+    @Lob
+    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
     private final List<SubmissionRequirementDto> submissionRequirements;
 
     @JsonIgnore

@@ -17,27 +17,7 @@ import { Verify } from "./pages/Verify";
 import PageTemplate from "./components/PageTemplate";
 
 function switchToVerificationMethod(method: VerificationMethod) {
-  const sessionStoragePath = sessionStorage.getItem('pathName');
-  let methodPath;
-  switch (method) {
-    case "UPLOAD":
-      methodPath = Pages.Home;
-      break;
-    case "SCAN":
-      methodPath = Pages.Scan;
-      break;
-    case "VERIFY":
-      methodPath = Pages.VerifyCredentials;
-      break;
-    default:
-      methodPath = Pages.Home;
-  }
-  if (sessionStoragePath && sessionStoragePath !== methodPath) {
-    sessionStorage.removeItem("pathName");
-    sessionStorage.removeItem("transactionId");
-    sessionStorage.removeItem("requestId");
-  }
-  store.dispatch(goToHomeScreen({method}));
+  store.dispatch(goToHomeScreen({ method }));
   return null;
 }
 

@@ -1,0 +1,29 @@
+VcRevocationStatus:
+  Injiverify_VcVerification_All_Valid_Smoke:
+      endPoint: /v1/verify/vc-verification
+      description: Submitting the authorization response
+      uniqueIdentifier: TC_InjiVerify_VcRevocationStatus_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcRevocationStatus/VcRevocationStatus
+      outputTemplate: injiverify/VcRevocationStatus/VcRevocationStatusResult
+      input: '{
+      }'
+      output: '{
+      "verificationStatus": "REVOKED"
+}'
+
+  Injiverify_VcVerification_WithoutVC_Neg:
+      endPoint: /v1/verify/vc-verification
+      description: Submitting the authorization response
+      uniqueIdentifier: TC_InjiVerify_VcRevocationStatus_02
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcRevocationStatus/VcRevocationStatusNeg
+      outputTemplate: injiverify/VcRevocationStatus/VcRevocationStatusResult
+      input: '{
+      }'
+      output: '{
+      "verificationStatus": "INVALID"
+}'
+
