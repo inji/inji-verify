@@ -1,25 +1,28 @@
 import React from "react";
 import AlertMessage from "../../../components/commons/AlertMessage";
-import { render } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
 import configureMockStore from "redux-mock-store";
 import { PreloadedState } from "../../../redux/features/verification/verification.slice";
 import { AlertMessages } from "../../../utils/config";
+import "../../../utils/i18n";
 
 const mockStore = configureMockStore();
 const store = mockStore({
-  ...PreloadedState,
-  alert: AlertMessages().qrUploadSuccess,
+  verification: PreloadedState,
+  alert: { ...AlertMessages().qrUploadSuccess, open: true },
 });
 
 describe("AlertMessage", () => {
-  test("renders alert content element", () => {
-    const { container } = render(
+  test("renders alert message content", () => {
+    render(
       <Provider store={store}>
         <AlertMessage />
       </Provider>
     );
 
-    expect(container.querySelector("#alert-message")).toBeInTheDocument();
+    expect(
+      screen.getByText(AlertMessages().qrUploadSuccess.message ?? "")
+    ).toBeInTheDocument();
   });
 });

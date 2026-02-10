@@ -3,7 +3,7 @@ import { render } from "@testing-library/react";
 import Verification from "../../../../components/Home/VerificationSection/Verification";
 
 jest.mock("../../../../redux/hooks", () => ({
-  useAppDispatch: jest.fn(),
+  useAppDispatch: () => jest.fn(),
 }));
 
 jest.mock("@injistack/react-inji-verify-sdk", () => ({

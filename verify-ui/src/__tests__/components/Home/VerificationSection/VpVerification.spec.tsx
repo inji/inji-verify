@@ -39,13 +39,11 @@ jest.mock("../../../../redux/features/alerts/alerts.slice", () => ({
 }));
 
 jest.mock("../../../../utils/config", () => ({
+    ...jest.requireActual("../../../../utils/config"),
     AlertMessages: jest.fn(() => ({
         sessionExpired: { title: "Session Expired" },
         incorrectCredential: { title: "Incorrect Credential" },
     })),
-    VerificationSteps: {
-        VERIFY: { DisplayResult: 3, InitiateVpRequest: 1 }
-    }
 }));
 
 jest.mock("@injistack/react-inji-verify-sdk", () => ({
@@ -68,6 +66,9 @@ jest.mock("react-i18next", () => ({
         t: (key: string) => key,
     }),
 }));
+
+jest.mock("../../../../components/Home/VerificationSection/Result/VpSubmissionResult", () => () => <div>VpSubmissionResult Mock</div>);
+jest.mock("../../../../components/commons/Loader", () => () => <div data-testid="loader">Loader Mock</div>);
 
 describe("VpVerification Component", () => {
     beforeEach(() => {
@@ -129,6 +130,3 @@ describe("VpVerification Component", () => {
         });
     });
 });
-
-jest.mock("../../../../components/Home/VerificationSection/Result/VpSubmissionResult", () => () => <div>VpSubmissionResult Mock</div>);
-jest.mock("../../../../components/commons/Loader", () => () => <div data-testid="loader">Loader Mock</div>);

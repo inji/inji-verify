@@ -59,10 +59,11 @@ describe("config utilities", () => {
         });
 
         test("handles fetch error", async () => {
-            console.error = jest.fn();
+            const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
             global.fetch = jest.fn().mockResolvedValueOnce({ ok: false, status: 500 });
             await initializeClaims();
-            expect(console.error).toHaveBeenCalled();
+            expect(consoleErrorSpy).toHaveBeenCalled();
+            consoleErrorSpy.mockRestore();
         });
     });
 

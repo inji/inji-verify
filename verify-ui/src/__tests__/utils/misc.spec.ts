@@ -129,7 +129,16 @@ describe("misc utilities", () => {
     });
 
     describe("saveData", () => {
-        test("triggers download", () => {
+        const originalCreateObjectURL = URL.createObjectURL;
+        const originalRevokeObjectURL = URL.revokeObjectURL;
+
+        afterEach(() => {
+            URL.createObjectURL = originalCreateObjectURL;
+            URL.revokeObjectURL = originalRevokeObjectURL;
+            jest.restoreAllMocks();
+        });
+
+        test("triggers download", async () => {
             const mockCreateObjectURL = jest.fn(() => "blob:url");
             const mockRevokeObjectURL = jest.fn();
             URL.createObjectURL = mockCreateObjectURL;
@@ -140,20 +149,26 @@ describe("misc utilities", () => {
                 download: "",
                 click: jest.fn(),
             };
-            document.createElement = jest.fn().mockReturnValue(mockLink);
-            document.body.appendChild = jest.fn();
-            document.body.removeChild = jest.fn();
+            const createElementSpy = jest.spyOn(document, "createElement").mockReturnValue(mockLink as any);
+            jest.spyOn(document.body, "appendChild").mockImplementation();
+            jest.spyOn(document.body, "removeChild").mockImplementation();
 
-            saveData({ type: ["VerifiableCredential", "MyType"], data: "test" });
+            await saveData({ type: ["VerifiableCredential", "MyType"], data: "test" });
 
             expect(mockLink.download).toBe("MyType.json");
             expect(mockLink.click).toHaveBeenCalled();
         });
 
-        test("uses default filename if type is missing", () => {
+        test("uses default filename if type is missing", async () => {
+            URL.createObjectURL = jest.fn(() => "blob:url");
+            URL.revokeObjectURL = jest.fn();
+
             const mockLink = { href: "", download: "", click: jest.fn() };
-            document.createElement = jest.fn().mockReturnValue(mockLink);
-            saveData({ data: "test" });
+            jest.spyOn(document, "createElement").mockReturnValue(mockLink as any);
+            jest.spyOn(document.body, "appendChild").mockImplementation();
+            jest.spyOn(document.body, "removeChild").mockImplementation();
+
+            await saveData({ data: "test" });
             expect(mockLink.download).toBe("Inji_Verify_Credential_Data.json");
         });
     });
