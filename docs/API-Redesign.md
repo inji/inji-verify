@@ -1,12 +1,12 @@
 # API Redesign
 
-Starting with v0.17, `Inji Verify Backend` now return detailed information for `VC-verification` and `VP-results` endpoints, rather than only a final status.
+Starting with v0.17, `Inji Verify Backend` now returns detailed information for `VC-verification` and `VP-results` endpoints, rather than only a final status.
 
 # Why is API Redesign needed?
 
 ## Old Design 
 
-### 1. Post /vc-verification
+### 1. POST /vc-verification
 
 Sample Request:
 ```json
@@ -21,7 +21,7 @@ Sample Response:
 }
 ```
 
-### 2. Get /vp-results/{transactionId}
+### 2. GET /vp-results/{transactionId}
 
 Sample Response:
 ```json
