@@ -10,20 +10,11 @@ import { VCShareType } from "../../../../types/data-types";
 import { VerificationSteps } from "../../../../utils/config";
 
 jest.mock("../../../../utils/config", () => ({
+    ...jest.requireActual("../../../../utils/config"),
     getVerifiableClaims: jest.fn(() => [
         { id: "1", essential: true, definition: { input_descriptors: [{ id: "desc1" }] } },
         { id: "2", essential: false, definition: { input_descriptors: [{ id: "desc2" }] } }
-    ]),
-    VerificationSteps: {
-        VERIFY: {
-            InitiateVpRequest: 1,
-            SelectCredential: 2,
-            SelectWallet: 3,
-            ScanQrCode: 4,
-            RequestMissingCredential: 5,
-            DisplayResult: 6
-        }
-    }
+    ])
 }));
 
 jest.mock("../../../../utils/commonUtils", () => ({
@@ -35,7 +26,7 @@ jest.mock("../../../../utils/commonUtils", () => ({
 describe("vpVerification slice", () => {
     test("should handle setSelectCredential", () => {
         const state = vpVerificationReducer(undefined, setSelectCredential());
-        expect(state.activeScreen).toBe(2);
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectCredential);
         expect(state.SelectionPanel).toBe(true);
         expect(state.selectedClaims).toHaveLength(1); // essential only
     });
@@ -50,13 +41,13 @@ describe("vpVerification slice", () => {
     test("should handle setFlowType", () => {
         const state = vpVerificationReducer(undefined, setFlowType());
         expect(state.flowType).toBe("sameDevice");
-        expect(state.activeScreen).toBe(3);
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectWallet);
     });
 
     test("should handle getVpRequest", () => {
         const selectedClaims = [{ id: "1", definition: { input_descriptors: [] } }] as any;
         const state = vpVerificationReducer(undefined, getVpRequest({ selectedClaims }));
-        expect(state.activeScreen).toBe(4);
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.ScanQrCode);
         expect(state.selectedClaims).toHaveLength(1);
     });
 
@@ -72,7 +63,7 @@ describe("vpVerification slice", () => {
         const action = verificationSubmissionComplete({ verificationResult: [] });
         const state = vpVerificationReducer(initialState, action);
         expect(state.isShowResult).toBe(true);
-        expect(state.activeScreen).toBe(6);
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.DisplayResult);
     });
 
     test("should handle resetVpRequest", () => {

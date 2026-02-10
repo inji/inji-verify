@@ -100,8 +100,18 @@ describe("misc utilities", () => {
     });
 
     describe("checkInternetStatus", () => {
+        const originalFetch = global.fetch;
+        const originalOnLine = Object.getOwnPropertyDescriptor(window.navigator, "onLine");
+
         beforeEach(() => {
             global.fetch = jest.fn();
+        });
+
+        afterEach(() => {
+            global.fetch = originalFetch;
+            if (originalOnLine) {
+                Object.defineProperty(window.navigator, "onLine", originalOnLine);
+            }
         });
 
         test("returns false if navigator.onLine is false", async () => {
