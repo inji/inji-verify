@@ -8,22 +8,6 @@ Inji introduces a privacy-first method by issuing a VC that contains one or more
 
 This method ensures convenience, security, and privacy for residents.
 
-# Why Do We Need Claim 169 Format VC?
-
-Once a resident is enrolled in an identity system and issued a national ID, their data becomes the foundation for authentication and access to services such as subsidies, social benefits, and government programs.
-
-Residents need a secure, minimal, and privacy-preserving way to use their national ID digitally.
-
-❌ The Current Problem
-Most Verifiable Credentials (VCs) expose all personal information—name, address, date of birth, gender, etc.—even when only one specific detail (e.g., age) is required.
-This results in:
-
-- Oversharing of personal information
-- Data privacy risks
-- Larger VC payloads unsuitable for QR codes
-
-✅ The Inji approach (`Claim 169`) ensures convenience, security, and privacy for residents.
-
 # What is in the QR Code?
 In a VC, attributes like name, gender, DOB, or age are called Claims.
 
@@ -35,8 +19,7 @@ Example use cases:
 - Show only address for delivery verification
 - Show name + photo for KYC
 
-Each QR code contains its selected claims encoded as a CWT (CBOR Web Token).
-
+Each QR code contains its selected claims Zlib-decompress, Base45-encoded as a CWT (CBOR Web Token).
 
 # Example CWT internal structure:
 
