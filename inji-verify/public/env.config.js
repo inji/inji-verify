@@ -6,7 +6,7 @@ window._env_ = {
   DEFAULT_THEME: "default_theme",
   DEFAULT_LANG: "en",
   DEFAULT_FONT_URL: "https://fonts.googleapis.com/css?family=Inter",
-  ESIGNET_UI_BASE_URL: "http://localhost:3001",
+  ESIGNET_UI_BASE_URL: "http://localhost:3000",
   MOCK_RELYING_PARTY_SERVER_URL:
     "http://localhost:5000/mock-relying-party-server",
   REDIRECT_URI_USER_PROFILE: "http://localhost:5000/userprofile",
