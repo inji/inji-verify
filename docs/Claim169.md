@@ -42,7 +42,7 @@ Refer here for full list of mappings: [Claim 169 - QR Code Specification](https:
 ## 1. Verifiable Credential Submission:
 - Inji Verify allows users to SCAN & UPLOAD Verifiable Credential.
 
-- Once the verifier scans the QR code, it decodes the QR code using pixel_pass_library.
+- Once the verifier scans the QR code, it decodes the QR code using PixelPass.
 This will:
     - Base45-decode the CWT data
     - Zlib-decompress the decoded data
@@ -50,7 +50,7 @@ This will:
 
 ## 2. Verifiable Credential Verification:
 
-- The Verify UI  calls /vc-verification endpoint and sends:
+- The Verify UI calls /vc-verification endpoint and sends:
     - credential as a CWT hex string
 
     - Content-Type: `application/vc+cwt`
@@ -67,7 +67,7 @@ This will:
     - verifyCoseSignature()
     - Return status
 
-- Once the `CWT VC` is verified, the `Verify UI` display the claims.
+- Once the `CWT VC` is verified, the `Verify UI` displays the claims.
 
 ## 3. Display Result:
 
