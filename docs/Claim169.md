@@ -19,7 +19,7 @@ Example use cases:
 - Show only address for delivery verification
 - Show name + photo for KYC
 
-Each QR code contains its selected claims Zlib-decompress, Base45-encoded as a CWT (CBOR Web Token).
+For each QR code, the issuer can select a specific subset of claims, map them to Claim 169, CBOR-encode and sign them as a CWT, and then zlib-compress and Base45-encode the result.
 
 # Example CWT internal structure:
 
