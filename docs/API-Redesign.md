@@ -1,6 +1,6 @@
 # API Redesign
 
-`Inji Verify Backend` now return detailed information for `VC-verification` and `VP-results` endpoints, rather than only a final status.
+Starting with v0.17, `Inji Verify Backend` now return detailed information for `VC-verification` and `VP-results` endpoints, rather than only a final status.
 
 # Why is API Redesign needed?
 
@@ -39,13 +39,11 @@ Sample Response:
 
 ## Limitations
 
-The `vc-verifier library` provides richer details. But only a simple final verification status is returned: `SUCCESS / INVALID / EXPIRED / REVOKED`.
+- Only a simple final verification status is returned: `SUCCESS / INVALID / EXPIRED / REVOKED`.
 
 ## New Design
 
-- Return `verificationErrorCode` and `verificationMessage` for better error info.
-- Include `StatusCheckException` details (`errorMessage` and `errorCode`) for credential status errors.
-- Return plain claims extracted from a credential, based on request attribute `"includeClaims": true`
+- Return additional contextual details explaining why a credential passed or failed verification.
 
 ### 1. POST /v2/vc-verification
 
@@ -133,8 +131,8 @@ Sample Response:
 | Field | Description | Default | Behavior |
 |-------|------------|---------|----------|
 | **verifiableCredential** | The Verifiable Credential (VC) to verify. Its format is determined by the Verify Service and passed to the `vc-verifier`. | — | Required input for verification. |
-| **skipStatusChecks** | Controls whether credential status checks should be performed. | `false` | **true**: No status checks are performed. `statusCheckFilters` is ignored. Verify Service may call `verify()` instead of `verifyAndGetCredentialStatus()`. <br> **false**: Status checks supported by the credential are performed. Filters can be applied using `statusCheckFilters`. |
-| **statusCheckFilters** | Optional list of specific status checks to perform (e.g., revocation, suspension). | Empty | If **empty** and `skipStatusChecks=false`: perform all status checks supported by the credential. <br> If **non-empty**: only the specified checks are performed, even if the credential supports more. <br> No validation is done on filter values. If a requested check is not supported by the credential, the endpoint should **not throw an error** (errors from `vc-verifier` should be suppressed in the Verify backend). |
+| **skipStatusChecks** | Controls whether credential status checks should be performed. | `false` | **true**: No status checks are performed. `statusCheckFilters` is ignored. <br> **false**: Status checks supported by the credential are performed. Filters can be applied using `statusCheckFilters`. |
+| **statusCheckFilters** | Optional list of specific status checks to perform (e.g., revocation, suspension). | Empty | If **empty** and `skipStatusChecks=false`: perform all status checks supported by the credential. <br> If **non-empty**: only the specified checks are performed, even if the credential supports more. |
 | **includeClaims** | Determines whether extracted VC claims should be included in the response along with verification results. | `false` | **true**: Response includes extracted claims. <br> **false**: Only verification and status results are returned. |
 
 ## Response Fields Summary
@@ -143,11 +141,11 @@ Sample Response:
 
 | Field | Description | Behavior / Notes |
 |-------|------------|------------------|
-| **allChecksSuccessful** | Overall verification result. | `true` only if: <br> • `schemaAndSignatureCheck.valid = true` <br> • `expiryCheck.valid = true` <br> • All `statusChecks[].valid = true` <br><br> `false` if any check fails. <br> If `statusChecks = []` or `expiryCheck = null`, they do **not** affect this field. |
+| **allChecksSuccessful** | Overall verification result. | `true` only if: <br> • `schemaAndSignatureCheck.valid = true` <br> • `expiryCheck.valid = true` <br> • All `statusChecks[].valid = true` <br><br> `false` if any check fails. |
 | **schemaAndSignatureCheck** | Result of schema validation and signature verification. | Indicates whether the credential structure and signature are valid. Contains: <br> • `valid` – `true` if all validations succeed <br> • `error` – `null` if no error, otherwise `{ code, message }` |
-| **expiryCheck** | Result of credential expiry validation. | • `valid = false` if credential is expired. <br> • Credential can be valid but expired (`schemaAndSignatureCheck.valid = true`, `expiryCheck.valid = false`). <br> • `expiryCheck = null` if `schemaAndSignatureCheck.valid = false`. <br> • Expiry check is performed **only after** schema & signature validation succeeds. |
-| **statusChecks** | Array of individual credential status check results. | Each item contains: <br> • `purpose` <br> • `valid` <br> • `error` – `null` or `{ code, message }` <br><br> Behavior: <br> • Empty if `schemaAndSignatureCheck.valid = false` or `skipStatusChecks = true` <br> • Empty if requested `statusCheckFilters` are not supported (errors from vc-verifier must be suppressed) <br> • If `skipStatusChecks = false` and filters are empty → all supported checks are attempted (array may still be empty depending on vc-verifier behavior). |
-| **claims** | Extracted credential claims. | Included **only if** `includeClaims = true` in request. <br><br> Extraction rules: <br> • Returned when `schemaAndSignatureCheck.valid = true` (even if expiry or status checks fail) <br> • Empty JSON `{}` if `schemaAndSignatureCheck.valid = false` <br><br> Format-specific behavior: <br> • **JSON-LD**: All fields from `credentialSubject` <br> • **CWT**: All payload claims (excluding metadata via configuration) <br> • **SD-JWT**: Plain + disclosed claims (excluding metadata via configuration) <br> • Nested structures are preserved as-is. |
+| **expiryCheck** | Result of credential expiry validation. | • `valid = false` if credential is expired. |
+| **statusChecks** | Array of individual credential status check results. | Each item contains: <br> • `purpose` <br> • `valid` <br> • `error` – `null` or `{ code, message }` |
+| **claims** | Extracted credential claims. | Included **only if** `includeClaims = true` in request. <br><br> Format-specific behavior: <br> • **JSON-LD**: All fields from `credentialSubject` <br> • **CWT**: All payload claims (excluding metadata via configuration) <br> • **SD-JWT**: Plain + disclosed claims (excluding metadata via configuration) |
 
 ## Fields for /v2/vp-results/{transactionId}
 
