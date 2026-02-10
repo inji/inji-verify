@@ -1,8 +1,8 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  QRCodeVerificationProps,
-  scanResult,
-  VcStatus,
+    QRCodeVerificationProps,
+    scanResult,
+    VcStatus, VerificationResults,
 } from "./QRCodeVerification.types";
 import { doFileChecks, scanFilesForQr } from "../../utils/uploadQRCodeUtils";
 import {
@@ -19,11 +19,11 @@ import {
   ZOOM_STEP,
 } from "../../utils/constants";
 import {
-  vcSubmission,
-  vcVerification,
-  vpRequest,
-  vpRequestStatus,
-  vpResult
+    vcSubmission,
+    vcVerificationV2,
+    vpRequest,
+    vpRequestStatus,
+    vpResult
 } from "../../utils/api";
 import {
   decodeQrData,
@@ -475,20 +475,34 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   };
 
   const triggerCallbacks = async (vc: any) => {
-    try {
-      if (onVCReceived) {
-        const txnId = await vcSubmission(vc, verifyServiceUrl, transactionId);
-        onVCReceived(txnId);
-      } else if (onVCProcessed) {
-        const status = await vcVerification(vc, verifyServiceUrl);
-        onVCProcessed([{ vc, vcStatus: status }]);
-      }
-    } catch (error) {
-      handleError(error);
-    } finally {
-      resetState();
-    }
-  };
+      try {
+          if (onVCProcessed) {
+                const response = await vcVerificationV2(vc, verifyServiceUrl, {
+                    skipStatusChecks: false,
+                    statusCheckFilters: ["revocation"],
+                    includeClaims: true,
+                });
+                onVCProcessed([
+                    {vc,
+                        vcStatus: response.allChecksSuccessful ? "SUCCESS" : "INVALID",
+                        claims: response.claims,
+                        details: {
+                            checks: {
+                                schema: response.schemaAndSignatureCheck,
+                                expiry: response.expiryCheck,
+                                status: response.statusCheck,
+                            },
+                        },
+                    },
+                ]);
+                return;
+            }
+        } catch (error) {
+            handleError(error);
+        } finally {
+            resetState();
+        }
+    };
 
   const handleError = (error: unknown) => {
     frameProcessingRef.current = false;

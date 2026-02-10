@@ -93,25 +93,40 @@ export type QRCodeVerificationProps = ExclusiveCallbacks & {
   acceptVPWithoutHolderProof?: boolean;
 };
 
-interface VerificationResult {
-  /**
-   * Verified credential data (structure depends on implementation).
-   */
-  vc: unknown;
+export type VerificationResults = {
+    vc: any;
+    vcStatus: VcStatus;
+    claims?: Record<string, any>;
+    details?: {
+        checks: {
+            schema: StatusCheck;
+            expiry: StatusCheck;
+            status: StatusCheck[];
+        };
+    };
+}[];
 
-  /**
-   * The status of the verification (e.g., "valid", "invalid", "expired").
-   */
-  vcStatus: VcStatus;
-}
-
-export type VerificationResults = VerificationResult[];
-
-export type VcStatus = "SUCCESS" | "INVALID" | "EXPIRED";
+export type VcStatus = "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
 
 export type scanResult = { data: any; error: Error | null };
 
 export interface vcSubmissionBody {
   vc: any;
   transactionId?: string;
+}
+
+
+export interface StatusCheck {
+    valid: boolean;
+    error?: {
+        message: string;
+        code: string;
+    };
+}
+export interface VCVerificationV2Response {
+    allChecksSuccessful: boolean;
+    schemaAndSignatureCheck: StatusCheck;
+    expiryCheck: StatusCheck;
+    statusCheck: StatusCheck[];
+    claims?: Record<string, any>;
 }
