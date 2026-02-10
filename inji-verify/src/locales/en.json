@@ -12,6 +12,7 @@
   },
   "landing_page": {
     "sign_in_with_esignet": "Sign In with National ID",
+    "sign_in_as_foreigner": "Sign In as Foreigner",
     "sign_in_to_banking_portal": "Log In",
     "username": "Username",
     "password": "Password",

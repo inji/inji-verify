@@ -1,6 +1,7 @@
 import { useEffect, useState } from "react";
 import { useTranslation } from "react-i18next";
 import clientDetails from "../constants/clientDetails";
+import clientDetailsForeigner from "../constants/clientDetailsForeigner";
 import { useExternalScript } from "../hooks/useExternalScript";
 import { Error } from "../commons/Errors";
 import { useSearchParams } from "react-router-dom";
@@ -12,6 +13,9 @@ const LandingPage = () => {
   const state = useExternalScript(signInButtonScript);
   const [searchParams, setSearchParams] = useSearchParams();
   const [error, setError] = useState(null);
+  
+  // Feature flag to control foreigner sign-in button visibility
+  const isForeignerSignInEnabled = window._env_.ENABLE_FOREIGNER_SIGNIN === "true";
 
   useEffect(() => {
     const getSearchParams = async () => {
@@ -36,6 +40,7 @@ const LandingPage = () => {
   }, [state]);
 
   const renderSignInButton = () => {
+    // OIDC configuration for National ID button
     const oidcConfig = {
       authorizeUri: clientDetails.uibaseUrl + clientDetails.authorizeEndpoint,
       redirect_uri: clientDetails.redirect_uri_userprofile,
@@ -52,6 +57,24 @@ const LandingPage = () => {
       claims: JSON.parse(decodeURIComponent(clientDetails.userProfileClaims)),
     };
 
+    // OIDC configuration for Foreigner button
+    const oidcConfigForeigner = {
+      authorizeUri: clientDetailsForeigner.uibaseUrl + clientDetailsForeigner.authorizeEndpoint,
+      redirect_uri: clientDetailsForeigner.redirect_uri_userprofile,
+      client_id: clientDetailsForeigner.clientId,
+      scope: clientDetailsForeigner.scopeUserProfile,
+      nonce: clientDetailsForeigner.nonce,
+      state: clientDetailsForeigner.state,
+      acr_values: clientDetailsForeigner.acr_values,
+      claims_locales: clientDetailsForeigner.claims_locales,
+      display: clientDetailsForeigner.display,
+      prompt: clientDetailsForeigner.prompt,
+      max_age: clientDetailsForeigner.max_age,
+      ui_locales: i18n.language,
+      claims: JSON.parse(decodeURIComponent(clientDetailsForeigner.userProfileClaims)),
+    };
+
+    // Initialize National ID button
     window.SignInWithEsignetButton?.init({
       oidcConfig: oidcConfig,
       buttonConfig: {
@@ -61,6 +84,19 @@ const LandingPage = () => {
       },
       signInElement: document.getElementById("sign-in-with-esignet"),
     });
+
+    // Initialize Foreigner button with separate configuration (if enabled)
+    if (isForeignerSignInEnabled) {
+      window.SignInWithEsignetButton?.init({
+        oidcConfig: oidcConfigForeigner,
+        buttonConfig: {
+          shape: "soft_edges",
+          labelText: t("sign_in_as_foreigner"),
+          width: "100%",
+        },
+        signInElement: document.getElementById("sign-in-as-foreigner"),
+      });
+    }
   };
 
   localStorage.removeItem("userInfo");
@@ -157,7 +193,12 @@ const LandingPage = () => {
                 </form>
                 <div>
                   {state === "ready" && (
-                    <div id="sign-in-with-esignet" className="w-full"></div>
+                    <>
+                      <div id="sign-in-with-esignet" className="w-full mb-3"></div>
+                      {isForeignerSignInEnabled && (
+                        <div id="sign-in-as-foreigner" className="w-full"></div>
+                      )}
+                    </>
                   )}
                 </div>
                 <p className="text-sm my-[1.75rem]">
