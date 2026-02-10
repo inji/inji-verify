@@ -1,3 +1,11 @@
+commonLabels:
+  app.kubernetes.io/component: inji
+
+containerSecurityContext:
+  enabled: false
+  runAsUser: 1001
+  runAsNonRoot: true
+
 ## ConfigMap with extra environment variables
 ##
 extraEnvVarsCM:
@@ -39,18 +47,18 @@ uitestrig:
       apiEnvUser: 'api-internal.sandbox.xyz.net'
       CHROME_DRIVER_CPU_LIMIT: "2"
       CHROME_DRIVER_MEMORY: 3g
-      ENV_ENDPOINT: https://api-internal.sandbox.xyz.net
+      ENV_ENDPOINT: 'https://api-internal.sandbox.xyz.net'
       ENV_TESTLEVEL: smokeAndRegression
       ENV_USER: api-internal.sandbox
-      InsuranceUrl: https://registry.sandbox.xyz.net/api/v1/Insurance
+      InsuranceUrl: 'https://registry.sandbox.xyz.net/api/v1/Insurance'
       NS: uitestrig-injiverify  # provide the namespace
       actuatorMimotoEndpoint: /v1/mimoto/actuator/env
-      eSignetbaseurl: https://esignet-mosipid.sandbox.xyz.net
-      injiverify: https://injiverify.sandbox.xyz.net/
-      injiweb: https://injiweb.sandbox.xyz.net/issuers
+      eSignetbaseurl: 'https://esignet-mosipid.sandbox.xyz.net'
+      injiverify: 'https://injiverify.sandbox.xyz.net/'
+      injiweb: 'https://injiweb.sandbox.xyz.net/issuers'
       loginlang: sin
-      mosip_components_base_urls: auditmanager=api-internal.sandbox.xyz.net;idrepository=api-internal.sandbox.xyz.net;partnermanager=api-internal.sandbox.xyz.net;idauthentication=api-internal.sandbox.xyz.net;policymanager=api-internal.sandbox.xyz.net;authmanager=api-internal.sandbox.xyz.net;resident=api-internal.sandbox.xyz.net;preregistration=api-internal.sandbox.xyz.net;masterdata=api-internal.sandbox.xyz.net;idgenerator=api-internal.sandbox.xyz.net;
-      verifyPortalPath: https://injiverify.sandbox.xyz.net
+      mosip_components_base_urls: 'auditmanager=api-internal.sandbox.xyz.net;idrepository=api-internal.sandbox.xyz.net;partnermanager=api-internal.sandbox.xyz.net;idauthentication=api-internal.sandbox.xyz.net;policymanager=api-internal.sandbox.xyz.net;authmanager=api-internal.sandbox.xyz.net;resident=api-internal.sandbox.xyz.net;preregistration=api-internal.sandbox.xyz.net;masterdata=api-internal.sandbox.xyz.net;idgenerator=api-internal.sandbox.xyz.net;'
+      verifyPortalPath: 'https://injiverify.sandbox.xyz.net'
       push-reports-to-s3: 'yes'
       s3-account: uitestrig-inji
       stayProtectedIssuerCredentialType: Insurance Credential
@@ -73,3 +81,10 @@ uitestrig:
         sleep 5
         cd /home/${container_user}/
         bash ./entrypoint.sh
+  secrets:
+  volumes:
+    configmaps:
+      scripts:
+        defaultMode: 0777
+        volumeMounts:
+          mountPath: '/home/inji/scripts/'
