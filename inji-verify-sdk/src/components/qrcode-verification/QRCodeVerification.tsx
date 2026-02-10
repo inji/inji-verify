@@ -474,17 +474,30 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     setLoading(false);
   };
 
-  const triggerCallbacks = async (vc: any) => {
-      try {
-          if (onVCProcessed) {
+    const triggerCallbacks = async (vc: any) => {
+        try {
+            if (onVCReceived) {
+                const txnId = await vcSubmission(vc, verifyServiceUrl, transactionId);
+                onVCReceived(txnId);
+                return;
+            }
+            if (onVCProcessed) {
                 const response = await vcVerificationV2(vc, verifyServiceUrl, {
                     skipStatusChecks: false,
                     statusCheckFilters: ["revocation"],
                     includeClaims: true,
                 });
+                let vcStatus: VcStatus = "INVALID";
+                if (response.allChecksSuccessful) {
+                    vcStatus = "SUCCESS";
+                } else if (response.expiryCheck?.valid === false) {
+                    vcStatus = "EXPIRED";
+                } else if (response.statusCheck?.some(check => !check.valid)) {
+                    vcStatus = "REVOKED";
+                }
                 onVCProcessed([
                     {vc,
-                        vcStatus: response.allChecksSuccessful ? "SUCCESS" : "INVALID",
+                        vcStatus,
                         claims: response.claims,
                         details: {
                             checks: {
@@ -495,7 +508,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                         },
                     },
                 ]);
-                return;
             }
         } catch (error) {
             handleError(error);
