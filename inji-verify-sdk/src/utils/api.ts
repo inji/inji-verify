@@ -135,8 +135,7 @@ export const vpRequestStatus = async (url: string, reqId: string, abortSignal = 
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {
-      if (error.name === "TimeoutError") throw new Error(`VP submission failed or not completed`);
-      throw Error(error.message);
+      throw error;
     } else {
       throw new Error("An unknown error occurred");
     }
