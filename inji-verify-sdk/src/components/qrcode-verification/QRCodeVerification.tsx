@@ -490,23 +490,12 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 let vcStatus: VcStatus = "INVALID";
                 if (response.allChecksSuccessful) {
                     vcStatus = "SUCCESS";
-                } else if (response.expiryCheck?.valid === false) {
+                } else if (response.expiryCheck && !response.expiryCheck?.valid ) {
                     vcStatus = "EXPIRED";
                 } else if (response.statusCheck?.some(check => !check.valid)) {
                     vcStatus = "REVOKED";
                 }
-                onVCProcessed([
-                    {vc,
-                        vcStatus,
-                        claims: response.claims,
-                        details: {
-                            checks: {
-                                schema: response.schemaAndSignatureCheck,
-                                expiry: response.expiryCheck,
-                                status: response.statusCheck,
-                            },
-                        },
-                    },
+                onVCProcessed([{vc, vcStatus}
                 ]);
             }
         } catch (error) {

@@ -99,9 +99,9 @@ export type VerificationResults = {
     claims?: Record<string, any>;
     details?: {
         checks: {
-            schema: StatusCheck;
-            expiry: StatusCheck;
-            status: StatusCheck[];
+            schema: ValidationCheck;
+            expiry: ValidationCheck;
+            status: ValidationCheck[];
         };
     };
 }[];
@@ -116,7 +116,7 @@ export interface vcSubmissionBody {
 }
 
 
-export interface StatusCheck {
+export interface ValidationCheck {
     valid: boolean;
     error?: {
         message: string;
@@ -125,8 +125,8 @@ export interface StatusCheck {
 }
 export interface VCVerificationV2Response {
     allChecksSuccessful: boolean;
-    schemaAndSignatureCheck: StatusCheck;
-    expiryCheck: StatusCheck;
-    statusCheck: StatusCheck[];
+    schemaAndSignatureCheck:ValidationCheck;
+    expiryCheck: ValidationCheck;
+    statusCheck: ValidationCheck[];
     claims?: Record<string, any>;
 }
