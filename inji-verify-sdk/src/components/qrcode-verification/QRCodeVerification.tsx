@@ -553,7 +553,13 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         throw new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.");
       }
     } catch (error) {
-      const finalError = (error instanceof Error && error.name === "TimeoutError") ? new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.") : error;
+      const isTimeoutError = (err: unknown): boolean => {
+        return err != null && typeof err === 'object' && 'name' in err && err.name === "TimeoutError";
+      };
+
+      const finalError = isTimeoutError(error)
+        ? new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.")
+        : error;
       resetState();
       handleError(finalError);
     }
