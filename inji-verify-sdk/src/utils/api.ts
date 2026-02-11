@@ -124,10 +124,10 @@ export const vpRequest = async (
   }
 };
 
-export const vpRequestStatus = async (url: string, reqId: string) => {
+export const vpRequestStatus = async (url: string, reqId: string, abortSignal = false) => {
   try {
     const response = await fetch(url + `/vp-request/${reqId}/status`, {
-      signal: AbortSignal.timeout(5000)
+      signal: abortSignal ? AbortSignal.timeout(5000) : undefined
     });
     if (response.status !== 200) throw new Error("Failed to fetch status");
     const data = await response.json();
