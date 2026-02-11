@@ -550,12 +550,11 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       if (response.status === "VP_SUBMITTED" && hasRequiredKeys) {
         await fetchVPResult(transactionId);
       } else {
-        resetState();
         throw new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.");
       }
     } catch (error) {
-      resetState();
       const finalError = (error instanceof Error && error.name === "TimeoutError") ? new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.") : error;
+      resetState();
       handleError(finalError);
     }
   };
