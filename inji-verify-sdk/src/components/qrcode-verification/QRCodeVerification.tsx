@@ -534,7 +534,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
           resetState();
           return;
         } else {
-          throw new Error("Unable to process the VC, due to invalid VP submission");
+          throw new Error("An unexpected error occurred while processing the shared VC. No VC found in the response or response is empty");
         }
       }
     } catch (error) {
@@ -551,11 +551,12 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         await fetchVPResult(transactionId);
       } else {
         resetState();
-        throw new Error("VP submission failed or not completed");
+        throw new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.");
       }
     } catch (error) {
       resetState();
-      handleError(error);
+      const finalError = (error instanceof Error && error.name === "TimeoutError") ? new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.") : error;
+      handleError(finalError);
     }
   };
 
