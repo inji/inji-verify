@@ -545,7 +545,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
   const fetchVPStatus = async (transactionId: string, requestId: string) => {
     try {
-      const response = await vpRequestStatus(verifyServiceUrl, requestId);
+      const response = await vpRequestStatus(verifyServiceUrl, requestId, true);
       const hasRequiredKeys = sessionStorage.getItem("transactionId") && sessionStorage.getItem("requestId");
       if (response.status === "VP_SUBMITTED" && hasRequiredKeys) {
         await fetchVPResult(transactionId);
