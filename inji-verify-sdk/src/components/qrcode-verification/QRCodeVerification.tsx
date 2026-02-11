@@ -554,6 +554,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         throw new Error("VP submission failed or not completed");
       }
     } catch (error) {
+      resetState();
       handleError(error);
     }
   };
