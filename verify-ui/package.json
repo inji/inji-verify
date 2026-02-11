@@ -45,7 +45,8 @@
   "scripts": {
     "start": "sh ./configure_start_local.sh && react-app-rewired start",
     "build": "react-app-rewired build",
-    "test": "jest --passWithNoTests --updateSnapshot --coverage",
+    "test": "npm run test:ci",
+    "test:ci": "jest --ci --passWithNoTests --coverage",
     "eject": "react-scripts eject",
     "sonar": "sonar-scanner"
   },
