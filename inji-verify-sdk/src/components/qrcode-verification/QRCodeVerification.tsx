@@ -67,7 +67,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const frameProcessingRef = useRef(false);
   const startingRef = useRef(false);
   const shouldEnableZoom = isEnableZoom && isMobile;
-  const hasFetchedVPStatusRef = useRef(false);
+  const hasFetchedVPResultRef = useRef(false);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -464,7 +464,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const resetState = () => {
     sessionStorage.removeItem("transactionId");
     sessionStorage.removeItem("requestId");
-    hasFetchedVPStatusRef.current = false;
+    hasFetchedVPResultRef.current = false;
     scanSessionCompletedRef.current = true;
     frameProcessingRef.current = false;
     clearTimer();
@@ -515,6 +515,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   }
 
   const fetchVPResult = async (transactionId: string) => {
+    if (hasFetchedVPResultRef.current) return;
+    hasFetchedVPResultRef.current = true;
     try {
       if (transactionId) {
         const vcResults = await vpResult(verifyServiceUrl, transactionId);
@@ -542,8 +544,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   };
 
   const fetchVPStatus = async (transactionId: string, requestId: string) => {
-    if (hasFetchedVPStatusRef.current) return;
-    hasFetchedVPStatusRef.current = true;
     try {
       const response = await vpRequestStatus(verifyServiceUrl, requestId, true);
       const hasRequiredKeys = sessionStorage.getItem("transactionId") && sessionStorage.getItem("requestId");
