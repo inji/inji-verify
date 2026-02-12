@@ -43,9 +43,12 @@
     "zxing-wasm": "^2.1.2"
   },
   "scripts": {
+    "prestart": "npm run test:ci",
     "start": "sh ./configure_start_local.sh && react-app-rewired start",
+    "prebuild": "npm run test:ci",
     "build": "react-app-rewired build",
     "test": "jest --passWithNoTests --updateSnapshot --coverage",
+    "test:ci": "jest --ci --passWithNoTests --coverage",
     "eject": "react-scripts eject",
     "sonar": "sonar-scanner"
   },
