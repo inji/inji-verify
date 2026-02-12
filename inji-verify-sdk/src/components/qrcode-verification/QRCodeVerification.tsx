@@ -67,7 +67,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const frameProcessingRef = useRef(false);
   const startingRef = useRef(false);
   const shouldEnableZoom = isEnableZoom && isMobile;
-  const hasFetchedVPResultRef = useRef(false);
+  const hasFetchedVPStatusRef = useRef(false);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -464,7 +464,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const resetState = () => {
     sessionStorage.removeItem("transactionId");
     sessionStorage.removeItem("requestId");
-    hasFetchedVPResultRef.current = false;
+    hasFetchedVPStatusRef.current = false;
     scanSessionCompletedRef.current = true;
     frameProcessingRef.current = false;
     clearTimer();
@@ -515,8 +515,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   }
 
   const fetchVPResult = async (transactionId: string) => {
-    if (hasFetchedVPResultRef.current) return;
-    hasFetchedVPResultRef.current = true;
     try {
       if (transactionId) {
         const vcResults = await vpResult(verifyServiceUrl, transactionId);
@@ -544,24 +542,19 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   };
 
   const fetchVPStatus = async (transactionId: string, requestId: string) => {
+    if (hasFetchedVPStatusRef.current) return;
+    hasFetchedVPStatusRef.current = true;
     try {
       const response = await vpRequestStatus(verifyServiceUrl, requestId, true);
       const hasRequiredKeys = sessionStorage.getItem("transactionId") && sessionStorage.getItem("requestId");
       if (response.status === "VP_SUBMITTED" && hasRequiredKeys) {
         await fetchVPResult(transactionId);
       } else {
+        resetState();
         throw new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.");
       }
     } catch (error) {
-      const isTimeoutError = (err: unknown): boolean => {
-        return err != null && typeof err === 'object' && 'name' in err && err.name === "TimeoutError";
-      };
-
-      const finalError = isTimeoutError(error)
-        ? new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.")
-        : error;
-      resetState();
-      handleError(finalError);
+      handleError(error);
     }
   };
 
