@@ -111,6 +111,9 @@ describe("OpenID4VPVerification UI Tests", () => {
   }, 15000);
 
   it("should handle API error during request creation", async () => {
+    const consoleErrorMock = jest
+      .spyOn(console, "error")
+      .mockImplementation(() => {});
     mockFetchError("Failed to create request");
 
     renderComponent({
@@ -133,6 +136,7 @@ describe("OpenID4VPVerification UI Tests", () => {
     );
 
     expect(screen.queryByRole("img")).toBeNull();
+    consoleErrorMock.mockRestore();
   });
 
   it("should display the QR code after successful request", async () => {
@@ -167,7 +171,7 @@ describe("OpenID4VPVerification UI Tests", () => {
     fireEvent.click(screen.getByRole("button", { name: "Verify" }));
 
     await waitFor(() => {
-      expect(screen.getByTestId("qr-code")).toBeInTheDocument();
+      expect(screen.getByRole("img")).toBeInTheDocument();
     });
   });
 
@@ -362,14 +366,20 @@ describe("OpenID4VPVerification UI Tests", () => {
     const mockRequestId = "req789";
     const presentationDefinitionUri = "https://example.com/pd-uri.json";
   
-    global.fetch = jest.fn().mockResolvedValueOnce({
-      status: 201,
-      json: async () => ({
-        transactionId: mockTransactionId,
-        requestId: mockRequestId,
-        authorizationDetails: {},
-      }),
-    }) as jest.Mock;
+    global.fetch = jest
+      .fn()
+      .mockResolvedValueOnce({
+        status: 201,
+        json: async () => ({
+          transactionId: mockTransactionId,
+          requestId: mockRequestId,
+          authorizationDetails: {},
+        }),
+      })
+      .mockResolvedValueOnce({
+        status: 200,
+        json: async () => ({ status: "PENDING" }),
+      }) as jest.Mock;
   
     render(
       <OpenID4VPVerification
@@ -386,7 +396,7 @@ describe("OpenID4VPVerification UI Tests", () => {
     fireEvent.click(screen.getByRole("button", { name: "Verify" }));
   
     await waitFor(() => {
-      const qr = screen.getByTestId("qr-code");
+      const qr = screen.getByRole("img");
       expect(qr).toBeInTheDocument();
     });
   });

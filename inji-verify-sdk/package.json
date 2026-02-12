@@ -12,6 +12,7 @@
     "dist"
   ],
   "scripts": {
+    "prebuild": "npm run test",
     "build": "webpack --config webpack.config.js && tsc --declaration --emitDeclarationOnly --outDir dist",
     "test": "jest test --coverage",
     "verify": "npm run build",
