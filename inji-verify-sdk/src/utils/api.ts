@@ -18,8 +18,7 @@ export const vcVerification = async (credential: unknown, url: string) => {
   if (isCWT(credential)) {
     body = credential as string;
     contentType = "application/vc+cwt";
-  }
-  else if (typeof credential === "string") {
+  } else if (typeof credential === "string") {
     body = credential;
     contentType = "application/vc+sd-jwt";
   } else {
