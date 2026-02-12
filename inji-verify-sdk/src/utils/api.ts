@@ -18,8 +18,7 @@ export const vcVerification = async (credential: unknown, url: string) => {
   if (isCWT(credential)) {
     body = credential as string;
     contentType = "application/vc+cwt";
-  }
-  else if (typeof credential === "string") {
+  } else if (typeof credential === "string") {
     body = credential;
     contentType = "application/vc+sd-jwt";
   } else {
@@ -124,15 +123,18 @@ export const vpRequest = async (
   }
 };
 
-export const vpRequestStatus = async (url: string, reqId: string) => {
+export const vpRequestStatus = async (url: string, reqId: string, abortSignal = false) => {
   try {
-    const response = await fetch(url + `/vp-request/${reqId}/status`);
+    const response = await fetch(url + `/vp-request/${reqId}/status`, {
+      signal: abortSignal ? AbortSignal.timeout(5000) : undefined
+    });
     if (response.status !== 200) throw new Error("Failed to fetch status");
     const data = await response.json();
     return data;
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {
+      if (error.name === "TimeoutError") return error;
       throw Error(error.message);
     } else {
       throw new Error("An unknown error occurred");
