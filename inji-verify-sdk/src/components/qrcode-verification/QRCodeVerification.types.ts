@@ -86,12 +86,48 @@ export type QRCodeVerificationProps = ExclusiveCallbacks & {
    */
   isVPSubmissionSupported?: boolean;
 
-  /**
-   Indicates whether to accept VP submissions without holder proof.
-   When true, allows unsigned VPs (VPs without proof).
-   */
-  acceptVPWithoutHolderProof?: boolean;
+    /**
+     Indicates whether to accept VP submissions without holder proof.
+     When true, allows unsigned VPs (VPs without proof).
+     */
+    acceptVPWithoutHolderProof?: boolean;
+
+    /**
+     * Configuration object used to control VC verification behaviour.
+     *
+     * Allows enabling/disabling specific verification checks such as:
+     * - Schema & signature validation
+     * - Expiry validation
+     * - Status checks (e.g., revocation)
+     */
+    vcVerificationConfig?: VCVerificationConfig;
 };
+
+export type VcStatus = "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
+
+export type scanResult = { data: any; error: Error | null };
+export interface ValidationCheck {
+    purpose?: string;
+    valid: boolean;
+    error?: {
+        errorCode?: string;
+        errorMessage?: string;
+    } | null;
+}
+
+export interface VCVerificationConfig {
+    skipStatusChecks?: boolean;
+    statusCheckFilters?: string[];
+    includeClaims?: boolean;
+}
+
+export interface VCVerificationV2Response {
+    allChecksSuccessful: boolean;
+    schemaAndSignatureCheck: ValidationCheck;
+    expiryCheck: ValidationCheck;
+    statusCheck: ValidationCheck[];
+    claims?: Record<string, any>;
+}
 
 export type VerificationResults = {
     vc: any;
@@ -106,27 +142,10 @@ export type VerificationResults = {
     };
 }[];
 
-export type VcStatus = "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
-
-export type scanResult = { data: any; error: Error | null };
-
 export interface vcSubmissionBody {
   vc: any;
   transactionId?: string;
 }
 
 
-export interface ValidationCheck {
-    valid: boolean;
-    error?: {
-        message: string;
-        code: string;
-    };
-}
-export interface VCVerificationV2Response {
-    allChecksSuccessful: boolean;
-    schemaAndSignatureCheck:ValidationCheck;
-    expiryCheck: ValidationCheck;
-    statusCheck: ValidationCheck[];
-    claims?: Record<string, any>;
-}
+

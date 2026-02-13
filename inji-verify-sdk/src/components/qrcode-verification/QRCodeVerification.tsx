@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     QRCodeVerificationProps,
     scanResult,
-    VcStatus, VerificationResults,
+    VcStatus, VCVerificationV2Response
 } from "./QRCodeVerification.types";
 import { doFileChecks, scanFilesForQr } from "../../utils/uploadQRCodeUtils";
 import {
@@ -52,7 +52,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   uploadButtonStyle,
   isEnableZoom = true,
   clientId,
-  isVPSubmissionSupported = false
+  vcVerificationConfig,
+  isVPSubmissionSupported = false,
 }) => {
   const [isScanning, setScanning] = useState(false);
   const [isUploading, setUploading] = useState(false);
@@ -482,21 +483,10 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 return;
             }
             if (onVCProcessed) {
-                const response = await vcVerificationV2(vc, verifyServiceUrl, {
-                    skipStatusChecks: false,
-                    statusCheckFilters: ["revocation"],
-                    includeClaims: true,
-                });
-                let vcStatus: VcStatus = "INVALID";
-                if (response.allChecksSuccessful) {
-                    vcStatus = "SUCCESS";
-                } else if (response.expiryCheck && !response.expiryCheck?.valid ) {
-                    vcStatus = "EXPIRED";
-                } else if (response.statusCheck?.some(check => !check.valid)) {
-                    vcStatus = "REVOKED";
-                }
-                onVCProcessed([{vc, vcStatus}
-                ]);
+                const response = await vcVerificationV2(vc, verifyServiceUrl, vcVerificationConfig);
+                const vcStatus = evaluateVcStatus(response);
+
+                onVCProcessed([{vc, vcStatus}]);
             }
         } catch (error) {
             handleError(error);
@@ -505,13 +495,43 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         }
     };
 
-  const handleError = (error: unknown) => {
-    frameProcessingRef.current = false;
-    stopVideoStream();
-    onError(
-      error instanceof Error ? error : new Error("An unexpected error occurred while processing VC")
-    );
-  };
+    const evaluateVcStatus = (response: VCVerificationV2Response): VcStatus => {
+
+        if (!response.schemaAndSignatureCheck?.valid) {
+            return "INVALID";
+        }
+
+        if (!response.expiryCheck?.valid) {
+            return "EXPIRED";
+        }
+
+         if (response.statusCheck?.length) {
+             for (const status of response.statusCheck) {
+                 if (status.error) {
+                     onError?.(
+                         new Error(status.error.errorMessage || "Status check error occurred")
+                     );
+                 }
+
+                 const isRevoked =
+                     status.purpose === "revocation" &&
+                     !status.valid &&
+                     status.error == null;
+
+                 if (isRevoked) return "REVOKED";
+             }
+         }
+        return response.allChecksSuccessful ? "SUCCESS" : "INVALID";
+    };
+
+
+    const handleError = (error: unknown) => {
+        frameProcessingRef.current = false;
+        stopVideoStream();
+        onError(
+            error instanceof Error ? error : new Error("An unexpected error occurred while processing VC")
+        );
+    };
 
   const handleZoomChange = (value: number) => {
     if (value >= 0 && value <= 10) setZoomLevel(value);
