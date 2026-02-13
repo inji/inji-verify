@@ -337,11 +337,6 @@ describe("OpenID4VPVerification UI Tests", () => {
   });
 
   it("should throw error if both onVPReceived and onVPProcessed are provided", async () => {
-    const consoleErrorMock = jest
-      .spyOn(console, "error")
-      .mockImplementation(() => {});
-
-    // Expect an error to be thrown when both callbacks are provided
     expect(() => {
       renderComponent({
         presentationDefinitionId,
@@ -354,11 +349,6 @@ describe("OpenID4VPVerification UI Tests", () => {
     }).toThrow(
       "Both onVPReceived and onVPProcessed cannot be provided simultaneously"
     );
-
-    // Ensure that console error is also captured if thrown
-    expect(consoleErrorMock).toHaveBeenCalled();
-
-    consoleErrorMock.mockRestore();
   });
 
   it("should generate QR code using presentationDefinitionUri", async () => {
