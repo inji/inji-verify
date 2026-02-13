@@ -3,7 +3,7 @@ import {
   PresentationDefinition,
   VPRequestBody,
 } from "../components/openid4vp-verification/OpenID4VPVerification.types";
-import { vcSubmissionBody, VCVerificationConfig, VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
+import { vcSubmissionBody, VCVerificationV2Request, VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
 import { QrData } from "../types/OVPSchemeQrData";
 import { isCWT } from "./cborUtils";
 
@@ -11,7 +11,7 @@ const generateNonce = (): string => {
   return btoa(Date.now().toString());
 };
 
-export const vcVerificationV2 = async (credential: unknown, url: string, config?: VCVerificationConfig): Promise<VCVerificationV2Response> => {
+export const vcVerificationV2 = async (credential: unknown, url: string, config?: VCVerificationV2Request): Promise<VCVerificationV2Response> => {
     const vcString = isCWT(credential)
         ? (credential as string)
         : typeof credential === "string" ? credential : JSON.stringify(credential);
@@ -23,9 +23,8 @@ export const vcVerificationV2 = async (credential: unknown, url: string, config?
         includeClaims: config?.includeClaims ?? false,
     };
 
-    const baseUrl = url.endsWith("/") ? url.slice(0, -1) : url;
     try {
-        const response = await fetch(`${baseUrl}/v2/vc-verification`, {
+        const response = await fetch(`${url}/v2/vc-verification`, {
             method: "POST",
             headers: { "Content-Type": "application/json" },
             body: JSON.stringify(requestBody),

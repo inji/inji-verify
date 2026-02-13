@@ -100,7 +100,7 @@ export type QRCodeVerificationProps = ExclusiveCallbacks & {
      * - Expiry validation
      * - Status checks (e.g., revocation)
      */
-    vcVerificationConfig?: VCVerificationConfig;
+    vcVerificationV2Request?: VCVerificationV2Request;
 };
 
 export type VcStatus = "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
@@ -115,7 +115,7 @@ export interface ValidationCheck {
     } | null;
 }
 
-export interface VCVerificationConfig {
+export interface VCVerificationV2Request {
     skipStatusChecks?: boolean;
     statusCheckFilters?: string[];
     includeClaims?: boolean;

@@ -52,7 +52,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   uploadButtonStyle,
   isEnableZoom = true,
   clientId,
-  vcVerificationConfig,
+  vcVerificationV2Request,
   isVPSubmissionSupported = false,
 }) => {
   const [isScanning, setScanning] = useState(false);
@@ -483,7 +483,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 return;
             }
             if (onVCProcessed) {
-                const response = await vcVerificationV2(vc, verifyServiceUrl, vcVerificationConfig);
+                const response = await vcVerificationV2(vc, verifyServiceUrl, vcVerificationV2Request);
                 const vcStatus = evaluateVcStatus(response);
 
                 onVCProcessed([{vc, vcStatus}]);
@@ -523,7 +523,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
          }
         return response.allChecksSuccessful ? "SUCCESS" : "INVALID";
     };
-
 
     const handleError = (error: unknown) => {
         frameProcessingRef.current = false;
