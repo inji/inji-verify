@@ -3,7 +3,7 @@ import {
   PresentationDefinition,
   VPRequestBody,
 } from "../components/openid4vp-verification/OpenID4VPVerification.types";
-import { vcSubmissionBody } from "../components/qrcode-verification/QRCodeVerification.types";
+import { vcSubmissionBody, VCVerificationV2Request, VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
 import { QrData } from "../types/OVPSchemeQrData";
 import { isCWT } from "./cborUtils";
 
@@ -11,43 +11,38 @@ const generateNonce = (): string => {
   return btoa(Date.now().toString());
 };
 
-export const vcVerification = async (credential: unknown, url: string) => {
-  let body: string;
-  let contentType: string;
+export const vcVerificationV2 = async (credential: unknown, url: string, config?: VCVerificationV2Request): Promise<VCVerificationV2Response> => {
+    const vcString = isCWT(credential)
+        ? (credential as string)
+        : typeof credential === "string" ? credential : JSON.stringify(credential);
 
-  if (isCWT(credential)) {
-    body = credential as string;
-    contentType = "application/vc+cwt";
-  } else if (typeof credential === "string") {
-    body = credential;
-    contentType = "application/vc+sd-jwt";
-  } else {
-    body = JSON.stringify(credential);
-    contentType = "application/vc+ld+json";
-  }
-  const requestOptions = {
-    method: "POST",
-    headers: {
-      "Content-Type": contentType,
-    },
-    body: body,
-  };
+    const requestBody = {
+        verifiableCredential: vcString,
+        skipStatusChecks: config?.skipStatusChecks ?? false,
+        statusCheckFilters: config?.statusCheckFilters ?? [],
+        includeClaims: config?.includeClaims ?? false,
+    };
 
-  try {
-    const response = await fetch(url + "/vc-verification", requestOptions);
-    const data = await response.json();
-    if (response.status !== 200) throw new Error(`Failed VC Verification due to: ${ data.error || "Unknown Error" }`);
-    return data.verificationStatus;
-  } catch (error) {
-    console.error(error);
-    if (error instanceof Error) {
-      throw Error(error.message);
-    } else {
-      throw new Error("An unknown error occurred");
+    try {
+        const response = await fetch(`${url}/v2/vc-verification`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify(requestBody),
+        });
+        const data = await response.json();
+
+        if (!response.ok) {
+            throw new Error(data?.message || data?.error || `Verification failed with status ${response.status}`);
+        }
+        if (!data) {
+            throw new Error("Verification response was empty or invalid JSON");
+        }
+        return data as VCVerificationV2Response;
+    } catch (error) {
+        console.error("V2 Verification Error:", error);
+        throw error instanceof Error ? error : new Error("An unknown error occurred during verification");
     }
-  }
 };
-
 export const vcSubmission = async (
   credential: unknown,
   url: string,
