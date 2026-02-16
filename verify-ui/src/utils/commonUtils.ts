@@ -283,7 +283,7 @@ export const isVPSubmissionSupported = () => {
   return value?.toLowerCase() === "true";
 };
 
-export const verificationConfig = {
+export const vcVerificationV2Request = {
     skipStatusChecks: false,
     statusCheckFilters: ["revocation"],
     includeClaims: true

@@ -9,7 +9,7 @@ import {
 import { raiseAlert } from "../redux/features/alerts/alerts.slice";
 import { useAppDispatch } from "../redux/hooks";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import {getClientId, isVPSubmissionSupported, verificationConfig} from "../utils/commonUtils";
+import {getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../utils/commonUtils";
 
 export const Upload = () => {
   const { t } = useTranslation("Upload");
@@ -63,7 +63,7 @@ export const Upload = () => {
             }}
             clientId={getClientId()}
             isVPSubmissionSupported={isVPSubmissionSupported()}
-            vcVerificationV2Request ={verificationConfig}
+            vcVerificationV2Request ={vcVerificationV2Request}
           />
         </div>
         <div className="grid text-center content-center justify-center pt-2">
