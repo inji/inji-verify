@@ -282,3 +282,9 @@ export const isVPSubmissionSupported = () => {
   const value = window._env_?.VP_SUBMISSION_SUPPORTED;
   return value?.toLowerCase() === "true";
 };
+
+export const vcVerificationV2Request = {
+    skipStatusChecks: false,
+    statusCheckFilters: ["revocation"],
+    includeClaims: true
+};
