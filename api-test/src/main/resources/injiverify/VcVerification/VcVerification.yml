@@ -34,7 +34,7 @@ VcVerification:
       role: noauth
       restMethod: post
       inputTemplate: injiverify/VcVerification/VcVerificationCwt
-      outputTemplate: injiverify/VcVerification/VCVerificationCwtResult
+      outputTemplate: injiverify/VcVerification/VCVerificationV2Result
       input: '{
       }'
       output: '{
@@ -58,4 +58,90 @@ VcVerification:
         "schemaAndSignatureCheck": {
         "valid": false
             }
+}'
+
+  Injiverify_VcVerification_Valid_Json_ld_Smoke:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of valid Json-LD VC
+      uniqueIdentifier: TC_InjiVerify_VcVerification_05
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerification/VcVerificationJsonLd
+      outputTemplate: injiverify/VcVerification/VCVerificationV2Result
+      input: '{
+      }'
+      output: '{
+          "schemaAndSignatureCheck": {
+        "valid": true,
+        "error": null
+    }
+}'
+
+  Injiverify_VcVerification_Revoked_VC_Smoke:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of revoked Json-LD VC
+      uniqueIdentifier: TC_InjiVerify_VcVerification_06
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerification/VcVerificationRevokedJsonLd
+      outputTemplate: injiverify/VcVerification/VCVerificationRevokedResult
+      input: '{
+      }'
+      output: '{
+      "statusCheck": [
+        {
+            "purpose": "revocation",
+            "valid": false,
+            "error": null
+        }
+    ],
+}'
+
+  Injiverify_VcVerification_Expired_VC_Smoke:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of Expired Vc
+      uniqueIdentifier: TC_InjiVerify_VcVerification_07
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerification/VcVerificationExpiredVc
+      outputTemplate: injiverify/VcVerification/VCVerificationExpiredResult
+      input: '{
+      }'
+      output: '{
+         "expiryCheck": {
+        "valid": false
+    }
+}'
+
+  Injiverify_VcVerification_Expired_VC_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of Expired Vc
+      uniqueIdentifier: TC_InjiVerify_VcVerification_08
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerification/VcVerificationExpiredVc
+      outputTemplate: injiverify/VcVerification/VCVerificationExpiredResult
+      input: '{
+      }'
+      output: '{
+    "expiryCheck": {
+        "valid": false
+    }
+}'
+
+  Injiverify_VcVerification_invalid_signature_VC_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of invalid signature Vc
+      uniqueIdentifier: TC_InjiVerify_VcVerification_09
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerification/VcVerificationInvalidSignature
+      outputTemplate: injiverify/VcVerification/VCVerificationInvalidSignatureResult
+      input: '{
+      }'
+      output: '{
+        "error": {
+            "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+            "errorMessage": "Exception during Verification: Error while doing verification of verifiable credential: io.mosip.vercred.vcverifier.exception.PublicKeyResolutionFailedException: Public key extraction failed for kid: did:web:mosip.github.io:inji-config:qa-inji1:landregistry#UHNnpAY2hEkSnXqkc3aS07EgTEaw9WC64kpO3jvP9X0"
+        }
 }'
