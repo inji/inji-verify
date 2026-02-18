@@ -253,4 +253,46 @@ class VerifiablePresentationRequestServiceImplTest {
         assertNotNull(result);
         assertEquals(VPRequestStatus.VP_SUBMITTED, result.getStatus()); // ✅ correct status
     }
+
+    @Test
+    public void shouldCreateNewAuthorizationRequestWithPresentationFlowSameDevice() throws PresentationDefinitionNotFoundException {
+        when(mockPresentationDefinitionRepository.save(any(PresentationDefinition.class))).thenReturn(null);
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class))).thenReturn(null);
+
+        List<InputDescriptorDto> mockInputDescriptorDtos = mock();
+        List<SubmissionRequirementDto> mockSubmissionRequirementDtos = mock();
+        FormatDto mockFormatDto = mock();
+        VPDefinitionResponseDto mockPresentationDefinitionDto = new VPDefinitionResponseDto("test_id", mockInputDescriptorDtos, "", "", mockFormatDto, mockSubmissionRequirementDtos);
+        VPRequestCreateDto vpRequestCreateDto = new VPRequestCreateDto("test_client_id", "test_transaction_id", null, "", mockPresentationDefinitionDto, false, "same_device");
+
+        VPRequestResponseDto responseDto = service.createAuthorizationRequest(vpRequestCreateDto);
+
+        assertNotNull(responseDto);
+        assertEquals("test_transaction_id", responseDto.getTransactionId());
+        assertNotNull(responseDto.getRequestId());
+        assertNotNull(responseDto.getAuthorizationDetails());
+        assertEquals("same_device", responseDto.getAuthorizationDetails().getPresentationFlow());
+        assertTrue(responseDto.getExpiresAt() > Instant.now().toEpochMilli());
+    }
+
+    @Test
+    public void shouldCreateNewAuthorizationRequestWithPresentationFlowCrossDevice() throws PresentationDefinitionNotFoundException {
+        when(mockPresentationDefinitionRepository.save(any(PresentationDefinition.class))).thenReturn(null);
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class))).thenReturn(null);
+
+        List<InputDescriptorDto> mockInputDescriptorDtos = mock();
+        List<SubmissionRequirementDto> mockSubmissionRequirementDtos = mock();
+        FormatDto mockFormatDto = mock();
+        VPDefinitionResponseDto mockPresentationDefinitionDto = new VPDefinitionResponseDto("test_id", mockInputDescriptorDtos, "", "", mockFormatDto, mockSubmissionRequirementDtos);
+        VPRequestCreateDto vpRequestCreateDto = new VPRequestCreateDto("test_client_id", "test_transaction_id", null, "", mockPresentationDefinitionDto, false, "cross_device");
+
+        VPRequestResponseDto responseDto = service.createAuthorizationRequest(vpRequestCreateDto);
+
+        assertNotNull(responseDto);
+        assertEquals("test_transaction_id", responseDto.getTransactionId());
+        assertNotNull(responseDto.getRequestId());
+        assertNotNull(responseDto.getAuthorizationDetails());
+        assertEquals("same_device", responseDto.getAuthorizationDetails().getPresentationFlow());
+        assertTrue(responseDto.getExpiresAt() > Instant.now().toEpochMilli());
+    }
 }
