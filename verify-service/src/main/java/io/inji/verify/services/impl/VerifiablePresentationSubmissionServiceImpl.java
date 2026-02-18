@@ -10,11 +10,13 @@ import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
+import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
 import io.inji.verify.exception.*;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
+import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
 import io.inji.verify.repository.VPSubmissionRepository;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
 import io.inji.verify.shared.Constants;
@@ -30,21 +32,22 @@ import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Base64;
-import java.util.stream.IntStream;
 
+import java.time.Instant;
+import java.util.*;
+import java.util.stream.IntStream;
 import static io.inji.verify.utils.Utils.*;
 
 @Service
 @Slf4j
 public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePresentationSubmissionService {
 
+    private final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
     @Value("${inji.verify.claims-with-meta-data}")
     List<String> claimsWithMetaData;
+
+    @Value("${inji.verify.validate-response-code-with-time:#{true}}")
+    boolean validateResponseCodeWithTime;
 
     final VPSubmissionRepository vpSubmissionRepository;
     final CredentialsVerifier credentialsVerifier;
@@ -53,19 +56,24 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     final VCVerificationServiceImpl vcVerificationService;
     final PixelPass pixelPass;
 
-    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService, PixelPass pixelPass) {
+    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService, PixelPass pixelPass, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository) {
         this.vpSubmissionRepository = vpSubmissionRepository;
         this.credentialsVerifier = credentialsVerifier;
         this.presentationVerifier = presentationVerifier;
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
         this.vcVerificationService = vcVerificationService;
         this.pixelPass = pixelPass;
+        this.authorizationRequestCreateResponseRepository = authorizationRequestCreateResponseRepository;
     }
 
     @Override
     public void submit(VPSubmissionDto vpSubmissionDto) {
-        vpSubmissionRepository.save(new VPSubmission(vpSubmissionDto.getState(), vpSubmissionDto.getVpToken(), vpSubmissionDto.getPresentationSubmission(), vpSubmissionDto.getError(), vpSubmissionDto.getErrorDescription()));
+        persistSubmission(vpSubmissionDto);
         verifiablePresentationRequestService.invokeVpRequestStatusListener(vpSubmissionDto.getState());
+    }
+
+    private void persistSubmission(VPSubmissionDto vpSubmissionDto) {
+        vpSubmissionRepository.save(new VPSubmission(vpSubmissionDto.getState(), vpSubmissionDto.getVpToken(), vpSubmissionDto.getPresentationSubmission(), vpSubmissionDto.getError(), vpSubmissionDto.getErrorDescription(), vpSubmissionDto.getResponseCode(), vpSubmissionDto.getResponseCodeExpiryAt(), vpSubmissionDto.getResponseCodeUsed()));
     }
 
     private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException {
@@ -320,14 +328,14 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException {
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds);
+    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId, String responseCode) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
         return processSubmission(vpSubmission, transactionId);
     }
 
     @Override
-    public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId) {
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds);
+    public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId, String responseCode) {
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
         return processSubmissionV2(request, transactionId, vpSubmission);
     }
 
@@ -391,15 +399,38 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return credentialResults;
     }
 
-    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds) {
+    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode) {
         VPSubmission submission = vpSubmissionRepository.findAllById(requestIds)
                 .stream()
                 .findFirst()
                 .orElseThrow(VPSubmissionNotFoundException::new);
+        AuthorizationRequestCreateResponse authorizationRequestCreateResponse = authorizationRequestCreateResponseRepository.findById(submission.getRequestId()).orElse(null);
+        if (authorizationRequestCreateResponse != null) {
+            String presentationFlow = authorizationRequestCreateResponse.getAuthorizationDetails().getPresentationFlow();
+            if (presentationFlow.equals("same_device") && (responseCode == null || submission.getResponseCode() == null)) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
+        }
+
+        if (responseCode != null) {
+            log.debug("Validating VP submission with responseCode: {}", responseCode);
+            validateResponseCode(responseCode, submission);
+            VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(submission.getVpToken(), submission.getPresentationSubmission(), submission.getRequestId(), submission.getError(), submission.getErrorDescription(), submission.getResponseCode(), submission.getResponseCodeExpiryAt(), true);
+            persistSubmission(vpSubmissionDto);
+        }
 
         if (submission.getError() != null && !submission.getError().isEmpty()) throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());
 
         return submission;
+    }
+
+    private void validateResponseCode(String responseCode, VPSubmission submission) {
+        boolean isResponseCodeEqual = Objects.equals(submission.getResponseCode(), responseCode);
+        boolean isResponseCodeExpired = Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant());
+        boolean responseCodeUsed = Boolean.TRUE.equals(submission.getResponseCodeUsed());
+        if (!isResponseCodeEqual) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_EQUAL);
+        if (validateResponseCodeWithTime) {
+            if (isResponseCodeExpired) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
+            if (responseCodeUsed) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
+        }
     }
 
     private static HolderProofCheckDto populateHolderProofDto(VerificationResult verificationResult) {
