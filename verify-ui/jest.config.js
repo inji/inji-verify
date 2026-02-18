@@ -8,8 +8,11 @@ module.exports = {
   setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts"],
   extensionsToTreatAsEsm: [".ts", ".tsx"],
   transform: {
-    '^.+\\.m?[tj]sx?$': ['ts-jest', { useESM: true}],
+    '^.+\\.m?[tj]sx?$': ['ts-jest', { useESM: true }],
     "\\.svg$": "<rootDir>/__mocks__/svgFileTransformer.js",
     '.+\\.(png|jpg|jpeg)$': "<rootDir>/__mocks__/svgFileTransformer.js"
-  }
+  },
+  transformIgnorePatterns: [
+    "node_modules/(?!(iso-639-3|@injistack)/)"
+  ]
 };

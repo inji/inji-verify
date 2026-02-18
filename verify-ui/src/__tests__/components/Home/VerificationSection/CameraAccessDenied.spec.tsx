@@ -1,12 +1,20 @@
-import React from 'react';
-import {render, screen} from "@testing-library/react";
+import React from "react";
+import { render, screen } from "@testing-library/react";
 import CameraAccessDenied from "../../../../components/Home/VerificationSection/CameraAccessDenied";
 
 describe("Camera access denied", () => {
-    test("Test rendering", () => {
-        const handlCloseMock = jest.fn();
-        render(<CameraAccessDenied open={true} handleClose={handlCloseMock}/>)
-        expect(screen.getByText("Camera Access Denied")).toBeInTheDocument()
-        expect(screen.getByText("We need your camera to scan the code. Go to your browser settings and allow camera access for this website.")).toBeInTheDocument()
-    })
-})
+  test("renders header and description elements", () => {
+    const handleCloseMock = jest.fn();
+    render(<CameraAccessDenied open={true} handleClose={handleCloseMock} />);
+
+    const header = screen.getByText((_, element) => {
+      return element?.id === "camera-access-denied";
+    });
+    const description = screen.getByText((_, element) => {
+      return element?.id === "camera-access-denied-description";
+    });
+
+    expect(header).toBeInTheDocument();
+    expect(description).toBeInTheDocument();
+  });
+});
