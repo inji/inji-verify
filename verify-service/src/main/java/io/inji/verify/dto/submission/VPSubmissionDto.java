@@ -4,6 +4,7 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import java.sql.Timestamp;
 
 @Getter
 @AllArgsConstructor
@@ -15,4 +16,7 @@ public class VPSubmissionDto {
     String state;
     String error;
     String errorDescription;
+    String responseCode;
+    Timestamp responseCodeExpiryAt;
+    Boolean responseCodeUsed;
 }
