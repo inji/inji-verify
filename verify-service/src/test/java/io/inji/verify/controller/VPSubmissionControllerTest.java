@@ -5,6 +5,7 @@ import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.submission.PresentationSubmissionDto;
 import io.inji.verify.dto.submission.VPSubmissionDto;
 import io.inji.verify.enums.VPRequestStatus;
+import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
 import io.inji.verify.shared.Constants;
@@ -23,7 +24,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class VPSubmissionControllerTest {
 
-    String redirectUri = "http://example.com/callback";
+    String redirectUri = "https://example.com/callback";
 
     private final VerifiablePresentationRequestService verifiablePresentationRequestService = Mockito.mock(VerifiablePresentationRequestService.class);
 
@@ -31,11 +32,17 @@ public class VPSubmissionControllerTest {
 
     private final Gson gson = Mockito.mock(Gson.class);
 
+    private final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
+
     private MockMvc mockMvc;
+
+    public VPSubmissionControllerTest(AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository) {
+        this.authorizationRequestCreateResponseRepository = authorizationRequestCreateResponseRepository;
+    }
 
     @BeforeEach
     public void setUp() throws IllegalAccessException, NoSuchFieldException {
-        VPSubmissionController vpSubmissionController = new VPSubmissionController(verifiablePresentationRequestService, verifiablePresentationSubmissionService, gson);
+        VPSubmissionController vpSubmissionController = new VPSubmissionController(verifiablePresentationRequestService, verifiablePresentationSubmissionService, gson, authorizationRequestCreateResponseRepository);
         java.lang.reflect.Field field = vpSubmissionController.getClass().getDeclaredField("redirectUri");
         field.setAccessible(true);
         field.set(vpSubmissionController, redirectUri);
@@ -99,7 +106,7 @@ public class VPSubmissionControllerTest {
 
         PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("id","dId",new ArrayList<>());
 
-        VPSubmissionController vpSubmissionController = new VPSubmissionController(verifiablePresentationRequestService, verifiablePresentationSubmissionService, gson);
+        VPSubmissionController vpSubmissionController = new VPSubmissionController(verifiablePresentationRequestService, verifiablePresentationSubmissionService, gson, authorizationRequestCreateResponseRepository);
         java.lang.reflect.Field field = vpSubmissionController.getClass().getDeclaredField("redirectUri");
         field.setAccessible(true);
         field.set(vpSubmissionController, null);

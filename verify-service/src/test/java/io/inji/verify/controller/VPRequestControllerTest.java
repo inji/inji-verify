@@ -46,7 +46,8 @@ public class VPRequestControllerTest {
     public void testCreateVPRequest_Success() throws Exception {
         FormatDto formatDto = new FormatDto(null, null, null);
         VPDefinitionResponseDto vpDefinitionResponseDto = new VPDefinitionResponseDto("id", new ArrayList<>(), "name", "purposr", formatDto, new ArrayList<>());
-        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", "pdId", "nonce", vpDefinitionResponseDto, false);
+        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId",
+                "pdId", "nonce", vpDefinitionResponseDto, false, null);
         VPRequestResponseDto responseDto = new VPRequestResponseDto("tId", "rId", mock(), 0L, "");
 
         when(verifiablePresentationRequestService.createAuthorizationRequest(any())).thenReturn(responseDto);
@@ -68,7 +69,7 @@ public class VPRequestControllerTest {
 
     @Test
     public void testCreateVPRequest_BadRequest_NoDefinition() throws Exception {
-        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", null, "nonce", null, false);
+        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", null, "nonce", null, false, null);
 
         mockMvc.perform(post("/vp-request")
                 .contentType(MediaType.APPLICATION_JSON)
@@ -84,8 +85,7 @@ public class VPRequestControllerTest {
         FormatDto formatDto = new FormatDto(null, null, null);
         VPDefinitionResponseDto vpDefinitionResponseDto = new VPDefinitionResponseDto("id", new ArrayList<>(), "name", "purposr", formatDto, new ArrayList<>());
 
-        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", "pdId", "nonce", vpDefinitionResponseDto, false);
-
+        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", "pdId", "nonce", vpDefinitionResponseDto, false, null);
         when(verifiablePresentationRequestService.createAuthorizationRequest(any()))
                 .thenThrow(new PresentationDefinitionNotFoundException());
 

@@ -12,10 +12,8 @@ public class VPSubmissionTest {
         String requestId = "request123";
         String vpToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
         PresentationSubmissionDto presentationSubmission = new PresentationSubmissionDto("id","dId",mock());
-        String error = null;
-        String errorDescription = null;
 
-        VPSubmission vpSubmission = new VPSubmission(requestId, vpToken, presentationSubmission, error, errorDescription);
+        VPSubmission vpSubmission = new VPSubmission(requestId, vpToken, presentationSubmission, null, null, null, null, null);
         assertEquals(requestId, vpSubmission.getRequestId());
         assertEquals(vpToken, vpSubmission.getVpToken());
         assertEquals(presentationSubmission, vpSubmission.getPresentationSubmission());
