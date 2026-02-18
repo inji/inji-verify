@@ -12,10 +12,14 @@ public enum ErrorCode {
     BOTH_ID_AND_PD_CANNOT_BE_NULL("BOTH_ID_AND_PD_CANNOT_BE_NULL","Both Presentation Definition and Presentation Definition ID cannot be empty."),
     NO_PRESENTATION_DEFINITION("NO_PRESENTATION_DEFINITION","No Presentation Definition found for given Presentation Definition ID."),
     DID_CREATION_FAILED("DID_CREATION_FAILED","Error while creating DID document."),
-    VP_SUBMISSION_EXCEPTION("VP_SUBMISSION_EXCEPTION","Error while processing VP submission"),
+    VP_SUBMISSION_EXCEPTION("VP_SUBMISSION_EXCEPTION","Response code require expiryAt time"),
     TOKEN_MATCHING_FAILED("TOKEN_MATCHING_FAILED", "Token matching failed."),
     INVALID_VP_TOKEN("INVALID_VP_TOKEN","Verifiable presentation failed due to invalid VP token"),
-    VP_WITHOUT_PROOF("VP_WITHOUT_PROOF", "Invalid VP Submission since VP is without proof");
+    VP_WITHOUT_PROOF("VP_WITHOUT_PROOF", "Invalid VP Submission since VP is without proof"),
+    RESPONSE_CODE_NOT_EQUAL("RESPONSE_CODE_NOT_EQUAL", "Response codes are not equal"),
+    RESPONSE_CODE_EXPIRED("RESPONSE_CODE_EXPIRED", "Response code have expired"),
+    RESPONSE_CODE_USED("RESPONSE_CODE_USED", "Response code has been used"),
+    RESPONSE_CODE_NOT_FOUND("RESPONSE_CODE_NOT_FOUND", "Same device flow need response code");
 
     private final String errorCode;
     private final String errorMessage;
