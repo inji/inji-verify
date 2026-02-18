@@ -292,7 +292,7 @@ class VerifiablePresentationRequestServiceImplTest {
         assertEquals("test_transaction_id", responseDto.getTransactionId());
         assertNotNull(responseDto.getRequestId());
         assertNotNull(responseDto.getAuthorizationDetails());
-        assertEquals("same_device", responseDto.getAuthorizationDetails().getPresentationFlow());
+        assertEquals("cross_device", responseDto.getAuthorizationDetails().getPresentationFlow());
         assertTrue(responseDto.getExpiresAt() > Instant.now().toEpochMilli());
     }
 }
