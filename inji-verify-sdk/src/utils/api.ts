@@ -87,12 +87,14 @@ export const vpRequest = async (
   txnId?: string,
   presentationDefinitionId?: string,
   presentationDefinition?: PresentationDefinition,
-  acceptVPWithoutHolderProof?: boolean
+  acceptVPWithoutHolderProof?: boolean,
+  presentationFlow?: string
 ) => {
   const requestBody: VPRequestBody = {
     clientId: clientId,
     nonce: generateNonce(),
     acceptVPWithoutHolderProof: acceptVPWithoutHolderProof,
+    presentationFlow: presentationFlow,
   };
 
   if (txnId) requestBody.transactionId = txnId;
@@ -147,9 +149,11 @@ const isAppError = (error: unknown): error is AppError => (
   typeof (error as Record<string, unknown>).errorMessage === 'string'
 );
 
-export const vpResult = async (url: string, txnId: string) => {
+export const vpResult = async (url: string, txnId: string, responseCode?: string | null) => {
   try {
-    const response = await fetch(url + `/vp-result/${txnId}`);
+    const baseUrl = new URL(url + `/vp-result/${txnId}`);
+    if (responseCode != null) baseUrl.searchParams.append('response_code', responseCode);
+    const response = await fetch(baseUrl);
     const data = await response.json();
     if (response.status !== 200) {
       throw {
