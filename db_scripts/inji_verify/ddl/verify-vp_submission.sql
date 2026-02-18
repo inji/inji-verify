@@ -27,4 +27,7 @@ COMMENT ON COLUMN vp_submission.vp_token IS 'VP Token: base64 encoded VP submiss
 COMMENT ON COLUMN vp_submission.presentation_submission IS 'Presentation Submission: presentation submission object which has details on where to find VC / Claims. This can be null, in case of error.';
 COMMENT ON COLUMN vp_submission.error IS 'Error: error code as sent by wallet related to VP submission. This can be null, in case there is no error.';
 COMMENT ON COLUMN vp_submission.error_description IS 'Error Description: error message as sent by wallet related to VP submission. This can be null, in case there is no error.';
+COMMENT ON COLUMN vp_submission.response_code IS 'Response Code: A short-lived, one-time credential used to ensure only the authorized receiver can fetch the Verifiable Presentation response.';
+COMMENT ON COLUMN vp_submission.response_code_expiry_at IS 'Response Code Expiry At: The UTC timestamp defining the end of the validity window for the response code.';
+COMMENT ON COLUMN vp_submission.response_code_used IS 'Response Code Used: A boolean flag for replay protection. Ensures that the response code is consumed exactly once and cannot be reused.';
 
