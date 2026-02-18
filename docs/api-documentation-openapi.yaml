@@ -34,9 +34,15 @@ paths:
 
         **Request**
 
-        The request body must include a `clientId` and either:
-        - A `presentationDefinitionId` referencing a pre-existing presentation definition, or
-        - A full `presentationDefinition` object.
+        1. The request body must include a `clientId` and either:
+            - A `presentationDefinitionId` referencing a pre-existing presentation definition, or
+            - A full `presentationDefinition` object.
+        2. Regarding `trasactionId`: 
+            - Request body can include a `trasactionId`. Ensure that it is unique UUID.
+            - If `trasactionId` is not sent in request, then this endpoint will generate a labelled UUID with a prefix of `txn_`.
+        3. Regarding `requestId`:
+            - For a `trasactionId`, this endpoint will generate a `requestId`, which will be a labelled UUID with a prefix of `req_`.
+            - This`requestId` is used in creating Authorization Request in OpenID4VP flow.
 
         **Response**
 

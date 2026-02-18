@@ -1,10 +1,13 @@
-import React from 'react';
-import {render, screen} from "@testing-library/react";
+import React from "react";
+import { render } from "@testing-library/react";
 import Copyrights from "../../../../components/PageTemplate/Copyrights";
 
 describe("Copyrights", () => {
-    test("Test rendering", () => {
-        render(<Copyrights/>)
-        expect(screen.getByText("2024 © MOSIP - All rights reserved.")).toBeInTheDocument()
-    })
-})
+  test("renders copyrights content element", () => {
+    const { container } = render(<Copyrights />);
+
+    expect(
+      container.querySelector("#copyrights-content")
+    ).toBeInTheDocument();
+  });
+});

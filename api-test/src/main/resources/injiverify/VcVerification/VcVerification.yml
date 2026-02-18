@@ -19,7 +19,7 @@ VcVerification:
       uniqueIdentifier: TC_InjiVerify_VcVerification_02
       role: noauth
       restMethod: post
-      inputTemplate: injiverify/VcVerification/VcVerificationNeg
+      inputTemplate: injiverify/empty
       outputTemplate: injiverify/VcVerification/VcVerificationResult
       input: '{
       }'

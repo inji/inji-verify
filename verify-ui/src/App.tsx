@@ -12,33 +12,12 @@ import { useAppSelector } from "./redux/hooks";
 import store, { RootState } from "./redux/store";
 import { isRTL } from "./utils/i18n";
 import { VerificationMethod } from "./types/data-types";
-import { goToHomeScreen, selectMethod } from "./redux/features/verification/verification.slice";
+import { goToHomeScreen } from "./redux/features/verification/verification.slice";
 import { Verify } from "./pages/Verify";
 import PageTemplate from "./components/PageTemplate";
-import { verificationInit } from "./redux/features/verification/verification.slice";
 
 function switchToVerificationMethod(method: VerificationMethod) {
-  const transactionId = sessionStorage.getItem("transactionId");
-  const requestId = sessionStorage.getItem("requestId");
-
-  if (transactionId && requestId) {
-    if (method === "SCAN") {
-      store.dispatch(selectMethod({method}));
-      store.dispatch(
-        verificationInit({
-          qrReadResult: {status: "READ"},
-          ovp: {},
-        })
-      );
-    }
-    return null;
-  }
-  if (method !== "UPLOAD") {
-    sessionStorage.removeItem("pathName");
-    sessionStorage.removeItem("transactionId");
-    sessionStorage.removeItem("requestId");
-  }
-  store.dispatch(goToHomeScreen({method}));
+  store.dispatch(goToHomeScreen({ method }));
   return null;
 }
 

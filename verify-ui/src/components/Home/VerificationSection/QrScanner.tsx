@@ -7,7 +7,7 @@ import {
 } from "../../../redux/features/verification/verification.slice";
 import { raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import { getClientId, isVPSubmissionSupported } from "../../../utils/commonUtils";
+import {getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
 
 function QrScanner({ onClose, scannerActive }: {
   onClose: () => void;
@@ -58,6 +58,7 @@ function QrScanner({ onClose, scannerActive }: {
           }}
           clientId={getClientId()}
           isVPSubmissionSupported={isVPSubmissionSupported()}
+          vcVerificationV2Request ={vcVerificationV2Request}
         />
       </div>
 

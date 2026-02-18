@@ -1,8 +1,8 @@
-import { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
-  QRCodeVerificationProps,
-  scanResult,
-  VcStatus,
+    QRCodeVerificationProps,
+    scanResult,
+    VcStatus, VCVerificationV2Response
 } from "./QRCodeVerification.types";
 import { doFileChecks, scanFilesForQr } from "../../utils/uploadQRCodeUtils";
 import {
@@ -19,11 +19,11 @@ import {
   ZOOM_STEP,
 } from "../../utils/constants";
 import {
-  vcSubmission,
-  vcVerification,
-  vpRequest,
-  vpRequestStatus,
-  vpResult
+    vcSubmission,
+    vcVerificationV2,
+    vpRequest,
+    vpRequestStatus,
+    vpResult
 } from "../../utils/api";
 import {
   decodeQrData,
@@ -52,7 +52,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   uploadButtonStyle,
   isEnableZoom = true,
   clientId,
-  isVPSubmissionSupported = false
+  vcVerificationV2Request,
+  isVPSubmissionSupported = false,
 }) => {
   const [isScanning, setScanning] = useState(false);
   const [isUploading, setUploading] = useState(false);
@@ -348,7 +349,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const storeStates = (data: QrData) => {
     sessionStorage.setItem("transactionId", data.transactionId);
     sessionStorage.setItem("requestId", data.requestId);
-    sessionStorage.setItem("pathName", window.location.pathname);
   };
 
   const createVPRequest = async (presentationDefinition: any) => {
@@ -465,7 +465,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const resetState = () => {
     sessionStorage.removeItem("transactionId");
     sessionStorage.removeItem("requestId");
-    sessionStorage.removeItem("pathName");
     hasFetchedVPResultRef.current = false;
     scanSessionCompletedRef.current = true;
     frameProcessingRef.current = false;
@@ -476,29 +475,62 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     setLoading(false);
   };
 
-  const triggerCallbacks = async (vc: any) => {
-    try {
-      if (onVCReceived) {
-        const txnId = await vcSubmission(vc, verifyServiceUrl, transactionId);
-        onVCReceived(txnId);
-      } else if (onVCProcessed) {
-        const status = await vcVerification(vc, verifyServiceUrl);
-        onVCProcessed([{ vc, vcStatus: status }]);
-      }
-    } catch (error) {
-      handleError(error);
-    } finally {
-      resetState();
-    }
-  };
+    const triggerCallbacks = async (vc: any) => {
+        try {
+            if (onVCReceived) {
+                const txnId = await vcSubmission(vc, verifyServiceUrl, transactionId);
+                onVCReceived(txnId);
+                return;
+            }
+            if (onVCProcessed) {
+                const response = await vcVerificationV2(vc, verifyServiceUrl, vcVerificationV2Request);
+                const vcStatus = evaluateVcStatus(response);
 
-  const handleError = (error: unknown) => {
-    frameProcessingRef.current = false;
-    stopVideoStream();
-    onError(
-      error instanceof Error ? error : new Error("An unexpected error occurred while processing VC")
-    );
-  };
+                onVCProcessed([{vc, vcStatus}]);
+            }
+        } catch (error) {
+            handleError(error);
+        } finally {
+            resetState();
+        }
+    };
+
+    const evaluateVcStatus = (response: VCVerificationV2Response): VcStatus => {
+
+        if (!response.schemaAndSignatureCheck?.valid) {
+            return "INVALID";
+        }
+
+        if (!response.expiryCheck?.valid) {
+            return "EXPIRED";
+        }
+
+         if (response.statusCheck?.length) {
+             for (const status of response.statusCheck) {
+                 if (status.error) {
+                     onError?.(
+                         new Error(status.error.errorMessage || "Status check error occurred")
+                     );
+                 }
+
+                 const isRevoked =
+                     status.purpose === "revocation" &&
+                     !status.valid &&
+                     status.error == null;
+
+                 if (isRevoked) return "REVOKED";
+             }
+         }
+        return response.allChecksSuccessful ? "SUCCESS" : "INVALID";
+    };
+
+    const handleError = (error: unknown) => {
+        frameProcessingRef.current = false;
+        stopVideoStream();
+        onError(
+            error instanceof Error ? error : new Error("An unexpected error occurred while processing VC")
+        );
+    };
 
   const handleZoomChange = (value: number) => {
     if (value >= 0 && value <= 10) setZoomLevel(value);
@@ -536,7 +568,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
           resetState();
           return;
         } else {
-          throw new Error("Unable to process the VC, due to invalid VP submission");
+          throw new Error("An unexpected error occurred while processing the shared VC. No VC found in the response or response is empty");
         }
       }
     } catch (error) {
@@ -547,13 +579,13 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
   const fetchVPStatus = async (transactionId: string, requestId: string) => {
     try {
-      const response = await vpRequestStatus(verifyServiceUrl, requestId);
+      const response = await vpRequestStatus(verifyServiceUrl, requestId, true);
       const hasRequiredKeys = sessionStorage.getItem("transactionId") && sessionStorage.getItem("requestId");
       if (response.status === "VP_SUBMITTED" && hasRequiredKeys) {
         await fetchVPResult(transactionId);
       } else {
         resetState();
-        throw new Error("VP submission failed or not completed");
+        throw new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.");
       }
     } catch (error) {
       handleError(error);

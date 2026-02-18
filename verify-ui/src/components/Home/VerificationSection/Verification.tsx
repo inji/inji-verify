@@ -1,4 +1,4 @@
-import React, {useEffect, useState} from "react";
+import React, { useState } from "react";
 import QrScanner from "./QrScanner";
 import { Button } from "./commons/Button";
 import { useAppDispatch } from "../../../redux/hooks";
@@ -17,11 +17,6 @@ const Verification = () => {
       dispatch(goToHomeScreen({}));
     }, 80);
   };
-
-  useEffect(() => {
-    const pathName = sessionStorage.getItem("pathName");
-    if (pathName) setScannerActive(false);
-  }, []);
 
   return (
     <div className="grid grid-cols-12 mx-auto pt-1 pb-[100px] px-[16px] lg:py-[42px] lg:px-[104px] text-center content-center justify-center">

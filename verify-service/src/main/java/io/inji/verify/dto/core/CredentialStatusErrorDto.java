@@ -10,6 +10,5 @@ import lombok.Setter;
 public class CredentialStatusErrorDto {
     String timestamp;
     int status;
-    String path;
     String error;
 }

@@ -166,6 +166,4 @@ public class InjiVerifyUtil extends AdminTestUtil {
 	        return null;
 	    }
 	}
-
-
 }
