@@ -1,10 +1,12 @@
 package io.inji.verify.controller;
 
 import com.nimbusds.jose.shaded.gson.Gson;
+import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.submission.PresentationSubmissionDto;
 import io.inji.verify.dto.submission.VPSubmissionDto;
 import io.inji.verify.enums.VPRequestStatus;
+import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -15,16 +17,15 @@ import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
-
 import java.util.ArrayList;
-
+import java.util.Optional;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
 
 public class VPSubmissionControllerTest {
 
-    String redirectUri = "https://example.com/callback";
+    String redirectUri = "http://example.com/callback?#response_code=091535f699ea575c7937fa5f0f454aee";
 
     private final VerifiablePresentationRequestService verifiablePresentationRequestService = Mockito.mock(VerifiablePresentationRequestService.class);
 
@@ -32,20 +33,25 @@ public class VPSubmissionControllerTest {
 
     private final Gson gson = Mockito.mock(Gson.class);
 
-    private final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
+    private final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository = Mockito.mock(AuthorizationRequestCreateResponseRepository.class);
 
     private MockMvc mockMvc;
-
-    public VPSubmissionControllerTest(AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository) {
-        this.authorizationRequestCreateResponseRepository = authorizationRequestCreateResponseRepository;
-    }
 
     @BeforeEach
     public void setUp() throws IllegalAccessException, NoSuchFieldException {
         VPSubmissionController vpSubmissionController = new VPSubmissionController(verifiablePresentationRequestService, verifiablePresentationSubmissionService, gson, authorizationRequestCreateResponseRepository);
-        java.lang.reflect.Field field = vpSubmissionController.getClass().getDeclaredField("redirectUri");
-        field.setAccessible(true);
-        field.set(vpSubmissionController, redirectUri);
+
+        java.lang.reflect.Field redirectUriField = vpSubmissionController.getClass().getDeclaredField("redirectUri");
+        redirectUriField.setAccessible(true);
+        redirectUriField.set(vpSubmissionController, redirectUri);
+
+        java.lang.reflect.Field responseCodeExpiryTimeField = vpSubmissionController.getClass().getDeclaredField("responseCodeExpiryTime");
+        responseCodeExpiryTimeField.setAccessible(true);
+        responseCodeExpiryTimeField.set(vpSubmissionController, 5);
+
+        java.lang.reflect.Field validateResponseCodeWithTimeField = vpSubmissionController.getClass().getDeclaredField("validateResponseCodeWithTime");
+        validateResponseCodeWithTimeField.setAccessible(true);
+        validateResponseCodeWithTimeField.set(vpSubmissionController, true);
         mockMvc = MockMvcBuilders.standaloneSetup(vpSubmissionController).build();
     }
 
@@ -83,8 +89,26 @@ public class VPSubmissionControllerTest {
 
         VPRequestStatusDto requestStatusDto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
 
+        AuthorizationRequestResponseDto authorizationRequestResponseDto = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+
+        AuthorizationRequestCreateResponse authorizationRequestCreateResponse = new AuthorizationRequestCreateResponse(
+                state,
+                "transactionId",
+                authorizationRequestResponseDto,
+                System.currentTimeMillis() + 100000
+        );
+
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
         when(verifiablePresentationRequestService.getCurrentRequestStatus(state)).thenReturn(requestStatusDto);
+        when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authorizationRequestCreateResponse));
 
         mockMvc.perform(post(Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -92,7 +116,7 @@ public class VPSubmissionControllerTest {
                         .param("presentation_submission", presentationSubmission)
                         .param("state", state))
                 .andExpect(status().isOk())
-                .andExpect(jsonPath("$.redirect_uri").value(redirectUri));
+                .andExpect(jsonPath("$.redirect_uri").exists());
 
         verify(verifiablePresentationSubmissionService, times(1)).submit(any(VPSubmissionDto.class));
         verify(verifiablePresentationRequestService, times(1)).getCurrentRequestStatus(state);
