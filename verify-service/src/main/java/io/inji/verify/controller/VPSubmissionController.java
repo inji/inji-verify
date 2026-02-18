@@ -104,13 +104,15 @@ public class VPSubmissionController {
                 Map<String, Object> response = new HashMap<>();
                 if (authorizationRequestCreateResponse != null) {
                     String presentationFlow = authorizationRequestCreateResponse.getAuthorizationDetails().getPresentationFlow();
+                    String responseCode = null;
+                    Timestamp expiryAt = null;
                     if (StringUtils.hasText(redirectUri) && Objects.equals(presentationFlow, "same_device")) {
-                        String responseCode = UUID.randomUUID().toString();
-                        Timestamp expiryAt = Timestamp.from(Instant.now().plus(responseCodeExpiryTime, ChronoUnit.MINUTES));
+                        responseCode = UUID.randomUUID().toString();
+                        expiryAt = Timestamp.from(Instant.now().plus(responseCodeExpiryTime, ChronoUnit.MINUTES));
                         String updatedRedirectUri = getUpdatedRedirectUri(responseCode);
                         response.put("redirect_uri", updatedRedirectUri);
-                        processVPSubmission(vpToken, state, presentationSubmissionDto, null,null, responseCode, expiryAt);
                     }
+                    processVPSubmission(vpToken, state, presentationSubmissionDto, null, null, responseCode, expiryAt);
                 } else {
                     processVPSubmission(vpToken, state, presentationSubmissionDto, null, null, null, null);
                 }
