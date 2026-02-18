@@ -22,8 +22,8 @@ import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import java.util.ArrayList;
 import java.util.Optional;
-import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.junit.jupiter.api.Assertions.assertNotNull;
+
+import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
@@ -405,14 +405,15 @@ public class VPSubmissionControllerTest {
         verify(verifiablePresentationSubmissionService, times(1)).submit(any(VPSubmissionDto.class));
         verify(verifiablePresentationRequestService, times(1)).getCurrentRequestStatus(state);
 
-        ArgumentCaptor<VPSubmissionDto> captor = ArgumentCaptor.forClass(VPSubmissionDto.class);
-        verify(verifiablePresentationSubmissionService).submit(captor.capture());
+        ArgumentCaptor<VPSubmissionDto> vpSubmissionDto = ArgumentCaptor.forClass(VPSubmissionDto.class);
+        verify(verifiablePresentationSubmissionService).submit(vpSubmissionDto.capture());
 
-        VPSubmissionDto captured = captor.getValue();
+        VPSubmissionDto submissionDtoValue = vpSubmissionDto.getValue();
 
-        assertNotNull(captured.getResponseCode());
-        assertNotNull(captured.getResponseCodeExpiryAt());
-        assertEquals("testState", captured.getState());
+        assertNotNull(submissionDtoValue.getResponseCode());
+        assertNotNull(submissionDtoValue.getResponseCodeExpiryAt());
+        assertFalse(submissionDtoValue.getResponseCodeUsed());
+        assertEquals("testState", submissionDtoValue.getState());
     }
 
     @Test
