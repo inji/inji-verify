@@ -85,7 +85,6 @@ const VcSvgTemplate = ({ vc, templateUrl, onError }: VcSvgTemplateProps) => {
       ADD_TAGS: ["use", "image"],
       ADD_ATTR: ["target", "href", "xlink:href", "preserveAspectRatio", "x", "y", "width", "height", "id"],
       ALLOW_DATA_ATTR: true,
-      ALLOWED_URI_REGEXP: /^(?:#|data:image\/(?:png|jpe?g|gif|webp);base64,)/i,
       FORBID_TAGS: ["script", "iframe", "object", "embed"],
       FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
     });
