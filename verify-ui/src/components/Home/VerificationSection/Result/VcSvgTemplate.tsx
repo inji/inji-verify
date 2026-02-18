@@ -3,6 +3,7 @@ import Mustache from "mustache";
 import { AnyVc } from "../../../../types/data-types";
 import { fetchSvgTemplate } from "../../../../utils/svg-template-utils";
 import Loader from "../../../commons/Loader";
+import DOMPurify from "dompurify";
 import QRCode from "qrcode";
 
 interface VcSvgTemplateProps {
@@ -78,6 +79,16 @@ const VcSvgTemplate = ({ vc, templateUrl, onError }: VcSvgTemplateProps) => {
     };
     
     let renderedSvg = Mustache.render(preprocessedTemplate, renderedVc);
+    
+    renderedSvg = DOMPurify.sanitize(renderedSvg, {
+      USE_PROFILES: { svg: true, svgFilters: true },
+      ADD_TAGS: ["use", "image"],
+      ADD_ATTR: ["target", "href", "xlink:href", "preserveAspectRatio", "x", "y", "width", "height", "id"],
+      ALLOW_DATA_ATTR: true,
+      FORBID_TAGS: ["script", "iframe", "object", "embed"],
+      FORBID_ATTR: ["onerror", "onload", "onclick", "onmouseover"],
+    });
+    
     return (
       <div className="w-full flex justify-center items-center">
         <div dangerouslySetInnerHTML={{ __html: renderedSvg }} />
