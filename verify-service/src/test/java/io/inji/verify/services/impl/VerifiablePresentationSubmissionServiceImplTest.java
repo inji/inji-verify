@@ -1,5 +1,6 @@
 package io.inji.verify.services.impl;
 
+import com.nimbusds.jose.shaded.gson.Gson;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.CredentialResultsDto;
 import io.inji.verify.dto.result.VPTokenDto;
@@ -42,7 +43,6 @@ import org.mockito.Mock;
 import org.mockito.MockedStatic;
 import org.mockito.MockitoAnnotations;
 import org.springframework.test.util.ReflectionTestUtils;
-
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -74,10 +74,13 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     @Mock
     private AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
 
+    @Mock
+    private Gson gson;
+
     @BeforeEach
     public void setUp() {
         MockitoAnnotations.openMocks(this);
-        verifiablePresentationSubmissionService = new VerifiablePresentationSubmissionServiceImpl(vpSubmissionRepository, credentialsVerifier, presentationVerifier, verifiablePresentationRequestService, vcVerificationService, pixelPass, authorizationRequestCreateResponseRepository);
+        verifiablePresentationSubmissionService = new VerifiablePresentationSubmissionServiceImpl(vpSubmissionRepository, credentialsVerifier, presentationVerifier, verifiablePresentationRequestService, vcVerificationService, pixelPass, authorizationRequestCreateResponseRepository, gson);
     }
 
     @Test
@@ -1190,11 +1193,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testFetchVpSubmissionIfValid_Success_WithResponseCode_CrossDevice() throws Exception {
+    public void testFetchVpSubmissionIfValid_Success_CrossDevice() throws Exception {
         List<String> requestIds = List.of("req123");
         String requestId = "req123";
-        String responseCode = "code123";
-        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
+        String responseCode = null;
+        java.sql.Timestamp expiryAt = null;
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -1202,8 +1205,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
                 null,
                 null,
-                responseCode,
-                expiryAt,
+                null,
+                null,
                 false
         );
 
@@ -1229,11 +1232,12 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
-        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
+        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, null);
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
-        verify(vpSubmissionRepository, times(1)).save(any(VPSubmission.class));
+        // For cross-device flow, markResponseCodeUsedIfNotUsed should not be called
+        verify(vpSubmissionRepository, never()).markResponseCodeUsedIfNotUsed(any());
     }
 
     @Test
@@ -1272,6 +1276,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
+        when(vpSubmissionRepository.markResponseCodeUsedIfNotUsed(responseCode)).thenReturn(List.of(requestId));
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1280,7 +1286,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
-        verify(vpSubmissionRepository, times(1)).save(any(VPSubmission.class));
+        verify(vpSubmissionRepository, times(1)).markResponseCodeUsedIfNotUsed(responseCode);
     }
 
     @Test
@@ -1416,8 +1422,24 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 false
         );
 
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                requestId,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
-        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
+        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1450,8 +1472,24 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 false
         );
 
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                requestId,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
-        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
+        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
@@ -1485,8 +1523,24 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 true  // responseCodeUsed = true
         );
 
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                requestId,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
-        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
+        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
@@ -1566,6 +1620,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
-        verify(vpSubmissionRepository, times(1)).save(any(VPSubmission.class));
+        // When includeResponseCodeTimeChecks is false, atomic update is not called
+        verify(vpSubmissionRepository, never()).markResponseCodeUsedIfNotUsed(anyString());
     }
 }
