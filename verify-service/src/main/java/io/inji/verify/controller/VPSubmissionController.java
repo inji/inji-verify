@@ -86,13 +86,13 @@ public class VPSubmissionController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        // --- 3. Check if error present ---
-        if (error != null) {
-            processVPSubmission(null, state, null, error, errorDescription, null, null);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            // --- 4. Presentation Submission Validation ---
-            try {
+        try {
+            // --- 3. Check if error present ---
+            if (error != null) {
+                processVPSubmission(null, state, null, error, errorDescription, null, null);
+                return new ResponseEntity<>(HttpStatus.OK);
+            } else {
+                // --- 4. Presentation Submission Validation ---
                 PresentationSubmissionDto presentationSubmissionDto = gson.fromJson(presentationSubmission, PresentationSubmissionDto.class);
                 Set<ConstraintViolation<PresentationSubmissionDto>> violations = Validation.buildDefaultValidatorFactory().getValidator().validate(presentationSubmissionDto);
                 if (!violations.isEmpty()) {
@@ -103,7 +103,8 @@ public class VPSubmissionController {
                 AuthorizationRequestCreateResponse authorizationRequestCreateResponse = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
                 Map<String, Object> response = new HashMap<>();
                 if (authorizationRequestCreateResponse != null) {
-                    String presentationFlow = authorizationRequestCreateResponse.getAuthorizationDetails().getPresentationFlow();
+                    var authDetails = authorizationRequestCreateResponse.getAuthorizationDetails();
+                    String presentationFlow = authDetails != null ? authDetails.getPresentationFlow() : null;
                     String responseCode = null;
                     Timestamp expiryAt = null;
                     if (StringUtils.hasText(redirectUri) && Objects.equals(presentationFlow, "same_device")) {
@@ -117,11 +118,11 @@ public class VPSubmissionController {
                     processVPSubmission(vpToken, state, presentationSubmissionDto, null, null, null, null);
                 }
                 return ResponseEntity.status(HttpStatus.OK).body(response);
-            } catch (JsonSyntaxException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_PRESENTATION_SUBMISSION");
-            } catch (VPSubmissionException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.VP_SUBMISSION_EXCEPTION));
             }
+        } catch (JsonSyntaxException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_PRESENTATION_SUBMISSION");
+        } catch (VPSubmissionException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.VP_SUBMISSION_EXCEPTION));
         }
     }
 
