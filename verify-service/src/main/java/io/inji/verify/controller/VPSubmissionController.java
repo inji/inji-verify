@@ -45,7 +45,7 @@ public class VPSubmissionController {
     @Value("${inji.verify.redirect-uri:#{null}}")
     String redirectUri;
 
-    @Value("${inji.verify.responce-code-expiry-time:#{5}}")
+    @Value("${inji.verify.response-code-expiry-time:#{5}}")
     int responseCodeExpiryTime;
 
     @Value("${inji.verify.validate-response-code-with-time:#{true}}")
