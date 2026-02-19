@@ -48,11 +48,11 @@ public class VPSubmissionControllerTest {
         redirectUriField.setAccessible(true);
         redirectUriField.set(vpSubmissionController, redirectUri);
 
-        java.lang.reflect.Field responseCodeExpiryTimeField = vpSubmissionController.getClass().getDeclaredField("responseCodeExpiryTime");
+        java.lang.reflect.Field responseCodeExpiryTimeField = vpSubmissionController.getClass().getDeclaredField("responseCodeExpiryTimeInMins");
         responseCodeExpiryTimeField.setAccessible(true);
         responseCodeExpiryTimeField.set(vpSubmissionController, 5);
 
-        java.lang.reflect.Field validateResponseCodeWithTimeField = vpSubmissionController.getClass().getDeclaredField("validateResponseCodeWithTime");
+        java.lang.reflect.Field validateResponseCodeWithTimeField = vpSubmissionController.getClass().getDeclaredField("includeResponseCodeTimeChecks");
         validateResponseCodeWithTimeField.setAccessible(true);
         validateResponseCodeWithTimeField.set(vpSubmissionController, true);
         mockMvc = MockMvcBuilders.standaloneSetup(vpSubmissionController).build();

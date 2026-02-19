@@ -50,8 +50,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Value("${inji.verify.claims-with-meta-data}")
     List<String> claimsWithMetaData;
 
-    @Value("${inji.verify.validate-response-code-with-time:#{true}}")
-    boolean validateResponseCodeWithTime;
+    @Value("${inji.verify.include-response-code-time-checks:#{true}}")
+    boolean includeResponseCodeTimeChecks;
 
     final VPSubmissionRepository vpSubmissionRepository;
     final CredentialsVerifier credentialsVerifier;
@@ -435,7 +435,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant());
         boolean responseCodeUsed = Boolean.TRUE.equals(submission.getResponseCodeUsed());
         if (!isResponseCodeEqual) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_EQUAL);
-        if (validateResponseCodeWithTime) {
+        if (includeResponseCodeTimeChecks) {
             if (isResponseCodeExpired) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
             if (responseCodeUsed) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
         }

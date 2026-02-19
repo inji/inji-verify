@@ -45,11 +45,11 @@ public class VPSubmissionController {
     @Value("${inji.verify.redirect-uri:#{null}}")
     String redirectUri;
 
-    @Value("${inji.verify.response-code-expiry-time:#{5}}")
-    int responseCodeExpiryTime;
+    @Value("${inji.verify.response-code-expiry-time-in-mins:#{5}}")
+    int responseCodeExpiryTimeInMins;
 
-    @Value("${inji.verify.validate-response-code-with-time:#{true}}")
-    boolean validateResponseCodeWithTime;
+    @Value("${inji.verify.include-response-code-time-checks:#{true}}")
+    boolean includeResponseCodeTimeChecks;
 
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
 
@@ -109,7 +109,7 @@ public class VPSubmissionController {
                     Timestamp expiryAt = null;
                     if (StringUtils.hasText(redirectUri) && Objects.equals(presentationFlow, "same_device")) {
                         responseCode = UUID.randomUUID().toString();
-                        expiryAt = Timestamp.from(Instant.now().plus(responseCodeExpiryTime, ChronoUnit.MINUTES));
+                        expiryAt = Timestamp.from(Instant.now().plus(responseCodeExpiryTimeInMins, ChronoUnit.MINUTES));
                         String updatedRedirectUri = getUpdatedRedirectUri(responseCode);
                         response.put("redirect_uri", updatedRedirectUri);
                     }
@@ -135,7 +135,7 @@ public class VPSubmissionController {
     }
 
     private void processVPSubmission(String vpToken, String state, PresentationSubmissionDto presentationSubmissionDto, String error, String errorDescription, String responseCode, Timestamp responseCodeExpiryAt) {
-        if (validateResponseCodeWithTime && responseCode != null && responseCodeExpiryAt == null) {
+        if (includeResponseCodeTimeChecks && responseCode != null && responseCodeExpiryAt == null) {
             throw new VPSubmissionException();
         }
         VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(vpToken, presentationSubmissionDto, state, error, errorDescription, responseCode, responseCodeExpiryAt, false);
