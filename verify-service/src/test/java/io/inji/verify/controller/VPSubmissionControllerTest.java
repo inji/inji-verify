@@ -415,7 +415,7 @@ public class VPSubmissionControllerTest {
     }
 
     @Test
-    public void testProcessVPSubmission_ThrowsExceptionOnMissingExpiry() throws Exception {
+    public void testSubmitVP_Returns400OnVPSubmissionException() throws Exception {
         String vpToken = "testToken";
         String presentationSubmission = "{\"id\":\"testId\"}";
         String state = "testState";
