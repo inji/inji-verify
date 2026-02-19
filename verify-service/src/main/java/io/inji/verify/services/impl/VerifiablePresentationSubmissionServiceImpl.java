@@ -466,39 +466,41 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 .stream()
                 .findFirst()
                 .orElseThrow(VPSubmissionNotFoundException::new);
-        AuthorizationRequestCreateResponse authorizationRequestCreateResponse = authorizationRequestCreateResponseRepository.findById(submission.getRequestId()).orElse(null);
-        if (authorizationRequestCreateResponse != null) {
-            String presentationFlow = Optional.ofNullable(authorizationRequestCreateResponse.getAuthorizationDetails())
-                    .map(AuthorizationRequestResponseDto::getPresentationFlow)
-                    .orElse(null);
-            if ("same_device".equals(presentationFlow) && (responseCode == null || submission.getResponseCode() == null)) {
+
+        boolean isSameDevice = isSameDeviceFlow(submission.getRequestId());
+
+        if (isSameDevice) {
+            if ((responseCode == null || submission.getResponseCode() == null))
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
-            }
-        }
 
-        if (responseCode != null) {
-            validateResponseCode(responseCode, submission);
+            boolean isResponseCodeEqual = responseCode.equals(submission.getResponseCode());
+            if (!isResponseCodeEqual)
+                throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_EQUAL);
+
             if (includeResponseCodeTimeChecks) {
+                boolean isResponseCodeExpired = submission.getResponseCodeExpiryAt() != null
+                        && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant());
+                if (isResponseCodeExpired)
+                    throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
+
                 java.util.List<String> updated = vpSubmissionRepository.markResponseCodeUsedIfNotUsed(responseCode);
-                if (updated.isEmpty()) {
+                if (updated.isEmpty())
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
-                }
             }
         }
 
-        if (submission.getError() != null && !submission.getError().isEmpty()) throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());
+        if (submission.getError() != null && !submission.getError().isEmpty())
+            throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());
 
         return submission;
     }
 
-    private void validateResponseCode(String responseCode, VPSubmission submission) {
-        boolean isResponseCodeEqual = Objects.equals(submission.getResponseCode(), responseCode);
-        boolean isResponseCodeExpired = submission.getResponseCodeExpiryAt() != null 
-                && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant());
-        if (!isResponseCodeEqual) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_EQUAL);
-        if (includeResponseCodeTimeChecks) {
-            if (isResponseCodeExpired) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
-        }
+    private boolean isSameDeviceFlow(String requestId) {
+        return authorizationRequestCreateResponseRepository.findById(requestId)
+                .map(AuthorizationRequestCreateResponse::getAuthorizationDetails)
+                .map(AuthorizationRequestResponseDto::getPresentationFlow)
+                .filter("same_device"::equals)
+                .isPresent();
     }
 
     private static HolderProofCheckDto populateHolderProofDto(VerificationResult verificationResult) {
