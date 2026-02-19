@@ -91,30 +91,23 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Override
     public ResponseEntity<?> executeSubmission(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
         // --- Get presentationFlow from auth request ---
-        String presentationFlow = null;
-        AuthorizationRequestCreateResponse authorizationRequestCreateResponse = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
-        if (authorizationRequestCreateResponse != null) {
-            var authDetails = authorizationRequestCreateResponse.getAuthorizationDetails();
-            presentationFlow = authDetails != null ? authDetails.getPresentationFlow() : null;
-        }
+        boolean isSameDevice = isSameDeviceFlow(state);
 
-        // --- 4. create response redirect_uri for same_device flow ---
+        // --- create response redirect_uri for same_device flow ---
         String responseCode = null;
         Timestamp responseCodeExpiryAt = null;
         Map<String, Object> response = new HashMap<>();
-        if (presentationFlow != null && presentationFlow.equalsIgnoreCase("same_device")) {
+        if (isSameDevice) {
             responseCode = UUID.randomUUID().toString();
             responseCodeExpiryAt = Timestamp.from(Instant.now().plus(responseCodeExpiryTimeInMins, ChronoUnit.MINUTES));
-            String updatedRedirectUri = buildRedirect(responseCode);
-            response.put("redirect_uri", updatedRedirectUri);
+            String redirectUriWithResponseCode = buildRedirectWithResponseCode(responseCode);
+            response.put("redirect_uri", redirectUriWithResponseCode);
         }
 
         // --- Check if error present ---
         if (error != null) {
             VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(null, null, state, error, errorDescription, responseCode, responseCodeExpiryAt, false);
             submit(vpSubmissionDto);
-            return new ResponseEntity<>(HttpStatus.OK);
-            // for error do we need to send response body with redirectUri
         } else {
             // --- Presentation Submission Validation ---
             PresentationSubmissionDto presentationSubmissionDto = gson.fromJson(presentationSubmission, PresentationSubmissionDto.class);
@@ -124,13 +117,13 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
             }
 
-            VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(vpToken, presentationSubmissionDto, state,null, null, responseCode, responseCodeExpiryAt,false);
+            VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(vpToken, presentationSubmissionDto, state, null, null, responseCode, responseCodeExpiryAt, false);
             submit(vpSubmissionDto);
-            return ResponseEntity.status(HttpStatus.OK).body(response);
         }
+        return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    private String buildRedirect(String responseCode) {
+    private String buildRedirectWithResponseCode(String responseCode) {
         return UriComponentsBuilder
                 .fromUriString(redirectUri)
                 .queryParam("response_code", responseCode)
@@ -470,21 +463,18 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         boolean isSameDevice = isSameDeviceFlow(submission.getRequestId());
 
         if (isSameDevice) {
-            if ((responseCode == null || submission.getResponseCode() == null))
+            if (responseCode == null || submission.getResponseCode() == null)
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
 
-            boolean isResponseCodeEqual = responseCode.equals(submission.getResponseCode());
-            if (!isResponseCodeEqual)
+            if (!responseCode.equals(submission.getResponseCode()))
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_EQUAL);
 
             if (includeResponseCodeTimeChecks) {
-                boolean isResponseCodeExpired = submission.getResponseCodeExpiryAt() != null
-                        && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant());
-                if (isResponseCodeExpired)
+                if (submission.getResponseCodeExpiryAt() != null
+                        && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant()))
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
 
-                java.util.List<String> updated = vpSubmissionRepository.markResponseCodeUsedIfNotUsed(responseCode);
-                if (updated.isEmpty())
+                if (vpSubmissionRepository.markResponseCodeUsedIfNotUsed(responseCode).isEmpty())
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
             }
         }
