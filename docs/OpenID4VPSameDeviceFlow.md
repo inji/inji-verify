@@ -61,7 +61,7 @@ The flow here utilizes the simple redirection to pass the Authorization request 
    >
    > If **_INJI_VERIFY_REDIRECT_URI_** is blank or PresentationFlow is `cross-device`, no **_redirect_uri_** is returned.
    >
-   > The `redirect_uri` now also contains cryptographic random value as `responce_code` as a query parameter. This response_code is used to ensure only the receiver of the redirect can fetch and process the Authorization Response.
+   > The `redirect_uri` now also contains cryptographic random value as `response_code` as a query parameter. This response_code is used to ensure only the receiver of the redirect can fetch and process the Authorization Response.
 
 7. **Validation of the Authorization Response**: Upon receiving the Authorization Response from the Wallet, the verifier validates the signature of the Verifiable Presentation (VP) using the wallet’s public key. It also verifies each Verifiable Credential (VC) by checking the issuer’s proof details.
 The Verifier UI uses this response_code along with transaction_id to fetch the results.
