@@ -13,7 +13,11 @@
 -- SECTION 1: Update vp_submission table
 -- -------------------------------------------------------------------------------------------------
 -- Add the new columns for same-device flow support
-ALTER TABLE verify.vp_submission
+ALTER TABLE vp_submission
     ADD COLUMN IF NOT EXISTS response_code CHARACTER VARYING(200),
     ADD COLUMN IF NOT EXISTS response_code_expiry_at TIMESTAMP,
     ADD COLUMN IF NOT EXISTS response_code_used BOOLEAN DEFAULT false;
+    ADD CONSTRAINT uq_vp_submission_response_code UNIQUE (response_code);
+
+-- Create the Index
+CREATE INDEX IF NOT EXISTS idx_vp_submission_response_code ON vp_submission (response_code);

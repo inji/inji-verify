@@ -18,9 +18,11 @@ CREATE TABLE vp_submission(
                               error_description character varying(200) NULL,
                               response_code character varying(200) NULL,
                               response_code_expiry_at TIMESTAMP NULL,
-                              response_code_used boolean DEFAULT false
+                              response_code_used boolean DEFAULT false,
+                              CONSTRAINT uq_vp_submission_response_code UNIQUE (response_code)
 );
 
+CREATE INDEX IF NOT EXISTS idx_vp_submission_response_code ON vp_submission (response_code);
 COMMENT ON TABLE vp_submission IS 'VP Submission table: Store details of all the verifiable presentation submissions';
 COMMENT ON COLUMN vp_submission.request_id IS 'Request ID: request ID verifiable presentation submission';
 COMMENT ON COLUMN vp_submission.vp_token IS 'VP Token: base64 encoded VP submission result. This can be null, in case of error.';

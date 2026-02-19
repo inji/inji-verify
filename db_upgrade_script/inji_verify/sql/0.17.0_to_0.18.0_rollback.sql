@@ -14,7 +14,15 @@
 -- SECTION 1: Revert vp_submission table
 -- -------------------------------------------------------------------------------------------------
 -- Remove the columns added for same-device flow support
+-- 1. Remove the Index
+DROP INDEX IF EXISTS verify.idx_vp_submission_response_code;
+
+-- 2. Remove the Unique Constraint
 ALTER TABLE verify.vp_submission
-DROP COLUMN IF EXISTS response_code,
+DROP CONSTRAINT IF EXISTS uq_vp_submission_response_code;
+
+-- 3. Drop the columns (this automatically removes the associated comments)
+ALTER TABLE verify.vp_submission
+    DROP COLUMN IF EXISTS response_code,
     DROP COLUMN IF EXISTS response_code_expiry_at,
     DROP COLUMN IF EXISTS response_code_used;
