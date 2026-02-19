@@ -410,8 +410,12 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 .orElseThrow(VPSubmissionNotFoundException::new);
         AuthorizationRequestCreateResponse authorizationRequestCreateResponse = authorizationRequestCreateResponseRepository.findById(submission.getRequestId()).orElse(null);
         if (authorizationRequestCreateResponse != null) {
-            String presentationFlow = authorizationRequestCreateResponse.getAuthorizationDetails().getPresentationFlow();
-            if (presentationFlow.equals("same_device") && (responseCode == null || submission.getResponseCode() == null)) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
+            String presentationFlow = Optional.ofNullable(authorizationRequestCreateResponse.getAuthorizationDetails())
+                    .map(AuthorizationRequestResponseDto::getPresentationFlow)
+                    .orElse(null);
+            if ("same_device".equals(presentationFlow) && (responseCode == null || submission.getResponseCode() == null)) {
+                throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
+            }
         }
 
         if (responseCode != null) {
