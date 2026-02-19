@@ -431,7 +431,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     private void validateResponseCode(String responseCode, VPSubmission submission) {
         boolean isResponseCodeEqual = Objects.equals(submission.getResponseCode(), responseCode);
-        boolean isResponseCodeExpired = Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant());
+        boolean isResponseCodeExpired = submission.getResponseCodeExpiryAt() != null 
+                && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant());
         boolean responseCodeUsed = Boolean.TRUE.equals(submission.getResponseCodeUsed());
         if (!isResponseCodeEqual) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_EQUAL);
         if (validateResponseCodeWithTime) {
