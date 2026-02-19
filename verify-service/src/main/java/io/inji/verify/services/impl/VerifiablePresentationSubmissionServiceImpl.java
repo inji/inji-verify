@@ -419,7 +419,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
 
         if (responseCode != null) {
-            log.debug("Validating VP submission with responseCode: {}", responseCode);
             validateResponseCode(responseCode, submission);
             VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(submission.getVpToken(), submission.getPresentationSubmission(), submission.getRequestId(), submission.getError(), submission.getErrorDescription(), submission.getResponseCode(), submission.getResponseCodeExpiryAt(), true);
             persistSubmission(vpSubmissionDto);
