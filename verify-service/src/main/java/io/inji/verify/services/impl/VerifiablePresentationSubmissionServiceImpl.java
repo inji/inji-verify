@@ -114,8 +114,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(null, null, state, error, errorDescription, responseCode, responseCodeExpiryAt, false);
             submit(vpSubmissionDto);
             return new ResponseEntity<>(HttpStatus.OK);
+            // for error do we need to send response body with redirectUri
         } else {
-            // --- 6. Presentation Submission Validation ---
+            // --- Presentation Submission Validation ---
             PresentationSubmissionDto presentationSubmissionDto = gson.fromJson(presentationSubmission, PresentationSubmissionDto.class);
             Set<ConstraintViolation<PresentationSubmissionDto>> violations = Validation.buildDefaultValidatorFactory().getValidator().validate(presentationSubmissionDto);
             if (!violations.isEmpty()) {
