@@ -1452,7 +1452,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "validateResponseCodeWithTime", true);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1487,7 +1487,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "validateResponseCodeWithTime", true);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1557,7 +1557,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "validateResponseCodeWithTime", false);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", false);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
