@@ -18,7 +18,7 @@ CREATE TABLE vp_submission(
                               error_description character varying(200) NULL,
                               response_code character varying(200) NULL,
                               response_code_expiry_at TIMESTAMP NULL,
-                              response_code_used boolean DEFAULT false,
+                              response_code_used boolean DEFAULT false
 );
 
 COMMENT ON TABLE vp_submission IS 'VP Submission table: Store details of all the verifiable presentation submissions';
