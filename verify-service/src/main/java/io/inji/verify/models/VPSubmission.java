@@ -37,9 +37,9 @@ public class VPSubmission {
 
     private final String errorDescription;
 
-    private String responseCode;
+    private final String responseCode;
 
-    private Timestamp responseCodeExpiryAt;
+    private final Timestamp responseCodeExpiryAt;
 
-    private Boolean responseCodeUsed = false;
+    private final Boolean responseCodeUsed = false;
 }
