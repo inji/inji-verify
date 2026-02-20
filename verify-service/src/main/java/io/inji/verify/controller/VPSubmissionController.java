@@ -1,10 +1,7 @@
 package io.inji.verify.controller;
 
-import java.util.HashMap;
-import java.util.Map;
-import java.util.Set;
-
 import com.nimbusds.jose.shaded.gson.JsonSyntaxException;
+import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -12,36 +9,25 @@ import org.springframework.util.StringUtils;
 import org.springframework.web.bind.annotation.*;
 import com.nimbusds.jose.shaded.gson.Gson;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
-import io.inji.verify.dto.submission.PresentationSubmissionDto;
-import io.inji.verify.dto.submission.VPSubmissionDto;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
 import io.inji.verify.shared.Constants;
-import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 
 @RestController
 @RequestMapping(path = Constants.RESPONSE_SUBMISSION_URI_ROOT)
 @Slf4j
 public class VPSubmissionController {
 
-    @Value("${inji.verify.redirect-uri:#{null}}")
-    String redirectUri;
-
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
 
     final VerifiablePresentationSubmissionService verifiablePresentationSubmissionService;
 
-    final Gson gson;
-
-    public VPSubmissionController(VerifiablePresentationRequestService verifiablePresentationRequestService, VerifiablePresentationSubmissionService verifiablePresentationSubmissionService, Gson gson) {
+    public VPSubmissionController(VerifiablePresentationRequestService verifiablePresentationRequestService, VerifiablePresentationSubmissionService verifiablePresentationSubmissionService, Gson gson, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository) {
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
         this.verifiablePresentationSubmissionService = verifiablePresentationSubmissionService;
-        this.gson = gson;
     }
 
     @PostMapping(path = Constants.RESPONSE_SUBMISSION_URI, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -64,31 +50,10 @@ public class VPSubmissionController {
             return new ResponseEntity<>(HttpStatus.NOT_FOUND);
         }
 
-        // --- 3. Check if error present ---
-        if (error != null) {
-            VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(null, null, state, error, errorDescription);
-            verifiablePresentationSubmissionService.submit(vpSubmissionDto);
-            return new ResponseEntity<>(HttpStatus.OK);
-        } else {
-            // --- 4. Presentation Submission Validation ---
-            try {
-                PresentationSubmissionDto presentationSubmissionDto = gson.fromJson(presentationSubmission, PresentationSubmissionDto.class);
-                Set<ConstraintViolation<PresentationSubmissionDto>> violations = Validation.buildDefaultValidatorFactory().getValidator().validate(presentationSubmissionDto);
-                if (!violations.isEmpty()) {
-                    String violationMessage = violations.iterator().next().getMessage();
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
-                }
-
-                VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(vpToken, presentationSubmissionDto, state, null, null);
-                verifiablePresentationSubmissionService.submit(vpSubmissionDto);
-                Map<String, Object> response = new HashMap<>();
-                if (StringUtils.hasText(redirectUri)) {
-                    response.put("redirect_uri", redirectUri);
-                }
-                return ResponseEntity.status(HttpStatus.OK).body(response);
-            } catch (JsonSyntaxException e) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_PRESENTATION_SUBMISSION");
-            }
+        try {
+            return verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, error, errorDescription);
+        } catch (JsonSyntaxException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_PRESENTATION_SUBMISSION");
         }
     }
 
@@ -103,5 +68,4 @@ public class VPSubmissionController {
 
         return hasValidVpBlock || hasValidErrorBlock;
     }
-
 }
