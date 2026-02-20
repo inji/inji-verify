@@ -248,5 +248,13 @@
       "issuedOn",
       "expiresOn"
     ]
-  }
+  },
+  "WebWallets": [
+    {
+      "id": "inji-wallet",
+      "name": "Inji Wallet",
+      "iconUrl": "/assets/inji-web-wallet-icon.svg",
+      "walletBaseUrl": "https://injiweb.dev-int-inji.mosip.net"
+    }
+  ]
 }

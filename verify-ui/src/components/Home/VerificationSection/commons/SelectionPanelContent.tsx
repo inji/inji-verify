@@ -10,6 +10,7 @@ import {
   resetVpRequest,
   setFlowType,
   setSelectedClaims,
+  setShowWalletSelector,
 } from "../../../../redux/features/verify/vpVerificationState";
 import { storage } from "../../../../utils/storage";
 import { Button } from "./Button";
@@ -85,6 +86,10 @@ function SelectionPanelContent() {
 
   const handleOpenWallet = () => {
     dispatch(setFlowType());
+  };
+
+  const handleChooseWallet = () => {
+    dispatch(setShowWalletSelector());
   };
 
   useEffect(() => {
@@ -245,6 +250,16 @@ function SelectionPanelContent() {
             variant="fill"
           />
         )}
+
+        <Button
+          id="verification-open-wallet-button"
+          title={t("openWebWallets")}
+          className="w-full text-smallTextSize lg:text-sm my-2"
+          onClick={handleChooseWallet}
+          disabled={presentationDefinition.input_descriptors.length === 0}
+          variant="fill"
+        />
+
         <Button
           id="selection-panel-back-button"
           className="w-full text-smallTextSize lg:text-sm"

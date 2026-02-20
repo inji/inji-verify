@@ -128,6 +128,9 @@ export type VerifyState = {
   isPartiallyShared: boolean;
   presentationDefinition: PresentationDefinition;
   sdkInstanceKey: number;
+  SelectWalletPanel: boolean;
+  selectedWalletId?: string;
+  selectedWalletBaseUrl?: string;
 };
 
 export enum VCShareType {
@@ -188,4 +191,11 @@ export type credentialSubject = {
   id: string;
   email: string;
   policyExpiresOn: string;
+};
+
+export type WebWallet = {
+  id: string;
+  name: string;
+  iconUrl: string;
+  walletBaseUrl: string;
 };

@@ -23,6 +23,9 @@ const PreloadedState: VerifyState = {
     input_descriptors: [] as any[],
   },
   sdkInstanceKey: 0,
+  SelectWalletPanel: false,
+  selectedWalletId: undefined,
+  selectedWalletBaseUrl: undefined,
 };
 
 const vpVerificationState = createSlice({
@@ -50,7 +53,17 @@ const vpVerificationState = createSlice({
       state.originalSelectedClaims = [...state.selectedClaims];
     },
     setFlowType: (state) => {
+      state.SelectWalletPanel = false;
+      state.flowType = "sameDevice";
+      state.activeScreen = VerificationSteps[state.method].SelectWallet;
+    },
+    setSelectedWallet: (state, action) => {
+      state.selectedWalletId = action.payload.walletId;
+      state.selectedWalletBaseUrl = action.payload.walletBaseUrl;
+    },
+    setShowWalletSelector: (state) => {
       state.SelectionPanel = false;
+      state.SelectWalletPanel = true;
       state.flowType = "sameDevice";
       state.activeScreen = VerificationSteps[state.method].SelectWallet;
     },
@@ -64,6 +77,7 @@ const vpVerificationState = createSlice({
       const inputDescriptors = state.selectedClaims.flatMap((claim) => claim.definition.input_descriptors);
       state.presentationDefinition.input_descriptors = [...inputDescriptors];
       state.SelectionPanel = false;
+      state.SelectWalletPanel = false;
       state.isShowResult = false;
       state.activeScreen = VerificationSteps[state.method].ScanQrCode;
       state.unVerifiedClaims = [];
@@ -103,6 +117,8 @@ export const {
   resetVpRequest,
   verificationSubmissionComplete,
   setSelectedClaims,
+  setShowWalletSelector,
+  setSelectedWallet,
 } = vpVerificationState.actions;
 
 export default vpVerificationState.reducer;

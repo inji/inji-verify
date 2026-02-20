@@ -49,6 +49,8 @@
     "walletSelectorTitle": "Panneau de sélection du portefeuille",
     "walletSelectorDescription": "Veuillez sélectionner un portefeuille pour procéder avec une présentation vérifiable.",
     "walletSearchPlaceholder": "Portefeuilles de recherche",
+    "walletSearchNoResults": "Aucun portefeuille trouvé pour \"{{search}}\"",
+    "openWebWallets": "Ouvrir les portefeuilles Web",
     "IconToolTip": "Les champs à côté de cette icône indiquent que les informations ont été partagées sélectivement par le porte-portefeuille."
   },
   "VerificationStepsContent": {
@@ -103,7 +105,7 @@
       },
       "SelectWallet": {
         "label": "Partagez des informations d'identification vérifiables de Wallet",
-        "description": "Choisissez un portefeuille mobile dans la liste des portefeuilles disponibles sur le même appareil et procédez par le partage des informations d'identification."
+        "description": "Choisissez un portefeuille dans la liste des portefeuilles disponibles sur le même appareil et procédez par le partage des informations d'identification."
       },
       "DisplayResult": {
         "label": "Afficher les résultats de la vérification",
