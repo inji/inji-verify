@@ -262,7 +262,10 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         sessionStorage.setItem(OVP_SESSION_REQUEST_ID_KEY, sessionStateRef.current.requestId);
         sessionStorage.setItem(OVP_SESSION_TRANSACTION_ID_KEY, sessionStateRef.current.transactionId);
       }
-      const baseUrl = walletBaseUrl.replace(/\/+$/, '');
+      let baseUrl = walletBaseUrl;
+      while (baseUrl.endsWith("/")) {
+        baseUrl = baseUrl.slice(0, -1);
+      }
       window.location.href = `${baseUrl}/authorize?${pdParams}`;
     } else {
       // Deep-link flow: set the timeout BEFORE navigating so the
