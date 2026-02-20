@@ -493,6 +493,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private boolean isSameDeviceFlow(AuthorizationRequestCreateResponse authRequest) {
+        if (authRequest == null || authRequest.getAuthorizationDetails() == null) return false;
         String presentationFlow = authRequest.getAuthorizationDetails().getPresentationFlow();
         return "same_device".equals(presentationFlow);
     }
