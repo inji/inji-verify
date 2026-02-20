@@ -18,7 +18,7 @@ import java.sql.Timestamp;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
-@Check(constraints = "response_code IS NULL OR (response_code_expiry_at IS NOT NULL AND response_code_used IS NOT NULL)")
+@Check(constraints = "response_code IS NULL OR response_code_expiry_at IS NOT NULL")
 public class VPSubmission {
     @Id
     @JsonProperty("state")
@@ -37,9 +37,9 @@ public class VPSubmission {
 
     private final String errorDescription;
 
-    private final String responseCode;
+    private String responseCode;
 
-    private final Timestamp responseCodeExpiryAt;
+    private Timestamp responseCodeExpiryAt;
 
-    private final Boolean responseCodeUsed;
+    private Boolean responseCodeUsed = false;
 }
