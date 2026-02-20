@@ -41,5 +41,5 @@ public class VPSubmission {
 
     private final Timestamp responseCodeExpiryAt;
 
-    private final Boolean responseCodeUsed = false;
+    private final Boolean responseCodeUsed;
 }
