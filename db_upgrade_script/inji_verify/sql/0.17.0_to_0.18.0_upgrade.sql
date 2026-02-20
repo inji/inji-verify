@@ -16,7 +16,7 @@
 ALTER TABLE vp_submission
     ADD COLUMN IF NOT EXISTS response_code CHARACTER VARYING(200),
     ADD COLUMN IF NOT EXISTS response_code_expiry_at TIMESTAMP,
-    ADD COLUMN IF NOT EXISTS response_code_used BOOLEAN DEFAULT false;
+    ADD COLUMN IF NOT EXISTS response_code_used BOOLEAN DEFAULT false,
     ADD CONSTRAINT uq_vp_submission_response_code UNIQUE (response_code);
 
 -- Create the Index

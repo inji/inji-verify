@@ -17,7 +17,7 @@ CREATE TABLE vp_submission(
                             error character varying(100) NULL,
                             error_description character varying(200) NULL,
                             response_code character varying(200) NULL,
-                            response_code_expiry_at TIMESTAMP NULL,
+                            response_code_expiry_at TIMESTAMP WITH TIME ZONE NULL,
                             response_code_used boolean DEFAULT false,
                             CONSTRAINT uq_vp_submission_response_code UNIQUE (response_code)
 );
