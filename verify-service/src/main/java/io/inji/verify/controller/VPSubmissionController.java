@@ -6,10 +6,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.util.StringUtils;
-import org.springframework.web.bind.annotation.RestController;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.*;
 import com.nimbusds.jose.shaded.gson.Gson;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.services.VerifiablePresentationRequestService;
@@ -22,21 +19,16 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping(path = Constants.RESPONSE_SUBMISSION_URI_ROOT)
 @Slf4j
+@CrossOrigin
 public class VPSubmissionController {
 
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
 
     final VerifiablePresentationSubmissionService verifiablePresentationSubmissionService;
 
-    final Gson gson;
-
-    final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
-
     public VPSubmissionController(VerifiablePresentationRequestService verifiablePresentationRequestService, VerifiablePresentationSubmissionService verifiablePresentationSubmissionService, Gson gson, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository) {
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
         this.verifiablePresentationSubmissionService = verifiablePresentationSubmissionService;
-        this.gson = gson;
-        this.authorizationRequestCreateResponseRepository = authorizationRequestCreateResponseRepository;
     }
 
     @PostMapping(path = Constants.RESPONSE_SUBMISSION_URI, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
