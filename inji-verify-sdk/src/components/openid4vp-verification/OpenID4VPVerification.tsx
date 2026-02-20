@@ -11,6 +11,7 @@ import { vpRequest, vpRequestStatus, vpResult } from "../../utils/api";
 import "./OpenID4VPVerification.css";
 import { isSdJwt } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
+import { CROSS_DEVICE_FLOW, OVP_SESSION_REQUEST_ID_KEY, OVP_SESSION_TRANSACTION_ID_KEY, SAME_DEVICE_FLOW } from "../../utils/constants";
 
 export const isMobileDevice = (): boolean => {
   const userAgent = navigator.userAgent;
@@ -42,11 +43,13 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   clientId,
   isSameDeviceFlowEnabled = true,
   acceptVPWithoutHolderProof = false,
+  webWalletBaseUrl,
 }) => {
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const isActiveRef = useRef(false);
   const sessionStateRef = useRef<SessionState | null>(null);
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const shouldShowQRCode = !loading && qrCodeData;
 
@@ -69,11 +72,19 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     []
   );
 
+  const presentationFlow = isSameDeviceFlowEnabled ? SAME_DEVICE_FLOW : CROSS_DEVICE_FLOW;
+
   const clearSessionData = useCallback(() => {
     sessionStateRef.current = null;
+    sessionStorage.removeItem(OVP_SESSION_REQUEST_ID_KEY);
+    sessionStorage.removeItem(OVP_SESSION_TRANSACTION_ID_KEY);
   }, []);
 
   const resetState = useCallback(() => {
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+      redirectTimeoutRef.current = null;
+    }
     setQrCodeData(null);
     setLoading(false);
     isActiveRef.current = false;
@@ -224,7 +235,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   ]);
 
   const handleTriggerClick = () => {
-    if (isSameDeviceFlowEnabled && isMobileDevice()) {
+    if (isSameDeviceFlowEnabled) {
       startVerification();
     } else {
       handleGenerateQRCode();
@@ -232,7 +243,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   };
 
   const handleGenerateQRCode = async () => {
-    const pdParams = await createVPRequest("cross_device");
+    const pdParams = await createVPRequest(presentationFlow);
     if (pdParams) {
       const qrData = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
       setQrCodeData(qrData);
@@ -241,9 +252,22 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   };
 
   const startVerification = async () => {
-    const pdParams = await createVPRequest("same_device");
-    if (pdParams) {
-      window.location.href = `${protocol || DEFAULT_PROTOCOL }authorize?${pdParams}`;
+    const pdParams = await createVPRequest(presentationFlow);
+    if (!pdParams) return;
+
+    if (webWalletBaseUrl) {
+      // Web-wallet flow: full-page navigation. Persist session so it can be
+      // restored after the wallet redirects back and the page re-mounts.
+      if (sessionStateRef.current) {
+        sessionStorage.setItem(OVP_SESSION_REQUEST_ID_KEY, sessionStateRef.current.requestId);
+        sessionStorage.setItem(OVP_SESSION_TRANSACTION_ID_KEY, sessionStateRef.current.transactionId);
+      }
+      let end = webWalletBaseUrl.length;
+      while (end > 0 && webWalletBaseUrl[end - 1] === "/") end--;
+      const baseUrl = webWalletBaseUrl.slice(0, end);
+      window.location.href = `${baseUrl}/authorize?${pdParams}`;
+    } else {
+      window.location.href = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
     }
   };
 
@@ -265,6 +289,31 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [fetchVPStatus]);
+
+  // Restore session after a full-page redirect (web wallet flow).
+  // On re-mount the in-memory refs are gone; read them back from sessionStorage
+  // and resume status polling so the VP result is not silently dropped.
+  useEffect(() => {
+    if (!webWalletBaseUrl) return;
+
+    const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
+    const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
+
+    if (savedRequestId && savedTransactionId) {
+      sessionStorage.removeItem(OVP_SESSION_REQUEST_ID_KEY);
+      sessionStorage.removeItem(OVP_SESSION_TRANSACTION_ID_KEY);
+
+      sessionStateRef.current = {
+        requestId: savedRequestId,
+        transactionId: savedTransactionId,
+      };
+      isActiveRef.current = true;
+
+      const searchParams = new URLSearchParams(window.location.search);
+      const responseCode = searchParams.get("response_code") || null;
+      fetchVPStatus(savedRequestId, savedTransactionId, responseCode);
+    }
+  }, [webWalletBaseUrl, fetchVPStatus]);
 
   useEffect(() => {
     if (!presentationDefinitionId && !presentationDefinition) {
@@ -306,7 +355,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   useEffect(() => {
     if (!triggerElement) {
-      if (isSameDeviceFlowEnabled && isMobileDevice()) {
+      if (isSameDeviceFlowEnabled) {
         startVerification();
       } else {
         handleGenerateQRCode();

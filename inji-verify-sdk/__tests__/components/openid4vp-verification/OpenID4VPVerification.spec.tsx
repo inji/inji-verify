@@ -162,6 +162,8 @@ describe("OpenID4VPVerification UI Tests", () => {
 
     renderComponent({
       presentationDefinitionId,
+      clientId: "test-client",
+      isSameDeviceFlowEnabled: false,
       onVPReceived,
       onQrCodeExpired,
       onError,
@@ -337,18 +339,47 @@ describe("OpenID4VPVerification UI Tests", () => {
   });
 
   it("should throw error if both onVPReceived and onVPProcessed are provided", async () => {
-    expect(() => {
-      renderComponent({
-        presentationDefinitionId,
-        onVPReceived,
-        onVPProcessed,
-        onQrCodeExpired,
-        onError,
-        triggerElement: <button>Verify</button>,
-      });
-    }).toThrow(
-      "Both onVPReceived and onVPProcessed cannot be provided simultaneously"
+    const errorMessage =
+      "Both onVPReceived and onVPProcessed cannot be provided simultaneously";
+
+    class ErrorBoundary extends React.Component<
+      { children: React.ReactNode },
+      { error: Error | null }
+    > {
+      state = { error: null as Error | null };
+
+      static getDerivedStateFromError(error: Error) {
+        return { error };
+      }
+
+      render() {
+        if (this.state.error) {
+          return <div data-testid="error-message">{this.state.error.message}</div>;
+        }
+        return this.props.children;
+      }
+    }
+
+    render(
+      <ErrorBoundary>
+        <OpenID4VPVerification
+          verifyServiceUrl={verifyServiceUrl}
+          protocol={protocol}
+          presentationDefinitionId={presentationDefinitionId}
+          onVPReceived={onVPReceived}
+          onVPProcessed={onVPProcessed}
+          onQrCodeExpired={onQrCodeExpired}
+          onError={onError}
+          triggerElement={<button>Verify</button>}
+        />
+      </ErrorBoundary>
     );
+
+    await waitFor(() => {
+      expect(screen.getByTestId("error-message")).toHaveTextContent(
+        errorMessage
+      );
+    });
   });
 
   it("should generate QR code using presentationDefinitionUri", async () => {
@@ -374,8 +405,10 @@ describe("OpenID4VPVerification UI Tests", () => {
     render(
       <OpenID4VPVerification
         verifyServiceUrl="https://example.com"
+        clientId="test-client"
         protocol="testopenid4vp://"
         presentationDefinition={presentationDefinition}
+        isSameDeviceFlowEnabled={false}
         onVPProcessed={onVPProcessed}
         onQrCodeExpired={jest.fn()}
         onError={jest.fn()}

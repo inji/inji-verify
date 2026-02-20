@@ -139,6 +139,11 @@ export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
    When true, allows unsigned VPs (VPs without proof).
    */
   acceptVPWithoutHolderProof?: boolean;
+
+  /**
+   The base URL of the wallet.
+   */
+  webWalletBaseUrl?: string;
 };
 
 export interface SessionState {
