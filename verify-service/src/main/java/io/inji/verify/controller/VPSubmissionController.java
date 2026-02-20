@@ -19,7 +19,6 @@ import lombok.extern.slf4j.Slf4j;
 @RestController
 @RequestMapping(path = Constants.RESPONSE_SUBMISSION_URI_ROOT)
 @Slf4j
-@CrossOrigin
 public class VPSubmissionController {
 
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
