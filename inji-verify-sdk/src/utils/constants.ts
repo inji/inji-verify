@@ -31,3 +31,8 @@ export const acceptedFileTypes = SupportedFileTypes.map(
 
 // Constants for SD-JWT validation
 export const VALID_SD_JWT_TYPES = new Set(['vc+sd-jwt', 'dc+sd-jwt']);
+
+// Constants for deep link no app timeout
+export const NO_WALLET_ERROR_MESSAGE = "No supported application found";
+export const NO_WALLET_ERROR_CODE = "NO_WALLET_APP";
+export const DEEP_LINK_NO_APP_TIMEOUT_MS = 3000;

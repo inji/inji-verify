@@ -11,6 +11,7 @@ import { vpRequest, vpRequestStatus, vpResult } from "../../utils/api";
 import "./OpenID4VPVerification.css";
 import { isSdJwt } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
+import { DEEP_LINK_NO_APP_TIMEOUT_MS, NO_WALLET_ERROR_CODE, NO_WALLET_ERROR_MESSAGE } from "../../utils/constants";
 
 export const isMobileDevice = (): boolean => {
   const userAgent = navigator.userAgent;
@@ -42,11 +43,13 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   clientId,
   isSameDeviceFlowEnabled = true,
   acceptVPWithoutHolderProof = false,
+  walletBaseUrl,
 }) => {
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const isActiveRef = useRef(false);
   const sessionStateRef = useRef<SessionState | null>(null);
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const shouldShowQRCode = !loading && qrCodeData;
 
@@ -74,6 +77,10 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   }, []);
 
   const resetState = useCallback(() => {
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+      redirectTimeoutRef.current = null;
+    }
     setQrCodeData(null);
     setLoading(false);
     isActiveRef.current = false;
@@ -223,7 +230,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   ]);
 
   const handleTriggerClick = () => {
-    if (isSameDeviceFlowEnabled && isMobileDevice()) {
+    if (isSameDeviceFlowEnabled) {
       startVerification();
     } else {
       handleGenerateQRCode();
@@ -241,9 +248,30 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   const startVerification = async () => {
     const pdParams = await createVPRequest();
-    if (pdParams) {
-      window.location.href = `${protocol || DEFAULT_PROTOCOL }authorize?${pdParams}`;
+    if (!pdParams) return;
+
+    // If a wallet base URL is provided (same-device wallet flow),
+    // redirect to that URL with the presentation definition params appended.
+    if (walletBaseUrl) {
+      window.location.href = `${walletBaseUrl}/authorize?${pdParams}`;
+    } else {
+      // Default behavior: use the OpenID4VP protocol URL (deep link)
+      window.location.href = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
     }
+
+    // If no app handles the deep link, the page may stay visible. After a short
+    // delay, if the session is still active (no wallet opened / no result),
+    // treat as "no supported application" and reset state + onError.
+    redirectTimeoutRef.current = setTimeout(() => {
+      redirectTimeoutRef.current = null;
+      if (isActiveRef.current && sessionStateRef.current) {
+        onError({
+          errorMessage: NO_WALLET_ERROR_MESSAGE,
+          errorCode: NO_WALLET_ERROR_CODE,
+        });
+        resetState();
+      }
+    }, DEEP_LINK_NO_APP_TIMEOUT_MS);
   };
 
   useEffect(() => {
@@ -303,7 +331,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   useEffect(() => {
     if (!triggerElement) {
-      if (isSameDeviceFlowEnabled && isMobileDevice()) {
+      if (isSameDeviceFlowEnabled) {
         startVerification();
       } else {
         handleGenerateQRCode();
