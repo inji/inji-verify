@@ -124,12 +124,12 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   );
 
   const fetchVPResult = useCallback(
-    async (txnId: string) => {
+    async (txnId: string, responseCode?: string | null) => {
       if (!isActiveRef.current) return;
       setLoading(true);
       try {
         if (onVPProcessed && txnId) {
-          const vcResults = await vpResult(verifyServiceUrl, txnId);
+          const vcResults = await vpResult(verifyServiceUrl, txnId, responseCode);
           if (!isActiveRef.current) return;
 
           if (vcResults && vcResults.length > 0) {
@@ -162,16 +162,16 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   );
 
   const fetchVPStatus = useCallback(
-    async (reqId: string, txnId: string) => {
+    async (reqId: string, txnId: string, responseCode?: string | null) => {
       if (!isActiveRef.current || !sessionStateRef.current) return;
 
       try {
         const response = await vpRequestStatus(verifyServiceUrl, reqId);
 
         if (response.status === "ACTIVE") {
-          fetchVPStatus(reqId, txnId);
+          fetchVPStatus(reqId, txnId, responseCode);
         } else if (response.status === "VP_SUBMITTED") {
-          fetchVPResult(txnId);
+          fetchVPResult(txnId, responseCode);
         } else if (response.status === "EXPIRED") {
           resetState();
           onQrCodeExpired();
@@ -192,7 +192,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     ]
   );
 
-  const createVPRequest = useCallback(async () => {
+  const createVPRequest = useCallback(async (presentationFlow?: string) => {
     if (isActiveRef.current) return;
     isActiveRef.current = true;
     setLoading(true);
@@ -203,7 +203,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         transactionId ?? undefined,
         presentationDefinitionId,
         presentationDefinition,
-        acceptVPWithoutHolderProof
+        acceptVPWithoutHolderProof,
+        presentationFlow
       );
 
       sessionStateRef.current = {
@@ -238,7 +239,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   };
 
   const handleGenerateQRCode = async () => {
-    const pdParams = await createVPRequest();
+    const pdParams = await createVPRequest("cross_device");
     if (pdParams) {
       const qrData = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
       setQrCodeData(qrData);
@@ -247,7 +248,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   };
 
   const startVerification = async () => {
-    const pdParams = await createVPRequest();
+    const pdParams = await createVPRequest("same_device");
     if (!pdParams) return;
 
     // If a wallet base URL is provided (same-device wallet flow),
@@ -276,10 +277,12 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   useEffect(() => {
     const handleVisibilityChange = () => {
+      const searchParams = new URLSearchParams(window.location.search);
+      const responseCode = searchParams.get("response_code") || null;
       if (document.visibilityState === "visible") {
         if (sessionStateRef.current && isActiveRef.current) {
           const { requestId, transactionId } = sessionStateRef.current;
-          fetchVPStatus(requestId, transactionId);
+          fetchVPStatus(requestId, transactionId, responseCode);
         }
       }
     };

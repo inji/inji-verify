@@ -23,7 +23,9 @@ export interface VPRequestBody {
   presentationDefinitionId?: string;
   presentationDefinition?: PresentationDefinition;
   acceptVPWithoutHolderProof?: boolean;
+  presentationFlow?: string
 }
+
 type ExclusivePresentationDefinition =
   /**
    * ID of the presentation definition used for verification.
