@@ -82,8 +82,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         this.gson = gson;
     }
 
-    @Override
-    public void submit(VPSubmissionDto vpSubmissionDto) {
+    private void submit(VPSubmissionDto vpSubmissionDto) {
         vpSubmissionRepository.save(new VPSubmission(vpSubmissionDto.getState(), vpSubmissionDto.getVpToken(), vpSubmissionDto.getPresentationSubmission(), vpSubmissionDto.getError(), vpSubmissionDto.getErrorDescription(), vpSubmissionDto.getResponseCode(), vpSubmissionDto.getResponseCodeExpiryAt(), vpSubmissionDto.getResponseCodeUsed()));
         verifiablePresentationRequestService.invokeVpRequestStatusListener(vpSubmissionDto.getState());
     }
