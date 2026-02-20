@@ -484,12 +484,12 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             if (!responseCode.equals(submission.getResponseCode()))
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_EQUAL);
 
+            int updatedRows = vpSubmissionRepository.setResponseCodeAsUsed(responseCode);
             if (includeResponseCodeTimeChecks) {
                 if (submission.getResponseCodeExpiryAt() != null
                         && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant()))
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
 
-                int updatedRows = vpSubmissionRepository.setResponseCodeAsUsed(responseCode);
                 if (updatedRows == 0)
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
             }
