@@ -30,6 +30,7 @@ import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.*;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validation;
+import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
@@ -77,8 +78,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     final VCVerificationServiceImpl vcVerificationService;
     final PixelPass pixelPass;
     final Gson gson;
+    final Validator validator;
 
-    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService, PixelPass pixelPass, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository, Gson gson) {
+    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService, PixelPass pixelPass, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository, Gson gson, Validator validator) {
         this.vpSubmissionRepository = vpSubmissionRepository;
         this.credentialsVerifier = credentialsVerifier;
         this.presentationVerifier = presentationVerifier;
@@ -87,6 +89,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         this.pixelPass = pixelPass;
         this.authorizationRequestCreateResponseRepository = authorizationRequestCreateResponseRepository;
         this.gson = gson;
+        this.validator = validator;
     }
 
     private void saveVPSubmissionDto(VPSubmissionDto vpSubmissionDto) {
@@ -122,7 +125,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         } else {
             // --- Presentation Submission Validation ---
             PresentationSubmissionDto presentationSubmissionDto = gson.fromJson(presentationSubmission, PresentationSubmissionDto.class);
-            Set<ConstraintViolation<PresentationSubmissionDto>> violations = Validation.buildDefaultValidatorFactory().getValidator().validate(presentationSubmissionDto);
+            Set<ConstraintViolation<PresentationSubmissionDto>> violations = validator.validate(presentationSubmissionDto);
             if (!violations.isEmpty()) {
                 String violationMessage = violations.iterator().next().getMessage();
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
