@@ -1,6 +1,9 @@
 package io.inji.verify.controller;
 
 import com.nimbusds.jose.shaded.gson.JsonSyntaxException;
+import io.inji.verify.dto.core.ErrorDto;
+import io.inji.verify.enums.ErrorCode;
+import io.inji.verify.exception.RedirectUriNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -55,6 +58,8 @@ public class VPSubmissionController {
             return verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, error, errorDescription);
         } catch (JsonSyntaxException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_PRESENTATION_SUBMISSION");
+        } catch (RedirectUriNotFoundException e) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.REDIRECT_URI_NOT_FOUND));
         }
     }
 
