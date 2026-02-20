@@ -61,8 +61,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Value("${inji.verify.claims-with-meta-data}")
     List<String> claimsWithMetaData;
 
-    @Value("${inji.verify.include-response-code-time-checks:#{true}}")
-    boolean includeResponseCodeTimeChecks;
+    @Value("${inji.verify.include-response-code-security-checks:#{true}}")
+    boolean includeResponseCodeSecurityChecks;
 
     @Value("${inji.verify.response-code-expiry-time-in-mins:#{5}}")
     int responseCodeExpiryTimeInMins;
@@ -485,7 +485,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_EQUAL);
 
             int updatedRows = vpSubmissionRepository.setResponseCodeAsUsed(responseCode);
-            if (includeResponseCodeTimeChecks) {
+            if (includeResponseCodeSecurityChecks) {
                 if (submission.getResponseCodeExpiryAt() != null
                         && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant()))
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);

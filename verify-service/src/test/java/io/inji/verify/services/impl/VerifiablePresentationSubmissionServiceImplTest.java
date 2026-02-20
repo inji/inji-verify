@@ -1432,7 +1432,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
         when(vpSubmissionRepository.setResponseCodeAsUsed(responseCode)).thenReturn(1);
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
@@ -1645,7 +1645,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
@@ -1696,7 +1696,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
@@ -1766,7 +1766,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", false);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", false);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
@@ -1775,7 +1775,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
-        // When includeResponseCodeTimeChecks is false, atomic update is not called
+        // When includeResponseCodeSecurityChecks is false, atomic update is not called
         verify(vpSubmissionRepository, never()).setResponseCodeAsUsed(anyString());
     }
 
@@ -1973,7 +1973,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
         when(vpSubmissionRepository.setResponseCodeAsUsed(responseCode)).thenReturn(1);
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
@@ -2135,7 +2135,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
