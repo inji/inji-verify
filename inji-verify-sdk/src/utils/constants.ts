@@ -32,7 +32,15 @@ export const acceptedFileTypes = SupportedFileTypes.map(
 // Constants for SD-JWT validation
 export const VALID_SD_JWT_TYPES = new Set(['vc+sd-jwt', 'dc+sd-jwt']);
 
+// Constants for OVP session storage
+export const OVP_SESSION_REQUEST_ID_KEY = "ovp_requestId";
+export const OVP_SESSION_TRANSACTION_ID_KEY = "ovp_transactionId";
+
 // Constants for deep link no app timeout
 export const NO_WALLET_ERROR_MESSAGE = "No supported application found";
 export const NO_WALLET_ERROR_CODE = "NO_WALLET_APP";
 export const DEEP_LINK_NO_APP_TIMEOUT_MS = 3000;
+
+// Presentation flow types
+export const SAME_DEVICE_FLOW = "same_device";
+export const CROSS_DEVICE_FLOW = "cross_device";

@@ -11,7 +11,7 @@ import { vpRequest, vpRequestStatus, vpResult } from "../../utils/api";
 import "./OpenID4VPVerification.css";
 import { isSdJwt } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
-import { DEEP_LINK_NO_APP_TIMEOUT_MS, NO_WALLET_ERROR_CODE, NO_WALLET_ERROR_MESSAGE } from "../../utils/constants";
+import { CROSS_DEVICE_FLOW, DEEP_LINK_NO_APP_TIMEOUT_MS, NO_WALLET_ERROR_CODE, NO_WALLET_ERROR_MESSAGE, OVP_SESSION_REQUEST_ID_KEY, OVP_SESSION_TRANSACTION_ID_KEY, SAME_DEVICE_FLOW } from "../../utils/constants";
 
 export const isMobileDevice = (): boolean => {
   const userAgent = navigator.userAgent;
@@ -72,8 +72,12 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     []
   );
 
+  const presentationFlow = isSameDeviceFlowEnabled ? SAME_DEVICE_FLOW : CROSS_DEVICE_FLOW;
+
   const clearSessionData = useCallback(() => {
     sessionStateRef.current = null;
+    sessionStorage.removeItem(OVP_SESSION_REQUEST_ID_KEY);
+    sessionStorage.removeItem(OVP_SESSION_TRANSACTION_ID_KEY);
   }, []);
 
   const resetState = useCallback(() => {
@@ -239,7 +243,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   };
 
   const handleGenerateQRCode = async () => {
-    const pdParams = await createVPRequest("cross_device");
+    const pdParams = await createVPRequest(presentationFlow);
     if (pdParams) {
       const qrData = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
       setQrCodeData(qrData);
@@ -248,35 +252,51 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   };
 
   const startVerification = async () => {
-    const pdParams = await createVPRequest("same_device");
+    const pdParams = await createVPRequest(presentationFlow);
     if (!pdParams) return;
 
-    // If a wallet base URL is provided (same-device wallet flow),
-    // redirect to that URL with the presentation definition params appended.
     if (walletBaseUrl) {
-      window.location.href = `${walletBaseUrl}/authorize?${pdParams}`;
+      // Web-wallet flow: full-page navigation. Persist session so it can be
+      // restored after the wallet redirects back and the page re-mounts.
+      if (sessionStateRef.current) {
+        sessionStorage.setItem(OVP_SESSION_REQUEST_ID_KEY, sessionStateRef.current.requestId);
+        sessionStorage.setItem(OVP_SESSION_TRANSACTION_ID_KEY, sessionStateRef.current.transactionId);
+      }
+      const baseUrl = walletBaseUrl.replace(/\/+$/, '');
+      window.location.href = `${baseUrl}/authorize?${pdParams}`;
     } else {
-      // Default behavior: use the OpenID4VP protocol URL (deep link)
+      // Deep-link flow: set the timeout BEFORE navigating so the
+      // visibilitychange handler can always find and cancel it if a wallet app
+      // opens (page goes hidden). If no app handles the link the page stays
+      // visible, the timeout fires, and we surface NO_WALLET_APP.
+      redirectTimeoutRef.current = setTimeout(() => {
+        redirectTimeoutRef.current = null;
+        if (isActiveRef.current && sessionStateRef.current) {
+          onError({
+            errorMessage: NO_WALLET_ERROR_MESSAGE,
+            errorCode: NO_WALLET_ERROR_CODE,
+          });
+          resetState();
+        }
+      }, DEEP_LINK_NO_APP_TIMEOUT_MS);
+
       window.location.href = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
     }
-
-    // If no app handles the deep link, the page may stay visible. After a short
-    // delay, if the session is still active (no wallet opened / no result),
-    // treat as "no supported application" and reset state + onError.
-    redirectTimeoutRef.current = setTimeout(() => {
-      redirectTimeoutRef.current = null;
-      if (isActiveRef.current && sessionStateRef.current) {
-        onError({
-          errorMessage: NO_WALLET_ERROR_MESSAGE,
-          errorCode: NO_WALLET_ERROR_CODE,
-        });
-        resetState();
-      }
-    }, DEEP_LINK_NO_APP_TIMEOUT_MS);
   };
 
   useEffect(() => {
     const handleVisibilityChange = () => {
+      if (document.visibilityState === "hidden") {
+        // Page went to background — deep link was handled by a wallet app.
+        // Cancel the "no supported app" timeout so it doesn't fire a false error
+        // while the wallet is processing the request.
+        if (redirectTimeoutRef.current) {
+          clearTimeout(redirectTimeoutRef.current);
+          redirectTimeoutRef.current = null;
+        }
+        return;
+      }
+
       const searchParams = new URLSearchParams(window.location.search);
       const responseCode = searchParams.get("response_code") || null;
       if (document.visibilityState === "visible") {
@@ -293,6 +313,31 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       document.removeEventListener("visibilitychange", handleVisibilityChange);
     };
   }, [fetchVPStatus]);
+
+  // Restore session after a full-page redirect (web wallet flow).
+  // On re-mount the in-memory refs are gone; read them back from sessionStorage
+  // and resume status polling so the VP result is not silently dropped.
+  useEffect(() => {
+    if (!walletBaseUrl) return;
+
+    const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
+    const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
+
+    if (savedRequestId && savedTransactionId) {
+      sessionStorage.removeItem(OVP_SESSION_REQUEST_ID_KEY);
+      sessionStorage.removeItem(OVP_SESSION_TRANSACTION_ID_KEY);
+
+      sessionStateRef.current = {
+        requestId: savedRequestId,
+        transactionId: savedTransactionId,
+      };
+      isActiveRef.current = true;
+
+      const searchParams = new URLSearchParams(window.location.search);
+      const responseCode = searchParams.get("response_code") || null;
+      fetchVPStatus(savedRequestId, savedTransactionId, responseCode);
+    }
+  }, [walletBaseUrl, fetchVPStatus]);
 
   useEffect(() => {
     if (!presentationDefinitionId && !presentationDefinition) {
