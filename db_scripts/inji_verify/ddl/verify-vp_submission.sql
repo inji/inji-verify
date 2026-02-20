@@ -11,15 +11,15 @@
 -- ------------------------------------------------------------------------------------------
 -- ------------------------------------------------------------------------------------------
 CREATE TABLE vp_submission(
-                              request_id character varying(40) NOT NULL,
-                              vp_token VARCHAR NULL,
-                              presentation_submission text NULL,
-                              error character varying(100) NULL,
-                              error_description character varying(200) NULL,
-                              response_code character varying(200) NULL,
-                              response_code_expiry_at TIMESTAMP NULL,
-                              response_code_used boolean DEFAULT false,
-                              CONSTRAINT uq_vp_submission_response_code UNIQUE (response_code)
+                            request_id character varying(40) NOT NULL,
+                            vp_token VARCHAR NULL,
+                            presentation_submission text NULL,
+                            error character varying(100) NULL,
+                            error_description character varying(200) NULL,
+                            response_code character varying(200) NULL,
+                            response_code_expiry_at TIMESTAMP NULL,
+                            response_code_used boolean DEFAULT false,
+                            CONSTRAINT uq_vp_submission_response_code UNIQUE (response_code)
 );
 
 CREATE INDEX IF NOT EXISTS idx_vp_submission_response_code ON vp_submission (response_code);
