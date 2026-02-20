@@ -473,7 +473,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                         && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant()))
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
 
-                if (vpSubmissionRepository.markResponseCodeUsedIfNotUsed(responseCode).isEmpty())
+                if (vpSubmissionRepository.setResponseCodeAsUsed(responseCode).isEmpty())
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
             }
         }

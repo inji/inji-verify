@@ -15,5 +15,5 @@ public interface VPSubmissionRepository extends JpaRepository<VPSubmission, Stri
 	@Modifying
 	@Transactional
 	@Query(value = "UPDATE vp_submission SET response_code_used = true WHERE response_code = :responseCode AND response_code_used = false RETURNING request_id", nativeQuery = true)
-	java.util.List<String> markResponseCodeUsedIfNotUsed(String responseCode);
+	java.util.List<String> setResponseCodeAsUsed(String responseCode);
 }

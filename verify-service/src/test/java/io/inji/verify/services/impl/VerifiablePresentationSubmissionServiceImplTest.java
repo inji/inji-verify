@@ -1242,7 +1242,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
         // For cross-device flow, markResponseCodeUsedIfNotUsed should not be called
-        verify(vpSubmissionRepository, never()).markResponseCodeUsedIfNotUsed(any());
+        verify(vpSubmissionRepository, never()).setResponseCodeAsUsed(any());
     }
 
     @Test
@@ -1281,7 +1281,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        when(vpSubmissionRepository.markResponseCodeUsedIfNotUsed(responseCode)).thenReturn(List.of(requestId));
+        when(vpSubmissionRepository.setResponseCodeAsUsed(responseCode)).thenReturn(List.of(requestId));
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
@@ -1291,7 +1291,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
-        verify(vpSubmissionRepository, times(1)).markResponseCodeUsedIfNotUsed(responseCode);
+        verify(vpSubmissionRepository, times(1)).setResponseCodeAsUsed(responseCode);
     }
 
     @Test
@@ -1626,7 +1626,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
         // When includeResponseCodeTimeChecks is false, atomic update is not called
-        verify(vpSubmissionRepository, never()).markResponseCodeUsedIfNotUsed(anyString());
+        verify(vpSubmissionRepository, never()).setResponseCodeAsUsed(anyString());
     }
 
     @Test
@@ -1816,7 +1816,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        when(vpSubmissionRepository.markResponseCodeUsedIfNotUsed(responseCode)).thenReturn(List.of(requestId));
+        when(vpSubmissionRepository.setResponseCodeAsUsed(responseCode)).thenReturn(List.of(requestId));
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
@@ -1827,7 +1827,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
         assertEquals(responseCode, result.getResponseCode());
-        verify(vpSubmissionRepository, times(1)).markResponseCodeUsedIfNotUsed(responseCode);
+        verify(vpSubmissionRepository, times(1)).setResponseCodeAsUsed(responseCode);
     }
 
     @Test
@@ -1992,7 +1992,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
         assertEquals(ErrorCode.RESPONSE_CODE_EXPIRED, responseCodeException.getErrorCode());
-        verify(vpSubmissionRepository, never()).markResponseCodeUsedIfNotUsed(anyString());
+        verify(vpSubmissionRepository, never()).setResponseCodeAsUsed(anyString());
     }
 
     @Test
