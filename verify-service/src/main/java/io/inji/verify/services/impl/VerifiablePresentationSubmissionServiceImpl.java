@@ -90,7 +90,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Override
     public ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
         // --- Get presentationFlow from auth request ---
-        boolean isSameDevice = isSameDeviceFlow(state);
+        boolean isSameDevice = false;
+        AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
+        if (authRequest != null) isSameDevice = isSameDeviceFlow(authRequest);
+        log.info("isSameDevice in vpSubmission: {}", isSameDevice);
 
         // --- create response redirect_uri for same_device flow ---
         String responseCode = null;
@@ -137,15 +140,12 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 .toUriString();
     }
 
-    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException {
+    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId, AuthorizationRequestCreateResponse authRequest) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException {
         log.info("Processing VP submission");
-
         List<VCResultDto> verificationResults = new ArrayList<>();
         List<VPVerificationStatus> vpVerificationStatuses = new ArrayList<>();
 
         try {
-            AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
-
             log.info("Processing VP token matching");
             if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
 
@@ -204,12 +204,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
     }
 
-    private VPVerificationResultDto processSubmissionV2(VerificationRequestDto request, String transactionId, VPSubmission vpSubmission) {
+    private VPVerificationResultDto processSubmissionV2(VerificationRequestDto request, String transactionId, VPSubmission vpSubmission, AuthorizationRequestCreateResponse authRequest) {
         log.info("Processing VP submission V2");
-
         List<CredentialResultsDto> credentialResults = new ArrayList<>();
-
-        AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
 
         log.info("Processing VP token matching V2");
         if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
@@ -390,14 +387,16 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     @Override
     public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId, String responseCode) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
-        return processSubmission(vpSubmission, transactionId);
+        AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode, authRequest);
+        return processSubmission(vpSubmission, transactionId, authRequest);
     }
 
     @Override
     public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId, String responseCode) {
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
-        return processSubmissionV2(request, transactionId, vpSubmission);
+        AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode, authRequest);
+        return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
     }
 
     private boolean isVPTokenNotMatching(VPSubmission vpSubmission, AuthorizationRequestCreateResponse request) {
@@ -460,13 +459,14 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return credentialResults;
     }
 
-    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode) {
+    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode, AuthorizationRequestCreateResponse authRequest) {
         VPSubmission submission = vpSubmissionRepository.findAllById(requestIds)
                 .stream()
                 .findFirst()
                 .orElseThrow(VPSubmissionNotFoundException::new);
 
-        boolean isSameDevice = isSameDeviceFlow(submission.getRequestId());
+        boolean isSameDevice = isSameDeviceFlow(authRequest);
+        log.info("isSameDevice for VPResult: {}", isSameDevice);
 
         if (isSameDevice) {
             if (responseCode == null || submission.getResponseCode() == null)
@@ -480,7 +480,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                         && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant()))
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
 
-                if (vpSubmissionRepository.setResponseCodeAsUsed(responseCode).isEmpty())
+                int updatedRows = vpSubmissionRepository.setResponseCodeAsUsed(responseCode);
+                if (updatedRows == 0)
                     throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
             }
         }
@@ -491,12 +492,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return submission;
     }
 
-    private boolean isSameDeviceFlow(String requestId) {
-        return authorizationRequestCreateResponseRepository.findById(requestId)
-                .map(AuthorizationRequestCreateResponse::getAuthorizationDetails)
-                .map(AuthorizationRequestResponseDto::getPresentationFlow)
-                .filter("same_device"::equals)
-                .isPresent();
+    private boolean isSameDeviceFlow(AuthorizationRequestCreateResponse authRequest) {
+        String presentationFlow = authRequest.getAuthorizationDetails().getPresentationFlow();
+        return "same_device".equals(presentationFlow);
     }
 
     private static HolderProofCheckDto populateHolderProofDto(VerificationResult verificationResult) {

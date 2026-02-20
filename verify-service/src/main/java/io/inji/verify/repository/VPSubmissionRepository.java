@@ -12,8 +12,10 @@ public interface VPSubmissionRepository extends JpaRepository<VPSubmission, Stri
 	 * Atomically marks response_code_used as true for a given response_code if not already used.
 	 * Returns the number of rows updated (should be 1 if successful, 0 if already used or not found).
 	 */
-	@Modifying
+	@Modifying(clearAutomatically = true, flushAutomatically = true)
 	@Transactional
-	@Query(value = "UPDATE vp_submission SET response_code_used = true WHERE response_code = :responseCode AND response_code_used = false RETURNING request_id", nativeQuery = true)
-	java.util.List<String> setResponseCodeAsUsed(String responseCode);
+	@Query(value = "UPDATE vp_submission SET response_code_used = true " +
+			"WHERE response_code = :responseCode AND response_code_used = false",
+			nativeQuery = true)
+	int setResponseCodeAsUsed(String responseCode);
 }
