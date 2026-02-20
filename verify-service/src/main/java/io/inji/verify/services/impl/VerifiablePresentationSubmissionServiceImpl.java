@@ -29,7 +29,6 @@ import io.mosip.vercred.vcverifier.PresentationVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.*;
 import jakarta.validation.ConstraintViolation;
-import jakarta.validation.Validation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
@@ -103,7 +102,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         boolean isSameDevice = false;
         AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
         if (authRequest != null) isSameDevice = isSameDeviceFlow(authRequest);
-        log.info("isSameDevice in vpSubmission: {}", isSameDevice);
 
         // --- create response redirect_uri for same_device flow ---
         String responseCode = null;
@@ -143,6 +141,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private String buildRedirectWithResponseCode(String responseCode) {
+        if (redirectUri == null || redirectUri.isBlank()) throw new RedirectUriNotFoundException();
         return UriComponentsBuilder
                 .fromUriString(redirectUri)
                 .queryParam("response_code", responseCode)
