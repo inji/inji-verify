@@ -2,7 +2,6 @@ package io.inji.verify.models;
 
 import io.inji.verify.serialization.impl.PresentationSubmissionDtoConverter;
 import jakarta.persistence.*;
-import org.hibernate.annotations.Check;
 import org.hibernate.annotations.JdbcTypeCode;
 import org.hibernate.type.SqlTypes;
 import com.fasterxml.jackson.annotation.JsonProperty;
@@ -18,7 +17,6 @@ import java.sql.Timestamp;
 @Entity
 @AllArgsConstructor
 @NoArgsConstructor(force = true)
-@Check(constraints = "response_code IS NULL OR response_code_expiry_at IS NOT NULL")
 public class VPSubmission {
     @Id
     @JsonProperty("state")
