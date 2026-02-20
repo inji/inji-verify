@@ -38,11 +38,13 @@ import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.InjectMocks;
-import org.mockito.Mock;
-import org.mockito.MockedStatic;
-import org.mockito.MockitoAnnotations;
+import org.mockito.*;
+import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -84,10 +86,13 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testSubmit_Success() {
+    public void testSubmit_Success() throws Exception {
         VPSubmissionDto vpSubmissionDto = new VPSubmissionDto("vpToken123", new PresentationSubmissionDto("id", "dId", new ArrayList<>()), "state123", "", "", "", null, null);
 
-        verifiablePresentationSubmissionService.submit(vpSubmissionDto);
+        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+                .getDeclaredMethod("submit", VPSubmissionDto.class);
+        method.setAccessible(true);
+        method.invoke(verifiablePresentationSubmissionService, vpSubmissionDto);
 
         verify(vpSubmissionRepository, times(1)).save(any(VPSubmission.class));
         verify(verifiablePresentationRequestService, times(1)).invokeVpRequestStatusListener("state123");
@@ -1623,4 +1628,473 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         // When includeResponseCodeTimeChecks is false, atomic update is not called
         verify(vpSubmissionRepository, never()).markResponseCodeUsedIfNotUsed(anyString());
     }
+
+    @Test
+    public void testSubmit_WithResponseCode_Success() throws Exception {
+        String responseCode = "generated-code-123";
+        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
+        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(
+                "vpToken123",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                "state123",
+                null,
+                null,
+                responseCode,
+                expiryAt,
+                false
+        );
+
+        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+                .getDeclaredMethod("submit", VPSubmissionDto.class);
+        method.setAccessible(true);
+        method.invoke(verifiablePresentationSubmissionService, vpSubmissionDto);
+
+        ArgumentCaptor<VPSubmission> captor = ArgumentCaptor.forClass(VPSubmission.class);
+        verify(vpSubmissionRepository, times(1)).save(captor.capture());
+
+        VPSubmission savedSubmission = captor.getValue();
+        assertEquals(responseCode, savedSubmission.getResponseCode());
+        assertEquals(expiryAt, savedSubmission.getResponseCodeExpiryAt());
+        assertEquals(false, savedSubmission.getResponseCodeUsed());
+        assertEquals("state123", savedSubmission.getRequestId());
+    }
+
+    @Test
+    public void testSubmit_WithNullResponseCode_Success() throws Exception {
+        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(
+                "vpToken123",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                "state123",
+                null,
+                null,
+                null,
+                null,
+                false
+        );
+
+        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+                .getDeclaredMethod("submit", VPSubmissionDto.class);
+        method.setAccessible(true);
+        method.invoke(verifiablePresentationSubmissionService, vpSubmissionDto);
+
+        ArgumentCaptor<VPSubmission> captor = ArgumentCaptor.forClass(VPSubmission.class);
+        verify(vpSubmissionRepository, times(1)).save(captor.capture());
+
+        VPSubmission savedSubmission = captor.getValue();
+        assertNull(savedSubmission.getResponseCode());
+        assertNull(savedSubmission.getResponseCodeExpiryAt());
+        assertEquals(false, savedSubmission.getResponseCodeUsed());
+    }
+
+    @Test
+    public void testExecuteSubmission_SameDevice_GeneratesResponseCodeAndExpiry() throws Exception {
+        String vpToken = "testToken";
+        String presentationSubmission = "{\"id\":\"testId\"}";
+        String state = "testState";
+
+        PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("id", "dId", new ArrayList<>());
+
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                state,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
+        when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
+        when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "redirectUri", "https://example.com/callback");
+
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.executeSubmission(vpToken, presentationSubmission, state, null, null);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertInstanceOf(Map.class, response.getBody());
+        java.util.Map<?, ?> responseBody = (java.util.Map<?, ?>) response.getBody();
+        assertTrue(responseBody.containsKey("redirect_uri"));
+
+        ArgumentCaptor<VPSubmission> captor = ArgumentCaptor.forClass(VPSubmission.class);
+        verify(vpSubmissionRepository, times(1)).save(captor.capture());
+
+        VPSubmission savedSubmission = captor.getValue();
+        assertNotNull(savedSubmission.getResponseCode(), "Response code should be generated for same-device flow");
+        assertNotNull(savedSubmission.getResponseCodeExpiryAt(), "Response code expiry should be set for same-device flow");
+        assertEquals(false, savedSubmission.getResponseCodeUsed(), "Response code should initially be unused");
+        assertEquals(state, savedSubmission.getRequestId());
+    }
+
+    @Test
+    public void testExecuteSubmission_CrossDevice_DoesNotGenerateResponseCode() throws Exception {
+        String vpToken = "testToken";
+        String presentationSubmission = "{\"id\":\"testId\"}";
+        String state = "testState";
+
+        PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("id", "dId", new ArrayList<>());
+
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "cross_device"
+        );
+
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                state,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
+        when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
+        when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
+
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.executeSubmission(vpToken, presentationSubmission, state, null, null);
+
+        assertEquals(200, response.getStatusCode().value());
+        assertNotNull(response.getBody());
+        assertInstanceOf(Map.class, response.getBody());
+        java.util.Map<?, ?> responseBody = (java.util.Map<?, ?>) response.getBody();
+        assertFalse(responseBody.containsKey("redirect_uri"), "Cross-device flow should not include redirect_uri");
+
+        ArgumentCaptor<VPSubmission> captor = ArgumentCaptor.forClass(VPSubmission.class);
+        verify(vpSubmissionRepository, times(1)).save(captor.capture());
+
+        VPSubmission savedSubmission = captor.getValue();
+        assertNull(savedSubmission.getResponseCode(), "Response code should NOT be generated for cross-device flow");
+        assertNull(savedSubmission.getResponseCodeExpiryAt(), "Response code expiry should NOT be set for cross-device flow");
+        assertEquals(false, savedSubmission.getResponseCodeUsed());
+        assertEquals(state, savedSubmission.getRequestId());
+    }
+
+    @Test
+    public void testFetchVpSubmissionIfValid_ValidResponseCode_MarksAsUsed() throws Exception {
+        List<String> requestIds = List.of("req123");
+        String requestId = "req123";
+        String responseCode = "valid-code-123";
+        Timestamp expiryAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
+
+        VPSubmission vpSubmission = new VPSubmission(
+                requestId,
+                "vpToken",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                null,
+                null,
+                responseCode,
+                expiryAt,
+                false
+        );
+
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                requestId,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
+        when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
+        when(vpSubmissionRepository.markResponseCodeUsedIfNotUsed(responseCode)).thenReturn(List.of(requestId));
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
+
+        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
+        method.setAccessible(true);
+        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
+
+        assertNotNull(result);
+        assertEquals(requestId, result.getRequestId());
+        assertEquals(responseCode, result.getResponseCode());
+        verify(vpSubmissionRepository, times(1)).markResponseCodeUsedIfNotUsed(responseCode);
+    }
+
+    @Test
+    public void testResponseCodeUsed_InitiallyFalse() {
+        VPSubmission vpSubmission = new VPSubmission(
+                "state123",
+                "vpToken",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                null,
+                null,
+                "code123",
+                java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES)),
+                false
+        );
+
+        assertEquals(false, vpSubmission.getResponseCodeUsed(), "responseCodeUsed should be false initially");
+    }
+
+    @Test
+    public void testResponseCodeUsed_CanBeTrue() {
+        VPSubmission vpSubmission = new VPSubmission(
+                "state123",
+                "vpToken",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                null,
+                null,
+                "code123",
+                java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES)),
+                true
+        );
+
+        assertEquals(true, vpSubmission.getResponseCodeUsed(), "responseCodeUsed can be set to true");
+    }
+
+    @Test
+    public void testResponseCode_CanBeNull() {
+        VPSubmission vpSubmission = new VPSubmission(
+                "state123",
+                "vpToken",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                null,
+                null,
+                null,
+                null,
+                false
+        );
+
+        assertNull(vpSubmission.getResponseCode(), "responseCode can be null for cross-device flow");
+        assertNull(vpSubmission.getResponseCodeExpiryAt(), "responseCodeExpiryAt should be null when responseCode is null");
+    }
+
+    @Test
+    public void testResponseCode_WithExpiry() {
+        String responseCode = "code456";
+        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(10, java.time.temporal.ChronoUnit.MINUTES));
+
+        VPSubmission vpSubmission = new VPSubmission(
+                "state123",
+                "vpToken",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                null,
+                null,
+                responseCode,
+                expiryAt,
+                false
+        );
+
+        assertEquals(responseCode, vpSubmission.getResponseCode());
+        assertEquals(expiryAt, vpSubmission.getResponseCodeExpiryAt());
+        assertTrue(vpSubmission.getResponseCodeExpiryAt().toInstant().isAfter(java.time.Instant.now()),
+                "Response code expiry should be in the future");
+    }
+
+    @Test
+    public void testExecuteSubmission_WithError_DoesNotGenerateResponseCode() throws Exception {
+        String error = "access_denied";
+        String errorDescription = "User denied access";
+        String state = "testState";
+
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                state,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
+        when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "redirectUri", "https://example.com/callback");
+
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.executeSubmission(null, null, state, error, errorDescription);
+
+        assertEquals(200, response.getStatusCode().value());
+
+        ArgumentCaptor<VPSubmission> captor = ArgumentCaptor.forClass(VPSubmission.class);
+        verify(vpSubmissionRepository, times(1)).save(captor.capture());
+
+        VPSubmission savedSubmission = captor.getValue();
+        assertEquals(error, savedSubmission.getError());
+        assertEquals(errorDescription, savedSubmission.getErrorDescription());
+        assertNotNull(savedSubmission.getResponseCode(), "Response code should be generated even for error submission in same-device flow");
+        assertNotNull(savedSubmission.getResponseCodeExpiryAt(), "Response code expiry should be set for same-device flow");
+        assertEquals(false, savedSubmission.getResponseCodeUsed());
+    }
+
+    @Test
+    public void testFetchVpSubmissionIfValid_ResponseCodeExpired_ThrowsException() throws Exception {
+        List<String> requestIds = List.of("req123");
+        String requestId = "req123";
+        String responseCode = "expired-code";
+        java.sql.Timestamp expiredAt = java.sql.Timestamp.from(java.time.Instant.now().minus(1, java.time.temporal.ChronoUnit.MINUTES));
+
+        VPSubmission vpSubmission = new VPSubmission(
+                requestId,
+                "vpToken",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                null,
+                null,
+                responseCode,
+                expiredAt,
+                false
+        );
+
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                requestId,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
+        when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
+        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
+
+        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
+        method.setAccessible(true);
+
+        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
+        });
+
+        assertInstanceOf(ResponseCodeException.class, exception.getCause());
+        ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
+        assertEquals(ErrorCode.RESPONSE_CODE_EXPIRED, responseCodeException.getErrorCode());
+        verify(vpSubmissionRepository, never()).markResponseCodeUsedIfNotUsed(anyString());
+    }
+
+    @Test
+    public void testFetchVpSubmissionIfValid_MismatchedResponseCode_ThrowsException() throws Exception {
+        List<String> requestIds = List.of("req123");
+        String requestId = "req123";
+        String storedResponseCode = "stored-code-123";
+        String providedResponseCode = "different-code-456";
+        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
+
+        VPSubmission vpSubmission = new VPSubmission(
+                requestId,
+                "vpToken",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                null,
+                null,
+                storedResponseCode,
+                expiryAt,
+                false
+        );
+
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                requestId,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
+        when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
+
+        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
+        method.setAccessible(true);
+
+        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+            method.invoke(verifiablePresentationSubmissionService, requestIds, providedResponseCode);
+        });
+
+        assertInstanceOf(ResponseCodeException.class, exception.getCause());
+        ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
+        assertEquals(ErrorCode.RESPONSE_CODE_NOT_EQUAL, responseCodeException.getErrorCode());
+    }
+
+    @Test
+    public void testFetchVpSubmissionIfValid_NullResponseCodeProvided_SameDevice_ThrowsException() throws Exception {
+        List<String> requestIds = List.of("req123");
+        String requestId = "req123";
+        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
+
+        VPSubmission vpSubmission = new VPSubmission(
+                requestId,
+                "vpToken",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
+                null,
+                null,
+                "stored-code",
+                expiryAt,
+                false
+        );
+
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "clientId",
+                "presentationDefinitionUri",
+                null,
+                "nonce",
+                "responseUri",
+                false,
+                "same_device"
+        );
+
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                requestId,
+                "transactionId",
+                authDetails,
+                System.currentTimeMillis() + 100000
+        );
+
+        when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
+
+        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
+        method.setAccessible(true);
+
+        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+            method.invoke(verifiablePresentationSubmissionService, requestIds, null);
+        });
+
+        assertInstanceOf(ResponseCodeException.class, exception.getCause());
+        ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
+        assertEquals(ErrorCode.RESPONSE_CODE_NOT_FOUND, responseCodeException.getErrorCode());
+    }
 }
+
