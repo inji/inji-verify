@@ -60,7 +60,7 @@ public class VPSubmissionControllerTest {
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
         when(verifiablePresentationRequestService.getCurrentRequestStatus(state)).thenReturn(requestStatusDto);
         doReturn(ResponseEntity.ok().build())
-                .when(verifiablePresentationSubmissionService).executeSubmission(vpToken, presentationSubmission, state, null, null);
+                .when(verifiablePresentationSubmissionService).submit(vpToken, presentationSubmission, state, null, null);
 
         mockMvc.perform(post(Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -69,7 +69,7 @@ public class VPSubmissionControllerTest {
                         .param("state", state))
                 .andExpect(status().isOk());
 
-        verify(verifiablePresentationSubmissionService, times(1)).executeSubmission(vpToken, presentationSubmission, state, null, null);
+        verify(verifiablePresentationSubmissionService, times(1)).submit(vpToken, presentationSubmission, state, null, null);
         verify(verifiablePresentationRequestService, times(1)).getCurrentRequestStatus(state);
     }
 
@@ -107,7 +107,7 @@ public class VPSubmissionControllerTest {
         java.util.Map<String, Object> responseBody = new java.util.HashMap<>();
         responseBody.put("redirect_uri", redirectUri + "?response_code=test-response-code");
         doReturn(ResponseEntity.ok(responseBody))
-                .when(verifiablePresentationSubmissionService).executeSubmission(vpToken, presentationSubmission, state, null, null);
+                .when(verifiablePresentationSubmissionService).submit(vpToken, presentationSubmission, state, null, null);
 
         mockMvc.perform(post(Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -117,7 +117,7 @@ public class VPSubmissionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.redirect_uri").exists());
 
-        verify(verifiablePresentationSubmissionService, times(1)).executeSubmission(vpToken, presentationSubmission, state, null, null);
+        verify(verifiablePresentationSubmissionService, times(1)).submit(vpToken, presentationSubmission, state, null, null);
         verify(verifiablePresentationRequestService, times(1)).getCurrentRequestStatus(state);
     }
 
@@ -136,7 +136,7 @@ public class VPSubmissionControllerTest {
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
         when(verifiablePresentationRequestService.getCurrentRequestStatus(state)).thenReturn(requestStatusDto);
         doReturn(ResponseEntity.ok(new java.util.HashMap<>()))
-                .when(verifiablePresentationSubmissionService).executeSubmission(vpToken, presentationSubmission, state, null, null);
+                .when(verifiablePresentationSubmissionService).submit(vpToken, presentationSubmission, state, null, null);
 
         mockMvc.perform(post(Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -146,7 +146,7 @@ public class VPSubmissionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.redirect_uri").doesNotExist());
 
-        verify(verifiablePresentationSubmissionService, times(1)).executeSubmission(vpToken, presentationSubmission, state, null, null);
+        verify(verifiablePresentationSubmissionService, times(1)).submit(vpToken, presentationSubmission, state, null, null);
         verify(verifiablePresentationRequestService, times(1)).getCurrentRequestStatus(state);
     }
 
@@ -168,7 +168,7 @@ public class VPSubmissionControllerTest {
                         .param("state", state))
                 .andExpect(status().isNotFound());
 
-        verify(verifiablePresentationSubmissionService, times(0)).executeSubmission(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(verifiablePresentationSubmissionService, times(0)).submit(anyString(), anyString(), anyString(), anyString(), anyString());
         verify(verifiablePresentationRequestService, times(1)).getCurrentRequestStatus(state);
     }
 
@@ -186,7 +186,7 @@ public class VPSubmissionControllerTest {
                         .param("state", "testState"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Invalid response: either vp_token and presentation_submission must be provided, or error must be provided."));
-        verify(verifiablePresentationSubmissionService, times(0)).executeSubmission(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(verifiablePresentationSubmissionService, times(0)).submit(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -198,7 +198,7 @@ public class VPSubmissionControllerTest {
                         .param("state", "testState"))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Invalid response: either vp_token and presentation_submission must be provided, or error must be provided."));
-        verify(verifiablePresentationSubmissionService, times(0)).executeSubmission(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(verifiablePresentationSubmissionService, times(0)).submit(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -210,14 +210,14 @@ public class VPSubmissionControllerTest {
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(invalidDto);
         when(verifiablePresentationRequestService.getCurrentRequestStatus(state)).thenReturn(new VPRequestStatusDto(VPRequestStatus.ACTIVE));
         doReturn(ResponseEntity.status(org.springframework.http.HttpStatus.BAD_REQUEST).body("must not be blank"))
-                .when(verifiablePresentationSubmissionService).executeSubmission(vpToken, presentationSubmission, state, null, null);
+                .when(verifiablePresentationSubmissionService).submit(vpToken, presentationSubmission, state, null, null);
         mockMvc.perform(post(Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("vp_token", vpToken)
                         .param("presentation_submission", presentationSubmission)
                         .param("state", state))
                 .andExpect(status().isBadRequest());
-        verify(verifiablePresentationSubmissionService, times(1)).executeSubmission(vpToken, presentationSubmission, state, null, null);
+        verify(verifiablePresentationSubmissionService, times(1)).submit(vpToken, presentationSubmission, state, null, null);
     }
 
     @Test
@@ -226,13 +226,13 @@ public class VPSubmissionControllerTest {
         String state = "testState";
         when(verifiablePresentationRequestService.getCurrentRequestStatus(state)).thenReturn(new VPRequestStatusDto(VPRequestStatus.ACTIVE));
         doReturn(ResponseEntity.ok(new java.util.HashMap<>()))
-                .when(verifiablePresentationSubmissionService).executeSubmission(null, null, state, error, null);
+                .when(verifiablePresentationSubmissionService).submit(null, null, state, error, null);
         mockMvc.perform(post(Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("error", error)
                         .param("state", state))
                 .andExpect(status().isOk());
-        verify(verifiablePresentationSubmissionService, times(1)).executeSubmission(null, null, state, error, null);
+        verify(verifiablePresentationSubmissionService, times(1)).submit(null, null, state, error, null);
     }
 
     @Test
@@ -241,7 +241,7 @@ public class VPSubmissionControllerTest {
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
                         .param("vp_token", "token"))
                 .andExpect(status().isBadRequest());
-        verify(verifiablePresentationSubmissionService, times(0)).executeSubmission(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(verifiablePresentationSubmissionService, times(0)).submit(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -251,7 +251,7 @@ public class VPSubmissionControllerTest {
                         .param("vp_token", "token")
                         .param("state", " "))
                 .andExpect(status().isBadRequest());
-        verify(verifiablePresentationSubmissionService, times(0)).executeSubmission(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(verifiablePresentationSubmissionService, times(0)).submit(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -265,7 +265,7 @@ public class VPSubmissionControllerTest {
                         .param("state", state))
                 .andExpect(status().isBadRequest())
                 .andExpect(content().string("Invalid response: either vp_token and presentation_submission must be provided, or error must be provided."));
-        verify(verifiablePresentationSubmissionService, times(0)).executeSubmission(anyString(), anyString(), anyString(), anyString(), anyString());
+        verify(verifiablePresentationSubmissionService, times(0)).submit(anyString(), anyString(), anyString(), anyString(), anyString());
     }
 
     @Test
@@ -302,7 +302,7 @@ public class VPSubmissionControllerTest {
         java.util.Map<String, Object> responseBody = new java.util.HashMap<>();
         responseBody.put("redirect_uri", redirectUri + "?response_code=test-response-code-123");
         doReturn(ResponseEntity.ok(responseBody))
-                .when(verifiablePresentationSubmissionService).executeSubmission(vpToken, presentationSubmission, state, null, null);
+                .when(verifiablePresentationSubmissionService).submit(vpToken, presentationSubmission, state, null, null);
 
         mockMvc.perform(post(Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -314,7 +314,7 @@ public class VPSubmissionControllerTest {
                 .andExpect(jsonPath("$.redirect_uri").value(org.hamcrest.Matchers.containsString(redirectUri.split("\\?")[0])))
                 .andExpect(jsonPath("$.redirect_uri").value(org.hamcrest.Matchers.containsString("response_code=")));
 
-        verify(verifiablePresentationSubmissionService, times(1)).executeSubmission(vpToken, presentationSubmission, state, null, null);
+        verify(verifiablePresentationSubmissionService, times(1)).submit(vpToken, presentationSubmission, state, null, null);
         verify(verifiablePresentationRequestService, times(1)).getCurrentRequestStatus(state);
     }
 
@@ -350,7 +350,7 @@ public class VPSubmissionControllerTest {
         when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authorizationRequestCreateResponse));
 
         doReturn(ResponseEntity.ok(new java.util.HashMap<>()))
-                .when(verifiablePresentationSubmissionService).executeSubmission(vpToken, presentationSubmission, state, null, null);
+                .when(verifiablePresentationSubmissionService).submit(vpToken, presentationSubmission, state, null, null);
 
         mockMvc.perform(post(Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -360,7 +360,7 @@ public class VPSubmissionControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(jsonPath("$.redirect_uri").doesNotExist());
 
-        verify(verifiablePresentationSubmissionService, times(1)).executeSubmission(vpToken, presentationSubmission, state, null, null);
+        verify(verifiablePresentationSubmissionService, times(1)).submit(vpToken, presentationSubmission, state, null, null);
         verify(verifiablePresentationRequestService, times(1)).getCurrentRequestStatus(state);
     }
 
@@ -398,7 +398,7 @@ public class VPSubmissionControllerTest {
         java.util.Map<String, Object> responseBody = new java.util.HashMap<>();
         responseBody.put("redirect_uri", redirectUri + "?response_code=generated-code-456");
         doReturn(ResponseEntity.ok(responseBody))
-                .when(verifiablePresentationSubmissionService).executeSubmission(vpToken, presentationSubmission, state, null, null);
+                .when(verifiablePresentationSubmissionService).submit(vpToken, presentationSubmission, state, null, null);
 
         mockMvc.perform(post(Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI)
                         .contentType(MediaType.APPLICATION_FORM_URLENCODED_VALUE)
@@ -410,7 +410,7 @@ public class VPSubmissionControllerTest {
                 .andExpect(jsonPath("$.redirect_uri").value(org.hamcrest.Matchers.containsString(redirectUri.split("\\?")[0])))
                 .andExpect(jsonPath("$.redirect_uri").value(org.hamcrest.Matchers.containsString("response_code=")));
 
-        verify(verifiablePresentationSubmissionService, times(1)).executeSubmission(vpToken, presentationSubmission, state, null, null);
+        verify(verifiablePresentationSubmissionService, times(1)).submit(vpToken, presentationSubmission, state, null, null);
         verify(verifiablePresentationRequestService, times(1)).getCurrentRequestStatus(state);
     }
 }
