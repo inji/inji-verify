@@ -143,7 +143,7 @@ export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
   /**
    The base URL of the wallet.
    */
-  walletBaseUrl?: string;
+  webWalletBaseUrl?: string;
 };
 
 export interface SessionState {

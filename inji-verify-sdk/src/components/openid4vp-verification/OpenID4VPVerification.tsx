@@ -11,7 +11,7 @@ import { vpRequest, vpRequestStatus, vpResult } from "../../utils/api";
 import "./OpenID4VPVerification.css";
 import { isSdJwt } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
-import { CROSS_DEVICE_FLOW, DEEP_LINK_NO_APP_TIMEOUT_MS, NO_WALLET_ERROR_CODE, NO_WALLET_ERROR_MESSAGE, OVP_SESSION_REQUEST_ID_KEY, OVP_SESSION_TRANSACTION_ID_KEY, SAME_DEVICE_FLOW } from "../../utils/constants";
+import { CROSS_DEVICE_FLOW, OVP_SESSION_REQUEST_ID_KEY, OVP_SESSION_TRANSACTION_ID_KEY, SAME_DEVICE_FLOW } from "../../utils/constants";
 
 export const isMobileDevice = (): boolean => {
   const userAgent = navigator.userAgent;
@@ -43,7 +43,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   clientId,
   isSameDeviceFlowEnabled = true,
   acceptVPWithoutHolderProof = false,
-  walletBaseUrl,
+  webWalletBaseUrl,
 }) => {
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -255,51 +255,24 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     const pdParams = await createVPRequest(presentationFlow);
     if (!pdParams) return;
 
-    if (walletBaseUrl) {
+    if (webWalletBaseUrl) {
       // Web-wallet flow: full-page navigation. Persist session so it can be
       // restored after the wallet redirects back and the page re-mounts.
       if (sessionStateRef.current) {
         sessionStorage.setItem(OVP_SESSION_REQUEST_ID_KEY, sessionStateRef.current.requestId);
         sessionStorage.setItem(OVP_SESSION_TRANSACTION_ID_KEY, sessionStateRef.current.transactionId);
       }
-      let baseUrl = walletBaseUrl;
-      while (baseUrl.endsWith("/")) {
-        baseUrl = baseUrl.slice(0, -1);
-      }
+      let end = webWalletBaseUrl.length;
+      while (end > 0 && webWalletBaseUrl[end - 1] === "/") end--;
+      const baseUrl = webWalletBaseUrl.slice(0, end);
       window.location.href = `${baseUrl}/authorize?${pdParams}`;
     } else {
-      // Deep-link flow: set the timeout BEFORE navigating so the
-      // visibilitychange handler can always find and cancel it if a wallet app
-      // opens (page goes hidden). If no app handles the link the page stays
-      // visible, the timeout fires, and we surface NO_WALLET_APP.
-      redirectTimeoutRef.current = setTimeout(() => {
-        redirectTimeoutRef.current = null;
-        if (isActiveRef.current && sessionStateRef.current) {
-          onError({
-            errorMessage: NO_WALLET_ERROR_MESSAGE,
-            errorCode: NO_WALLET_ERROR_CODE,
-          });
-          resetState();
-        }
-      }, DEEP_LINK_NO_APP_TIMEOUT_MS);
-
       window.location.href = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
     }
   };
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      if (document.visibilityState === "hidden") {
-        // Page went to background — deep link was handled by a wallet app.
-        // Cancel the "no supported app" timeout so it doesn't fire a false error
-        // while the wallet is processing the request.
-        if (redirectTimeoutRef.current) {
-          clearTimeout(redirectTimeoutRef.current);
-          redirectTimeoutRef.current = null;
-        }
-        return;
-      }
-
       const searchParams = new URLSearchParams(window.location.search);
       const responseCode = searchParams.get("response_code") || null;
       if (document.visibilityState === "visible") {
@@ -321,7 +294,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   // On re-mount the in-memory refs are gone; read them back from sessionStorage
   // and resume status polling so the VP result is not silently dropped.
   useEffect(() => {
-    if (!walletBaseUrl) return;
+    if (!webWalletBaseUrl) return;
 
     const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
     const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
@@ -340,7 +313,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       const responseCode = searchParams.get("response_code") || null;
       fetchVPStatus(savedRequestId, savedTransactionId, responseCode);
     }
-  }, [walletBaseUrl, fetchVPStatus]);
+  }, [webWalletBaseUrl, fetchVPStatus]);
 
   useEffect(() => {
     if (!presentationDefinitionId && !presentationDefinition) {
