@@ -1495,7 +1495,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         method.setAccessible(true);
 
         Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, null, null);
+            method.invoke(verifiablePresentationSubmissionService, requestIds, null, authResponse);
         });
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
