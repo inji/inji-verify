@@ -364,6 +364,15 @@ jobs:
           fi
           ls -R ci-reports || true
 
+      - name: Sanitize report filenames
+        if: always()
+        run: |
+          find ci-reports -depth -name "*:*" -exec bash -c '
+            for f; do
+              mv "$f" "${f//:/_}"
+            done
+          ' _ {} +
+
       - name: Upload Test Report
         if: always()
         uses: actions/upload-artifact@v4
