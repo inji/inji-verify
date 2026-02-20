@@ -9,7 +9,7 @@ import org.springframework.http.ResponseEntity;
 import java.util.List;
 
 public interface VerifiablePresentationSubmissionService {
-    ResponseEntity<?> executeSubmission(String vpToken, String presentationSubmission, String state, String error, String errorDescription);
+    ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription);
 
     VPTokenResultDto getVPResult(List<String> requestId, String transactionId, String responseCode) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException;
 

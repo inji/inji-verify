@@ -86,11 +86,14 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testSubmit_Success() throws Exception {
-        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto("vpToken123", new PresentationSubmissionDto("id", "dId", new ArrayList<>()), "state123", "", "", "", null, null);
+    public void testSaveVPSubmission_Dto_Success() throws Exception {
+        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto("vpToken123", new PresentationSubmissionDto("id", "dId", new ArrayList<>()), "state123", "", "", null, null, null);
+        vpSubmissionDto.setResponseCode("");
+        vpSubmissionDto.setResponseCodeExpiryAt(null);
+        vpSubmissionDto.setResponseCodeUsed(null);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("submit", VPSubmissionDto.class);
+                .getDeclaredMethod("saveVPSubmissionDto", VPSubmissionDto.class);
         method.setAccessible(true);
         method.invoke(verifiablePresentationSubmissionService, vpSubmissionDto);
 
@@ -1630,7 +1633,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testSubmit_WithResponseCode_Success() throws Exception {
+    public void testSaveVPSubmission_Dto_WithResponseCode_Success() throws Exception {
         String responseCode = "generated-code-123";
         java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
         VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(
@@ -1639,13 +1642,16 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "state123",
                 null,
                 null,
-                responseCode,
-                expiryAt,
-                false
+                null,
+                null,
+                null
         );
+        vpSubmissionDto.setResponseCode(responseCode);
+        vpSubmissionDto.setResponseCodeExpiryAt(expiryAt);
+        vpSubmissionDto.setResponseCodeUsed(false);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("submit", VPSubmissionDto.class);
+                .getDeclaredMethod("saveVPSubmissionDto", VPSubmissionDto.class);
         method.setAccessible(true);
         method.invoke(verifiablePresentationSubmissionService, vpSubmissionDto);
 
@@ -1660,7 +1666,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testSubmit_WithNullResponseCode_Success() throws Exception {
+    public void testSaveVPSubmission_Dto_WithNullResponseCode_Success() throws Exception {
         VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(
                 "vpToken123",
                 new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
@@ -1669,11 +1675,14 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 null,
-                false
+                null
         );
+        vpSubmissionDto.setResponseCode(null);
+        vpSubmissionDto.setResponseCodeExpiryAt(null);
+        vpSubmissionDto.setResponseCodeUsed(false);
 
         java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("submit", VPSubmissionDto.class);
+                .getDeclaredMethod("saveVPSubmissionDto", VPSubmissionDto.class);
         method.setAccessible(true);
         method.invoke(verifiablePresentationSubmissionService, vpSubmissionDto);
 
@@ -1687,7 +1696,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testExecuteSubmission_SameDevice_GeneratesResponseCodeAndExpiry() throws Exception {
+    public void testSubmit_SameDevice_GeneratesResponseCodeAndExpiry() throws Exception {
         String vpToken = "testToken";
         String presentationSubmission = "{\"id\":\"testId\"}";
         String state = "testState";
@@ -1715,7 +1724,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "redirectUri", "https://example.com/callback");
 
-        ResponseEntity<?> response = verifiablePresentationSubmissionService.executeSubmission(vpToken, presentationSubmission, state, null, null);
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
 
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
@@ -1734,7 +1743,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testExecuteSubmission_CrossDevice_DoesNotGenerateResponseCode() throws Exception {
+    public void testSubmit_CrossDevice_DoesNotGenerateResponseCode() throws Exception {
         String vpToken = "testToken";
         String presentationSubmission = "{\"id\":\"testId\"}";
         String state = "testState";
@@ -1761,7 +1770,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-        ResponseEntity<?> response = verifiablePresentationSubmissionService.executeSubmission(vpToken, presentationSubmission, state, null, null);
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
 
         assertEquals(200, response.getStatusCode().value());
         assertNotNull(response.getBody());
@@ -1902,7 +1911,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testExecuteSubmission_WithError_DoesNotGenerateResponseCode() throws Exception {
+    public void testSubmit_WithError_DoesNotGenerateResponseCode() throws Exception {
         String error = "access_denied";
         String errorDescription = "User denied access";
         String state = "testState";
@@ -1927,7 +1936,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "redirectUri", "https://example.com/callback");
 
-        ResponseEntity<?> response = verifiablePresentationSubmissionService.executeSubmission(null, null, state, error, errorDescription);
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(null, null, state, error, errorDescription);
 
         assertEquals(200, response.getStatusCode().value());
 

@@ -51,7 +51,7 @@ public class VPSubmissionController {
         }
 
         try {
-            return verifiablePresentationSubmissionService.executeSubmission(vpToken, presentationSubmission, state, error, errorDescription);
+            return verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, error, errorDescription);
         } catch (JsonSyntaxException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_PRESENTATION_SUBMISSION");
         }

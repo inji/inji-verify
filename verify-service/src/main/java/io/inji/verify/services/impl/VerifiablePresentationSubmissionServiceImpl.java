@@ -82,13 +82,13 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         this.gson = gson;
     }
 
-    private void submit(VPSubmissionDto vpSubmissionDto) {
+    private void saveVPSubmissionDto(VPSubmissionDto vpSubmissionDto) {
         vpSubmissionRepository.save(new VPSubmission(vpSubmissionDto.getState(), vpSubmissionDto.getVpToken(), vpSubmissionDto.getPresentationSubmission(), vpSubmissionDto.getError(), vpSubmissionDto.getErrorDescription(), vpSubmissionDto.getResponseCode(), vpSubmissionDto.getResponseCodeExpiryAt(), vpSubmissionDto.getResponseCodeUsed()));
         verifiablePresentationRequestService.invokeVpRequestStatusListener(vpSubmissionDto.getState());
     }
 
     @Override
-    public ResponseEntity<?> executeSubmission(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
+    public ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
         // --- Get presentationFlow from auth request ---
         boolean isSameDevice = isSameDeviceFlow(state);
 
@@ -103,10 +103,12 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             response.put("redirect_uri", redirectUriWithResponseCode);
         }
 
+        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto();
         // --- Check if error present ---
         if (error != null) {
-            VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(null, null, state, error, errorDescription, responseCode, responseCodeExpiryAt, false);
-            submit(vpSubmissionDto);
+            vpSubmissionDto.setState(state);
+            vpSubmissionDto.setError(error);
+            vpSubmissionDto.setErrorDescription(errorDescription);
         } else {
             // --- Presentation Submission Validation ---
             PresentationSubmissionDto presentationSubmissionDto = gson.fromJson(presentationSubmission, PresentationSubmissionDto.class);
@@ -116,9 +118,14 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
             }
 
-            VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(vpToken, presentationSubmissionDto, state, null, null, responseCode, responseCodeExpiryAt, false);
-            submit(vpSubmissionDto);
+            vpSubmissionDto.setState(state);
+            vpSubmissionDto.setVpToken(vpToken);
+            vpSubmissionDto.setPresentationSubmission(presentationSubmissionDto);
         }
+        vpSubmissionDto.setResponseCode(responseCode);
+        vpSubmissionDto.setResponseCodeExpiryAt(responseCodeExpiryAt);
+        vpSubmissionDto.setResponseCodeUsed(false);
+        saveVPSubmissionDto(vpSubmissionDto);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
