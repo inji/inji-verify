@@ -49,6 +49,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const isActiveRef = useRef(false);
   const sessionStateRef = useRef<SessionState | null>(null);
+  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
 
   const shouldShowQRCode = !loading && qrCodeData;
 
@@ -80,6 +81,10 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   }, []);
 
   const resetState = useCallback(() => {
+    if (redirectTimeoutRef.current) {
+      clearTimeout(redirectTimeoutRef.current);
+      redirectTimeoutRef.current = null;
+    }
     setQrCodeData(null);
     setLoading(false);
     isActiveRef.current = false;
