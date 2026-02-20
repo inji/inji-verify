@@ -13,7 +13,6 @@ on:
       - 1.*
       - develop
       - MOSIP*
-      - ci-testing
 
 jobs:
   build-dockers-inji-verify:
