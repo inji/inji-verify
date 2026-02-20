@@ -43,6 +43,8 @@ import org.mockito.*;
 import org.springframework.http.ResponseEntity;
 import org.springframework.test.util.ReflectionTestUtils;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.sql.Timestamp;
 import java.time.Instant;
 import java.time.temporal.ChronoUnit;
@@ -96,7 +98,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         vpSubmissionDto.setResponseCodeExpiryAt(null);
         vpSubmissionDto.setResponseCodeUsed(null);
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("saveVPSubmissionDto", VPSubmissionDto.class);
         method.setAccessible(true);
         method.invoke(verifiablePresentationSubmissionService, vpSubmissionDto);
@@ -1334,7 +1336,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
         VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, null, null);
@@ -1350,7 +1352,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String requestId = "req123";
         String responseCode = null;
-        java.sql.Timestamp expiryAt = null;
+        Timestamp expiryAt = null;
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -1382,7 +1384,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
         VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, null, null);
@@ -1398,7 +1400,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String requestId = "req123";
         String responseCode = "code123";
-        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
+        Timestamp expiryAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -1432,7 +1434,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.setResponseCodeAsUsed(responseCode)).thenReturn(1);
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
         VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
@@ -1447,11 +1449,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(Collections.emptyList());
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
             method.invoke(verifiablePresentationSubmissionService, requestIds, null, null);
         });
 
@@ -1494,11 +1496,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
             method.invoke(verifiablePresentationSubmissionService, requestIds, null, authResponse);
         });
 
@@ -1543,11 +1545,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
             method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
         });
 
@@ -1562,7 +1564,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String requestId = "req123";
         String responseCode = "code123";
         String wrongResponseCode = "wrongCode";
-        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
+        Timestamp expiryAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -1594,11 +1596,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
             method.invoke(verifiablePresentationSubmissionService, requestIds, wrongResponseCode, authResponse);
         });
 
@@ -1612,7 +1614,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String requestId = "req123";
         String responseCode = "code123";
-        java.sql.Timestamp expiredAt = java.sql.Timestamp.from(java.time.Instant.now().minus(5, java.time.temporal.ChronoUnit.MINUTES));
+        Timestamp expiredAt = Timestamp.from(Instant.now().minus(5, ChronoUnit.MINUTES));
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -1645,11 +1647,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
             method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
         });
 
@@ -1663,7 +1665,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String requestId = "req123";
         String responseCode = "code123";
-        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
+        Timestamp expiryAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -1696,11 +1698,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
             method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
         });
 
@@ -1730,11 +1732,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
             method.invoke(verifiablePresentationSubmissionService, requestIds, null, null);
         });
 
@@ -1749,7 +1751,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String requestId = "req123";
         String responseCode = "code123";
-        java.sql.Timestamp expiredAt = java.sql.Timestamp.from(java.time.Instant.now().minus(5, java.time.temporal.ChronoUnit.MINUTES));
+        Timestamp expiredAt = Timestamp.from(Instant.now().minus(5, ChronoUnit.MINUTES));
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -1766,7 +1768,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", false);
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
         VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, null);
@@ -1780,7 +1782,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     @Test
     public void testSaveVPSubmission_Dto_WithResponseCode_Success() throws Exception {
         String responseCode = "generated-code-123";
-        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
+        Timestamp expiryAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
         VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(
                 "vpToken123",
                 new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
@@ -1795,7 +1797,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         vpSubmissionDto.setResponseCodeExpiryAt(expiryAt);
         vpSubmissionDto.setResponseCodeUsed(false);
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("saveVPSubmissionDto", VPSubmissionDto.class);
         method.setAccessible(true);
         method.invoke(verifiablePresentationSubmissionService, vpSubmissionDto);
@@ -1826,7 +1828,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         vpSubmissionDto.setResponseCodeExpiryAt(null);
         vpSubmissionDto.setResponseCodeUsed(false);
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("saveVPSubmissionDto", VPSubmissionDto.class);
         method.setAccessible(true);
         method.invoke(verifiablePresentationSubmissionService, vpSubmissionDto);
@@ -1973,7 +1975,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.setResponseCodeAsUsed(responseCode)).thenReturn(1);
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
         VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
@@ -1993,7 +1995,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 "code123",
-                java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES)),
+                Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES)),
                 false
         );
 
@@ -2009,7 +2011,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 "code123",
-                java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES)),
+                Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES)),
                 true
         );
 
@@ -2036,7 +2038,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     @Test
     public void testResponseCode_WithExpiry() {
         String responseCode = "code456";
-        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(10, java.time.temporal.ChronoUnit.MINUTES));
+        Timestamp expiryAt = Timestamp.from(Instant.now().plus(10, ChronoUnit.MINUTES));
 
         VPSubmission vpSubmission = new VPSubmission(
                 "state123",
@@ -2051,7 +2053,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertEquals(responseCode, vpSubmission.getResponseCode());
         assertEquals(expiryAt, vpSubmission.getResponseCodeExpiryAt());
-        assertTrue(vpSubmission.getResponseCodeExpiryAt().toInstant().isAfter(java.time.Instant.now()),
+        assertTrue(vpSubmission.getResponseCodeExpiryAt().toInstant().isAfter(Instant.now()),
                 "Response code expiry should be in the future");
     }
 
@@ -2101,7 +2103,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String requestId = "req123";
         String responseCode = "expired-code";
-        java.sql.Timestamp expiredAt = java.sql.Timestamp.from(java.time.Instant.now().minus(1, java.time.temporal.ChronoUnit.MINUTES));
+        Timestamp expiredAt = Timestamp.from(Instant.now().minus(1, ChronoUnit.MINUTES));
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -2135,18 +2137,18 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeTimeChecks", true);
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
             method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
         });
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
         assertEquals(ErrorCode.RESPONSE_CODE_EXPIRED, responseCodeException.getErrorCode());
-        verify(vpSubmissionRepository, never()).setResponseCodeAsUsed(anyString());
+        verify(vpSubmissionRepository, times(1)).setResponseCodeAsUsed(responseCode);
     }
 
     @Test
@@ -2155,7 +2157,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String requestId = "req123";
         String storedResponseCode = "stored-code-123";
         String providedResponseCode = "different-code-456";
-        java.sql.Timestamp expiryAt = java.sql.Timestamp.from(java.time.Instant.now().plus(5, java.time.temporal.ChronoUnit.MINUTES));
+        Timestamp expiryAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -2188,11 +2190,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
-        java.lang.reflect.Method method = VerifiablePresentationSubmissionServiceImpl.class
+        Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(java.lang.reflect.InvocationTargetException.class, () -> {
+        Exception exception = assertThrows(InvocationTargetException.class, () -> {
             method.invoke(verifiablePresentationSubmissionService, requestIds, providedResponseCode, authResponse);
         });
 
