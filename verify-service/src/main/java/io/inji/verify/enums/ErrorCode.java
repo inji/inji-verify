@@ -19,7 +19,8 @@ public enum ErrorCode {
     RESPONSE_CODE_NOT_EQUAL("RESPONSE_CODE_NOT_EQUAL", "Response codes are not equal"),
     RESPONSE_CODE_EXPIRED("RESPONSE_CODE_EXPIRED", "Response code has expired"),
     RESPONSE_CODE_USED("RESPONSE_CODE_USED", "Response code has been used"),
-    RESPONSE_CODE_NOT_FOUND("RESPONSE_CODE_NOT_FOUND", "Same device flow needs response code");
+    RESPONSE_CODE_NOT_FOUND("RESPONSE_CODE_NOT_FOUND", "Same device flow needs response code"),
+    REDIRECT_URI_NOT_FOUND("REDIRECT_URI_NOT_FOUND", "Same device flow needs redirect uri");
 
     private final String errorCode;
     private final String errorMessage;
