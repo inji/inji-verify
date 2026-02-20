@@ -25,7 +25,7 @@ public class VPSubmissionController {
 
     final VerifiablePresentationSubmissionService verifiablePresentationSubmissionService;
 
-    public VPSubmissionController(VerifiablePresentationRequestService verifiablePresentationRequestService, VerifiablePresentationSubmissionService verifiablePresentationSubmissionService, Gson gson, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository) {
+    public VPSubmissionController(VerifiablePresentationRequestService verifiablePresentationRequestService, VerifiablePresentationSubmissionService verifiablePresentationSubmissionService) {
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
         this.verifiablePresentationSubmissionService = verifiablePresentationSubmissionService;
     }
