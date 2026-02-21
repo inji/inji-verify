@@ -15,7 +15,12 @@ public enum ErrorCode {
     VP_SUBMISSION_EXCEPTION("VP_SUBMISSION_EXCEPTION","Error while processing VP submission"),
     TOKEN_MATCHING_FAILED("TOKEN_MATCHING_FAILED", "Token matching failed."),
     INVALID_VP_TOKEN("INVALID_VP_TOKEN","Verifiable presentation failed due to invalid VP token"),
-    VP_WITHOUT_PROOF("VP_WITHOUT_PROOF", "Invalid VP Submission since VP is without proof");
+    VP_WITHOUT_PROOF("VP_WITHOUT_PROOF", "Invalid VP Submission since VP is without proof"),
+    RESPONSE_CODE_NOT_EQUAL("RESPONSE_CODE_NOT_EQUAL", "Response codes are not equal"),
+    RESPONSE_CODE_EXPIRED("RESPONSE_CODE_EXPIRED", "Response code has expired"),
+    RESPONSE_CODE_USED("RESPONSE_CODE_USED", "Response code has been used"),
+    RESPONSE_CODE_NOT_FOUND("RESPONSE_CODE_NOT_FOUND", "Same device flow needs response code"),
+    REDIRECT_URI_NOT_FOUND("REDIRECT_URI_NOT_FOUND", "Same device flow needs redirect uri");
 
     private final String errorCode;
     private final String errorMessage;

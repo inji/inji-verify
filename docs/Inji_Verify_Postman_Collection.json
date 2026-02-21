@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "06f4066f-0282-47f0-a449-af3b8afe5873",
+    "_postman_id": "fb7485b9-f9ef-42f9-b885-9699373adc59",
     "name": "Inji_Verify_Postman_Collection",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "47128896"
@@ -945,6 +945,27 @@
                   "item": [
                     {
                       "name": "vp submission valid signature",
+                      "event": [
+                        {
+                          "listen": "test",
+                          "script": {
+                            "exec": [
+                              "var responseJson = pm.response.json();",
+                              "var redirectUri = responseJson.redirect_uri;",
+                              "if (redirectUri) {",
+                              "const url = new URL(redirectUri);",
+                              "const responseCode = url.searchParams.get('response_code');",
+                              "pm.collectionVariables.set(\"response_code\", responseCode);",
+                              "} else {",
+                              "    pm.collectionVariables.set(\"response_code\", null);",
+                              "}"
+                            ],
+                            "type": "text/javascript",
+                            "packages": {},
+                            "requests": {}
+                          }
+                        }
+                      ],
                       "request": {
                         "auth": {
                           "type": "noauth"
@@ -1687,6 +1708,36 @@
                 }
               },
               "response": []
+            },
+            {
+              "name": "vp results with response_code",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "GET",
+                "header": [],
+                "url": {
+                  "raw": "https://{{base_url}}/v1/verify/vp-result/{{txnIdForOpenID4VP}}?response_code={{response_code}}",
+                  "protocol": "https",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "vp-result",
+                    "{{txnIdForOpenID4VP}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "response_code",
+                      "value": "{{response_code}}"
+                    }
+                  ]
+                }
+              },
+              "response": []
             }
           ]
         },
@@ -1722,6 +1773,46 @@
                     "v2",
                     "vp-results",
                     "{{txnIdForOpenID4VP}}"
+                  ]
+                }
+              },
+              "response": []
+            },
+            {
+              "name": "vp results v2 with response_code",
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\"revocation\", \"suspension\"],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "https://{{base_url}}/v1/verify/v2/vp-results/{{txnIdForOpenID4VP}}?response_code={{response_code}}",
+                  "protocol": "https",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vp-results",
+                    "{{txnIdForOpenID4VP}}"
+                  ],
+                  "query": [
+                    {
+                      "key": "response_code",
+                      "value": "{{response_code}}"
+                    }
                   ]
                 }
               },
