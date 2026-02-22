@@ -1,7 +1,6 @@
 package io.inji.verify.controller;
 
 import java.util.Optional;
-
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
@@ -12,6 +11,7 @@ import io.inji.verify.exception.VPWithoutProofException;
 import io.inji.verify.exception.InvalidVpTokenException;
 import io.inji.verify.exception.VPSubmissionWalletError;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
+import io.inji.verify.exception.ResponseCodeException;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -26,6 +26,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.RequestParam;
 import java.util.List;
 
 @RestController
@@ -43,7 +44,7 @@ public class VPResultController {
     }
 
     @GetMapping(path = "/vp-result/{transactionId}")
-    public ResponseEntity<Object> getVPResult(@PathVariable String transactionId) {
+    public ResponseEntity<Object> getVPResult(@PathVariable String transactionId, @RequestParam(required = false, name = "response_code") String responseCode) {
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
         if (requestIds.isEmpty()) {
@@ -53,18 +54,18 @@ public class VPResultController {
         }
 
         log.info("Fetching VP result for transactionId: {}", transactionId);
-        VPTokenResultDto result = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
+        VPTokenResultDto result = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, responseCode);
         return ResponseEntity.ok(result);
     }
 
     @PostMapping(path = "/v2/vp-results/{transactionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getVPResultV2(@PathVariable String transactionId, @Valid @RequestBody VerificationRequestDto request) {
+    public ResponseEntity<Object> getVPResultV2(@PathVariable String transactionId, @Valid @RequestBody VerificationRequestDto request, @RequestParam(required = false, name = "response_code") String responseCode) {
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
         if (requestIds.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
 
         log.info("Fetching VP result for requestId: {}", requestIds);
-        VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
+        VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId, responseCode);
         return ResponseEntity.ok(result);
     }
 
@@ -96,5 +97,12 @@ public class VPResultController {
     public ResponseEntity<ErrorDto> invalidVpToken(InvalidVpTokenException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.INVALID_VP_TOKEN));
+    }
+
+    @ExceptionHandler(ResponseCodeException.class)
+    public ResponseEntity<ErrorDto> handleResponseCodeException(ResponseCodeException e) {
+        log.error("Response Code Error: {}", e.getMessage());
+        ErrorCode errorCode = e.getErrorCode();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(errorCode.name(), errorCode.getErrorMessage()));
     }
 }
