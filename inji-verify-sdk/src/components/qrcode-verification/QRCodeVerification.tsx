@@ -18,16 +18,15 @@ import {
   THROTTLE_FRAMES_PER_SEC,
   ZOOM_STEP,
 } from "../../utils/constants";
-import {
+import {vpRequest,
     vcSubmission,
     vcVerificationV2,
-    vpRequest,
     vpRequestStatus,
-    vpResult
+    vpVerificationV2
 } from "../../utils/api";
 import {
-  decodeQrData,
-  extractRedirectUrlFromQrData,
+    decodeQrData,
+    extractRedirectUrlFromQrData,
 } from "../../utils/dataProcessor";
 import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
@@ -483,10 +482,18 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 return;
             }
             if (onVCProcessed) {
-                const response = await vcVerificationV2(vc, verifyServiceUrl, vcVerificationV2Request);
-                const vcStatus = evaluateVcStatus(response);
+                const response: VCVerificationV2Response = await vcVerificationV2(
+                    vc,
+                    verifyServiceUrl,
+                    vcVerificationV2Request
+                );
 
-                onVCProcessed([{vc, vcStatus}]);
+                onVCProcessed([
+                    {
+                        vc,
+                        verificationResponse: response
+                    }
+                ]);
             }
         } catch (error) {
             handleError(error);
@@ -495,34 +502,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         }
     };
 
-    const evaluateVcStatus = (response: VCVerificationV2Response): VcStatus => {
-
-        if (!response.schemaAndSignatureCheck?.valid) {
-            return "INVALID";
-        }
-
-        if (!response.expiryCheck?.valid) {
-            return "EXPIRED";
-        }
-
-         if (response.statusCheck?.length) {
-             for (const status of response.statusCheck) {
-                 if (status.error) {
-                     onError?.(
-                         new Error(status.error.errorMessage || "Status check error occurred")
-                     );
-                 }
-
-                 const isRevoked =
-                     status.purpose === "revocation" &&
-                     !status.valid &&
-                     status.error == null;
-
-                 if (isRevoked) return "REVOKED";
-             }
-         }
-        return response.allChecksSuccessful ? "SUCCESS" : "INVALID";
-    };
 
     const handleError = (error: unknown) => {
         frameProcessingRef.current = false;
@@ -553,7 +532,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     hasFetchedVPResultRef.current = true;
     try {
       if (transactionId) {
-        const vcResults = await vpResult(verifyServiceUrl, transactionId);
+        const vcResults = await vpVerificationV2(verifyServiceUrl, transactionId);
         if (vcResults && vcResults.length > 0) {
           const VCResult = vcResults.map((vcResult: any) => ({
             vc: isSdJwt(vcResult.vc) ? vcResult.vc : JSON.parse(vcResult.vc),

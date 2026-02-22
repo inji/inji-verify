@@ -1,13 +1,15 @@
 import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
-  AppError,
-  OpenID4VPVerificationProps,
-  SessionState,
-  VerificationResults,
-  VerificationStatus,
+    AppError,
+    OpenID4VPVerificationProps,
+    SessionState,
+    VerificationResults,
+    VerificationStatus,
+    VPVerificationV2Response,
+    CredentialResult
 } from "./OpenID4VPVerification.types";
-import { vpRequest, vpRequestStatus, vpResult } from "../../utils/api";
+import {vpRequestStatus, vpRequest, vpVerificationV2,} from "../../utils/api";
 import "./OpenID4VPVerification.css";
 import { isSdJwt } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
@@ -42,8 +44,9 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   onError,
   clientId,
   isSameDeviceFlowEnabled = true,
-  acceptVPWithoutHolderProof = false,
+  acceptVPWithoutHolderProof = true,
   webWalletBaseUrl,
+ vpVerificationV2Request
 }) => {
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -126,44 +129,58 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     },
     [clientId]
   );
-
-  const fetchVPResult = useCallback(
-    async (txnId: string, responseCode?: string | null) => {
-      if (!isActiveRef.current) return;
-      setLoading(true);
-      try {
-        if (onVPProcessed && txnId) {
-          const vcResults = await vpResult(verifyServiceUrl, txnId, responseCode);
-          if (!isActiveRef.current) return;
-
-          if (vcResults && vcResults.length > 0) {
-            const VPResult: VerificationResults = vcResults.map(
-              (vcResult: { vc: any; verificationStatus: VerificationStatus }) => ({
-                vc: isSdJwt(vcResult.vc) ? vcResult.vc : JSON.parse(vcResult.vc),
-                vcStatus: vcResult.verificationStatus,
-              })
-            );
-            onVPProcessed(VPResult);
-            resetState();
-            return;
-          } else {
-            throw new Error("Failed to get the VP result");
-          }
+    const normalizeVp = (vp: any): Record<string, unknown> => {
+        if (typeof vp === "string") {
+            return isSdJwt(vp) ? { raw: vp } : JSON.parse(vp);
         }
+        return vp;
+    };
 
-        if (onVPReceived && txnId && isActiveRef.current) {
-          onVPReceived(txnId);
-          resetState();
-        }
-      } catch (error) {
-        if (isActiveRef.current) {
-          onError(error as AppError);
-          resetState();
-        }
-      }
-    },
-    [verifyServiceUrl, onVPProcessed, onVPReceived, onError]
-  );
+    const fetchVPResult = useCallback(
+        async (txnId: string, responseCode?: string | null) => {
+            if (!isActiveRef.current) return;
+
+            setLoading(true);
+
+            try {
+                if (onVPProcessed && txnId) {
+                    const response = await vpVerificationV2(
+                        verifyServiceUrl,
+                        txnId,
+                        responseCode,
+                        vpVerificationV2Request
+                    );
+
+                    if (!isActiveRef.current) return;
+
+                    const VPResult: VerificationResults =
+                        response.credentialResults.map((cred: CredentialResult) => {
+                            const vc = normalizeVp(cred.verifiableCredential);
+
+                            return {
+                                vc,
+                                verificationResponse: cred,
+                            };
+                        });
+
+                    onVPProcessed(VPResult);
+                    resetState();
+                    return;
+                }
+
+                if (onVPReceived && txnId && isActiveRef.current) {
+                    onVPReceived(txnId);
+                    resetState();
+                }
+            } catch (error) {
+                if (isActiveRef.current) {
+                    onError(error as AppError);
+                    resetState();
+                }
+            }
+        },
+        [verifyServiceUrl, onVPProcessed, onVPReceived, onError, vpVerificationV2Request]
+    );
 
   const fetchVPStatus = useCallback(
     async (reqId: string, txnId: string, responseCode?: string | null) => {
