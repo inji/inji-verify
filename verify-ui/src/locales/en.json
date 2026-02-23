@@ -51,6 +51,8 @@
     "walletSearchPlaceholder": "Search Wallets",
     "walletSearchNoResults": "No wallets found for \"{{search}}\"",
     "openWebWallets": "Open Web Wallets",
+    "walletSelectorCancel": "Cancel",
+    "walletSelectorProceed": "Proceed",
     "IconToolTip": "Fields next to this icon indicate that the information was shared selectively by the wallet holder."
   },
   "VerificationStepsContent": {
@@ -105,7 +107,7 @@
       },
       "SelectWallet": {
         "label": "Share Verifiable Credentials from Wallet",
-        "description": "Choose a wallet from the list of available wallets on the same device and proceed with credential sharing."
+        "description": "Choose a wallet from the list of available wallets and proceed with credential sharing."
       },
       "DisplayResult": {
         "label": "View Verification Results",

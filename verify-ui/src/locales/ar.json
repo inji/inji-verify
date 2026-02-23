@@ -51,6 +51,8 @@
     "walletSearchPlaceholder": "محافظ البحث",
     "walletSearchNoResults": "لم يتم العثور على محافظ لـ \"{{search}}\"",
     "openWebWallets": "افتح المحافظ الإلكترونية",
+    "walletSelectorCancel": "إلغاء",
+    "walletSelectorProceed": "متابعة",
     "IconToolTip": "تشير الحقول بجانب هذا الرمز إلى أن المعلومات تمت مشاركتها بشكل انتقائي بواسطة حامل المحفظة."
   },
   "VerificationStepsContent": {
@@ -105,7 +107,7 @@
       },
       "SelectWallet": {
         "label": "مشاركة بيانات الاعتماد القابلة للتحقق من المحفظة",
-        "description": "اختر محفظة من قائمة المحافظ المتوفرة على نفس الجهاز وتابع مشاركة بيانات الاعتماد."
+        "description": "اختر محفظة من قائمة المحافظ المتوفرة وتابع مشاركة بيانات الاعتماد."
       },
       "DisplayResult": {
         "label": "عرض نتائج التحقق",

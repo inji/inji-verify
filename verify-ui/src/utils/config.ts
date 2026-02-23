@@ -150,6 +150,24 @@ export const getVCRenderOrders = () => VCRenderOrders;
 export const getVerifiableClaims = () => verifiableClaims;
 export const getWebWallets = () => webWallets;
 
+/**
+ * Resolves a wallet base URL so that both same-environment and external URLs
+ * are handled correctly:
+ *
+ *   - Absolute URLs (http:// or https://)  → returned unchanged (external or
+ *     full same-env URL supplied by the operator).
+ *   - Relative paths (e.g. "/wallet" or "wallet") → resolved against the
+ *     current deployment's origin so the wallet is looked up on the same host.
+ *
+ * This lets config authors use either style:
+ *   "walletBaseUrl": "https://injiweb.example.org"   // external
+ *   "walletBaseUrl": "/wallet"                        // same-env
+ */
+export const resolveWalletBaseUrl = (url: string): string => {
+  if (/^https?:\/\//i.test(url)) return url;
+  return `${window.location.origin}${url.startsWith("/") ? "" : "/"}${url}`;
+};
+
 export const initializeClaims = async () => {
   try {
     const response = await fetch(window._env_.VERIFIABLE_CLAIMS_CONFIG_URL);
@@ -159,7 +177,12 @@ export const initializeClaims = async () => {
     const data = await response.json();
     verifiableClaims = data.verifiableClaims as claim[];
     VCRenderOrders = data.VCRenderOrders as any;
-    webWallets = data.WebWallets as WebWallet[];
+    webWallets = ((data.WebWallets as WebWallet[]) ?? [])
+      .filter((wallet) => !!wallet.walletBaseUrl)
+      .map((wallet) => ({
+        ...wallet,
+        walletBaseUrl: resolveWalletBaseUrl(wallet.walletBaseUrl),
+      }));
   } catch (error) {
     console.error("Error loading claims from ConfigMap:", error);
   }

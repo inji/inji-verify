@@ -40,6 +40,7 @@ const vpVerificationState = createSlice({
       const inputDescriptors = state.selectedClaims.flatMap((claim) => claim.definition.input_descriptors);
       state.presentationDefinition.input_descriptors = [...inputDescriptors];
       state.SelectionPanel = true;
+      state.SelectWalletPanel = false;
       state.verificationSubmissionResult = [];
       state.unVerifiedClaims = [];
       state.isShowResult = false;

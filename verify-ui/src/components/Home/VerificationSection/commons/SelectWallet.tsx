@@ -17,7 +17,7 @@ import { WebWallet } from "../../../../types/data-types";
 const DesktopModal: React.FC<{ children: React.ReactNode }> = ({
   children,
 }) => (
-  <div className="fixed z-10 inset-0 flex items-center justify-center">
+  <div className="fixed z-50 inset-0 flex items-center justify-center">
     <div className="absolute inset-0 bg-black opacity-50"></div>
     <div className="relative bg-white max-w-[80vw] p-6 rounded-lg shadow-xl">
       {children}
@@ -139,6 +139,9 @@ const SelectWalletContent: React.FC = () => {
                     <img
                       src={wallet.iconUrl}
                       alt={wallet.name}
+                      onError={(e) => {
+                        (e.currentTarget as HTMLImageElement).src = "/icons/default-wallet.svg";
+                      }}
                       className="w-10 h-10 object-contain"
                     />
                   </div>
@@ -156,14 +159,14 @@ const SelectWalletContent: React.FC = () => {
       <div className="flex justify-between gap-4 mt-4">
         <Button
           id="wallet-selector-cancel-button"
-          title="Cancel"
+          title={t("walletSelectorCancel")}
           className="w-1/2 text-smallTextSize lg:text-sm"
           onClick={handleCancel}
           variant="outline"
         />
         <Button
           id="wallet-selector-proceed-button"
-          title="Proceed"
+          title={t("walletSelectorProceed")}
           className="w-1/2 text-smallTextSize lg:text-sm"
           onClick={handleProceed}
           disabled={

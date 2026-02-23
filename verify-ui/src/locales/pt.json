@@ -51,6 +51,8 @@
     "walletSearchPlaceholder": "Carteiras de pesquisa",
     "walletSearchNoResults": "Nenhuma carteira encontrada para \"{{search}}\"",
     "openWebWallets": "Abrir carteiras web",
+    "walletSelectorCancel": "Cancelar",
+    "walletSelectorProceed": "Prosseguir",
     "IconToolTip": "Os campos ao lado deste ícone indicam que as informações foram compartilhadas seletivamente pelo suporte da carteira."
   },
   "VerificationStepsContent": {
@@ -105,7 +107,7 @@
       },
       "SelectWallet": {
         "label": "Compartilhar credenciais verificáveis ​​da carteira",
-        "description": "Escolha uma carteira na lista de carteiras disponíveis no mesmo dispositivo e prossiga com o compartilhamento de credenciais."
+        "description": "Escolha uma carteira na lista de carteiras disponíveis e prossiga com o compartilhamento de credenciais."
       },
       "DisplayResult": {
         "label": "Ver resultados da verificação",
