@@ -6,8 +6,6 @@ import {
     getStepConfig,
     resolveWalletBaseUrl,
     getWebWallets,
-    Pages,
-    SupportedFileTypes,
     VerificationSteps,
     backgroundColorMapping,
     borderColorMapping,
@@ -51,6 +49,7 @@ describe("config utilities", () => {
         beforeEach(() => {
             Object.defineProperty(window, "location", {
                 value: { origin },
+                configurable: true,
                 writable: true,
             });
         });
