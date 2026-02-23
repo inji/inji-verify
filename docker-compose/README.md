@@ -20,6 +20,46 @@ Once installed, use Docker compose option below to run the Inji Verify applicati
 ## Setup
 
 
+### WebWallets Configuration
+
+The `WebWallets` array in `config/config.json` defines the web wallet(s) available for the Same Device VP flow.
+
+```json
+"WebWallets": [
+  {
+    "id": "inji-wallet",
+    "name": "Inji Wallet",
+    "iconUrl": "/assets/inji-web-wallet-icon.svg",
+    "walletBaseUrl": "https://injiweb.dev-int-inji.mosip.net"
+  }
+]
+```
+
+> **External dependency:** The default `walletBaseUrl` (`https://injiweb.dev-int-inji.mosip.net`) points to a shared **dev/integration** instance of Inji Web Wallet hosted by MOSIP. Wallet flows will **silently fail** if this host is unavailable, retired, or unreachable from your network.
+
+**Before running locally**, replace `walletBaseUrl` with one of the following:
+
+| Scenario | `walletBaseUrl` value |
+|---|---|
+| Own deployed Inji Web Wallet | `https://<your-inji-web-wallet-host>` |
+| Local Inji Web Wallet (default port) | `http://localhost:3001` |
+| Mock / disable the entry | remove the entry from the array |
+
+```json
+"WebWallets": [
+  {
+    "id": "inji-wallet",
+    "name": "Inji Wallet",
+    "iconUrl": "/assets/inji-web-wallet-icon.svg",
+    "walletBaseUrl": "http://localhost:3001"
+  }
+]
+```
+
+See [Inji Web Wallet](https://github.com/mosip/inji-web) for instructions on running your own instance.
+
+---
+
 ### OpenID4VP config
 
 The configuration file can be found under `config` directory.

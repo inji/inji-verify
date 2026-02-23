@@ -4,8 +4,8 @@ import {
     initializeClaims,
     isMobileDevice,
     getStepConfig,
-    Pages,
-    SupportedFileTypes,
+    resolveWalletBaseUrl,
+    getWebWallets,
     VerificationSteps,
     backgroundColorMapping,
     borderColorMapping,
@@ -43,7 +43,50 @@ describe("config utilities", () => {
         expect(alerts.sessionExpired.severity).toBe("error");
     });
 
+    describe("resolveWalletBaseUrl", () => {
+        const origin = "https://verify.example.org";
+
+        beforeEach(() => {
+            Object.defineProperty(window, "location", {
+                value: { origin },
+                configurable: true,
+                writable: true,
+            });
+        });
+
+        test("returns absolute http URL unchanged", () => {
+            expect(resolveWalletBaseUrl("http://wallet.example.org")).toBe("http://wallet.example.org");
+        });
+
+        test("returns absolute https URL unchanged", () => {
+            expect(resolveWalletBaseUrl("https://injiweb.dev-int-inji.mosip.net")).toBe(
+                "https://injiweb.dev-int-inji.mosip.net"
+            );
+        });
+
+        test("resolves root-relative path against current origin", () => {
+            expect(resolveWalletBaseUrl("/wallet")).toBe(`${origin}/wallet`);
+        });
+
+        test("resolves bare relative path against current origin", () => {
+            expect(resolveWalletBaseUrl("wallet")).toBe(`${origin}/wallet`);
+        });
+
+        test("preserves deep relative path", () => {
+            expect(resolveWalletBaseUrl("/apps/inji-wallet")).toBe(`${origin}/apps/inji-wallet`);
+        });
+    });
+
     describe("initializeClaims", () => {
+        const origin = "https://verify.example.org";
+
+        beforeEach(() => {
+            Object.defineProperty(window, "location", {
+                value: { origin },
+                writable: true,
+            });
+        });
+
         test("calls fetch and updates claims", async () => {
             const mockData = {
                 verifiableClaims: [{ id: "1" }],
@@ -56,6 +99,48 @@ describe("config utilities", () => {
 
             await initializeClaims();
             expect(global.fetch).toHaveBeenCalledWith(window._env_.VERIFIABLE_CLAIMS_CONFIG_URL);
+        });
+
+        test("resolves absolute wallet URLs unchanged", async () => {
+            const mockData = {
+                verifiableClaims: [],
+                VCRenderOrders: {},
+                WebWallets: [
+                    { id: "w1", name: "External", iconUrl: "/icon.svg", walletBaseUrl: "https://injiweb.dev-int-inji.mosip.net" },
+                ],
+            };
+            global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
+            await initializeClaims();
+            expect(getWebWallets()[0].walletBaseUrl).toBe("https://injiweb.dev-int-inji.mosip.net");
+        });
+
+        test("resolves relative wallet URLs against current origin", async () => {
+            const mockData = {
+                verifiableClaims: [],
+                VCRenderOrders: {},
+                WebWallets: [
+                    { id: "w2", name: "Same-env", iconUrl: "/icon.svg", walletBaseUrl: "/wallet" },
+                ],
+            };
+            global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
+            await initializeClaims();
+            expect(getWebWallets()[0].walletBaseUrl).toBe(`${origin}/wallet`);
+        });
+
+        test("filters out wallets with empty walletBaseUrl", async () => {
+            const mockData = {
+                verifiableClaims: [],
+                VCRenderOrders: {},
+                WebWallets: [
+                    { id: "w3", name: "Unconfigured", iconUrl: "/icon.svg", walletBaseUrl: "" },
+                    { id: "w4", name: "Configured", iconUrl: "/icon.svg", walletBaseUrl: "https://wallet.example.org" },
+                ],
+            };
+            global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
+            await initializeClaims();
+            const wallets = getWebWallets();
+            expect(wallets).toHaveLength(1);
+            expect(wallets[0].id).toBe("w4");
         });
 
         test("handles fetch error", async () => {

@@ -2,6 +2,7 @@ import React from "react";
 import VerificationProgressTracker from "../components/Home/VerificationProgressTracker";
 import { VpVerification } from "../components/Home/VerificationSection/VpVerification";
 import SelectionPanel from "../components/Home/VerificationSection/commons/SelectionPanel";
+import SelectWallet from "../components/Home/VerificationSection/commons/SelectWallet";
 import { Button } from "../components/Home/VerificationSection/commons/Button";
 import { useTranslation } from "react-i18next";
 import { useVerifyFlowSelector } from "../redux/features/verification/verification.selector";
@@ -11,6 +12,7 @@ import { useAppDispatch } from "../redux/hooks";
 export function Verify() {
   const { t } = useTranslation("Verify");
   const openSelection = useVerifyFlowSelector((state) => state.SelectionPanel);
+  const openSelectWallet = useVerifyFlowSelector((state) => state.SelectWalletPanel);
   const dispatch = useAppDispatch();
   const unverifiedClaims = useVerifyFlowSelector((state) => state.unVerifiedClaims );
   const activeScreen = useVerifyFlowSelector((state) => state.activeScreen );
@@ -63,6 +65,7 @@ export function Verify() {
           <VerificationProgressTracker />
           {unverifiedClaims.length > 0 ? renderMissingAndResetButton() : renderRequestCredentialsButton() }
           {openSelection && <SelectionPanel />}
+          {openSelectWallet && <SelectWallet />}
         </div>
         <div className="col-start-1 col-end-13 lg:col-start-7 xs:w-[100vw] lg:max-w-[50vw]">
           <VpVerification />

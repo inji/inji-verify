@@ -28,7 +28,20 @@ describe("vpVerification slice", () => {
         const state = vpVerificationReducer(undefined, setSelectCredential());
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectCredential);
         expect(state.SelectionPanel).toBe(true);
+        expect(state.SelectWalletPanel).toBe(false);
         expect(state.selectedClaims).toHaveLength(1); // essential only
+    });
+
+    test("should handle setSelectCredential with SelectWalletPanel open", () => {
+        const initialState = {
+            SelectWalletPanel: true,
+            SelectionPanel: false,
+            method: "VERIFY",
+            presentationDefinition: { id: "test", input_descriptors: [] }
+        } as any;
+        const state = vpVerificationReducer(initialState, setSelectCredential());
+        expect(state.SelectionPanel).toBe(true);
+        expect(state.SelectWalletPanel).toBe(false);
     });
 
     test("should handle setSelectedClaims", () => {
@@ -40,6 +53,20 @@ describe("vpVerification slice", () => {
 
     test("should handle setFlowType", () => {
         const state = vpVerificationReducer(undefined, setFlowType());
+        // flowType is the runtime discriminator: "sameDevice" → wallet-selector path,
+        // "crossDevice" → QR-code path. Both paths share activeScreen === 3, so
+        // flowType must be asserted alongside activeScreen to make the intent unambiguous.
+        expect(state.flowType).toBe("sameDevice");
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectWallet);
+        expect(state.SelectWalletPanel).toBe(false);
+    });
+
+    test("should handle setFlowType with SelectWalletPanel open", () => {
+        const initialState = { SelectWalletPanel: true, method: "VERIFY", flowType: "crossDevice" } as any;
+        const state = vpVerificationReducer(initialState, setFlowType());
+        expect(state.SelectWalletPanel).toBe(false);
+        // flowType === "sameDevice" is the runtime discriminator distinguishing this
+        // state from ScanQrCode, since SelectWallet and ScanQrCode share activeScreen === 3.
         expect(state.flowType).toBe("sameDevice");
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectWallet);
     });
@@ -49,6 +76,10 @@ describe("vpVerification slice", () => {
         const state = vpVerificationReducer(undefined, getVpRequest({ selectedClaims }));
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.ScanQrCode);
         expect(state.selectedClaims).toHaveLength(1);
+        // flowType is unchanged by getVpRequest; "crossDevice" here distinguishes this
+        // ScanQrCode state from the SelectWallet state produced by setFlowType, since
+        // both steps share the numeric value 3.
+        expect(state.flowType).toBe("crossDevice");
     });
 
     test("should handle verificationSubmissionComplete (full success)", () => {
