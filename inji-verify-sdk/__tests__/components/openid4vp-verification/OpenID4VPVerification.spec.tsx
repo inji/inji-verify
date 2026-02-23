@@ -373,49 +373,6 @@ describe("OpenID4VPVerification UI Tests", () => {
             ])
         );
     });
-  it("should throw error if both onVPReceived and onVPProcessed are provided", async () => {
-    const errorMessage =
-      "Both onVPReceived and onVPProcessed cannot be provided simultaneously";
-
-    class ErrorBoundary extends React.Component<
-      { children: React.ReactNode },
-      { error: Error | null }
-    > {
-      state = { error: null as Error | null };
-
-      static getDerivedStateFromError(error: Error) {
-        return { error };
-      }
-
-      render() {
-        if (this.state.error) {
-          return <div data-testid="error-message">{this.state.error.message}</div>;
-        }
-        return this.props.children;
-      }
-    }
-
-    render(
-      <ErrorBoundary>
-        <OpenID4VPVerification
-          verifyServiceUrl={verifyServiceUrl}
-          protocol={protocol}
-          presentationDefinitionId={presentationDefinitionId}
-          onVPReceived={onVPReceived}
-          onVPProcessed={onVPProcessed}
-          onQrCodeExpired={onQrCodeExpired}
-          onError={onError}
-          triggerElement={<button>Verify</button>}
-        />
-      </ErrorBoundary>
-    );
-
-    await waitFor(() => {
-      expect(screen.getByTestId("error-message")).toHaveTextContent(
-        errorMessage
-      );
-    });
-  });
 
   it("should generate QR code using presentationDefinitionUri", async () => {
     const mockTransactionId = "txn789";

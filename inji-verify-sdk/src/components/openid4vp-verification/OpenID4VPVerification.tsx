@@ -5,8 +5,6 @@ import {
     OpenID4VPVerificationProps,
     SessionState,
     VerificationResults,
-    VerificationStatus,
-    VPVerificationV2Response,
     CredentialResult
 } from "./OpenID4VPVerification.types";
 import {vpRequestStatus, vpRequest, vpVerificationV2,} from "../../utils/api";
@@ -129,9 +127,15 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     },
     [clientId]
   );
+
     const normalizeVp = (vp: any): Record<string, unknown> => {
         if (typeof vp === "string") {
-            return isSdJwt(vp) ? { raw: vp } : JSON.parse(vp);
+            if (isSdJwt(vp)) return { raw: vp };
+            try {
+                return JSON.parse(vp);
+            } catch {
+                return { raw: vp };
+            }
         }
         return vp;
     };
@@ -154,7 +158,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
                     if (!isActiveRef.current) return;
 
                     const VPResult: VerificationResults =
-                        response.credentialResults.map((cred: CredentialResult) => {
+                        (response.credentialResults ?? []).map((cred: CredentialResult) => {
                             const vc = normalizeVp(cred.verifiableCredential);
 
                             return {
