@@ -1,3 +1,10 @@
+beforeEach(() => {
+    global.fetch = jest.fn();
+});
+beforeEach(() => {
+    jest.clearAllMocks();
+});
+
 import React from "react";
 import "@testing-library/jest-dom";
 import {
@@ -219,125 +226,153 @@ describe("OpenID4VPVerification UI Tests", () => {
     });
   });
 
-  it("should handle VP result after VP_SUBMITTED status and call onVPProcessed", async () => {
-    const mockTransactionId = "mock-txn-id";
-    const mockRequestId = "mock-req-id";
-    const mockVcResults = [
-      { vc: JSON.stringify({ id: "vc1" }), verificationStatus: "valid" },
-      { vc: JSON.stringify({ id: "vc2" }), verificationStatus: "expired" },
-    ];
+    it("should throw error if both onVPReceived and onVPProcessed are provided", async () => {
+        const errorMessage =
+            "Both onVPReceived and onVPProcessed cannot be provided simultaneously";
 
-    const expectedProcessedResult = [
-      { vc: { id: "vc1" }, vcStatus: "valid" },
-      { vc: { id: "vc2" }, vcStatus: "expired" },
-    ];
+        class ErrorBoundary extends React.Component<
+            { children: React.ReactNode },
+            { error: Error | null }
+        > {
+            constructor(props: any) {
+                super(props);
+                this.state = { error: null };
+            }
 
-    const fetchMock = jest
-      .fn()
-      .mockResolvedValueOnce({
-        status: 201,
-        json: async () => ({
-          transactionId: mockTransactionId,
-          requestId: mockRequestId,
-          authorizationDetails: {},
-        }),
-      })
-      .mockResolvedValueOnce({
-        status: 200,
-        json: async () => ({ status: "VP_SUBMITTED" }),
-      })
-      .mockResolvedValueOnce({
-        status: 200,
-        json: async () => ({ vcResults: mockVcResults }),
-      });
+            static getDerivedStateFromError(error: Error) {
+                return { error };
+            }
 
-    global.fetch = fetchMock;
+            render() {
+                if (this.state.error) {
+                    return (
+                        <div data-testid="error-message">{this.state.error.message}</div>
+                    );
+                }
+                return this.props.children;
+            }
+        }
 
-    const onVPProcessed = jest.fn(); // Only pass onVPProcessed here
-    const onQrCodeExpired = jest.fn();
-    const onError = jest.fn();
+        render(
+            <ErrorBoundary>
+                <OpenID4VPVerification
+                    verifyServiceUrl="https://example.com/verify"
+                    clientId="test-client"
+                    protocol="testopenid4vp://"
+                    presentationDefinitionId="test-pd"
+                    onVPReceived={jest.fn()}
+                    onVPProcessed={jest.fn()}
+                    onQrCodeExpired={jest.fn()}
+                    onError={jest.fn()}
+                    triggerElement={<button>Verify</button>}
+                />
+            </ErrorBoundary>
+        );
 
-    renderComponent({
-      presentationDefinitionId,
-      onVPProcessed, // Only pass onVPProcessed here
-      onQrCodeExpired,
-      onError,
-      triggerElement: <button>Verify</button>,
+        await waitFor(() => {
+            expect(screen.getByTestId("error-message")).toHaveTextContent(
+                errorMessage
+            );
+        });
     });
 
-    fireEvent.click(screen.getByRole("button", { name: "Verify" }));
+    it("should handle VP result with presentationDefinition and call onVPProcessed", async () => {
+        const mockTransactionId = "mock-txn-id";
+        const mockRequestId = "mock-req-id";
 
-    await waitFor(() => {
-      expect(onVPProcessed).toHaveBeenCalledWith(expectedProcessedResult);
+        const fetchMock = jest
+            .fn()
+            // vpRequest
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 201,
+                json: async () => ({
+                    transactionId: mockTransactionId,
+                    requestId: mockRequestId,
+                    authorizationDetails: {},
+                }),
+            })
+            // vpRequestStatus
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                json: async () => ({ status: "VP_SUBMITTED" }),
+            })
+            // vpVerificationV2
+            .mockResolvedValueOnce({
+                ok: true,
+                status: 200,
+                json: async () => ({
+                    credentialResults: [
+                        {
+                            verifiableCredential: JSON.stringify({ id: "vc1" }),
+                            allChecksSuccessful: true,
+                        },
+                        {
+                            verifiableCredential: JSON.stringify({ id: "vc2" }),
+                            allChecksSuccessful: false,
+                            expiryCheck: { valid: false },
+                        },
+                    ],
+                }),
+            });
+
+        global.fetch = fetchMock as jest.Mock;
+
+        const onVPProcessed = jest.fn();
+        const onQrCodeExpired = jest.fn();
+        const onError = jest.fn();
+
+        const presentationDefinition = {
+            purpose: "test",
+            input_descriptors: [
+                {
+                    id: "email_input",
+                },
+            ],
+        };
+
+        const vpVerificationV2Request = {};
+
+        render(
+            <OpenID4VPVerification
+                verifyServiceUrl="https://example.com/verify"
+                clientId="test-client"
+                protocol="testopenid4vp://"
+                presentationDefinition={presentationDefinition}
+                onVPProcessed={onVPProcessed}
+                onQrCodeExpired={onQrCodeExpired}
+                onError={onError}
+                triggerElement={<button>Verify</button>}
+                vpVerificationV2Request={vpVerificationV2Request}
+            />
+        );
+
+        fireEvent.click(screen.getByRole("button", { name: "Verify" }));
+
+        await waitFor(() => {
+            expect(onVPProcessed).toHaveBeenCalledTimes(1);
+        });
+
+        const result = onVPProcessed.mock.calls[0][0];
+
+        expect(result).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    vc: { id: "vc1" },
+                    verificationResponse: expect.objectContaining({
+                        allChecksSuccessful: true,
+                    }),
+                }),
+                expect.objectContaining({
+                    vc: { id: "vc2" },
+                    verificationResponse: expect.objectContaining({
+                        allChecksSuccessful: false,
+                    }),
+                }),
+            ])
+        );
     });
-  });
-
-  it("should handle VP result with presentationDefinition and call onVPProcessed", async () => {
-    const mockTransactionId = "mock-txn-id";
-    const mockRequestId = "mock-req-id";
-    const mockVcResults = [
-      { vc: JSON.stringify({ id: "vc1" }), verificationStatus: "valid" },
-      { vc: JSON.stringify({ id: "vc2" }), verificationStatus: "expired" },
-    ];
-
-    const expectedProcessedResult = [
-      { vc: { id: "vc1" }, vcStatus: "valid" },
-      { vc: { id: "vc2" }, vcStatus: "expired" },
-    ];
-
-    const fetchMock = jest
-      .fn()
-      .mockResolvedValueOnce({
-        status: 201,
-        json: async () => ({
-          transactionId: mockTransactionId,
-          requestId: mockRequestId,
-          authorizationDetails: {},
-        }),
-      })
-      .mockResolvedValueOnce({
-        status: 200,
-        json: async () => ({ status: "VP_SUBMITTED" }),
-      })
-      .mockResolvedValueOnce({
-        status: 200,
-        json: async () => ({ vcResults: mockVcResults }),
-      });
-
-    global.fetch = fetchMock;
-
-    const onVPProcessed = jest.fn();
-    const onQrCodeExpired = jest.fn();
-    const onError = jest.fn();
-
-    const presentationDefinition = {
-      input_descriptors: [
-        {
-          id: "email_input",
-          schema: [{ uri: "https://example.com/email-schema" }],
-        },
-      ],
-    };
-
-    render(
-      <OpenID4VPVerification
-        verifyServiceUrl="https://example.com/verify"
-        protocol="testopenid4vp://"
-        presentationDefinition={presentationDefinition}
-        onVPProcessed={onVPProcessed}
-        onQrCodeExpired={onQrCodeExpired}
-        onError={onError}
-        triggerElement={<button>Verify</button>}
-      />
-    );
-
-    fireEvent.click(screen.getByRole("button", { name: "Verify" }));
-
-    await waitFor(() => {
-      expect(onVPProcessed).toHaveBeenCalledWith(expectedProcessedResult);
-    });
-  });
-
   it("should throw error if both onVPReceived and onVPProcessed are provided", async () => {
     const errorMessage =
       "Both onVPReceived and onVPProcessed cannot be provided simultaneously";

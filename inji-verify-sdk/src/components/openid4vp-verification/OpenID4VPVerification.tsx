@@ -44,7 +44,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   onError,
   clientId,
   isSameDeviceFlowEnabled = true,
-  acceptVPWithoutHolderProof = true,
+  acceptVPWithoutHolderProof = false,
   webWalletBaseUrl,
  vpVerificationV2Request
 }) => {

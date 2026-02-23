@@ -170,14 +170,15 @@ export const vpVerificationV2 = async (url: string, transactionId: string, respo
             },
             body: JSON.stringify(requestBody),
         });
-        const data = await response.json();
         if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
             throw {
-                errorCode: data.errorCode,
-                errorMessage: data.errorMessage || data.error || "Unknown error",
+                errorCode: errorData.errorCode,
+                errorMessage: errorData.errorMessage || errorData.error || "Unknown error",
                 transactionId,
             } as AppError;
         }
+        const data = await response.json();
         return data;
     } catch (error) {
         if (isAppError(error)) {
