@@ -22,7 +22,7 @@ import {vpRequest,
     vcSubmission,
     vcVerificationV2,
     vpRequestStatus,
-    vpVerificationV2
+    vpResult
 } from "../../utils/api";
 import {
     decodeQrData,
@@ -532,7 +532,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     hasFetchedVPResultRef.current = true;
     try {
       if (transactionId) {
-        const vcResults = await vpVerificationV2(verifyServiceUrl, transactionId);
+        const vcResults = await vpResult(verifyServiceUrl, transactionId);
         if (vcResults && vcResults.length > 0) {
           const VCResult = vcResults.map((vcResult: any) => ({
             vc: isSdJwt(vcResult.vc) ? vcResult.vc : JSON.parse(vcResult.vc),

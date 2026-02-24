@@ -7,7 +7,7 @@ import {
     VerificationResults,
     CredentialResult
 } from "./OpenID4VPVerification.types";
-import {vpRequestStatus, vpRequest, vpVerificationV2,} from "../../utils/api";
+import {vpRequestStatus, vpRequest, vpResult} from "../../utils/api";
 import "./OpenID4VPVerification.css";
 import { isSdJwt } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
@@ -148,7 +148,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
             try {
                 if (onVPProcessed && txnId) {
-                    const response = await vpVerificationV2(
+                    const response = await vpResult(
                         verifyServiceUrl,
                         txnId,
                         responseCode,

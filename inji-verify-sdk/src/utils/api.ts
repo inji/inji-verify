@@ -147,7 +147,7 @@ const isAppError = (error: unknown): error is AppError => (
 );
 
 
-export const vpVerificationV2 = async (url: string, transactionId: string, responseCode?: string | null, config?: VPVerificationV2Request) => {
+export const vpResult = async (url: string, transactionId: string, responseCode?: string | null, config?: VPVerificationV2Request) => {
     if (!transactionId) {
         throw new Error("Transaction ID is required for VP verification");
     }
