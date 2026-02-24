@@ -49,6 +49,10 @@
     "walletSelectorTitle": "Panel de selección de billetera",
     "walletSelectorDescription": "Seleccione una billetera para continuar con una presentación verificable.",
     "walletSearchPlaceholder": "Billeteras de búsqueda",
+    "walletSearchNoResults": "No se encontraron billeteras para \"{{search}}\"",
+    "openWebWallets": "Abrir billeteras web",
+    "walletSelectorCancel": "Cancelar",
+    "walletSelectorProceed": "Proceder",
     "IconToolTip": "Los campos junto a este icono indican que el soporte de billetera compartió selectivamente la información."
   },
   "VerificationStepsContent": {
@@ -103,7 +107,7 @@
       },
       "SelectWallet": {
         "label": "Compartir credenciales verificables de la billetera",
-        "description": "Elija una billetera móvil de la lista de billeteras disponibles en el mismo dispositivo y continúe con el intercambio de credenciales."
+        "description": "Elija una billetera de la lista de billeteras disponibles y continúe con el intercambio de credenciales."
       },
       "DisplayResult": {
         "label": "Ver resultados de verificación",

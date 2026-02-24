@@ -23,7 +23,9 @@ export interface VPRequestBody {
   presentationDefinitionId?: string;
   presentationDefinition?: PresentationDefinition;
   acceptVPWithoutHolderProof?: boolean;
+  presentationFlow?: string
 }
+
 type ExclusivePresentationDefinition =
   /**
    * ID of the presentation definition used for verification.
@@ -137,6 +139,11 @@ export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
    When true, allows unsigned VPs (VPs without proof).
    */
   acceptVPWithoutHolderProof?: boolean;
+
+  /**
+   The base URL of the wallet.
+   */
+  webWalletBaseUrl?: string;
 };
 
 export interface SessionState {

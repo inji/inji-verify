@@ -32,6 +32,8 @@ const DisplayActiveStep = () => {
   const activeScreen = useVerifyFlowSelector((state) => state.activeScreen);
   const showResult = useVerifyFlowSelector((state) => state.isShowResult);
   const flowType = useVerifyFlowSelector((state) => state.flowType);
+  const openSelectWallet = useVerifyFlowSelector((state) => state.SelectWalletPanel);
+  const selectedWalletBaseUrl = useVerifyFlowSelector((state) => state.selectedWalletBaseUrl);
   const incorrectCredentialShared = selectedClaims.length === 1 && unverifiedClaims.length === 1 && isSingleVc;
   const sdkInstanceKey = useVerifyFlowSelector((state) => state.sdkInstanceKey);
   
@@ -81,7 +83,9 @@ const DisplayActiveStep = () => {
   }
 
   useEffect(() => {
-    if (selectedClaims.length > 0 && activeScreen === 3) {
+    // Auto-trigger SDK only when we're on the ScanQrCode step and NOT in the
+    // wallet selection panel. This avoids firing when the user is choosing a wallet.
+    if (selectedClaims.length > 0 && activeScreen === 3 && !openSelectWallet) {
       setTimeout(() => {
         const triggerElement = document.getElementById("OpenID4VPVerification_trigger");
         if (triggerElement) {
@@ -90,7 +94,7 @@ const DisplayActiveStep = () => {
         }
       }, 100); // Delay to ensure the DOM is updated
     }
-  }, [selectedClaims, activeScreen]);
+  }, [selectedClaims, activeScreen, openSelectWallet]);
 
   if (isLoading) {
     return <Loader className="absolute lg:top-[200px] right-[100px]" />;
@@ -174,6 +178,7 @@ const DisplayActiveStep = () => {
                   onQrCodeExpired={handleOnQrExpired}
                   onError={handleOnError}
                   clientId={getClientId()}
+                  webWalletBaseUrl={selectedWalletBaseUrl}
                 />
               </div>
             </div>

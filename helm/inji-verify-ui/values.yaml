@@ -436,5 +436,16 @@ extraVolumes:
     configMap:
       name: inji-verify-ui-config
 
+## Web wallets available for same-device credential sharing.
+## Each entry requires: id, name, iconUrl, walletBaseUrl.
+## walletBaseUrl MUST be overridden per environment; leaving it empty disables
+## the wallet entry at runtime.
+##
+webWallets:
+  - id: "inji-wallet"
+    name: "Inji Wallet"
+    iconUrl: "/assets/inji-web-wallet-icon.svg"
+    walletBaseUrl: ""  # Set to the deployment-specific web wallet URL, e.g. "https://injiweb.example.org"
+
 config:
   key1: "value1"
