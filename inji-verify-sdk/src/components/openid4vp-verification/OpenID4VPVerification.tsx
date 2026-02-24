@@ -290,12 +290,14 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     };
   }, [fetchVPStatus]);
 
-  // Restore session after a full-page redirect (web wallet flow).
-  // On re-mount the in-memory refs are gone; read them back from sessionStorage
+  // Restore session after a full-page redirect (web wallet / same-device flow).
+  // After the wallet redirects back the page does a full reload, wiping all
+  // in-memory refs. Read the persisted request/transaction IDs from sessionStorage
   // and resume status polling so the VP result is not silently dropped.
+  // NOTE: we intentionally do NOT guard on webWalletBaseUrl here — the wallet
+  // redirect causes a full page reload which resets Redux state and therefore the
+  // prop is undefined on re-mount, even though this IS a web-wallet response.
   useEffect(() => {
-    if (!webWalletBaseUrl) return;
-
     const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
     const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
 
@@ -313,7 +315,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       const responseCode = searchParams.get("response_code") || null;
       fetchVPStatus(savedRequestId, savedTransactionId, responseCode);
     }
-  }, [webWalletBaseUrl, fetchVPStatus]);
+  }, [fetchVPStatus]);
 
   useEffect(() => {
     if (!presentationDefinitionId && !presentationDefinition) {
