@@ -301,6 +301,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
           transactionId: savedTransactionId,
         };
         isActiveRef.current = true;
+        setLoading(true);
 
         const searchParams = new URLSearchParams(window.location.search);
         const responseCode = searchParams.get("response_code") || null;
