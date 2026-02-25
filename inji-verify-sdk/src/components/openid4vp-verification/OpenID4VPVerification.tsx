@@ -290,32 +290,29 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     };
   }, [fetchVPStatus]);
 
-  // Restore session after a full-page redirect (web wallet / same-device flow).
-  // After the wallet redirects back the page does a full reload, wiping all
-  // in-memory refs. Read the persisted request/transaction IDs from sessionStorage
-  // and resume status polling so the VP result is not silently dropped.
-  // NOTE: we intentionally do NOT guard on webWalletBaseUrl here — the wallet
-  // redirect causes a full page reload which resets Redux state and therefore the
-  // prop is undefined on re-mount, even though this IS a web-wallet response.
   useEffect(() => {
-    const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
-    const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
+    if (!isActiveRef.current) {
+      const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
+      const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
 
-    if (savedRequestId && savedTransactionId) {
-      sessionStorage.removeItem(OVP_SESSION_REQUEST_ID_KEY);
-      sessionStorage.removeItem(OVP_SESSION_TRANSACTION_ID_KEY);
+      if (savedRequestId && savedTransactionId) {
+        sessionStateRef.current = {
+          requestId: savedRequestId,
+          transactionId: savedTransactionId,
+        };
+        isActiveRef.current = true;
 
-      sessionStateRef.current = {
-        requestId: savedRequestId,
-        transactionId: savedTransactionId,
-      };
-      isActiveRef.current = true;
-
-      const searchParams = new URLSearchParams(window.location.search);
-      const responseCode = searchParams.get("response_code") || null;
-      fetchVPStatus(savedRequestId, savedTransactionId, responseCode);
+        const searchParams = new URLSearchParams(window.location.search);
+        const responseCode = searchParams.get("response_code") || null;
+        fetchVPStatus(savedRequestId, savedTransactionId, responseCode);
+      }
     }
-  }, [fetchVPStatus]);
+
+    return () => {
+      isActiveRef.current = false;
+      sessionStateRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     if (!presentationDefinitionId && !presentationDefinition) {
@@ -364,18 +361,6 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       }
     }
   }, [triggerElement, isSameDeviceFlowEnabled]);
-
-  useEffect(() => {
-    return () => {
-      // Only reset in-memory refs on unmount.
-      // sessionStorage keys (ovp_requestId / ovp_transactionId) must NOT be
-      // removed here — they are the only bridge that survives the full-page
-      // reload caused by a wallet redirect. clearSessionData() is called by
-      // resetState() once the flow actually completes (success / error / expired).
-      isActiveRef.current = false;
-      sessionStateRef.current = null;
-    };
-  }, []);
 
   return (
     <div className={"ovp-root-div-container"}>
