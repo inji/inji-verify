@@ -367,10 +367,15 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   useEffect(() => {
     return () => {
+      // Only reset in-memory refs on unmount.
+      // sessionStorage keys (ovp_requestId / ovp_transactionId) must NOT be
+      // removed here — they are the only bridge that survives the full-page
+      // reload caused by a wallet redirect. clearSessionData() is called by
+      // resetState() once the flow actually completes (success / error / expired).
       isActiveRef.current = false;
-      clearSessionData();
+      sessionStateRef.current = null;
     };
-  }, [clearSessionData]);
+  }, []);
 
   return (
     <div className={"ovp-root-div-container"}>
