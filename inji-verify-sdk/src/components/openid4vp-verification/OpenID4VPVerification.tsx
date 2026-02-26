@@ -290,30 +290,30 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     };
   }, [fetchVPStatus]);
 
-  // Restore session after a full-page redirect (web wallet flow).
-  // On re-mount the in-memory refs are gone; read them back from sessionStorage
-  // and resume status polling so the VP result is not silently dropped.
   useEffect(() => {
-    if (!webWalletBaseUrl) return;
+    if (!isActiveRef.current) {
+      const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
+      const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
 
-    const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
-    const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
+      if (savedRequestId && savedTransactionId) {
+        sessionStateRef.current = {
+          requestId: savedRequestId,
+          transactionId: savedTransactionId,
+        };
+        isActiveRef.current = true;
+        setLoading(true);
 
-    if (savedRequestId && savedTransactionId) {
-      sessionStorage.removeItem(OVP_SESSION_REQUEST_ID_KEY);
-      sessionStorage.removeItem(OVP_SESSION_TRANSACTION_ID_KEY);
-
-      sessionStateRef.current = {
-        requestId: savedRequestId,
-        transactionId: savedTransactionId,
-      };
-      isActiveRef.current = true;
-
-      const searchParams = new URLSearchParams(window.location.search);
-      const responseCode = searchParams.get("response_code") || null;
-      fetchVPStatus(savedRequestId, savedTransactionId, responseCode);
+        const searchParams = new URLSearchParams(window.location.search);
+        const responseCode = searchParams.get("response_code") || null;
+        fetchVPStatus(savedRequestId, savedTransactionId, responseCode);
+      }
     }
-  }, [webWalletBaseUrl, fetchVPStatus]);
+
+    return () => {
+      isActiveRef.current = false;
+      sessionStateRef.current = null;
+    };
+  }, []);
 
   useEffect(() => {
     if (!presentationDefinitionId && !presentationDefinition) {
@@ -362,13 +362,6 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       }
     }
   }, [triggerElement, isSameDeviceFlowEnabled]);
-
-  useEffect(() => {
-    return () => {
-      isActiveRef.current = false;
-      clearSessionData();
-    };
-  }, [clearSessionData]);
 
   return (
     <div className={"ovp-root-div-container"}>
