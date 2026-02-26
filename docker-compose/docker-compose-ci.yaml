@@ -1,0 +1,62 @@
+services:
+
+  postgres:
+    image: postgres:13
+    container_name: postgres-db
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: postgres
+      POSTGRES_DB: inji_verify
+    ports:
+      - "5432:5432"
+    volumes:
+      - ./db-init:/docker-entrypoint-initdb.d
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U postgres"]
+      interval: 5s
+      timeout: 3s
+      retries: 10
+
+  verify-service:
+    container_name: verify-service
+    image: inji-verify-service:ci
+    user: root
+    ports:
+      - "8080:8080"
+    environment:
+      - active_profile_env=default
+      - DATABASE_HOST=postgres
+      - DATABASE_PORT=5432
+      - DATABASE_NAME=inji_verify
+      - DATABASE_SCHEMA=verify
+      - DATABASE_USERNAME=postgres
+      - DATABASE_PASSWORD=postgres
+      - INJI_VP_REQUEST_LONG_POLLING_TIMEOUT=55000
+      - INJI_VP_SUBMISSION_BASE_URL=http://verify-service:8080/v1/verify
+      - INJI_DID_VERIFY_URI=did:web:verify-service%3A8080:v1:verify
+      - INJI_DID_VERIFY_PUBLIC_KEY_URI=did:web:verify-service%3A8080:verify#key-0
+      - INJI_KEYSTORE_FILE_PASS=mosip
+      - INJI_VERIFY_REDIRECT_URI=http://verify-service:8080
+      - INJI_VERIFY_CLAIMS_WITH_META_DATA=_sd,_sd_alg,iss,cnf,sub,aud,exp,nbf,iat,cti
+    depends_on:
+      postgres:
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://localhost:8080/v1/verify/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 30
+      start_period: 30s
+
+  apitest:
+    image: apitest-inji-verify:ci
+    user: root
+    depends_on:
+      verify-service:
+        condition: service_healthy
+    environment:
+      ENV_ENDPOINT: http://verify-service:8080
+      ENV_TESTLEVEL: smokeAndRegression
+      ENV_USER: verify-service:8080
+      CI: "true"
+      injiVerifyBaseUrl: http://verify-service:8080
