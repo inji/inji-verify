@@ -9,6 +9,7 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
@@ -136,6 +137,7 @@ public class BaseTest {
 
     // Setup driver (only once)
     driver = new RemoteWebDriver(new URL(URL), capabilities);
+	((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
     jse = (JavascriptExecutor) driver;
     
     // Only maximize window for desktop tests
