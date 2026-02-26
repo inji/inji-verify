@@ -298,7 +298,7 @@ describe("OpenID4VPVerification UI Tests", () => {
                 status: 200,
                 json: async () => ({ status: "VP_SUBMITTED" }),
             })
-            // vpVerificationV2
+            // vpResult
             .mockResolvedValueOnce({
                 ok: true,
                 status: 200,

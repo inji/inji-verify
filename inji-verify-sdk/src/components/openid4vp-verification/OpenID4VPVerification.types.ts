@@ -9,7 +9,7 @@ export interface VerificationResult {
 
     /**
 
-     The status of the verification.
+     Full verification result, including per-check outcomes and optional claims.
      */
     verificationResponse: CredentialResult;
 }
