@@ -410,3 +410,4 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 };
 
 export default OpenID4VPVerification;
+
