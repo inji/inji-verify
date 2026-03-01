@@ -45,7 +45,7 @@
         <extentreports.adapter.version>1.13.0</extentreports.adapter.version>
         <extentreports.version>5.1.0</extentreports.version>
         <json.simple.version>1.1.1</json.simple.version>
-        <jackson.version>2.15.2</jackson.version>
+        <jackson.version>2.18.6</jackson.version>
         <pdfbox.version>2.0.31</pdfbox.version>
         <browserstack.local.version>1.1.5</browserstack.local.version>
         <browserstack.sdk.version>1.31.1</browserstack.sdk.version>
