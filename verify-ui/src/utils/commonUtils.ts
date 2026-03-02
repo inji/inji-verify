@@ -1,8 +1,6 @@
-import { claim, LdpVc, VcStatus } from "../types/data-types";
+import { claim, LdpVc, VcStatus, CredentialResult, VCVerificationV2Response} from "../types/data-types";
 import { EXCLUDE_KEYS_SD_JWT_VC, getVCRenderOrders } from "./config";
 import { getLanguageCodes } from "./i18n";
-import {VCVerificationV2Response} from "@injistack/react-inji-verify-sdk/dist/components/qrcode-verification/QRCodeVerification.types";
-import {CredentialResult} from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
 
 const isSafeKey = (key: string) =>
   key && key !== "__proto__" && key !== "constructor" && key !== "prototype";
@@ -324,11 +322,11 @@ export const evaluateVcStatus = (response: VCVerificationV2Response) => {
 };
 export const evaluateVpStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
 
-    if (cred.schemaAndSignatureCheck && !cred.schemaAndSignatureCheck.valid) {
+    if (!cred.schemaAndSignatureCheck?.valid) {
         return "INVALID";
     }
 
-    if (cred.expiryCheck && !cred.expiryCheck.valid) {
+    if (!cred.expiryCheck?.valid) {
         return "EXPIRED";
     }
 

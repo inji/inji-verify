@@ -199,3 +199,41 @@ export type WebWallet = {
   iconUrl: string;
   walletBaseUrl: string;
 };
+export interface ValidationCheck {
+    purpose?: string;
+    valid: boolean;
+    error?: {
+        errorCode?: string;
+        errorMessage?: string;
+    } | null;
+}
+
+export interface VCVerificationV2Response {
+    allChecksSuccessful: boolean;
+    schemaAndSignatureCheck: ValidationCheck;
+    expiryCheck: ValidationCheck;
+    statusCheck: ValidationCheck[];
+    claims?: Record<string, any>;
+}
+
+export interface CredentialResult {
+    verifiableCredential: string | object;
+    allChecksSuccessful: boolean;
+    holderProofCheck?: {
+        valid: boolean;
+        error: any;
+    } | null;
+    schemaAndSignatureCheck?: {
+        valid: boolean;
+        error: any;
+    };
+    expiryCheck?: {
+        valid: boolean;
+    };
+    statusChecks?: {
+        purpose: string;
+        valid: boolean;
+        error: any;
+    }[];
+    claims?: Record<string, any>;
+}
