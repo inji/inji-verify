@@ -3,7 +3,7 @@ commonLabels:
 
 containerSecurityContext:
   enabled: false
-  runAsUser: 1001
+  runAsUser: inji
   runAsNonRoot: true
 
 ## ConfigMap with extra environment variables
