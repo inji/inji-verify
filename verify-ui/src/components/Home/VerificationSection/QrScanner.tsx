@@ -22,17 +22,33 @@ function QrScanner({ onClose, scannerActive }: {
   }, []);
 
     const handleOnVCProcessed = (data: any[]) => {
-        const vc = data[0].vc;
-        const verificationResponse = data[0].verificationResponse;
-        const vcStatus = evaluateVcStatus(verificationResponse);
+        if (!Array.isArray(data) || data.length === 0) {
+            console.error("Invalid VC processed data:", data);
+            return;
+        }
+        const result = data[0];
 
-        dispatch(verificationComplete({verificationResult: {
-                    vc,
-                    vcStatus,
-                    claims: verificationResponse.claims
-                }
-            })
-        );
+        if (!result?.vc || !result?.verificationResponse) {
+            console.error("Missing VC or verificationResponse:", result);
+            return;
+        }
+
+        try {
+            const { vc, verificationResponse } = result;
+            const vcStatus = evaluateVcStatus(verificationResponse);
+
+            dispatch(
+                verificationComplete({
+                    verificationResult: {
+                        vc,
+                        vcStatus,
+                        claims: verificationResponse?.claims
+                    }
+                })
+            );
+        } catch (error) {
+            console.error("Error processing VC verification:", error);
+        }
     };
 
   return (

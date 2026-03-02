@@ -324,11 +324,11 @@ export const evaluateVcStatus = (response: VCVerificationV2Response) => {
 };
 export const evaluateVpStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
 
-    if (!cred.schemaAndSignatureCheck?.valid) {
+    if (cred.schemaAndSignatureCheck && !cred.schemaAndSignatureCheck.valid) {
         return "INVALID";
     }
 
-    if (!cred.expiryCheck?.valid) {
+    if (cred.expiryCheck && !cred.expiryCheck.valid) {
         return "EXPIRED";
     }
 

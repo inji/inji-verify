@@ -53,21 +53,21 @@ const DisplayActiveStep = () => {
   };
 
     const handleOnVpProcessed = async (vpResults: VerificationResults) => {
-        const processedResults = await Promise.all(
-            vpResults.map(async (vpResult) => {
-                let vc = vpResult.vc;
-                if (typeof vc === "string") {
-                    vc = await decodeSdJwtToken(vc);
-                }const vpStatus = evaluateVpStatus(vpResult.verificationResponse);
-
-                return {
-                    vc,
-                    vcStatus: vpStatus
-                };
-            })
-        );
-
-        dispatch(verificationSubmissionComplete({verificationResult: processedResults }));
+        try {
+               const processedResults = await Promise.all(
+                     vpResults.map(async (vpResult) => {
+                            let vc = vpResult.vc;
+                           if (typeof vc === "string") {
+                               vc = await decodeSdJwtToken(vc);
+                           }
+                           const vpStatus = evaluateVpStatus(vpResult.verificationResponse);
+                           return { vc, vcStatus: vpStatus };
+                         }),
+               );
+                    dispatch(verificationSubmissionComplete({ verificationResult: processedResults }));
+              } catch (error: any) {
+                handleOnError(error);
+              }
     };
 
   const handleOnQrExpired = () => {
