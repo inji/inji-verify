@@ -18,6 +18,7 @@ import { Button } from "./commons/Button";
 import { useTranslation } from "react-i18next";
 import {VerificationResults} from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
 import {decodeSdJwtToken} from "../../../utils/decodeSdJwt";
+import {evaluateVpStatus, vpVerificationV2Request} from "../../../utils/commonUtils";
 
 const DisplayActiveStep = () => {
   const { t } = useTranslation("Verify");
@@ -51,18 +52,23 @@ const DisplayActiveStep = () => {
     dispatch(resetVpRequest());
   };
 
-  const handleOnVpProcessed = async (vpResults: VerificationResults) => {
-    const decodedVpResults = await Promise.all(
-        vpResults.map(async (vpResult) => {
-          if (typeof vpResult?.vc === 'string') {
-            const decodedSdJwt = await decodeSdJwtToken(vpResult.vc);
-            return { ...vpResult, vc: decodedSdJwt };
-          }
-          return vpResult;
-        })
-    );
-    dispatch(verificationSubmissionComplete({ verificationResult: decodedVpResults }));
-  };
+    const handleOnVpProcessed = async (vpResults: VerificationResults) => {
+        try {
+               const processedResults = await Promise.all(
+                     vpResults.map(async (vpResult) => {
+                            let vc = vpResult.vc;
+                           if (typeof vc === "string") {
+                               vc = await decodeSdJwtToken(vc);
+                           }
+                           const vpStatus = evaluateVpStatus(vpResult.verificationResponse);
+                           return { vc, vcStatus: vpStatus };
+                         }),
+               );
+                    dispatch(verificationSubmissionComplete({ verificationResult: processedResults }));
+              } catch (error: any) {
+                handleOnError(error);
+              }
+    };
 
   const handleOnQrExpired = () => {
     dispatch(raiseAlert({ ...AlertMessages().sessionExpired, open: true }));
@@ -143,6 +149,7 @@ const DisplayActiveStep = () => {
                   qrCodeStyles={{ size: qrSize }}
                   clientId={getClientId()}
                   isSameDeviceFlowEnabled={false}
+                  vpVerificationV2Request={vpVerificationV2Request}
                 />
               </div>
               <Button	
@@ -179,6 +186,7 @@ const DisplayActiveStep = () => {
                   onError={handleOnError}
                   clientId={getClientId()}
                   webWalletBaseUrl={selectedWalletBaseUrl}
+                  vpVerificationV2Request={vpVerificationV2Request}
                 />
               </div>
             </div>
