@@ -131,15 +131,7 @@ export interface VCVerificationV2Response {
 
 export type VerificationResults = {
     vc: any;
-    vcStatus: VcStatus;
-    claims?: Record<string, any>;
-    details?: {
-        checks: {
-            schema: ValidationCheck;
-            expiry: ValidationCheck;
-            status: ValidationCheck[];
-        };
-    };
+    verificationResponse: VCVerificationV2Response;
 }[];
 
 export interface vcSubmissionBody {

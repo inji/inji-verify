@@ -1,7 +1,7 @@
 import {
-  AppError,
-  PresentationDefinition,
-  VPRequestBody,
+    AppError,
+    PresentationDefinition,
+    VPRequestBody, VPVerificationV2Request,
 } from "../components/openid4vp-verification/OpenID4VPVerification.types";
 import { vcSubmissionBody, VCVerificationV2Request, VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
 import { QrData } from "../types/OVPSchemeQrData";
@@ -146,25 +146,44 @@ const isAppError = (error: unknown): error is AppError => (
   typeof (error as Record<string, unknown>).errorMessage === 'string'
 );
 
-export const vpResult = async (url: string, txnId: string, responseCode?: string | null) => {
-  try {
-    const baseUrl = new URL(url + `/vp-result/${txnId}`);
-    if (responseCode != null) baseUrl.searchParams.append('response_code', responseCode);
-    const response = await fetch(baseUrl);
-    const data = await response.json();
-    if (response.status !== 200) {
-      throw {
-        errorCode: data.errorCode,
-        errorMessage: data.errorMessage || data.error || "Unknown error",
-        transactionId: txnId ?? null
-      } as AppError;
+
+export const vpResult = async (url: string, transactionId: string, responseCode?: string | null, config?: VPVerificationV2Request) => {
+    if (!transactionId) {
+        throw new Error("Transaction ID is required for VP verification");
     }
-    return data.vcResults;
-  } catch (error) {
-    if (isAppError(error)) {
-      throw error as AppError;
-    } else {
-      throw error;
+    const requestBody = {
+        skipStatusChecks: config?.skipStatusChecks ?? false,
+        statusCheckFilters: config?.statusCheckFilters ?? [],
+        includeClaims: config?.includeClaims ?? false,
+    };
+
+    try {
+        const baseUrl = new URL(`${url}/v2/vp-results/${transactionId}`);
+
+        if (responseCode) {
+            baseUrl.searchParams.append("response_code", responseCode);
+        }
+        const response = await fetch(baseUrl.toString(), {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+            },
+            body: JSON.stringify(requestBody),
+        });
+        if (!response.ok) {
+            const errorData = await response.json().catch(() => ({}));
+            throw {
+                errorCode: errorData.errorCode,
+                errorMessage: errorData.errorMessage || errorData.error || "Unknown error",
+                transactionId,
+            } as AppError;
+        }
+        const data = await response.json();
+        return data;
+    } catch (error) {
+        if (isAppError(error)) {
+            throw error as AppError;
+        }
+        throw error;
     }
-  }
 };
