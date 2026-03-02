@@ -39,7 +39,6 @@ jest.mock("../../../../redux/features/alerts/alerts.slice", () => ({
 }));
 
 jest.mock("../../../../utils/config", () => ({
-    ...jest.requireActual("../../../../utils/config"),
     AlertMessages: jest.fn(() => ({
         sessionExpired: { title: "Session Expired" },
         incorrectCredential: { title: "Incorrect Credential" },
@@ -50,7 +49,10 @@ jest.mock("@injistack/react-inji-verify-sdk", () => ({
     OpenID4VPVerification: (props: any) => (
         <div
             data-testid="openid-verification-sdk"
-            onClick={() => props.onVPProcessed?.([])}
+            onClick={() => {
+                props.onVPProcessed?.([]);
+                props.onVCProcessed?.([]);
+            }}
         >
             SDK MOCK
         </div>
@@ -61,11 +63,6 @@ jest.mock("../../../../utils/theme-utils", () => ({
     QrIcon: (props: any) => <div data-testid="qr-icon" {...props} />,
 }));
 
-jest.mock("react-i18next", () => ({
-    useTranslation: () => ({
-        t: (key: string) => key,
-    }),
-}));
 
 jest.mock("../../../../components/Home/VerificationSection/Result/VpSubmissionResult", () => () => <div>VpSubmissionResult Mock</div>);
 jest.mock("../../../../components/commons/Loader", () => () => <div data-testid="loader">Loader Mock</div>);
