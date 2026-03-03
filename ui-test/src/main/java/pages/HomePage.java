@@ -16,6 +16,10 @@ import java.util.Set;
 import org.openqa.selenium.Keys;
 import org.openqa.selenium.NoSuchElementException;
 
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
+
 
 
 import base.BasePage;
@@ -342,41 +346,30 @@ public class HomePage extends BasePage {
 	}
 
 
-	public Boolean isMosipNationalIdDisplayed() {
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
-		}
-		return isElementIsVisible(driver, isMosipNationalId);
-	}
+public Boolean isMosipNationalIdDisplayed() {
+    try {
+        WaitUtil.waitForVisibility(driver, isMosipNationalId, BasePage.getTimeout());
+        return true;
+    } catch (Exception e) {
+        return false;
+    }
+}
 
-	public void clickOnMosipNationalId() {
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		clickOnElement(driver, isMosipNationalId);
-	}
+public void clickOnMosipNationalId() {
+    WaitUtil.waitForClickability(driver, isMosipNationalId);
+    clickOnElement(driver, isMosipNationalId);
+}
 
 	public void clickOnStayProtectedCredentialType() {
-       		// Use explicit wait (configured via explicitWaitTimeout) instead of Thread.sleep
 		WaitUtil.waitForClickability(driver, healthInsurance);
 		clickOnElement(driver, healthInsurance);
 	}
 
 
-	public void clickOnOnProceed() {
-		try {
-			Thread.sleep(2000);
-		} catch (InterruptedException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		clickOnElement(driver, getOnOnProceed);
-	}
+public void clickOnOnProceed() {
+    WaitUtil.waitForClickability(driver, getOnOnProceed);
+    clickOnElement(driver, getOnOnProceed);
+}
 
 	public void enterVid(String string) {
 		enterText(driver, By.xpath("//input[@id='Otp_mosip-vid']"), string);
@@ -385,43 +378,35 @@ public class HomePage extends BasePage {
 	public void clickOnGetOtpButton() {
 		clickOnElement(driver, getOtp);
 	}
-	public void enterOtp( String otpString) {
-		try {
-			Thread.sleep(3000);
-		} catch (InterruptedException e) {
-			throw new RuntimeException(e);
-		}
-		for (int i = 0; i < otpString.length(); i++) {
-			String locator = "(//input[@class='pincode-input-text'])[" + (i + 1) + "]";
-			driver.findElement(By.xpath(locator)).sendKeys(String.valueOf(otpString.charAt(i)));
-		}
-	}
+
+public void enterOtp(String otpString) {
+
+    // Wait until first OTP box is visible
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(BasePage.getTimeout()));
+    wait.until(ExpectedConditions.visibilityOfElementLocated(
+            By.xpath("(//input[@class='pincode-input-text'])[1]")));
+
+    for (int i = 0; i < otpString.length(); i++) {
+        String locator = "(//input[@class='pincode-input-text'])[" + (i + 1) + "]";
+        driver.findElement(By.xpath(locator))
+              .sendKeys(String.valueOf(otpString.charAt(i)));
+    }
+}
 
 	public void clickOnVerify() {
 		clickOnElement(driver, verifyOtp);
 	}
 
-	public String isSuccessMessageDisplayed() {
-	    String message = "";
-	    int retryCount = 0;
+public String isSuccessMessageDisplayed() {
 
-	    while (retryCount < 2) {
-	        try {
-	            Thread.sleep(9000);
-	        } catch (InterruptedException e) {
-	            e.printStackTrace();
-	        }
+    try {
+        WaitUtil.waitForTextToBePresent(driver, succsessMessage, "Success!");
+    } catch (Exception e) {
+        // ignore if not found within timeout
+    }
 
-	        message = getText(driver, succsessMessage);
-	        if ("Success!".equalsIgnoreCase(message.trim())) {
-	            break;
-	        } else {
-	            retryCount++;
-	        }
-	    }
-
-	    return message;
-	}
+    return getText(driver, succsessMessage);
+}
 
 
 	public  void openNewTab(){
@@ -463,17 +448,18 @@ public class HomePage extends BasePage {
 	public void enterFullName(String string) {
 		enterText(driver, By.xpath("//input[@id='_form_fullName']"), string);
 	}
-    public void selectDateOfBirth(String string) {
+	public void selectDateOfBirth(String dob) {
 
-        driver.findElement(By.xpath("//input[@id='_form_fullName']")).sendKeys(Keys.TAB);
-        driver.findElement(By.id("_form_dob")).sendKeys(string);
-        try {
-            Thread.sleep(2000);
-        } catch (InterruptedException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-    }
+    WebElement fullNameField = driver.findElement(By.id("_form_fullName"));
+    WebElement dobField = driver.findElement(By.id("_form_dob"));
+
+    WaitUtil.waitForClickability(driver, fullNameField);
+    fullNameField.sendKeys(Keys.TAB);
+
+    WaitUtil.waitForClickability(driver, dobField);
+    dobField.clear();
+    dobField.sendKeys(dob);
+}
 
 	public void clickOnLogin() {
 		clickOnElement(driver,verifyButton );

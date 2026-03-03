@@ -131,21 +131,36 @@ export interface VCVerificationV2Response {
 
 export type VerificationResults = {
     vc: any;
-    vcStatus: VcStatus;
-    claims?: Record<string, any>;
-    details?: {
-        checks: {
-            schema: ValidationCheck;
-            expiry: ValidationCheck;
-            status: ValidationCheck[];
-        };
-    };
+    verificationResponse: VCVerificationV2Response;
 }[];
 
 export interface vcSubmissionBody {
   vc: any;
   transactionId?: string;
 }
+
+export interface CredentialResult {
+    verifiableCredential: string | object;
+    allChecksSuccessful: boolean;
+    holderProofCheck?: {
+        valid: boolean;
+        error: any;
+    } | null;
+    schemaAndSignatureCheck?: {
+        valid: boolean;
+        error: any;
+    };
+    expiryCheck?: {
+        valid: boolean;
+    };
+    statusChecks?: {
+        purpose: string;
+        valid: boolean;
+        error: any;
+    }[];
+    claims?: Record<string, any>;
+}
+
 
 
 
