@@ -109,6 +109,10 @@
         "label": "مشاركة بيانات الاعتماد القابلة للتحقق من المحفظة",
         "description": "اختر محفظة من قائمة المحافظ المتوفرة وتابع مشاركة بيانات الاعتماد."
       },
+      "ShareVerifiableCredentials": {
+        "label": "مشاركة بيانات الاعتماد القابلة للتحقق من المحفظة",
+        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs. Same-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
+      },
       "DisplayResult": {
         "label": "عرض نتائج التحقق",
         "description": "تحقق من نتائج التحقق من بيانات الاعتماد التي يمكن التحقق منها والتي تمت مشاركتها من المحفظة."

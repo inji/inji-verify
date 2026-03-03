@@ -88,12 +88,8 @@ export const getVerificationStepsContent = (): VerificationStepsContentType => {
               description: i18next.t("VerificationStepsContent:VERIFY.RequestMissingCredential.description"),
             },
             {
-                label: i18next.t('VerificationStepsContent:VERIFY.ScanQrCode.label'),
-                description: i18next.t('VerificationStepsContent:VERIFY.ScanQrCode.description'),
-            },
-            {
-                label: i18next.t('VerificationStepsContent:VERIFY.SelectWallet.label'),
-                description: i18next.t('VerificationStepsContent:VERIFY.SelectWallet.description'),
+                label: i18next.t('VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label'),
+                description: i18next.t('VerificationStepsContent:VERIFY.ShareVerifiableCredentials.description'),
             },
             {
                 label: i18next.t('VerificationStepsContent:VERIFY.DisplayResult.label'),

@@ -96,9 +96,9 @@ function SelectionPanelContent() {
   };
 
   useEffect(() => {
-    selectedCredentials.forEach((cred: claim) =>
-      storage.setItem(storage.ESSENTIAL_CLAIM, cred)
-    );
+    selectedCredentials.forEach((cred: claim) => {
+      storage.setItem(storage.ESSENTIAL_CLAIM, cred);
+    });
   }, [selectedCredentials]);
 
   return (

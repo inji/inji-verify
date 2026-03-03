@@ -109,6 +109,10 @@
         "label": "Share Verifiable Credentials from Wallet",
         "description": "Choose a wallet from the list of available wallets and proceed with credential sharing."
       },
+      "ShareVerifiableCredentials": {
+        "label": "Share Verifiable Credentials from Wallet",
+        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs. Same-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
+      },
       "DisplayResult": {
         "label": "View Verification Results",
         "description": "Check the verification results for the verifiable credentials shared from the wallet."

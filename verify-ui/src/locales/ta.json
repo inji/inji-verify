@@ -109,6 +109,10 @@
         "label": "பணப்பையிலிருந்து சரிபார்க்கக்கூடிய நற்சான்றிதழ்களைப் பகிரவும்",
         "description": "கிடைக்கக்கூடிய பணப்பைகள் பட்டியலிலிருந்து பணப்பையைத் தேர்ந்தெடுத்து நற்சான்றிதழ் பகிர்வுடன் தொடரவும்."
       },
+      "ShareVerifiableCredentials": {
+        "label": "பணப்பையிலிருந்து சரிபார்க்கக்கூடிய நற்சான்றிதழ்களைப் பகிரவும்",
+        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs. Same-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
+      },
       "DisplayResult": {
         "label": "சரிபார்ப்பு முடிவுகளைக் காண்க",
         "description": "பணப்பையிலிருந்து பகிரப்பட்ட சரிபார்க்கக்கூடிய நற்சான்றிதழ்களுக்கான சரிபார்ப்பு முடிவுகளைச் சரிபார்க்கவும்."

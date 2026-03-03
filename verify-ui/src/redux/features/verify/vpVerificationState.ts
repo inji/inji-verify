@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { getVerifiableClaims, VerificationSteps } from "../../../utils/config";
 import { VCShareType, VerifyState, claim } from "../../../types/data-types";
 import {calculateUnverifiedClaims, calculateVerifiedClaims, getCredentialType} from "../../../utils/commonUtils";
+import { isSdkFetchingVpResult } from "../../../utils/misc";
 
 export const OVP_SESSION_SELECTED_CREDENTIALS_KEY = "ovp_selectedCredentials";
 
@@ -38,11 +39,17 @@ const restoreCredentialsFromSession = (): claim[] => {
   }
 };
 
-const createInitialState = (fromSession: boolean): VerifyState => ({
+const createInitialState = (fromSession: boolean): VerifyState => {
+  const isFetching = fromSession && isSdkFetchingVpResult();
+  const activeScreen = isFetching
+    ? VerificationSteps["VERIFY"].ScanQrCode
+    : VerificationSteps["VERIFY"].InitiateVpRequest;
+
+  return {
   isLoading: false,
   flowType: "crossDevice",
   method: "VERIFY",
-  activeScreen: VerificationSteps["VERIFY"].InitiateVpRequest,
+  activeScreen,
   SelectionPanel: false,
   verificationSubmissionResult: [],
   selectedCredentials: fromSession ? restoreCredentialsFromSession() : DEFAULT_CREDENTIALS(),
@@ -61,7 +68,8 @@ const createInitialState = (fromSession: boolean): VerifyState => ({
   SelectWalletPanel: false,
   selectedWalletId: undefined,
   selectedWalletBaseUrl: undefined,
-});
+};
+};
 
 const PreloadedState = createInitialState(true);
 

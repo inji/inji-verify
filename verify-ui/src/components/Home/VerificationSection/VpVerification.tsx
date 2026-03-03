@@ -113,8 +113,16 @@ const DisplayActiveStep = () => {
   }, [selectedCredentials, activeScreen, openSelectWallet]);
 
   useEffect(() => {
-    if (originalSelectedCredentials.length > 0 && (activeScreen === 3 || unverifiedCredentials.length > 0)) {
-      sessionStorage.setItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY, JSON.stringify(originalSelectedCredentials));
+    if (originalSelectedCredentials.length === 0) {
+      sessionStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
+      return;
+    }
+
+    if (activeScreen === 3 || unverifiedCredentials.length > 0) {
+      sessionStorage.setItem(
+        OVP_SESSION_SELECTED_CREDENTIALS_KEY,
+        JSON.stringify(originalSelectedCredentials)
+      );
     }
   }, [activeScreen, originalSelectedCredentials, unverifiedCredentials]);
 

@@ -109,6 +109,10 @@
         "label": "ವಾಲೆಟ್ನಿಂದ ಪರಿಶೀಲಿಸಬಹುದಾದ ರುಜುವಾತುಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ",
         "description": "ಲಭ್ಯವಿರುವ ವ್ಯಾಲೆಟ್‌ಗಳ ಪಟ್ಟಿಯಿಂದ ವ್ಯಾಲೆಟ್ ಆಯ್ಕೆಮಾಡಿ ಮತ್ತು ರುಜುವಾತು ಹಂಚಿಕೆಯೊಂದಿಗೆ ಮುಂದುವರಿಯಿರಿ."
       },
+      "ShareVerifiableCredentials": {
+        "label": "ವಾಲೆಟ್ನಿಂದ ಪರಿಶೀಲಿಸಬಹುದಾದ ರುಜುವಾತುಗಳನ್ನು ಹಂಚಿಕೊಳ್ಳಿ",
+        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs. Same-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
+      },
       "DisplayResult": {
         "label": "ಪರಿಶೀಲನೆ ಫಲಿತಾಂಶಗಳನ್ನು ವೀಕ್ಷಿಸಿ",
         "description": "ವ್ಯಾಲೆಟ್ನಿಂದ ಹಂಚಿಕೊಂಡ ಪರಿಶೀಲಿಸಬಹುದಾದ ರುಜುವಾತುಗಳಿಗಾಗಿ ಪರಿಶೀಲನಾ ಫಲಿತಾಂಶಗಳನ್ನು ಪರಿಶೀಲಿಸಿ."
