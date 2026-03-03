@@ -2,7 +2,7 @@ import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
     QRCodeVerificationProps,
     scanResult,
-    VcStatus, VCVerificationV2Response
+    VcStatus, VCVerificationV2Response, VerificationResults
 } from "./QRCodeVerification.types";
 import { doFileChecks, scanFilesForQr } from "../../utils/uploadQRCodeUtils";
 import {
@@ -35,6 +35,7 @@ import "./QRCodeVerification.css";
 import { isSdJwt } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
+import { CredentialResult } from "../openid4vp-verification/OpenID4VPVerification.types";
 
 const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   scannerActive = true,
@@ -68,7 +69,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const startingRef = useRef(false);
   const shouldEnableZoom = isEnableZoom && isMobile;
   const hasFetchedVPResultRef = useRef(false);
-
+    const isActiveRef = useRef(false);
   const clearTimer = () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -527,34 +528,54 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     return atob(base64);
   }
 
-  const fetchVPResult = async (transactionId: string) => {
-    if (hasFetchedVPResultRef.current) return;
-    hasFetchedVPResultRef.current = true;
-    try {
-      if (transactionId) {
-        const vcResults = await vpResult(verifyServiceUrl, transactionId);
-        if (vcResults && vcResults.length > 0) {
-          const VCResult = vcResults.map((vcResult: any) => ({
-            vc: isSdJwt(vcResult.vc) ? vcResult.vc : JSON.parse(vcResult.vc),
-            vcStatus: vcResult.verificationStatus as VcStatus,
-          }));
-          if (onVCReceived) {
-            const txnId = await vcSubmission(VCResult[0].vc, verifyServiceUrl, transactionId);
-            onVCReceived(txnId);
-          } else if (onVCProcessed) {
-            onVCProcessed(VCResult);
-          }
-          resetState();
-          return;
-        } else {
-          throw new Error("An unexpected error occurred while processing the shared VC. No VC found in the response or response is empty");
+    const normalizeVp = (vp: any): Record<string, unknown> => {
+        if (typeof vp === "string") {
+            if (isSdJwt(vp)) return { raw: vp };
+            try {
+                return JSON.parse(vp);
+            } catch {
+                return { raw: vp };
+            }
         }
-      }
-    } catch (error) {
-      handleError(error);
-      resetState();
-    }
-  };
+        return vp;
+    };
+
+  const fetchVPResult = async (transactionId: string, responseCode?: string | null) => {
+      if (hasFetchedVPResultRef.current) return;
+      hasFetchedVPResultRef.current = true;
+      try {
+            if (!transactionId) {
+                throw new Error("Transaction ID is required to fetch VP result");
+            }
+
+            const response = await vpResult(verifyServiceUrl, transactionId, responseCode, vcVerificationV2Request);
+
+            const VPResult: VerificationResults =
+                (response?.credentialResults ?? []).map((cred: CredentialResult) => {
+                    const vc = normalizeVp(cred.verifiableCredential);
+
+                    return {
+                        vc,
+                        verificationResponse: cred,
+                    };
+                });
+
+            if (!VPResult.length) {
+                throw new Error(
+                    "An unexpected error occurred while processing the shared VC. No credentialResults found."
+                );
+            }
+            if (onVCProcessed) {
+                onVCProcessed(VPResult);
+            } else if (onVCReceived) {
+                onVCReceived(transactionId);
+            }
+            resetState();
+        } catch (error) {
+            handleError(error);
+            resetState();
+        }
+    };
 
   const fetchVPStatus = async (transactionId: string, requestId: string) => {
     try {
