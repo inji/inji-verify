@@ -22,3 +22,15 @@ const decodeBase64Url = (encoded: string): string => {
     const decodedBytes = Uint8Array.from(decoded, c => c.charCodeAt(0));
     return new TextDecoder().decode(decodedBytes);
 };
+
+export const normalizeVp = (vp: any): Record<string, unknown> => {
+    if (typeof vp === "string") {
+        if (isSdJwt(vp)) return { raw: vp };
+        try {
+            return JSON.parse(vp);
+        } catch {
+            return { raw: vp };
+        }
+    }
+    return vp;
+};

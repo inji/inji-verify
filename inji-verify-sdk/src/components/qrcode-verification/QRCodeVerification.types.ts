@@ -139,5 +139,28 @@ export interface vcSubmissionBody {
   transactionId?: string;
 }
 
+export interface CredentialResult {
+    verifiableCredential: string | object;
+    allChecksSuccessful: boolean;
+    holderProofCheck?: {
+        valid: boolean;
+        error: any;
+    } | null;
+    schemaAndSignatureCheck?: {
+        valid: boolean;
+        error: any;
+    };
+    expiryCheck?: {
+        valid: boolean;
+    };
+    statusChecks?: {
+        purpose: string;
+        valid: boolean;
+        error: any;
+    }[];
+    claims?: Record<string, any>;
+}
+
+
 
 
