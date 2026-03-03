@@ -69,7 +69,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const startingRef = useRef(false);
   const shouldEnableZoom = isEnableZoom && isMobile;
   const hasFetchedVPResultRef = useRef(false);
-    const isActiveRef = useRef(false);
   const clearTimer = () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
