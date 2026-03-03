@@ -33,7 +33,7 @@ jest.mock("../../../../redux/features/verify/vpVerificationState", () => {
         setSelectCredential,
         verificationSubmissionComplete,
         showMissingCredentialOptions,
-        OVP_SESSION_SELECTED_CLAIMS_KEY: "ovp_selectedClaims",
+        OVP_SESSION_SELECTED_CREDENTIALS_KEY: "ovp_selectedCredentials",
     };
 });
 
@@ -89,10 +89,10 @@ describe("VpVerification Component", () => {
             selector({
                 isLoading: false,
                 sharingType: VCShareType.SINGLE,
-                selectedClaims: [],
-                originalSelectedClaims: [],
+                selectedCredentials: [],
+                originalSelectedCredentials: [],
                 verificationSubmissionResult: [],
-                unVerifiedClaims: [],
+                unVerifiedCredentials: [],
                 presentationDefinition: { input_descriptors: [] },
                 activeScreen: 1,
                 isShowResult: false,

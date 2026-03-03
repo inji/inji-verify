@@ -10,16 +10,16 @@ import {
 
 interface VpVerifyResultSummaryProps {
   verifiedVcs: VpSubmissionResultInt[];
-  unverifiedClaims: claim[];
+  unverifiedCredentials: claim[];
 }
 
 const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({
   verifiedVcs,
-  unverifiedClaims,
+  unverifiedCredentials,
 }) => {
   const { t } = useTranslation("Verify");
-  const originalSelectedClaims = useVerifyFlowSelector((state) => state.originalSelectedClaims);
-  const NoOfClaims = originalSelectedClaims.length;
+  const originalSelectedCredentials = useVerifyFlowSelector((state) => state.originalSelectedCredentials);
+  const NoOfClaims = originalSelectedCredentials.length;
   const NoOfValid: number = verifiedVcs.filter(
     (vc) => vc.vcStatus === "SUCCESS"
   ).length;
@@ -74,7 +74,7 @@ const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({
             )
           );
         })}
-        {unverifiedClaims.length > 0 && (
+        {unverifiedCredentials.length > 0 && (
           <div
             className={`rounded-xl bg-[#EFEFEF] min-w-[80px] border border-[#C4C4C4] mr-2 p-1`}
           >
@@ -82,7 +82,7 @@ const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({
               className={`font-normal text-lgNormalTextSize text-center text-[#636363]`}
             >
               {t("notShared")}{" "}
-              {unverifiedClaims.length + "/" + NoOfClaims}
+              {unverifiedCredentials.length + "/" + NoOfClaims}
             </p>
           </div>
         )}
