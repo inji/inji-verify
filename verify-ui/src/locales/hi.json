@@ -111,7 +111,7 @@
       },
       "ShareVerifiableCredentials": {
         "label": "वॉलेट से सत्यापन योग्य क्रेडेंशियल्स साझा करें",
-        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs. Same-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
+        "description": "क्रॉस-डिवाइस: क्रेडेंशियल्स चुनने के बाद 'Generate QR Code' पर क्लिक करें। दूसरे डिवाइस पर मौजूद मोबाइल वॉलेट का उपयोग करके QR कोड स्कैन करें जिसमें चयनित वीसी हैं। समान-डिवाइस: उसी डिवाइस पर उपलब्ध वॉलेट की सूची से मोबाइल वॉलेट चुनने के लिए 'Open Wallet' पर क्लिक करें और क्रेडेंशियल शेयरिंग के साथ आगे बढ़ें।"
       },
       "DisplayResult": {
         "label": "सत्यापन परिणाम देखें",

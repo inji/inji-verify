@@ -111,7 +111,7 @@
       },
       "ShareVerifiableCredentials": {
         "label": "Compartir credenciales verificables de la billetera",
-        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs. Same-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
+        "description": "Entre dispositivos: Haga clic en 'Generar código QR' después de seleccionar las credenciales. Escanee el código QR con una billetera móvil en otro dispositivo que contenga las credenciales seleccionadas. Mismo dispositivo: Haga clic en 'Abrir billetera' para elegir una billetera móvil de la lista de billeteras disponibles en el mismo dispositivo y proceder con el intercambio de credenciales."
       },
       "DisplayResult": {
         "label": "Ver resultados de verificación",

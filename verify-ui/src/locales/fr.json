@@ -111,7 +111,7 @@
       },
       "ShareVerifiableCredentials": {
         "label": "Partagez des informations d'identification vérifiables de Wallet",
-        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs. Same-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
+        "description": "Appareil à appareil : Cliquez sur « Générer un code QR » après avoir sélectionné les informations d'identification. Scannez le code QR à l'aide d'un portefeuille mobile sur un autre appareil contenant les informations d'identification sélectionnées. Même appareil : Cliquez sur « Ouvrir le portefeuille » pour choisir un portefeuille mobile parmi la liste des portefeuilles disponibles sur le même appareil et procéder au partage des informations d'identification."
       },
       "DisplayResult": {
         "label": "Afficher les résultats de la vérification",
