@@ -5,10 +5,11 @@ import Loader from "../../commons/Loader";
 import VpSubmissionResult from "./Result/VpSubmissionResult";
 import { useAppDispatch } from "../../../redux/hooks";
 import {
-  getVpRequest,
   resetVpRequest,
   setSelectCredential,
+  showMissingCredentialOptions,
   verificationSubmissionComplete,
+  OVP_SESSION_SELECTED_CLAIMS_KEY,
 } from "../../../redux/features/verify/vpVerificationState";
 import { VCShareType, VpSubmissionResultInt } from "../../../types/data-types";
 import { closeAlert, raiseAlert } from "../../../redux/features/alerts/alerts.slice";
@@ -26,6 +27,7 @@ const DisplayActiveStep = () => {
   const sharingType = useVerifyFlowSelector((state) => state.sharingType);
   const isSingleVc = sharingType === VCShareType.SINGLE;
   const selectedClaims = useVerifyFlowSelector((state) => state.selectedClaims);
+  const originalSelectedClaims = useVerifyFlowSelector((state) => state.originalSelectedClaims);
   const verifiedVcs: VpSubmissionResultInt[] = useVerifyFlowSelector((state) => state.verificationSubmissionResult );
   const unverifiedClaims = useVerifyFlowSelector((state) => state.unVerifiedClaims );
   const presentationDefinition = useVerifyFlowSelector((state) => state.presentationDefinition );
@@ -35,7 +37,11 @@ const DisplayActiveStep = () => {
   const flowType = useVerifyFlowSelector((state) => state.flowType);
   const openSelectWallet = useVerifyFlowSelector((state) => state.SelectWalletPanel);
   const selectedWalletBaseUrl = useVerifyFlowSelector((state) => state.selectedWalletBaseUrl);
-  const incorrectCredentialShared = selectedClaims.length === 1 && unverifiedClaims.length === 1 && isSingleVc;
+  // Only show "wrong credential" error when on the result screen. When the user has
+  // clicked "Request Missing Credential", selectedClaims becomes unVerifiedClaims (1 item),
+  // which would otherwise trigger this; we must not show the error in that flow.
+  const incorrectCredentialShared =
+    selectedClaims.length === 1 && unverifiedClaims.length === 1 && isSingleVc && showResult;
   const sdkInstanceKey = useVerifyFlowSelector((state) => state.sdkInstanceKey);
   
   const dispatch = useAppDispatch();
@@ -45,7 +51,7 @@ const DisplayActiveStep = () => {
   };
 
   const handleMissingCredentials = () => {
-    dispatch(getVpRequest({ selectedClaims: unverifiedClaims }));
+    dispatch(showMissingCredentialOptions());
   };
 
   const handleRestartProcess = () => {
@@ -89,6 +95,10 @@ const DisplayActiveStep = () => {
   }
 
   useEffect(() => {
+
+    const searchParams = new URLSearchParams(window.location.search);
+    if (searchParams.has("response_code")) return;
+
     // Auto-trigger SDK only when we're on the ScanQrCode step and NOT in the
     // wallet selection panel. This avoids firing when the user is choosing a wallet.
     if (selectedClaims.length > 0 && activeScreen === 3 && !openSelectWallet) {
@@ -101,6 +111,12 @@ const DisplayActiveStep = () => {
       }, 100); // Delay to ensure the DOM is updated
     }
   }, [selectedClaims, activeScreen, openSelectWallet]);
+
+  useEffect(() => {
+    if (originalSelectedClaims.length > 0 && (activeScreen === 3 || unverifiedClaims.length > 0)) {
+      sessionStorage.setItem(OVP_SESSION_SELECTED_CLAIMS_KEY, JSON.stringify(originalSelectedClaims));
+    }
+  }, [activeScreen, originalSelectedClaims, unverifiedClaims]);
 
   if (isLoading) {
     return <Loader className="absolute lg:top-[200px] right-[100px]" />;

@@ -30,11 +30,14 @@ function SelectionPanelContent() {
   const presentationDefinition = useVerifyFlowSelector((state) => state.presentationDefinition );
   const isMobile = isMobileDevice();
 
+  const isClaimSelected = (claim: claim) =>
+    selectedClaims.some((c: claim) => c.type === claim.type);
+
   const filteredClaims = getVerifiableClaims()
     .filter((claim) => claim.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
-      const aSelected = selectedClaims.includes(a);
-      const bSelected = selectedClaims.includes(b);
+      const aSelected = isClaimSelected(a);
+      const bSelected = isClaimSelected(b);
 
       if (aSelected && !bSelected) return -1;
       if (!aSelected && bSelected) return 1;
@@ -49,11 +52,11 @@ function SelectionPanelContent() {
   };
 
   const toggleClaimSelection = (claim: claim) => {
-    if (selectedClaims.includes(claim)) {
+    if (isClaimSelected(claim)) {
       dispatch(
         setSelectedClaims({
           selectedClaims: selectedClaims.filter(
-            (c: claim) => claim.name !== c.name
+            (c: claim) => c.type !== claim.type
           ),
         })
       );
@@ -164,7 +167,7 @@ function SelectionPanelContent() {
         {filteredClaims.length > 0 ? (
           <ul className="grid gap-4 max-h-[120px] lg:max-h-[250px] pr-4">
             {filteredClaims.map((claim, index) => {
-              const isSelectedClaim = selectedClaims.includes(claim);
+              const isSelectedClaim = isClaimSelected(claim);
               return (
                 <li
                   id={`${claim.name}-ItemBox`}
