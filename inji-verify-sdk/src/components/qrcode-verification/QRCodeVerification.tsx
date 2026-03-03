@@ -1,5 +1,6 @@
 import React, { useCallback, useEffect, useRef, useState } from "react";
 import {
+    CredentialResult,
     QRCodeVerificationProps,
     scanResult,
     VcStatus, VCVerificationV2Response, VerificationResults
@@ -32,10 +33,10 @@ import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
-import { isSdJwt } from "../../utils/utils";
+import {isSdJwt, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
-import { CredentialResult } from "../openid4vp-verification/OpenID4VPVerification.types";
+
 
 const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   scannerActive = true,
@@ -526,18 +527,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     if (pad) base64 += "=".repeat(4 - pad);
     return atob(base64);
   }
-
-    const normalizeVp = (vp: any): Record<string, unknown> => {
-        if (typeof vp === "string") {
-            if (isSdJwt(vp)) return { raw: vp };
-            try {
-                return JSON.parse(vp);
-            } catch {
-                return { raw: vp };
-            }
-        }
-        return vp;
-    };
 
   const fetchVPResult = async (transactionId: string, responseCode?: string | null) => {
       if (hasFetchedVPResultRef.current) return;
