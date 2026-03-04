@@ -46,29 +46,29 @@ const createInitialState = (fromSession: boolean): VerifyState => {
     : VerificationSteps["VERIFY"].InitiateVpRequest;
 
   return {
-    isLoading: false,
-    flowType: "crossDevice",
-    method: "VERIFY",
-    activeScreen,
-    SelectionPanel: false,
-    verificationSubmissionResult: [],
-    selectedCredentials: fromSession ? restoreCredentialsFromSession() : DEFAULT_CREDENTIALS(),
-    originalSelectedCredentials: fromSession ? restoreCredentialsFromSession() : DEFAULT_CREDENTIALS(),
-    unVerifiedCredentials: [],
-    sharingType: VCShareType.SINGLE,
-    isPartiallyShared: false,
-    isShowResult: false,
-    presentationDefinition: {
-      id: "c4822b58-7fb4-454e-b827-f8758fe27f9a",
-      purpose:
-        "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-      input_descriptors: [] as any[],
-    },
-    sdkInstanceKey: 0,
-    SelectWalletPanel: false,
-    selectedWalletId: undefined,
-    selectedWalletBaseUrl: undefined,
-  };
+  isLoading: false,
+  flowType: "crossDevice",
+  method: "VERIFY",
+  activeScreen,
+  SelectionPanel: false,
+  verificationSubmissionResult: [],
+  selectedCredentials: fromSession ? restoreCredentialsFromSession() : DEFAULT_CREDENTIALS(),
+  originalSelectedCredentials: fromSession ? restoreCredentialsFromSession() : DEFAULT_CREDENTIALS(),
+  unVerifiedCredentials: [],
+  sharingType: VCShareType.SINGLE,
+  isPartiallyShared: false,
+  isShowResult: false,
+  presentationDefinition: {
+    id: "c4822b58-7fb4-454e-b827-f8758fe27f9a",
+    purpose:
+      "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+    input_descriptors: [] as any[],
+  },
+  sdkInstanceKey: 0,
+  SelectWalletPanel: false,
+  selectedWalletId: undefined,
+  selectedWalletBaseUrl: undefined,
+};
 };
 
 const PreloadedState = createInitialState(true);
