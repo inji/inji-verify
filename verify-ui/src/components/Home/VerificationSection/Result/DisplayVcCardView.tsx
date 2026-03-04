@@ -35,7 +35,7 @@ function DisplayVcCardView(ViewVc: VpSubmissionResultInt) {
     <div>
       <button
         type="button"
-        className={`flex items-center justify-between bg-white w-[339px] lg:w-[410px] py-[5px] px-[15px] shadow-lg ${
+        className={`flex items-center justify-between bg-white w-[339px] lg:w-[410px] min-h-[82px] py-[5px] px-[15px] shadow-lg ${
           showDetailView ? "m-auto rounded-t-[12px] h-[82px]" : "rounded-[12px]"
         }`}
         onClick={view ? () => {} : () => setShowDetailView(!showDetailView)}

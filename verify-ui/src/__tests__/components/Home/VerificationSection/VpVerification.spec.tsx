@@ -1,4 +1,4 @@
-import { render, screen, fireEvent, waitFor } from "@testing-library/react";
+import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
 import { VpVerification } from "../../../../components/Home/VerificationSection/VpVerification";
 import { useVerifyFlowSelector } from "../../../../redux/features/verification/verification.selector";
 import { useAppDispatch } from "../../../../redux/hooks";
@@ -19,17 +19,21 @@ jest.mock("../../../../redux/features/verify/vpVerificationState", () => {
     const resetVpRequest = jest.fn(() => ({ type: "vpVerification/resetVpRequest" }));
     const setSelectCredential = jest.fn(() => ({ type: "vpVerification/setSelectCredential" }));
     const verificationSubmissionComplete = jest.fn(() => ({ type: "vpVerification/verificationSubmissionComplete" }));
+    const showMissingCredentialOptions = jest.fn(() => ({ type: "vpVerification/showMissingCredentialOptions" }));
 
     (getVpRequest as any).type = "vpVerification/getVpRequest";
     (resetVpRequest as any).type = "vpVerification/resetVpRequest";
     (setSelectCredential as any).type = "vpVerification/setSelectCredential";
     (verificationSubmissionComplete as any).type = "vpVerification/verificationSubmissionComplete";
+    (showMissingCredentialOptions as any).type = "vpVerification/showMissingCredentialOptions";
 
     return {
         getVpRequest,
         resetVpRequest,
         setSelectCredential,
         verificationSubmissionComplete,
+        showMissingCredentialOptions,
+        OVP_SESSION_SELECTED_CREDENTIALS_KEY: "ovp_selectedCredentials",
     };
 });
 
@@ -66,9 +70,18 @@ jest.mock("../../../../utils/theme-utils", () => ({
 jest.mock("../../../../components/Home/VerificationSection/Result/VpSubmissionResult", () => () => <div>VpSubmissionResult Mock</div>);
 jest.mock("../../../../components/commons/Loader", () => () => <div data-testid="loader">Loader Mock</div>);
 
+// References to mocks created in the factory, so we can reset implementations in beforeEach
+const { verificationSubmissionComplete: mockVerificationSubmissionComplete } =
+    jest.requireMock("../../../../redux/features/verify/vpVerificationState") as any;
+
 describe("VpVerification Component", () => {
     beforeEach(() => {
-        jest.clearAllMocks();
+        mockDispatch.mockClear();
+        (useVerifyFlowSelector as any).mockClear();
+        // Restore the implementation in case clearAllMocks was called elsewhere
+        mockVerificationSubmissionComplete.mockImplementation(
+            () => ({ type: "vpVerification/verificationSubmissionComplete" })
+        );
     });
 
     const mockState = (overrides = {}) => {
@@ -76,13 +89,16 @@ describe("VpVerification Component", () => {
             selector({
                 isLoading: false,
                 sharingType: VCShareType.SINGLE,
-                selectedClaims: [],
+                selectedCredentials: [],
+                originalSelectedCredentials: [],
                 verificationSubmissionResult: [],
-                unVerifiedClaims: [],
+                unVerifiedCredentials: [],
                 presentationDefinition: { input_descriptors: [] },
                 activeScreen: 1,
                 isShowResult: false,
                 flowType: "crossDevice",
+                SelectWalletPanel: false,
+                selectedWalletBaseUrl: undefined,
                 sdkInstanceKey: "key",
                 ...overrides
             })
@@ -117,12 +133,13 @@ describe("VpVerification Component", () => {
         mockState({ isShowResult: false, flowType: "crossDevice" });
         render(<VpVerification />);
         const sdkElement = screen.getByTestId("openid-verification-sdk");
-        fireEvent.click(sdkElement);
 
-        await waitFor(() => {
-            expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
-                type: "vpVerification/verificationSubmissionComplete"
-            }));
+        await act(async () => {
+            fireEvent.click(sdkElement);
         });
+
+        expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
+            type: "vpVerification/verificationSubmissionComplete"
+        }));
     });
 });

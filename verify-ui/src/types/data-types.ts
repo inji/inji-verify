@@ -121,9 +121,9 @@ export type VerifyState = {
   verificationSubmissionResult: VpSubmissionResultInt[];
   SelectionPanel: boolean;
   isShowResult: boolean;
-  selectedClaims: claim[];
-  originalSelectedClaims: claim[];
-  unVerifiedClaims: claim[];
+  selectedCredentials: claim[];
+  originalSelectedCredentials: claim[];
+  unVerifiedCredentials: claim[];
   sharingType: VCShareType;
   isPartiallyShared: boolean;
   presentationDefinition: PresentationDefinition;

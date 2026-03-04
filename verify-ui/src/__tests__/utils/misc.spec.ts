@@ -15,8 +15,7 @@ jest.mock("i18next", () => ({
         if (key === "VerificationStepsContent:VERIFY.InitiateVpRequest.label") return "Initiate VP Request";
         if (key === "VerificationStepsContent:VERIFY.RequestMissingCredential.label") return "Request Missing";
         if (key === "VerificationStepsContent:VERIFY.SelectCredential.label") return "Select Credential";
-        if (key === "VerificationStepsContent:VERIFY.SelectWallet.label") return "Select Wallet";
-        if (key === "VerificationStepsContent:VERIFY.ScanQrCode.label") return "Scan QR Code";
+        if (key === "VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label") return "Share Verifiable Credentials from Wallet";
         if (key === "VerificationStepsContent:VERIFY.DisplayResult.label") return "Display Result";
         return key;
     }),
@@ -30,8 +29,7 @@ jest.mock("../../utils/config", () => ({
             { label: "Initiate VP Request" },
             { label: "Request Missing" },
             { label: "Select Credential" },
-            { label: "Select Wallet" },
-            { label: "Scan QR Code" },
+            { label: "Share Verifiable Credentials from Wallet" },
             { label: "Display Result" }
         ]
     })),
@@ -75,7 +73,7 @@ describe("misc utilities", () => {
         test("returns VERIFY steps for sameDevice partially shared", () => {
             const steps = fetchVerificationSteps("VERIFY", true, "sameDevice", 2);
             expect(steps.some(s => s.label === "Request Missing")).toBeTruthy();
-            expect(steps.some(s => s.label === "Select Wallet")).toBeTruthy();
+            expect(steps.some(s => s.label === "Share Verifiable Credentials from Wallet")).toBeTruthy();
             expect(steps[0].isCompleted).toBe(true);
             expect(steps[1].isActive).toBe(true);
         });
@@ -83,7 +81,7 @@ describe("misc utilities", () => {
         test("returns VERIFY steps for crossDevice not partially shared", () => {
             const steps = fetchVerificationSteps("VERIFY", false, "crossDevice");
             expect(steps.some(s => s.label === "Select Credential")).toBeTruthy();
-            expect(steps.some(s => s.label === "Scan QR Code")).toBeTruthy();
+            expect(steps.some(s => s.label === "Share Verifiable Credentials from Wallet")).toBeTruthy();
         });
     });
 

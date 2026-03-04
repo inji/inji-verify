@@ -43,7 +43,7 @@ const SelectWalletContent: React.FC = () => {
   const presentationDefinition = useVerifyFlowSelector(
     (state) => state.presentationDefinition,
   );
-  const selectedClaims = useVerifyFlowSelector((state) => state.selectedClaims);
+  const selectedCredentials = useVerifyFlowSelector((state) => state.selectedCredentials);
 
   const handleSearchChange = (event: React.ChangeEvent<HTMLInputElement>) => {
     setSearch(event.target.value);
@@ -78,7 +78,7 @@ const SelectWalletContent: React.FC = () => {
 
     // Switch to same-device flow and kick off VP request so the SDK can redirect
     dispatch(setFlowType());
-    dispatch(getVpRequest({ selectedClaims }));
+    dispatch(getVpRequest({ selectedCredentials }));
   };
 
   return (

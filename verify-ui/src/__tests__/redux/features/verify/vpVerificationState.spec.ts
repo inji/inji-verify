@@ -1,6 +1,6 @@
 import vpVerificationReducer, {
     setSelectCredential,
-    setSelectedClaims,
+    setSelectedCredentials,
     setFlowType,
     getVpRequest,
     verificationSubmissionComplete,
@@ -12,8 +12,8 @@ import { VerificationSteps } from "../../../../utils/config";
 jest.mock("../../../../utils/config", () => ({
     ...jest.requireActual("../../../../utils/config"),
     getVerifiableClaims: jest.fn(() => [
-        { id: "1", essential: true, definition: { input_descriptors: [{ id: "desc1" }] } },
-        { id: "2", essential: false, definition: { input_descriptors: [{ id: "desc2" }] } }
+        { id: "1", type: "Type1", essential: true, definition: { input_descriptors: [{ id: "desc1" }] } },
+        { id: "2", type: "Type2", essential: false, definition: { input_descriptors: [{ id: "desc2" }] } }
     ])
 }));
 
@@ -29,7 +29,7 @@ describe("vpVerification slice", () => {
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectCredential);
         expect(state.SelectionPanel).toBe(true);
         expect(state.SelectWalletPanel).toBe(false);
-        expect(state.selectedClaims).toHaveLength(1); // essential only
+        expect(state.selectedCredentials).toHaveLength(1); // essential only
     });
 
     test("should handle setSelectCredential with SelectWalletPanel open", () => {
@@ -44,10 +44,10 @@ describe("vpVerification slice", () => {
         expect(state.SelectWalletPanel).toBe(false);
     });
 
-    test("should handle setSelectedClaims", () => {
-        const selectedClaims = [{ id: "2", definition: { input_descriptors: [] } }] as any;
-        const state = vpVerificationReducer(undefined, setSelectedClaims({ selectedClaims }));
-        expect(state.selectedClaims).toHaveLength(1);
+    test("should handle setSelectedCredentials", () => {
+        const selectedCredentials = [{ id: "2", type: "Type2", definition: { input_descriptors: [] } }] as any;
+        const state = vpVerificationReducer(undefined, setSelectedCredentials({ selectedCredentials }));
+        expect(state.selectedCredentials).toHaveLength(1);
         expect(state.sharingType).toBe(VCShareType.SINGLE);
     });
 
@@ -72,10 +72,10 @@ describe("vpVerification slice", () => {
     });
 
     test("should handle getVpRequest", () => {
-        const selectedClaims = [{ id: "1", definition: { input_descriptors: [] } }] as any;
-        const state = vpVerificationReducer(undefined, getVpRequest({ selectedClaims }));
+        const selectedCredentials = [{ id: "1", type: "Type1", definition: { input_descriptors: [] } }] as any;
+        const state = vpVerificationReducer(undefined, getVpRequest({ selectedCredentials }));
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.ScanQrCode);
-        expect(state.selectedClaims).toHaveLength(1);
+        expect(state.selectedCredentials).toHaveLength(1);
         // flowType is unchanged by getVpRequest; "crossDevice" here distinguishes this
         // ScanQrCode state from the SelectWallet state produced by setFlowType, since
         // both steps share the numeric value 3.
@@ -85,8 +85,8 @@ describe("vpVerification slice", () => {
     test("should handle verificationSubmissionComplete (full success)", () => {
         const initialState = {
             method: "VERIFY",
-            selectedClaims: [{ id: "1", definition: { input_descriptors: [] } }],
-            originalSelectedClaims: [{ id: "1", definition: { input_descriptors: [] } }],
+            selectedCredentials: [{ id: "1", type: "Type1", definition: { input_descriptors: [] } }],
+            originalSelectedCredentials: [{ id: "1", type: "Type1", definition: { input_descriptors: [] } }],
             verificationSubmissionResult: [],
             isPartiallyShared: false,
             flowType: "crossDevice"
