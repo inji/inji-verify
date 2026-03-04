@@ -3,7 +3,7 @@ import "./App.css";
 import Home from "./pages/Home";
 import Offline from "./pages/Offline";
 import { Scan } from "./pages/Scan";
-import { RouterProvider, createBrowserRouter, redirect } from "react-router-dom";
+import { RouterProvider, createBrowserRouter } from "react-router-dom";
 import AlertMessage from "./components/commons/AlertMessage";
 import PreloadImages from "./components/commons/PreloadImages";
 import PageNotFound404 from "./pages/PageNotFound404";
@@ -16,24 +16,10 @@ import { goToHomeScreen } from "./redux/features/verification/verification.slice
 import { Verify } from "./pages/Verify";
 import PageTemplate from "./components/PageTemplate";
 
-const methodToPath: Record<VerificationMethod, string> = {
-  UPLOAD: Pages.Home,
-  SCAN: Pages.Scan,
-  VERIFY: Pages.VerifyCredentials,
-};
-
 function switchToVerificationMethod(method: VerificationMethod) {
-  if (!sessionStorage.getItem("path")) {
-    sessionStorage.setItem("path", "/");
-  }
-  sessionStorage.setItem("path", methodToPath[method]);
   store.dispatch(goToHomeScreen({ method }));
   return null;
 }
-
-// True only for the very first load of the Home route within this page session.
-// Subsequent navigations to "/" (e.g. clicking the Upload tab) must NOT redirect.
-let initialHomeLoad = true;
 
 const router = createBrowserRouter([
   {
@@ -43,16 +29,7 @@ const router = createBrowserRouter([
       {
         path: Pages.Home,
         element: <Home/>,
-        loader: () => {
-          if (initialHomeLoad) {
-            initialHomeLoad = false;
-            const storedPath = sessionStorage.getItem("path");
-            if (storedPath && storedPath !== "/") {
-              return redirect(storedPath + window.location.search);
-            }
-          }
-          return switchToVerificationMethod("UPLOAD");
-        },
+        loader: () => switchToVerificationMethod("UPLOAD"),
       },
       {
         path: Pages.Scan,
