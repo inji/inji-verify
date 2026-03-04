@@ -2,7 +2,6 @@ import { createSlice } from "@reduxjs/toolkit";
 import { getVerifiableClaims, VerificationSteps } from "../../../utils/config";
 import { VCShareType, VerifyState, claim } from "../../../types/data-types";
 import {calculateUnverifiedClaims, calculateVerifiedClaims, getCredentialType} from "../../../utils/commonUtils";
-import { isSdkFetchingVpResult } from "../../../utils/misc";
 
 export const OVP_SESSION_SELECTED_CREDENTIALS_KEY = "ovp_selectedCredentials";
 
@@ -39,21 +38,18 @@ const restoreCredentialsFromSession = (): claim[] => {
   }
 };
 
-const createInitialState = (fromSession: boolean): VerifyState => {
-  const isFetching = fromSession && isSdkFetchingVpResult();
-  const activeScreen = isFetching
-    ? VerificationSteps["VERIFY"].ScanQrCode
-    : VerificationSteps["VERIFY"].InitiateVpRequest;
-
-  return {
+const PreloadedState: VerifyState = {
   isLoading: false,
   flowType: "crossDevice",
   method: "VERIFY",
-  activeScreen,
+  activeScreen: VerificationSteps["VERIFY"].InitiateVpRequest,
   SelectionPanel: false,
+  SelectWalletPanel: false,
+  selectedWalletId: undefined,
+  selectedWalletBaseUrl: undefined,
   verificationSubmissionResult: [],
-  selectedCredentials: fromSession ? restoreCredentialsFromSession() : DEFAULT_CREDENTIALS(),
-  originalSelectedCredentials: fromSession ? restoreCredentialsFromSession() : DEFAULT_CREDENTIALS(),
+  selectedCredentials: restoreCredentialsFromSession(),
+  originalSelectedCredentials: restoreCredentialsFromSession(),
   unVerifiedCredentials: [],
   sharingType: VCShareType.SINGLE,
   isPartiallyShared: false,
@@ -65,13 +61,7 @@ const createInitialState = (fromSession: boolean): VerifyState => {
     input_descriptors: [] as any[],
   },
   sdkInstanceKey: 0,
-  SelectWalletPanel: false,
-  selectedWalletId: undefined,
-  selectedWalletBaseUrl: undefined,
 };
-};
-
-const PreloadedState = createInitialState(true);
 
 const vpVerificationState = createSlice({
   name: "vpVerification",
@@ -148,8 +138,7 @@ const vpVerificationState = createSlice({
     },
     verificationSubmissionComplete: (state, action) => {
       const newlyVerified = calculateVerifiedClaims([...state.selectedCredentials], action.payload.verificationResult);
-
-      const uniqueResult = [
+      state.verificationSubmissionResult = [
         ...state.verificationSubmissionResult,
         ...newlyVerified.filter(
           (vc) =>
@@ -157,7 +146,6 @@ const vpVerificationState = createSlice({
               (existing) => getCredentialType(existing.vc) === getCredentialType(vc.vc))
         ),
       ];
-      state.verificationSubmissionResult = uniqueResult;
       state.isShowResult = true;
       state.unVerifiedCredentials = calculateUnverifiedClaims([...state.originalSelectedCredentials], state.verificationSubmissionResult);
       state.isPartiallyShared = state.unVerifiedCredentials.length > 0;
@@ -169,7 +157,7 @@ const vpVerificationState = createSlice({
     resetVpRequest: (state) => {
       const prevSdkKey = state.sdkInstanceKey;
       sessionStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
-      Object.assign(state, createInitialState(false));
+      Object.assign(state, PreloadedState);
       state.sdkInstanceKey = prevSdkKey + 1;
     },
   },
