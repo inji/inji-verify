@@ -1337,9 +1337,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
-        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, null, null);
+        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, null);
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
@@ -1385,9 +1385,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
-        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, null, null);
+        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, null);
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
@@ -1435,9 +1435,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
-        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
+        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
@@ -1450,63 +1450,15 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(Collections.emptyList());
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
         Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, null, null);
+            method.invoke(verifiablePresentationSubmissionService, requestIds, null);
         });
 
         assertInstanceOf(VPSubmissionNotFoundException.class, exception.getCause());
         verify(vpSubmissionRepository, times(1)).findAllById(requestIds);
-    }
-
-    @Test
-    public void testFetchVpSubmissionIfValid_ThrowsResponseCodeException_WhenSameDeviceAndNoResponseCode() throws Exception {
-        List<String> requestIds = List.of("req123");
-        String requestId = "req123";
-
-        VPSubmission vpSubmission = new VPSubmission(
-                requestId,
-                "vpToken",
-                new PresentationSubmissionDto("id", "dId", new ArrayList<>()),
-                null,
-                null,
-                null,
-                null,
-                null
-        );
-
-        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                "clientId",
-                "presentationDefinitionUri",
-                null,
-                "nonce",
-                "responseUri",
-                false,
-                "same_device"
-        );
-        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
-                requestId,
-                "transactionId",
-                authDetails,
-                System.currentTimeMillis() + 100000
-        );
-
-        when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
-        when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-
-        Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
-        method.setAccessible(true);
-
-        Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, null, authResponse);
-        });
-
-        assertInstanceOf(ResponseCodeException.class, exception.getCause());
-        ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
-        assertEquals(ErrorCode.RESPONSE_CODE_NOT_FOUND, responseCodeException.getErrorCode());
     }
 
     @Test
@@ -1546,11 +1498,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
         Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
+            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
         });
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
@@ -1597,11 +1549,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
         Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, wrongResponseCode, authResponse);
+            method.invoke(verifiablePresentationSubmissionService, requestIds, wrongResponseCode);
         });
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
@@ -1648,11 +1600,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
         Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
+            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
         });
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
@@ -1699,11 +1651,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
         Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
+            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
         });
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
@@ -1733,11 +1685,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
         Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, null, null);
+            method.invoke(verifiablePresentationSubmissionService, requestIds, null);
         });
 
         assertInstanceOf(VPSubmissionWalletError.class, exception.getCause());
@@ -1769,14 +1721,12 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", false);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
-        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, null);
+        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
-        // When includeResponseCodeSecurityChecks is false, atomic update is not called
-        verify(vpSubmissionRepository, never()).setResponseCodeAsUsed(anyString());
     }
 
     @Test
@@ -1976,9 +1926,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
-        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
+        VPSubmission result = (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
@@ -2138,11 +2088,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
         Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode, authResponse);
+            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
         });
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
@@ -2191,11 +2141,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
-                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, AuthorizationRequestCreateResponse.class);
+                .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
         Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, providedResponseCode, authResponse);
+            method.invoke(verifiablePresentationSubmissionService, requestIds, providedResponseCode);
         });
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());

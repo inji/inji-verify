@@ -100,6 +100,7 @@ const vpVerificationState = createSlice({
     },
     setFlowType: (state) => {
       state.SelectWalletPanel = false;
+      state.SelectionPanel = false;
       state.flowType = "sameDevice";
       state.activeScreen = VerificationSteps[state.method].SelectWallet;
     },
