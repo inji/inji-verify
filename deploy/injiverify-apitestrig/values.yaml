@@ -10,8 +10,8 @@ modules:
   injiverify:
     enabled: true
     image:
-      repository: injistackqa/apitest-inji-verify
-      tag: 0.17.x
+      repository: injistack/apitest-inji-verify
+      tag: 0.17.0
       pullPolicy: Always
 
 extraEnvVarsCM:

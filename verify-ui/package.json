@@ -1,6 +1,6 @@
 {
   "name": "inji-verify",
-  "version": "0.16.0",
+  "version": "0.17.0",
   "author": "INJI",
   "license": "MPL-2.0",
   "private": true,
@@ -8,8 +8,8 @@
     "@ant-design/icons": "^5.5.1",
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
-    "@injistack/pixelpass": "^0.8.0-RC2",
-    "@injistack/react-inji-verify-sdk": "^0.17.0-beta.15",
+    "@injistack/pixelpass": "^0.8.0",
+    "@injistack/react-inji-verify-sdk": "^0.17.0",
     "@mui/material": "^6.1.2",
     "@reduxjs/toolkit": "^2.2.3",
     "@sd-jwt/crypto-browser": "^0.15.0",

@@ -45,7 +45,7 @@ service:
   externalTrafficPolicy: Cluster
 image:
   registry: docker.io
-  repository: mosipid/inji-verify-ui
+  repository: injistack/inji-verify-ui
   tag: 0.17.0
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'
