@@ -44,36 +44,19 @@ describe("config utilities", () => {
     });
 
     describe("resolveWalletBaseUrl", () => {
-        const origin = "https://verify.example.org";
-
-        beforeEach(() => {
-            Object.defineProperty(window, "location", {
-                value: { origin },
-                configurable: true,
-                writable: true,
-            });
-        });
-
-        test("returns absolute http URL unchanged", () => {
+        test("returns URL unchanged when no trailing slash", () => {
             expect(resolveWalletBaseUrl("http://wallet.example.org")).toBe("http://wallet.example.org");
-        });
-
-        test("returns absolute https URL unchanged", () => {
             expect(resolveWalletBaseUrl("https://injiweb.dev-int-inji.mosip.net")).toBe(
                 "https://injiweb.dev-int-inji.mosip.net"
             );
+            expect(resolveWalletBaseUrl("/wallet")).toBe("/wallet");
         });
 
-        test("resolves root-relative path against current origin", () => {
-            expect(resolveWalletBaseUrl("/wallet")).toBe(`${origin}/wallet`);
-        });
-
-        test("resolves bare relative path against current origin", () => {
-            expect(resolveWalletBaseUrl("wallet")).toBe(`${origin}/wallet`);
-        });
-
-        test("preserves deep relative path", () => {
-            expect(resolveWalletBaseUrl("/apps/inji-wallet")).toBe(`${origin}/apps/inji-wallet`);
+        test("removes trailing slash", () => {
+            expect(resolveWalletBaseUrl("https://injiweb.dev-int-inji.mosip.net/")).toBe(
+                "https://injiweb.dev-int-inji.mosip.net"
+            );
+            expect(resolveWalletBaseUrl("/wallet/")).toBe("/wallet");
         });
     });
 
@@ -114,17 +97,17 @@ describe("config utilities", () => {
             expect(getWebWallets()[0].walletBaseUrl).toBe("https://injiweb.dev-int-inji.mosip.net");
         });
 
-        test("resolves relative wallet URLs against current origin", async () => {
+        test("trims trailing slash from wallet URLs", async () => {
             const mockData = {
                 verifiableClaims: [],
                 VCRenderOrders: {},
                 WebWallets: [
-                    { id: "w2", name: "Same-env", iconUrl: "/icon.svg", walletBaseUrl: "/wallet" },
+                    { id: "w2", name: "Same-env", iconUrl: "/icon.svg", walletBaseUrl: "/wallet/" },
                 ],
             };
             global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
             await initializeClaims();
-            expect(getWebWallets()[0].walletBaseUrl).toBe(`${origin}/wallet`);
+            expect(getWebWallets()[0].walletBaseUrl).toBe("/wallet");
         });
 
         test("filters out wallets with empty walletBaseUrl", async () => {
