@@ -3,7 +3,7 @@ version: '3.8'
 services:
   verify-service:
     container_name: verify-service
-    image: injistackqa/inji-verify-service:0.17.x
+    image: injistack/inji-verify-service:0.17.0
     user: root
     ports:
       - "8080:8080"
@@ -27,7 +27,7 @@ services:
 
   verify-ui:
     container_name: verify-ui
-    image: injistackqa/inji-verify-ui:0.17.x
+    image: injistack/inji-verify-ui:0.17.0
     ports:
       - "3000:8000"
     environment:
