@@ -9,7 +9,7 @@ import {
 } from "./OpenID4VPVerification.types";
 import {vpRequestStatus, vpRequest, vpResult} from "../../utils/api";
 import "./OpenID4VPVerification.css";
-import {isSdJwt, normalizeVp} from "../../utils/utils";
+import {clearUrl, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { CROSS_DEVICE_FLOW, OVP_SESSION_REQUEST_ID_KEY, OVP_SESSION_TRANSACTION_ID_KEY, SAME_DEVICE_FLOW } from "../../utils/constants";
 
@@ -166,7 +166,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
                     resetState();
                 }
             } finally {
-              window.history.replaceState(null, "", window.location.pathname);
+              clearUrl(["response_code"]);
             }
         },
         [verifyServiceUrl, onVPProcessed, onVPReceived, onError, vpVerificationV2Request]

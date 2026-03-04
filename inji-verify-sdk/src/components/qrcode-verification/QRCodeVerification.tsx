@@ -33,7 +33,7 @@ import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
-import {isSdJwt, normalizeVp} from "../../utils/utils";
+import {clearUrl, isSdJwt, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
 
@@ -624,12 +624,12 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       if (error) {
         onError(new Error(`${errorDescripton}, ${error}`));
         resetState();
-        window.history.replaceState(null, "", window.location.pathname);
+        clearUrl(["error", "error_description"]);
       }
 
       if (vpToken && presentationSubmission) {
         processScanResult({ vpToken, presentationSubmission });
-        window.history.replaceState(null, "", window.location.pathname);
+        clearUrl(["vp_token", "presentation_submission"]);
       } else {
         const requestId = sessionStorage.getItem("requestId");
         const transactionId = sessionStorage.getItem("transactionId");

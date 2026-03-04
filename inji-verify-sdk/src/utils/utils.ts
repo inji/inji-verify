@@ -34,3 +34,18 @@ export const normalizeVp = (vp: any): Record<string, unknown> => {
     }
     return vp;
 };
+
+export const clearUrl = (params: string[] = []) => {
+    const url = new URL(window.location.href);
+
+    const hashParamsObj = new URLSearchParams(url.hash.slice(1));
+    params.forEach(param => {
+        url.searchParams.delete(param);
+        hashParamsObj.delete(param);
+    });
+    url.hash = hashParamsObj.toString()
+      ? `#${hashParamsObj.toString()}`
+      : "";
+
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+};
