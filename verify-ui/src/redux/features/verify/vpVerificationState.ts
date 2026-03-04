@@ -2,6 +2,7 @@ import { createSlice } from "@reduxjs/toolkit";
 import { getVerifiableClaims, VerificationSteps } from "../../../utils/config";
 import { VCShareType, VerifyState, claim } from "../../../types/data-types";
 import {calculateUnverifiedClaims, calculateVerifiedClaims, getCredentialType} from "../../../utils/commonUtils";
+import { isSdkFetchingVpResult } from "../../../utils/misc";
 
 export const OVP_SESSION_SELECTED_CREDENTIALS_KEY = "ovp_selectedCredentials";
 
@@ -38,30 +39,39 @@ const restoreCredentialsFromSession = (): claim[] => {
   }
 };
 
-const PreloadedState: VerifyState = {
-  isLoading: false,
-  flowType: "crossDevice",
-  method: "VERIFY",
-  activeScreen: VerificationSteps["VERIFY"].InitiateVpRequest,
-  SelectionPanel: false,
-  SelectWalletPanel: false,
-  selectedWalletId: undefined,
-  selectedWalletBaseUrl: undefined,
-  verificationSubmissionResult: [],
-  selectedCredentials: restoreCredentialsFromSession(),
-  originalSelectedCredentials: restoreCredentialsFromSession(),
-  unVerifiedCredentials: [],
-  sharingType: VCShareType.SINGLE,
-  isPartiallyShared: false,
-  isShowResult: false,
-  presentationDefinition: {
-    id: "c4822b58-7fb4-454e-b827-f8758fe27f9a",
-    purpose:
-      "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-    input_descriptors: [] as any[],
-  },
-  sdkInstanceKey: 0,
+const createInitialState = (fromSession: boolean): VerifyState => {
+  const isFetching = fromSession && isSdkFetchingVpResult();
+  const activeScreen = isFetching
+    ? VerificationSteps["VERIFY"].ScanQrCode
+    : VerificationSteps["VERIFY"].InitiateVpRequest;
+
+  return {
+    isLoading: false,
+    flowType: "crossDevice",
+    method: "VERIFY",
+    activeScreen,
+    SelectionPanel: false,
+    verificationSubmissionResult: [],
+    selectedCredentials: fromSession ? restoreCredentialsFromSession() : DEFAULT_CREDENTIALS(),
+    originalSelectedCredentials: fromSession ? restoreCredentialsFromSession() : DEFAULT_CREDENTIALS(),
+    unVerifiedCredentials: [],
+    sharingType: VCShareType.SINGLE,
+    isPartiallyShared: false,
+    isShowResult: false,
+    presentationDefinition: {
+      id: "c4822b58-7fb4-454e-b827-f8758fe27f9a",
+      purpose:
+        "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+      input_descriptors: [] as any[],
+    },
+    sdkInstanceKey: 0,
+    SelectWalletPanel: false,
+    selectedWalletId: undefined,
+    selectedWalletBaseUrl: undefined,
+  };
 };
+
+const PreloadedState = createInitialState(true);
 
 const vpVerificationState = createSlice({
   name: "vpVerification",
@@ -138,7 +148,8 @@ const vpVerificationState = createSlice({
     },
     verificationSubmissionComplete: (state, action) => {
       const newlyVerified = calculateVerifiedClaims([...state.selectedCredentials], action.payload.verificationResult);
-      state.verificationSubmissionResult = [
+
+      const uniqueResult = [
         ...state.verificationSubmissionResult,
         ...newlyVerified.filter(
           (vc) =>
@@ -146,6 +157,7 @@ const vpVerificationState = createSlice({
               (existing) => getCredentialType(existing.vc) === getCredentialType(vc.vc))
         ),
       ];
+      state.verificationSubmissionResult = uniqueResult;
       state.isShowResult = true;
       state.unVerifiedCredentials = calculateUnverifiedClaims([...state.originalSelectedCredentials], state.verificationSubmissionResult);
       state.isPartiallyShared = state.unVerifiedCredentials.length > 0;
@@ -157,7 +169,7 @@ const vpVerificationState = createSlice({
     resetVpRequest: (state) => {
       const prevSdkKey = state.sdkInstanceKey;
       sessionStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
-      Object.assign(state, PreloadedState);
+      Object.assign(state, createInitialState(false));
       state.sdkInstanceKey = prevSdkKey + 1;
     },
   },
