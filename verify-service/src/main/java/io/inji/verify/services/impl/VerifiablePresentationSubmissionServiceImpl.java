@@ -396,15 +396,15 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     @Override
     public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId, String responseCode) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode, authRequest);
         return processSubmission(vpSubmission, transactionId, authRequest);
     }
 
     @Override
     public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId, String responseCode) {
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode, authRequest);
         return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
     }
 
@@ -468,17 +468,14 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return credentialResults;
     }
 
-    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode, AuthorizationRequestCreateResponse authRequest) {
+    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode) {
         VPSubmission submission = vpSubmissionRepository.findAllById(requestIds)
                 .stream()
                 .findFirst()
                 .orElseThrow(VPSubmissionNotFoundException::new);
 
-        boolean isSameDevice = isSameDeviceFlow(authRequest);
-        log.info("isSameDevice for VPResult: {}", isSameDevice);
-
-        if (isSameDevice) {
-            if (responseCode == null || submission.getResponseCode() == null)
+        if (responseCode != null) {
+            if (submission.getResponseCode() == null)
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
 
             if (!responseCode.equals(submission.getResponseCode()))
