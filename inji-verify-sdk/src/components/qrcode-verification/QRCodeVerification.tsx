@@ -528,7 +528,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     return atob(base64);
   }
 
-  const fetchVPResult = async (transactionId: string, responseCode?: string | null) => {
+  const fetchVPResult = async (transactionId: string) => {
       if (hasFetchedVPResultRef.current) return;
       hasFetchedVPResultRef.current = true;
       try {
@@ -536,7 +536,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 throw new Error("Transaction ID is required to fetch VP result");
             }
 
-            const response = await vpResult(verifyServiceUrl, transactionId, responseCode, vcVerificationV2Request);
+            const response = await vpResult(verifyServiceUrl, transactionId, vcVerificationV2Request);
 
             const VPResult: VerificationResults =
                 (response?.credentialResults ?? []).map((cred: CredentialResult) => {
