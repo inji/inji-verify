@@ -408,6 +408,13 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
     }
 
+    @Override
+    public VPVerificationResultDto getVPResultResponseCode(VerificationRequestDto request, String responseCode) {
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(List.of(), responseCode);
+        AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(vpSubmission.getRequestId()).orElseThrow(VPRequestNotFoundException::new);
+        return processSubmissionV2(request, authRequest.getTransactionId(), vpSubmission, authRequest);
+    }
+
     private boolean isVPTokenNotMatching(VPSubmission vpSubmission, AuthorizationRequestCreateResponse request) {
         Object vpTokenRaw = new JSONTokener(vpSubmission.getVpToken()).nextValue();
         List<DescriptorMapDto> descriptorMap = vpSubmission.getPresentationSubmission().getDescriptorMap();
@@ -469,10 +476,12 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode) {
-        VPSubmission submission = vpSubmissionRepository.findAllById(requestIds)
-                .stream()
-                .findFirst()
-                .orElseThrow(VPSubmissionNotFoundException::new);
+        VPSubmission submission = !requestIds.isEmpty() ?
+                vpSubmissionRepository.findAllById(requestIds)
+                        .stream().findFirst()
+                        .orElseThrow(VPSubmissionNotFoundException::new)
+                : vpSubmissionRepository.findByResponseCode(responseCode)
+                .orElseThrow(VPSubmissionResponseCodeNotFoundException::new);
 
         if (responseCode != null) {
             if (submission.getResponseCode() == null)

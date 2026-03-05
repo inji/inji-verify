@@ -12,6 +12,8 @@ import io.inji.verify.exception.InvalidVpTokenException;
 import io.inji.verify.exception.VPSubmissionWalletError;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
 import io.inji.verify.exception.ResponseCodeException;
+import io.inji.verify.exception.VPRequestNotFoundException;
+import io.inji.verify.exception.VPSubmissionResponseCodeNotFoundException;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -69,6 +71,14 @@ public class VPResultController {
         return ResponseEntity.ok(result);
     }
 
+    @PostMapping(path = "/vp-results", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> getVPResultResponseCode(@Valid @RequestBody VerificationRequestDto request, @RequestParam(name = "response_code") String responseCode) {
+        log.info("Fetching VP result response code");
+        if (responseCode == null || responseCode.isEmpty()) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
+        VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultResponseCode(request, responseCode);
+        return ResponseEntity.ok(result);
+    }
+
     @ExceptionHandler(VPSubmissionNotFoundException.class)
     public ResponseEntity<ErrorDto> handleNotFound(VPSubmissionNotFoundException e) {
         log.error(e.getMessage());
@@ -104,5 +114,17 @@ public class VPResultController {
         log.error("Response Code Error: {}", e.getMessage());
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(errorCode.name(), errorCode.getErrorMessage()));
+    }
+
+    @ExceptionHandler(VPRequestNotFoundException.class)
+    public ResponseEntity<ErrorDto> handleVPRequestNotFound(VPRequestNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_AUTH_REQUEST));
+    }
+
+    @ExceptionHandler(VPSubmissionResponseCodeNotFoundException.class)
+    public ResponseEntity<ErrorDto> handleVPSubmissionResponseCodeNotFoundException(VPSubmissionResponseCodeNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_VP_SUBMISSION_RESPONSE_CODE));
     }
 }

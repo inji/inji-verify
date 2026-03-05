@@ -2,7 +2,7 @@ package io.inji.verify.exception;
 
 import io.inji.verify.enums.ErrorCode;
 
-public class VPRequestNotFoundException extends Exception {
+public class VPRequestNotFoundException extends RuntimeException {
     private static final String message = ErrorCode.NO_AUTH_REQUEST.getErrorMessage();
 
     public VPRequestNotFoundException() {
