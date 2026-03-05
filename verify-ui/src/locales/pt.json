@@ -109,6 +109,10 @@
         "label": "Compartilhar credenciais verificáveis ​​da carteira",
         "description": "Escolha uma carteira na lista de carteiras disponíveis e prossiga com o compartilhamento de credenciais."
       },
+      "ShareVerifiableCredentials": {
+        "label": "Compartilhar credenciais verificáveis ​​da carteira",
+        "description": "Entre dispositivos: Clique em 'Gerar código QR' após selecionar as credenciais. Escaneie o código QR usando uma carteira móvel em outro dispositivo que contenha as credenciais selecionadas. Mesmo dispositivo: Clique em 'Abrir carteira' para escolher uma carteira móvel na lista de carteiras disponíveis no mesmo dispositivo e prosseguir com o compartilhamento de credenciais."
+      },
       "DisplayResult": {
         "label": "Ver resultados da verificação",
         "description": "Verifique os resultados da verificação das credenciais verificáveis ​​compartilhadas da carteira."

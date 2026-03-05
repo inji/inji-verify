@@ -1,7 +1,42 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { getVerifiableClaims, VerificationSteps } from "../../../utils/config";
-import { VCShareType, VerifyState } from "../../../types/data-types";
-import {calculateUnverifiedClaims, calculateVerifiedClaims, getCredentialType} from "../../../utils/commonUtils";
+import { VCShareType, VerifyState, claim } from "../../../types/data-types";
+import { calculateUnverifiedClaims, calculateVerifiedClaims, getCredentialType } from "../../../utils/commonUtils";
+
+export const OVP_SESSION_SELECTED_CREDENTIALS_KEY = "ovp_selectedCredentials";
+
+const DEFAULT_CREDENTIALS = (): claim[] =>
+  getVerifiableClaims()?.filter((c) => c.essential) ?? [];
+
+const hasValidCredentialStructure = (item: unknown): item is claim => {
+  if (!item || typeof item !== "object") return false;
+  const c = item as Record<string, unknown>;
+  const def = c.definition;
+  if (!def || typeof def !== "object") return false;
+  const descriptors = (def as Record<string, unknown>).input_descriptors;
+  if (!Array.isArray(descriptors)) return false;
+  const type = c.type;
+  return typeof type === "string" && !!type;
+};
+
+const restoreCredentialsFromSession = (): claim[] => {
+  try {
+    const saved = sessionStorage.getItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
+    if (!saved) return DEFAULT_CREDENTIALS();
+    const parsed: unknown = JSON.parse(saved);
+    if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_CREDENTIALS();
+    const knownTypes = new Set(getVerifiableClaims()?.map((c) => c.type) ?? []);
+    const valid = parsed.filter((item) => {
+      if (!hasValidCredentialStructure(item)) return false;
+      if (knownTypes.size > 0) return knownTypes.has((item as claim).type);
+      return true;
+    });
+    if (valid.length === 0) return DEFAULT_CREDENTIALS();
+    return valid as claim[];
+  } catch {
+    return DEFAULT_CREDENTIALS();
+  }
+};
 
 const PreloadedState: VerifyState = {
   isLoading: false,
@@ -10,9 +45,9 @@ const PreloadedState: VerifyState = {
   activeScreen: VerificationSteps["VERIFY"].InitiateVpRequest,
   SelectionPanel: false,
   verificationSubmissionResult: [],
-  selectedClaims: getVerifiableClaims()?.filter((claim) => claim.essential),
-  originalSelectedClaims: getVerifiableClaims()?.filter((claim) => claim.essential),
-  unVerifiedClaims: [],
+  selectedCredentials: getVerifiableClaims()?.filter((claim) => claim.essential) ?? [],
+  originalSelectedCredentials: getVerifiableClaims()?.filter((claim) => claim.essential) ?? [],
+  unVerifiedCredentials: [],
   sharingType: VCShareType.SINGLE,
   isPartiallyShared: false,
   isShowResult: false,
@@ -34,27 +69,28 @@ const vpVerificationState = createSlice({
   reducers: {
     setSelectCredential: (state) => {
       state.activeScreen = VerificationSteps[state.method].SelectCredential;
-      state.selectedClaims = getVerifiableClaims().filter((claim) => claim.essential );
-      state.originalSelectedClaims = [...state.selectedClaims];
-      state.sharingType = state.selectedClaims.length > 1 ? VCShareType.MULTIPLE : VCShareType.SINGLE;
-      const inputDescriptors = state.selectedClaims.flatMap((claim) => claim.definition.input_descriptors);
+      state.selectedCredentials = getVerifiableClaims().filter((c) => c.essential);
+      state.originalSelectedCredentials = [...state.selectedCredentials];
+      state.sharingType = state.selectedCredentials.length > 1 ? VCShareType.MULTIPLE : VCShareType.SINGLE;
+      const inputDescriptors = state.selectedCredentials.flatMap((c) => c.definition.input_descriptors);
       state.presentationDefinition.input_descriptors = [...inputDescriptors];
       state.SelectionPanel = true;
       state.SelectWalletPanel = false;
       state.verificationSubmissionResult = [];
-      state.unVerifiedClaims = [];
+      state.unVerifiedCredentials = [];
       state.isShowResult = false;
     },
-    setSelectedClaims: (state, actions) => {
-      state.selectedClaims = [...actions.payload.selectedClaims];
-      state.sharingType = state.selectedClaims.length > 1 ? VCShareType.MULTIPLE : VCShareType.SINGLE;
-      const inputDescriptors = state.selectedClaims.flatMap((claim) => claim.definition.input_descriptors);
+    setSelectedCredentials: (state, action) => {
+      state.selectedCredentials = [...action.payload.selectedCredentials];
+      state.sharingType = state.selectedCredentials.length > 1 ? VCShareType.MULTIPLE : VCShareType.SINGLE;
+      const inputDescriptors = state.selectedCredentials.flatMap((c) => c.definition.input_descriptors);
       state.presentationDefinition.input_descriptors = [...inputDescriptors];
       state.verificationSubmissionResult = [];
-      state.originalSelectedClaims = [...state.selectedClaims];
+      state.originalSelectedCredentials = [...state.selectedCredentials];
     },
     setFlowType: (state) => {
       state.SelectWalletPanel = false;
+      state.SelectionPanel = false;
       state.flowType = "sameDevice";
       state.activeScreen = VerificationSteps[state.method].SelectWallet;
     },
@@ -68,23 +104,40 @@ const vpVerificationState = createSlice({
       state.flowType = "sameDevice";
       state.activeScreen = VerificationSteps[state.method].SelectWallet;
     },
-    getVpRequest: (state, actions) => {
-      if (state.isPartiallyShared && state.unVerifiedClaims.length > 0) {
-        state.selectedClaims = [...state.unVerifiedClaims];
+    showMissingCredentialOptions: (state) => {
+      state.selectedCredentials = [...state.unVerifiedCredentials];
+      state.sharingType = state.selectedCredentials.length > 1 ? VCShareType.MULTIPLE : VCShareType.SINGLE;
+      const inputDescriptors = state.selectedCredentials.flatMap((c) => c.definition.input_descriptors);
+      state.presentationDefinition.input_descriptors = [...inputDescriptors];
+      state.isShowResult = false;
+
+      if (state.flowType === "sameDevice") {
+        state.SelectWalletPanel = true;
+        state.SelectionPanel = false;
+        state.activeScreen = VerificationSteps[state.method].SelectWallet;
       } else {
-        state.selectedClaims = [...actions.payload.selectedClaims];
-        state.originalSelectedClaims = [...actions.payload.selectedClaims];
+        state.SelectWalletPanel = false;
+        state.SelectionPanel = true;
+        state.activeScreen = VerificationSteps[state.method].SelectCredential;
       }
-      const inputDescriptors = state.selectedClaims.flatMap((claim) => claim.definition.input_descriptors);
+    },
+    getVpRequest: (state, action) => {
+      if (state.isPartiallyShared && state.unVerifiedCredentials.length > 0) {
+        state.selectedCredentials = [...state.unVerifiedCredentials];
+      } else {
+        state.selectedCredentials = [...action.payload.selectedCredentials];
+        state.originalSelectedCredentials = [...action.payload.selectedCredentials];
+      }
+      const inputDescriptors = state.selectedCredentials.flatMap((c) => c.definition.input_descriptors);
       state.presentationDefinition.input_descriptors = [...inputDescriptors];
       state.SelectionPanel = false;
       state.SelectWalletPanel = false;
       state.isShowResult = false;
       state.activeScreen = VerificationSteps[state.method].ScanQrCode;
-      state.unVerifiedClaims = [];
+      state.unVerifiedCredentials = [];
     },
     verificationSubmissionComplete: (state, action) => {
-      const newlyVerified = calculateVerifiedClaims([...state.selectedClaims], action.payload.verificationResult);
+      const newlyVerified = calculateVerifiedClaims([...state.selectedCredentials], action.payload.verificationResult);
 
       const uniqueResult = [
         ...state.verificationSubmissionResult,
@@ -96,8 +149,8 @@ const vpVerificationState = createSlice({
       ];
       state.verificationSubmissionResult = uniqueResult;
       state.isShowResult = true;
-      state.unVerifiedClaims = calculateUnverifiedClaims([...state.originalSelectedClaims], state.verificationSubmissionResult);
-      state.isPartiallyShared = state.unVerifiedClaims.length > 0;
+      state.unVerifiedCredentials = calculateUnverifiedClaims([...state.originalSelectedCredentials], state.verificationSubmissionResult);
+      state.isPartiallyShared = state.unVerifiedCredentials.length > 0;
       state.activeScreen = state.isPartiallyShared
         ? VerificationSteps[state.method].RequestMissingCredential
         : VerificationSteps[state.method].DisplayResult;
@@ -105,6 +158,7 @@ const vpVerificationState = createSlice({
     },
     resetVpRequest: (state) => {
       const prevSdkKey = state.sdkInstanceKey;
+      sessionStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
       Object.assign(state, PreloadedState);
       state.sdkInstanceKey = prevSdkKey + 1;
     },
@@ -114,10 +168,11 @@ const vpVerificationState = createSlice({
 export const {
   getVpRequest,
   setSelectCredential,
+  showMissingCredentialOptions,
   setFlowType,
   resetVpRequest,
   verificationSubmissionComplete,
-  setSelectedClaims,
+  setSelectedCredentials,
   setShowWalletSelector,
   setSelectedWallet,
 } = vpVerificationState.actions;

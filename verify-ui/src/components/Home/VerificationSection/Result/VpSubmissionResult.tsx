@@ -14,7 +14,7 @@ import { useAppDispatch } from "../../../../redux/hooks";
 
 type VpSubmissionResultProps = {
   verifiedVcs: VpSubmissionResultInt[];
-  unverifiedClaims: claim[];
+  unverifiedCredentials: claim[];
   requestCredentials: () => void;
   requestMissingCredentials: () => void;
   restart: () => void;
@@ -23,19 +23,19 @@ type VpSubmissionResultProps = {
 
 const VpSubmissionResult: React.FC<VpSubmissionResultProps> = ({
   verifiedVcs,
-  unverifiedClaims,
+  unverifiedCredentials,
   requestCredentials,
   requestMissingCredentials,
   restart,
   isSingleVc,
 }) => {
-  const vcStatus = isSingleVc ? verifiedVcs[0].vcStatus : "INVALID";
-  const originalSelectedClaims: claim[] = useVerifyFlowSelector((state) => state.originalSelectedClaims) || [];
+  const vcStatus = isSingleVc ? verifiedVcs[0]?.vcStatus : "INVALID";
+  const originalSelectedCredentials: claim[] = useVerifyFlowSelector((state) => state.originalSelectedCredentials) || [];
   const isPartiallyShared = useVerifyFlowSelector((state) => state.isPartiallyShared );
   const showResult = useVerifyFlowSelector((state) => state.isShowResult );
   const { t } = useTranslation("Verify");
   const filterVerifiedVcs = verifiedVcs.filter((verifiedVc) =>
-    originalSelectedClaims.some((selectedVc) => getCredentialType(verifiedVc.vc) === (selectedVc.type))
+    originalSelectedCredentials.some((selectedVc) => getCredentialType(verifiedVc.vc) === (selectedVc.type))
   );
   const dispatch = useAppDispatch();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -93,7 +93,7 @@ const VpSubmissionResult: React.FC<VpSubmissionResultProps> = ({
       ) : (
         <VpVerifyResultSummary
           verifiedVcs={[...filterVerifiedVcs]}
-          unverifiedClaims={unverifiedClaims}
+          unverifiedCredentials={unverifiedCredentials}
         />
       )}
       <div className="relative">
@@ -103,10 +103,10 @@ const VpSubmissionResult: React.FC<VpSubmissionResultProps> = ({
               key={index}
               vc={vc}
               vcStatus={vcStatus}
-              view={isSingleVc}
+              view={originalSelectedCredentials.length === 1}
             />
           ))}
-          {unverifiedClaims.length > 0 && unverifiedClaims.map((claim,index) => (
+          {unverifiedCredentials.length > 0 && unverifiedCredentials.map((claim,index) => (
             <DisplayUnVerifiedVc key={index} claim={claim} />
           ))}
         </div>

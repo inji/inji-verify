@@ -109,6 +109,10 @@
         "label": "Compartir credenciales verificables de la billetera",
         "description": "Elija una billetera de la lista de billeteras disponibles y continúe con el intercambio de credenciales."
       },
+      "ShareVerifiableCredentials": {
+        "label": "Compartir credenciales verificables de la billetera",
+        "description": "Entre dispositivos: Haga clic en 'Generar código QR' después de seleccionar las credenciales. Escanee el código QR con una billetera móvil en otro dispositivo que contenga las credenciales seleccionadas. Mismo dispositivo: Haga clic en 'Abrir billetera' para elegir una billetera móvil de la lista de billeteras disponibles en el mismo dispositivo y proceder con el intercambio de credenciales."
+      },
       "DisplayResult": {
         "label": "Ver resultados de verificación",
         "description": "Verifique los resultados de verificación para las credenciales verificables compartidas desde la billetera."

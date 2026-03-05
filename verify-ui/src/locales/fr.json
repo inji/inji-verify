@@ -109,6 +109,10 @@
         "label": "Partagez des informations d'identification vérifiables de Wallet",
         "description": "Choisissez un portefeuille dans la liste des portefeuilles disponibles et procédez au partage des informations d'identification."
       },
+      "ShareVerifiableCredentials": {
+        "label": "Partagez des informations d'identification vérifiables de Wallet",
+        "description": "Appareil à appareil : Cliquez sur « Générer un code QR » après avoir sélectionné les informations d'identification. Scannez le code QR à l'aide d'un portefeuille mobile sur un autre appareil contenant les informations d'identification sélectionnées. Même appareil : Cliquez sur « Ouvrir le portefeuille » pour choisir un portefeuille mobile parmi la liste des portefeuilles disponibles sur le même appareil et procéder au partage des informations d'identification."
+      },
       "DisplayResult": {
         "label": "Afficher les résultats de la vérification",
         "description": "Vérifiez les résultats de la vérification des informations d'identification vérifiables partagées à partir du portefeuille."
