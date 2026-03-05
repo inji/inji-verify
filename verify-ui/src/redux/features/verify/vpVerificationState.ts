@@ -1,6 +1,6 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { getVerifiableClaims, VerificationSteps } from "../../../utils/config";
-import { VCShareType, VerifyState, VpSubmissionResultInt, claim } from "../../../types/data-types";
+import { VCShareType, VerifyState, claim } from "../../../types/data-types";
 import { calculateUnverifiedClaims, calculateVerifiedClaims, getCredentialType } from "../../../utils/commonUtils";
 
 export const OVP_SESSION_SELECTED_CREDENTIALS_KEY = "ovp_selectedCredentials";
@@ -45,8 +45,8 @@ const PreloadedState: VerifyState = {
   activeScreen: VerificationSteps["VERIFY"].InitiateVpRequest,
   SelectionPanel: false,
   verificationSubmissionResult: [],
-  selectedCredentials: getVerifiableClaims()?.filter((claim) => claim.essential),
-  originalSelectedCredentials: getVerifiableClaims()?.filter((claim) => claim.essential),
+  selectedCredentials: getVerifiableClaims()?.filter((claim) => claim.essential) ?? [],
+  originalSelectedCredentials: getVerifiableClaims()?.filter((claim) => claim.essential) ?? [],
   unVerifiedCredentials: [],
   sharingType: VCShareType.SINGLE,
   isPartiallyShared: false,
@@ -147,7 +147,7 @@ const vpVerificationState = createSlice({
               (existing) => getCredentialType(existing.vc) === getCredentialType(vc.vc))
         ),
       ];
-      state.verificationSubmissionResult = uniqueResult as VpSubmissionResultInt[];
+      state.verificationSubmissionResult = uniqueResult;
       state.isShowResult = true;
       state.unVerifiedCredentials = calculateUnverifiedClaims([...state.originalSelectedCredentials], state.verificationSubmissionResult);
       state.isPartiallyShared = state.unVerifiedCredentials.length > 0;
