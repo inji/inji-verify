@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen } from "@testing-library/react";
+import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 import QRCodeVerification from "../../../src/components/qrcode-verification/QRCodeVerification";
 
@@ -45,34 +45,81 @@ describe("QRCodeVerification", () => {
   });
 
   test("throws when verifyServiceUrl is missing", () => {
-    expect(() =>
-      render(
+    class ErrorBoundary extends React.Component<
+      { children: React.ReactNode },
+      { error: Error | null }
+    > {
+      state = { error: null };
+      static getDerivedStateFromError(error: Error) {
+        return { error };
+      }
+      render() {
+        if (this.state.error) {
+          return <div data-testid="error-message">{this.state.error.message}</div>;
+        }
+        return this.props.children;
+      }
+    }
+    render(
+      <ErrorBoundary>
         <QRCodeVerification
           {...baseProps}
           verifyServiceUrl={""}
           scannerActive={false}
           isEnableScan={false}
         />
-      )
-    ).toThrow("verifyServiceUrl is required.");
+      </ErrorBoundary>
+    );
+    expect(screen.getByTestId("error-message")).toHaveTextContent("verifyServiceUrl is required.");
   });
 
   test("throws when both scan and upload are disabled", () => {
-    expect(() =>
-      render(
+    class ErrorBoundary extends React.Component<
+      { children: React.ReactNode },
+      { error: Error | null }
+    > {
+      state = { error: null };
+      static getDerivedStateFromError(error: Error) {
+        return { error };
+      }
+      render() {
+        if (this.state.error) {
+          return <div data-testid="error-message">{this.state.error.message}</div>;
+        }
+        return this.props.children;
+      }
+    }
+    render(
+      <ErrorBoundary>
         <QRCodeVerification
           {...baseProps}
           scannerActive={false}
           isEnableScan={false}
           isEnableUpload={false}
         />
-      )
-    ).toThrow("Either scan or upload must be enabled.");
+      </ErrorBoundary>
+    );
+    expect(screen.getByTestId("error-message")).toHaveTextContent("Either scan or upload must be enabled.");
   });
 
-  test("throws when both callbacks are provided", () => {
-    expect(() =>
-      render(
+  test("throws when both callbacks are provided", async () => {
+    class ErrorBoundary extends React.Component<
+      { children: React.ReactNode },
+      { error: Error | null }
+    > {
+      state = { error: null };
+      static getDerivedStateFromError(error: Error) {
+        return { error };
+      }
+      render() {
+        if (this.state.error) {
+          return <div data-testid="error-message">{this.state.error.message}</div>;
+        }
+        return this.props.children;
+      }
+    }
+    render(
+      <ErrorBoundary>
         <QRCodeVerification
           {...baseProps}
           onVCReceived={jest.fn()}
@@ -80,7 +127,12 @@ describe("QRCodeVerification", () => {
           scannerActive={false}
           isEnableScan={false}
         />
-      )
-    ).toThrow("Only one of onVCReceived or onVCProcessed can be provided.");
+      </ErrorBoundary>
+    );
+    await waitFor(() => {
+      expect(screen.getByTestId("error-message")).toHaveTextContent(
+        "Only one of onVCReceived or onVCProcessed can be provided."
+      );
+    });
   });
 });
