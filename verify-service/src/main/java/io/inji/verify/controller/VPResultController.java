@@ -73,7 +73,7 @@ public class VPResultController {
 
     @PostMapping(path = "/vp-results/", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getVPResultResponseCode(@Valid @RequestBody VerificationRequestDto request, @RequestParam(name = "response_code") String responseCode) {
-        log.info("Fetching VP result response code: {}", responseCode);
+        log.info("Fetching VP result response code");
         if (responseCode == null || responseCode.isEmpty()) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
         VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultResponseCode(request, responseCode);
         return ResponseEntity.ok(result);
