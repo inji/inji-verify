@@ -20,7 +20,8 @@ public enum ErrorCode {
     RESPONSE_CODE_EXPIRED("RESPONSE_CODE_EXPIRED", "Response code has expired"),
     RESPONSE_CODE_USED("RESPONSE_CODE_USED", "Response code has been used"),
     RESPONSE_CODE_NOT_FOUND("RESPONSE_CODE_NOT_FOUND", "Same device flow needs response code"),
-    REDIRECT_URI_NOT_FOUND("REDIRECT_URI_NOT_FOUND", "Same device flow needs redirect uri");
+    REDIRECT_URI_NOT_FOUND("REDIRECT_URI_NOT_FOUND", "Same device flow needs redirect uri"),
+    NO_VP_SUBMISSION_RESPONSE_CODE("NO_VP_SUBMISSION_RESPONSE_CODE","No VP submission found for given response code.");
 
     private final String errorCode;
     private final String errorMessage;

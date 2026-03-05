@@ -14,4 +14,6 @@ public interface VerifiablePresentationSubmissionService {
     VPTokenResultDto getVPResult(List<String> requestId, String transactionId, String responseCode) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException;
 
     VPVerificationResultDto getVPResultV2(@Valid VerificationRequestDto request, List<String> requestIds, String transactionId, String responseCode);
+
+    VPVerificationResultDto getVPResultResponseCode(VerificationRequestDto request, String responseCode);
 }

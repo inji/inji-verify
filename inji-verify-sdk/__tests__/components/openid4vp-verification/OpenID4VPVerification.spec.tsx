@@ -41,9 +41,15 @@ describe("OpenID4VPVerification UI Tests", () => {
 
   beforeEach(() => {
     jest.clearAllMocks();
-    // Mock window.location.origin for each test
+    // Mock window.location for each test (jsdom may not have hash/search)
     Object.defineProperty(window, "location", {
-      value: { origin: "https://client.example.com" },
+      value: {
+        origin: "https://client.example.com",
+        search: "",
+        hash: "",
+        href: "https://client.example.com/",
+        pathname: "/",
+      },
       writable: true,
     });
   });
@@ -200,7 +206,12 @@ describe("OpenID4VPVerification UI Tests", () => {
       })
       .mockResolvedValueOnce({
         status: 200,
-        json: async () => ({ status: "VP_SUBMITTED" }), // Simulating VP_SUBMITTED status
+        json: async () => ({ status: "VP_SUBMITTED" }),
+      })
+      .mockResolvedValueOnce({
+        ok: true,
+        status: 200,
+        json: async () => ({ credentialResults: [], transactionId: mockTransactionId }),
       });
 
     global.fetch = fetchMock;

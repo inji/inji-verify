@@ -5,6 +5,7 @@ import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.transaction.annotation.Transactional;
+import java.util.Optional;
 
 public interface VPSubmissionRepository extends JpaRepository<VPSubmission, String> {
 
@@ -18,4 +19,6 @@ public interface VPSubmissionRepository extends JpaRepository<VPSubmission, Stri
 			"WHERE response_code = :responseCode AND response_code_used = false",
 			nativeQuery = true)
 	int setResponseCodeAsUsed(String responseCode);
+
+	Optional<VPSubmission> findByResponseCode(String responseCode);
 }
