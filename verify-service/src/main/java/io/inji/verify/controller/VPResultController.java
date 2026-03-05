@@ -6,13 +6,7 @@ import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
-import io.inji.verify.exception.TokenMatchingFailedException;
-import io.inji.verify.exception.VPWithoutProofException;
-import io.inji.verify.exception.InvalidVpTokenException;
-import io.inji.verify.exception.VPSubmissionWalletError;
-import io.inji.verify.exception.VPSubmissionNotFoundException;
-import io.inji.verify.exception.ResponseCodeException;
-import io.inji.verify.exception.VPRequestNotFoundException;
+import io.inji.verify.exception.*;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -119,5 +113,11 @@ public class VPResultController {
     public ResponseEntity<ErrorDto> handleVPRequestNotFound(VPRequestNotFoundException e) {
         log.error(e.getMessage());
         return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_AUTH_REQUEST));
+    }
+
+    @ExceptionHandler(VPSubmissionResponseCodeNotFoundException.class)
+    public ResponseEntity<ErrorDto> handleVPSubmissionResponseCodeNotFoundException(VPSubmissionResponseCodeNotFoundException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_VP_SUBMISSION_RESPONSE_CODE));
     }
 }
