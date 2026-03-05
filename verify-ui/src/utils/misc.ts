@@ -33,21 +33,6 @@ export const getDisplayValue = (data: any): string => {
     return data?.toString();
 }
 
-/** Session keys used by the SDK when fetching VP status/result (must match inji-verify-sdk) */
-const OVP_SESSION_REQUEST_ID_KEY = "ovp_requestId";
-const OVP_SESSION_TRANSACTION_ID_KEY = "ovp_transactionId";
-
-export const isSdkFetchingVpResult = (): boolean => {
-  try {
-    return !!(
-      sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY) &&
-      sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY)
-    );
-  } catch {
-    return false;
-  }
-};
-
 export const fetchVerificationSteps = (
     method: VerificationMethod,
     isPartiallyShared: boolean,
