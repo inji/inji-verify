@@ -3,13 +3,12 @@ import { QRCodeSVG } from "qrcode.react";
 import {
     AppError,
     OpenID4VPVerificationProps,
-    SessionState,
     VerificationResults,
     CredentialResult
 } from "./OpenID4VPVerification.types";
 import {vpRequestStatus, vpRequest, vpResult} from "../../utils/api";
 import "./OpenID4VPVerification.css";
-import {clearUrl, normalizeVp} from "../../utils/utils";
+import { clearUrl, normalizeVp } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { CROSS_DEVICE_FLOW, OVP_SESSION_REQUEST_ID_KEY, OVP_SESSION_TRANSACTION_ID_KEY, SAME_DEVICE_FLOW } from "../../utils/constants";
 
@@ -75,8 +74,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   const presentationFlow = isSameDeviceFlowEnabled ? SAME_DEVICE_FLOW : CROSS_DEVICE_FLOW;
 
   const clearSessionData = useCallback(() => {
-    sessionStorage.removeItem(OVP_SESSION_REQUEST_ID_KEY);
-    sessionStorage.removeItem(OVP_SESSION_TRANSACTION_ID_KEY);
+    localStorage.removeItem(OVP_SESSION_REQUEST_ID_KEY);
+    localStorage.removeItem(OVP_SESSION_TRANSACTION_ID_KEY);
   }, []);
 
   const resetState = useCallback(() => {
@@ -219,8 +218,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       );
 
       if (isSameDeviceFlowEnabled) {
-        sessionStorage.setItem(OVP_SESSION_REQUEST_ID_KEY, data.requestId);
-        sessionStorage.setItem(OVP_SESSION_TRANSACTION_ID_KEY, data.transactionId);
+        localStorage.setItem(OVP_SESSION_REQUEST_ID_KEY, data.requestId);
+        localStorage.setItem(OVP_SESSION_TRANSACTION_ID_KEY, data.transactionId);
       }
 
       if (!isSameDeviceFlowEnabled || !isMobileDevice()) {
@@ -276,8 +275,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      const requestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
-      const transactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
+      const requestId = localStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
+      const transactionId = localStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
       if (document.visibilityState === "visible" && isActiveRef.current && transactionId && requestId) {
         fetchVPStatus(requestId, transactionId);
       }
@@ -292,8 +291,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   useEffect(() => {
     if (!isActiveRef.current) {
-      const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
-      const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
+      const savedRequestId = localStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
+      const savedTransactionId = localStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
 
       if (savedRequestId && savedTransactionId) {
         isActiveRef.current = true;

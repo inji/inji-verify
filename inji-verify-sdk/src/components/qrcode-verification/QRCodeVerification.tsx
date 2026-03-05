@@ -347,8 +347,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   };
 
   const storeStates = (data: QrData) => {
-    sessionStorage.setItem("transactionId", data.transactionId);
-    sessionStorage.setItem("requestId", data.requestId);
+    localStorage.setItem("transactionId", data.transactionId);
+    localStorage.setItem("requestId", data.requestId);
   };
 
   const createVPRequest = async (presentationDefinition: any) => {
@@ -463,8 +463,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   };
 
   const resetState = () => {
-    sessionStorage.removeItem("transactionId");
-    sessionStorage.removeItem("requestId");
+    localStorage.removeItem("transactionId");
+    localStorage.removeItem("requestId");
     hasFetchedVPResultRef.current = false;
     scanSessionCompletedRef.current = true;
     frameProcessingRef.current = false;
@@ -568,7 +568,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const fetchVPStatus = async (transactionId: string, requestId: string) => {
     try {
       const response = await vpRequestStatus(verifyServiceUrl, requestId, true);
-      const hasRequiredKeys = sessionStorage.getItem("transactionId") && sessionStorage.getItem("requestId");
+      const hasRequiredKeys = localStorage.getItem("transactionId") && localStorage.getItem("requestId");
       if (response.status === "VP_SUBMITTED" && hasRequiredKeys) {
         await fetchVPResult(transactionId);
       } else {
@@ -631,8 +631,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         processScanResult({ vpToken, presentationSubmission });
         clearUrl(["vp_token", "presentation_submission"]);
       } else {
-        const requestId = sessionStorage.getItem("requestId");
-        const transactionId = sessionStorage.getItem("transactionId");
+        const requestId = localStorage.getItem("requestId");
+        const transactionId = localStorage.getItem("transactionId");
 
         if (requestId && transactionId && !vpToken && !error) {
           setLoading(true);
