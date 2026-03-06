@@ -61,9 +61,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Value("${inji.verify.claims-with-meta-data}")
     List<String> claimsWithMetaData;
 
-    @Value("${inji.verify.include-response-code-security-checks:#{true}}")
-    boolean includeResponseCodeSecurityChecks;
-
     @Value("${inji.verify.response-code-expiry-time-in-mins:#{5}}")
     int responseCodeExpiryTimeInMins;
 
@@ -92,7 +89,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private void saveVPSubmissionDto(VPSubmissionDto vpSubmissionDto) {
-        vpSubmissionRepository.save(new VPSubmission(vpSubmissionDto.getState(), vpSubmissionDto.getVpToken(), vpSubmissionDto.getPresentationSubmission(), vpSubmissionDto.getError(), vpSubmissionDto.getErrorDescription(), vpSubmissionDto.getResponseCode(), vpSubmissionDto.getResponseCodeExpiryAt(), vpSubmissionDto.getResponseCodeUsed()));
+        vpSubmissionRepository.save(new VPSubmission(vpSubmissionDto.getState(), vpSubmissionDto.getVpToken(), vpSubmissionDto.getPresentationSubmission(), vpSubmissionDto.getError(), vpSubmissionDto.getErrorDescription(), vpSubmissionDto.getResponseCode(), vpSubmissionDto.getResponseCodeExpiryAt(), vpSubmissionDto.isResponseCodeUsed()));
         verifiablePresentationRequestService.invokeVpRequestStatusListener(vpSubmissionDto.getState());
     }
 
@@ -144,7 +141,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         if (redirectUri == null || redirectUri.isBlank()) throw new RedirectUriNotFoundException();
         return UriComponentsBuilder
                 .fromUriString(redirectUri)
-                .queryParam("response_code", responseCode)
+                .fragment("response_code=" + responseCode)
                 .build()
                 .toUriString();
     }
@@ -479,17 +476,23 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
 
             if (!responseCode.equals(submission.getResponseCode()))
-                throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_EQUAL);
+                throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_MATCHING);
 
-            int updatedRows = vpSubmissionRepository.setResponseCodeAsUsed(responseCode);
-            if (includeResponseCodeSecurityChecks) {
-                if (submission.getResponseCodeExpiryAt() != null
-                        && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant()))
-                    throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
-
-                if (updatedRows == 0)
-                    throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
+            if (submission.getResponseCodeExpiryAt() != null
+                    && Instant.now().isAfter(submission.getResponseCodeExpiryAt().toInstant())) {
+                throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
             }
+
+            if (submission.isResponseCodeUsed())
+                throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
+            VPSubmissionDto vpSubmissionDto =
+                    new VPSubmissionDto(submission.getVpToken(),
+                            submission.getPresentationSubmission(),
+                            submission.getRequestId(), submission.getError(),
+                            submission.getErrorDescription(),
+                            submission.getResponseCode(),
+                            submission.getResponseCodeExpiryAt(), true);
+            saveVPSubmissionDto(vpSubmissionDto);
         }
 
         if (submission.getError() != null && !submission.getError().isEmpty())
