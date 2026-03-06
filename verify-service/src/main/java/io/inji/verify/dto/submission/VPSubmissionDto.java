@@ -22,5 +22,5 @@ public class VPSubmissionDto {
     String errorDescription;
     String responseCode;
     Timestamp responseCodeExpiryAt;
-    Boolean responseCodeUsed;
+    boolean responseCodeUsed;
 }
