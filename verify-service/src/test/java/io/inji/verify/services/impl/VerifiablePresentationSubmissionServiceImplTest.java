@@ -1465,6 +1465,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
+        when(vpSubmissionRepository.markResponseCodeAsUsed(requestId)).thenReturn(1);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1747,6 +1748,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
+        when(vpSubmissionRepository.markResponseCodeAsUsed(requestId)).thenReturn(1);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1950,6 +1952,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
+        when(vpSubmissionRepository.markResponseCodeAsUsed(requestId)).thenReturn(1);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1959,6 +1962,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
         assertEquals(responseCode, result.getResponseCode());
+        // Verify with requestId, not responseCode
+        verify(vpSubmissionRepository, times(1)).markResponseCodeAsUsed(requestId);
     }
 
     @Test
@@ -2153,7 +2158,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 false,
                 "same_device"
         );
-
         AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                 requestId,
                 "transactionId",
