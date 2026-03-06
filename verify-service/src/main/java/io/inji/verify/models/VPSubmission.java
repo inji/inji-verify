@@ -24,11 +24,11 @@ public class VPSubmission {
     private final String requestId;
 
     @JdbcTypeCode(SqlTypes.CLOB)
+    @Column(columnDefinition = "TEXT")
     private final String vpToken;
 
     @Convert(converter = PresentationSubmissionDtoConverter.class)
-    @Lob
-    @JdbcTypeCode(SqlTypes.LONGVARCHAR)
+    @Column(columnDefinition = "TEXT")
     private final PresentationSubmissionDto presentationSubmission;
 
     private final String error;
