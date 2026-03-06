@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -409,6 +410,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
+    @Transactional
     public VPVerificationResultDto getVPResultResponseCode(VerificationRequestDto request, String responseCode) {
         VPSubmission vpSubmission = fetchVpSubmissionIfValid(List.of(), responseCode);
         AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(vpSubmission.getRequestId()).orElseThrow(VPRequestNotFoundException::new);
