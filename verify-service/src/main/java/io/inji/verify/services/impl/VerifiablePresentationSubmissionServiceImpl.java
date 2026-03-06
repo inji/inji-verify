@@ -38,6 +38,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -392,6 +393,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
+    @Transactional
     public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId, String responseCode) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
         VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
@@ -399,6 +401,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
+    @Transactional
     public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId, String responseCode) {
         VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
@@ -471,7 +474,15 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 .findFirst()
                 .orElseThrow(VPSubmissionNotFoundException::new);
 
-        if (responseCode != null) {
+        if (responseCode != null) validateResponseCode(responseCode, submission);
+
+        if (submission.getError() != null && !submission.getError().isEmpty())
+            throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());
+
+        return submission;
+    }
+
+    private void validateResponseCode(String responseCode, VPSubmission submission) {
             if (submission.getResponseCode() == null)
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
 
@@ -483,22 +494,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_EXPIRED);
             }
 
-            if (submission.isResponseCodeUsed())
+            if (vpSubmissionRepository.markResponseCodeAsUsed(submission.getRequestId()) == 0) {
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
-            VPSubmissionDto vpSubmissionDto =
-                    new VPSubmissionDto(submission.getVpToken(),
-                            submission.getPresentationSubmission(),
-                            submission.getRequestId(), submission.getError(),
-                            submission.getErrorDescription(),
-                            submission.getResponseCode(),
-                            submission.getResponseCodeExpiryAt(), true);
-            saveVPSubmissionDto(vpSubmissionDto);
-        }
-
-        if (submission.getError() != null && !submission.getError().isEmpty())
-            throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());
-
-        return submission;
+            }
     }
 
     private boolean isSameDeviceFlow(AuthorizationRequestCreateResponse authRequest) {
