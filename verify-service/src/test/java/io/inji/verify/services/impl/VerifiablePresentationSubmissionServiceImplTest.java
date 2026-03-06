@@ -93,10 +93,12 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
     @Test
     public void testSaveVPSubmission_Dto_Success() throws Exception {
-        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto("vpToken123", new PresentationSubmissionDto("id", "dId", new ArrayList<>()), "state123", "", "", null, null, null);
+        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto("vpToken123",
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>())
+                , "state123", "", "", null, null, false);
         vpSubmissionDto.setResponseCode("");
         vpSubmissionDto.setResponseCodeExpiryAt(null);
-        vpSubmissionDto.setResponseCodeUsed(null);
+        vpSubmissionDto.setResponseCodeUsed(false);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("saveVPSubmissionDto", VPSubmissionDto.class);
@@ -121,7 +123,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto("format", "path"))
                 )),
-                "", "", "", null, null
+                "", "", "", null, false
         );
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
@@ -153,7 +155,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission vpSubmission = new VPSubmission("state123", "\"" + base64Token + "\"",
             new PresentationSubmissionDto("id", "dId", List.of(
                     new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                            "format", "path")))), "", "", "", null, null);
+                            "format", "path")))), "", "", "", null, false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -183,7 +185,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(any())).thenReturn(auth);
         when(vpSubmissionRepository.findAllById(any())).thenReturn(List.of(
-                new VPSubmission("st", vpToken, submissionDto, "", "", "", null, null)));
+                new VPSubmission("st", vpToken, submissionDto, "", "", "",
+                        null, false)));
 
         CredentialVerificationSummary summary = mock(CredentialVerificationSummary.class);
         VerificationResult vResult = mock(VerificationResult.class);
@@ -220,7 +223,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 null,
-                null
+                false
         );
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
@@ -256,7 +259,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "[\"" + base64Token1 + "\", \"{\\\"type\\\":[\\\"VerifiablePresentation\\\"],\\\"proof\\\":{\\\"type\\\":\\\"Ed25519Signature2018\\\"},\\\"VerifiablePresentation\\\":[{\\\"type\\\":[\\\"VerifiablePresentation\\\"]}]}\"]",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -295,7 +299,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -329,7 +334,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -363,7 +369,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null,  null, null, null);
+                                "format", "path")))), null, null,  null, null
+                , false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -391,7 +398,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission vpSubmission = new VPSubmission("state123", "null",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -418,7 +426,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(null);
@@ -437,7 +446,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         VPSubmission vpSubmission = new VPSubmission("state123",
                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
-                new PresentationSubmissionDto("id", "dId", new ArrayList<>()), null, null, null, null, null);
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>())
+                , null, null, null, null, false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -462,7 +472,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         VPSubmission vpSubmission = new VPSubmission("state123",
                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
-                new PresentationSubmissionDto("id", "dId", null), null, null, null, null, null);
+                new PresentationSubmissionDto("id", "dId", null), null, null,
+                null, null, false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -489,7 +500,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -516,7 +528,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission vpSubmission = new VPSubmission("state123", "12345", // Invalid format (number)
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -542,7 +555,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission vpSubmission = new VPSubmission("state123", "[123, \"invalid\"]", // Invalid array items
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -568,7 +582,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission vpSubmission = new VPSubmission("state123", "[\"invalid-base64!!!\"]",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -594,7 +609,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission vpSubmission = new VPSubmission("state123", "\"invalid-base64!!!\"",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null,  null, null, null);
+                                "format", "path")))), null, null,  null, null
+                , false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -621,7 +637,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"VerifiablePresentation\":[{\"type\":[\"VerifiablePresentation\"]}]}",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -651,7 +668,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"VerifiablePresentation\":[{\"type\":[\"VerifiablePresentation\"]}]}",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -681,7 +699,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -713,7 +732,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(null);
@@ -745,7 +765,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 null,
-                null
+                false
         );
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
@@ -787,7 +807,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                         "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"VerifiablePresentation\":[{\"type\":[\"VerifiablePresentation\"]}]}]",
                 new PresentationSubmissionDto("id", "dId", List.of(
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto(
-                                "format", "path")))), null, null, null, null, null);
+                                "format", "path")))), null, null, null, null,
+                false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -838,7 +859,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 null,
-                null
+                false
         );
 
         String transactionId = "tx123";
@@ -886,7 +907,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 null,
-                null
+                false
         );
 
         String transactionId = "tx123";
@@ -951,7 +972,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                         new DescriptorMapDto("id", "format", "path", new PathNestedDto("format", "path"))
                 )),
                 null,
-                null, null, null, null
+                null, null, null, false
         );
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
@@ -979,7 +1000,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String transactionId = "tx123";
         VerificationRequestDto verificationRequestDto = new VerificationRequestDto(true, List.of(), false);
         String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[{\"type\":[\"VerifiableCredential\"], \"credentialSubject\": {\"name\":\"John Doe\"}}]}";
-        VPSubmission vpSubmission = new VPSubmission("state123", vpToken, new PresentationSubmissionDto("id", "dId", List.of(new DescriptorMapDto("id", "format", "path", new PathNestedDto("format", "path")))), null, null, null, null, null);
+        VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
+                new PresentationSubmissionDto("id", "dId",
+                        List.of(new DescriptorMapDto("id", "format", "path",
+                                new PathNestedDto("format", "path")))), null,
+                null, null, null, false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -1017,7 +1042,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String transactionId = "tx123";
         VerificationRequestDto verificationRequestDto = new VerificationRequestDto();
         String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"verifiableCredential\":[\"testVC\"]}";
-        VPSubmission vpSubmission = new VPSubmission("state123", vpToken, new PresentationSubmissionDto("id", "dId", List.of(new DescriptorMapDto("id", "format", "path", new PathNestedDto("format", "path")))), null, null, null, null, null);
+        VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
+                new PresentationSubmissionDto("id", "dId",
+                        List.of(new DescriptorMapDto("id", "format", "path",
+                                new PathNestedDto("format", "path")))), null,
+                null, null, null, false);
         AuthorizationRequestResponseDto authDetails =
                 new AuthorizationRequestResponseDto("test-client-id", "https" +
                         "://example.com/presentation-definition",
@@ -1046,7 +1075,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String transactionId = "tx123";
         VerificationRequestDto verificationRequestDto = new VerificationRequestDto();
-        VPSubmission vpSubmission = new VPSubmission("state123", null, null, "user_cancelled", "User cancelled the operation", null, null, null);
+        VPSubmission vpSubmission = new VPSubmission("state123", null, null, 
+                "user_cancelled", "User cancelled the operation", null, null,
+                false);
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
 
         assertThrows(VPSubmissionWalletError.class, () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId, null));
@@ -1058,7 +1089,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         String transactionId = "tx123";
         VerificationRequestDto verificationRequestDto = new VerificationRequestDto();
         String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[{\"type\":[\"VerifiableCredential\"], \"credentialSubject\": {\"name\":\"John Doe\"}}]}";
-        VPSubmission vpSubmission = new VPSubmission("state123", vpToken, new PresentationSubmissionDto("id", "dId", new ArrayList<>()), null, null, null, null, null);
+        VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
+                new PresentationSubmissionDto("id", "dId", new ArrayList<>())
+                , null, null, null, null, false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -1080,7 +1113,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
                 new PresentationSubmissionDto("id", "dId",
                         List.of(new DescriptorMapDto("id", "format", "path",
-                                new PathNestedDto("format", "path")))), null, null, null, null, null);
+                                new PathNestedDto("format", "path")))), null,
+                null, null, null, false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -1114,7 +1148,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
                 new PresentationSubmissionDto("id", "dId",
                         List.of(new DescriptorMapDto("id", "format", "path",
-                                new PathNestedDto("format", "path")))), null, null, null, null, null);
+                                new PathNestedDto("format", "path")))), null,
+                null, null, null, false);
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                 "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, "cross_device");
@@ -1163,7 +1198,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
                 new PresentationSubmissionDto("id", "dId",
                         List.of(new DescriptorMapDto("id", "format", "path",
-                                new PathNestedDto("format", "path")))), null, null, null, null, null);
+                                new PathNestedDto("format", "path")))), null,
+                null, null, null, false);
         AuthorizationRequestResponseDto authDetails =
                 new AuthorizationRequestResponseDto("test-client-id", "https" +
                         "://example.com/presentation-definition",
@@ -1330,7 +1366,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 null,
-                null
+                false
         );
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
@@ -1391,8 +1427,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
-        // For cross-device flow, markResponseCodeUsedIfNotUsed should not be called
-        verify(vpSubmissionRepository, never()).setResponseCodeAsUsed(any());
     }
 
     @Test
@@ -1431,8 +1465,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        when(vpSubmissionRepository.setResponseCodeAsUsed(responseCode)).thenReturn(1);
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
+        when(vpSubmissionRepository.markResponseCodeAsUsed(requestId)).thenReturn(1);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1441,7 +1474,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
-        verify(vpSubmissionRepository, times(1)).setResponseCodeAsUsed(responseCode);
     }
 
     @Test
@@ -1475,7 +1507,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 null,
-                null
+                false
         );
 
         AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
@@ -1558,7 +1590,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
-        assertEquals(ErrorCode.RESPONSE_CODE_NOT_EQUAL, responseCodeException.getErrorCode());
+        assertEquals(ErrorCode.RESPONSE_CODE_NOT_MATCHING, responseCodeException.getErrorCode());
     }
 
     @Test
@@ -1597,7 +1629,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1648,7 +1679,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1678,7 +1708,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 errorDescription,
                 null,
                 null,
-                null
+                false
         );
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
@@ -1703,7 +1733,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         List<String> requestIds = List.of("req123");
         String requestId = "req123";
         String responseCode = "code123";
-        Timestamp expiredAt = Timestamp.from(Instant.now().minus(5, ChronoUnit.MINUTES));
+        Timestamp expiredAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -1713,12 +1743,12 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 responseCode,
                 expiredAt,
-                true  // Already used
+                false
         );
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.empty());
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", false);
+        when(vpSubmissionRepository.markResponseCodeAsUsed(requestId)).thenReturn(1);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1741,7 +1771,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 null,
-                null
+                false
         );
         vpSubmissionDto.setResponseCode(responseCode);
         vpSubmissionDto.setResponseCodeExpiryAt(expiryAt);
@@ -1758,7 +1788,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission savedSubmission = captor.getValue();
         assertEquals(responseCode, savedSubmission.getResponseCode());
         assertEquals(expiryAt, savedSubmission.getResponseCodeExpiryAt());
-        assertEquals(false, savedSubmission.getResponseCodeUsed());
+        assertEquals(false, savedSubmission.isResponseCodeUsed());
         assertEquals("state123", savedSubmission.getRequestId());
     }
 
@@ -1772,7 +1802,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 null,
                 null,
                 null,
-                null
+                false
         );
         vpSubmissionDto.setResponseCode(null);
         vpSubmissionDto.setResponseCodeExpiryAt(null);
@@ -1789,7 +1819,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission savedSubmission = captor.getValue();
         assertNull(savedSubmission.getResponseCode());
         assertNull(savedSubmission.getResponseCodeExpiryAt());
-        assertEquals(false, savedSubmission.getResponseCodeUsed());
+        assertEquals(false, savedSubmission.isResponseCodeUsed());
     }
 
     @Test
@@ -1835,7 +1865,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission savedSubmission = captor.getValue();
         assertNotNull(savedSubmission.getResponseCode(), "Response code should be generated for same-device flow");
         assertNotNull(savedSubmission.getResponseCodeExpiryAt(), "Response code expiry should be set for same-device flow");
-        assertEquals(false, savedSubmission.getResponseCodeUsed(), "Response code should initially be unused");
+        assertEquals(false, savedSubmission.isResponseCodeUsed(), "Response code should initially be unused");
         assertEquals(state, savedSubmission.getRequestId());
     }
 
@@ -1881,7 +1911,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission savedSubmission = captor.getValue();
         assertNull(savedSubmission.getResponseCode(), "Response code should NOT be generated for cross-device flow");
         assertNull(savedSubmission.getResponseCodeExpiryAt(), "Response code expiry should NOT be set for cross-device flow");
-        assertEquals(false, savedSubmission.getResponseCodeUsed());
+        assertEquals(false, savedSubmission.isResponseCodeUsed());
         assertEquals(state, savedSubmission.getRequestId());
     }
 
@@ -1922,8 +1952,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        when(vpSubmissionRepository.setResponseCodeAsUsed(responseCode)).thenReturn(1);
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
+        when(vpSubmissionRepository.markResponseCodeAsUsed(requestId)).thenReturn(1);
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -1933,7 +1962,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertNotNull(result);
         assertEquals(requestId, result.getRequestId());
         assertEquals(responseCode, result.getResponseCode());
-        verify(vpSubmissionRepository, times(1)).setResponseCodeAsUsed(responseCode);
+        // Verify with requestId, not responseCode
+        verify(vpSubmissionRepository, times(1)).markResponseCodeAsUsed(requestId);
     }
 
     @Test
@@ -1949,7 +1979,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 false
         );
 
-        assertEquals(false, vpSubmission.getResponseCodeUsed(), "responseCodeUsed should be false initially");
+        assertEquals(false, vpSubmission.isResponseCodeUsed(), "responseCodeUsed should be false initially");
     }
 
     @Test
@@ -1965,7 +1995,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 true
         );
 
-        assertEquals(true, vpSubmission.getResponseCodeUsed(), "responseCodeUsed can be set to true");
+        assertEquals(true, vpSubmission.isResponseCodeUsed(), "responseCodeUsed can be set to true");
     }
 
     @Test
@@ -2045,7 +2075,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertEquals(errorDescription, savedSubmission.getErrorDescription());
         assertNotNull(savedSubmission.getResponseCode(), "Response code should be generated even for error submission in same-device flow");
         assertNotNull(savedSubmission.getResponseCodeExpiryAt(), "Response code expiry should be set for same-device flow");
-        assertEquals(false, savedSubmission.getResponseCodeUsed());
+        assertEquals(false, savedSubmission.isResponseCodeUsed());
     }
 
     @Test
@@ -2085,7 +2115,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-        ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "includeResponseCodeSecurityChecks", true);
+        
 
         Method method = VerifiablePresentationSubmissionServiceImpl.class
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
@@ -2098,7 +2128,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
         assertEquals(ErrorCode.RESPONSE_CODE_EXPIRED, responseCodeException.getErrorCode());
-        verify(vpSubmissionRepository, times(1)).setResponseCodeAsUsed(responseCode);
     }
 
     @Test
@@ -2129,7 +2158,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 false,
                 "same_device"
         );
-
         AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                 requestId,
                 "transactionId",
@@ -2150,7 +2178,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
-        assertEquals(ErrorCode.RESPONSE_CODE_NOT_EQUAL, responseCodeException.getErrorCode());
+        assertEquals(ErrorCode.RESPONSE_CODE_NOT_MATCHING, responseCodeException.getErrorCode());
     }
 }
 
