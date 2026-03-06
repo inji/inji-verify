@@ -159,7 +159,7 @@ export const vpResult = async (url: string, transactionId: string, responseCode?
     try {
         const baseUrl = new URL(`${url}/v2/vp-results/${transactionId}`);
         if (responseCode) {
-            baseUrl.hash = `?response_code=${responseCode}`;
+            baseUrl.searchParams.append("response_code", responseCode);
         }
         const response = await fetch(baseUrl.toString(), {
             method: "POST",
