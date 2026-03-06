@@ -1,40 +1,49 @@
 {
+{{#if allChecksSuccessful}}
   "allChecksSuccessful": {{allChecksSuccessful}},
+{{/if}}
+
   "schemaAndSignatureCheck": {
     "valid": {{schemaAndSignatureCheck.valid}},
     "error": {{#if schemaAndSignatureCheck.error}}
     {
       "errorCode": "{{schemaAndSignatureCheck.error.errorCode}}"
-      }
-      {{else}}
-      null
-      {{/if}}
-  },
-  "expiryCheck": {{#if expiryCheck}}
-    {
-    "valid": {{expiryCheck.valid}}
     }
     {{else}}
     null
-    {{/if}},
+    {{/if}}
+  }
+
+{{#if expiryCheck}},
+  "expiryCheck": {
+    "valid": {{expiryCheck.valid}}
+  }
+{{/if}}
+
+{{#if statusCheck}},
   "statusCheck": [
     {{#each statusCheck}}
       {
-      "purpose": "{{purpose}}",
-      "valid": {{valid}},
-      "error": {{#if error}}
-      {
-        "errorCode": "{{error.errorCode}}"
-      }
-      {{else}}
-      	null
-      {{/if}}
-  }{{#unless @last}},{{/unless}}
+        "purpose": "{{purpose}}",
+        "valid": {{valid}},
+        "error": {{#if error}}
+        {
+          "errorCode": "{{error.errorCode}}"
+        }
+        {{else}}
+        null
+        {{/if}}
+      }{{#unless @last}},{{/unless}}
     {{/each}}
-  ],
+  ]
+{{/if}}
+
+{{#if claims}},
   "claims": {
     {{#each claims}}
       "{{@key}}": "{{this}}"{{#unless @last}},{{/unless}}
     {{/each}}
   }
+{{/if}}
+
 }

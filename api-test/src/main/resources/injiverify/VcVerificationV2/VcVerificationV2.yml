@@ -77,7 +77,7 @@ VcVerificationV2:
       "claims": {"fullName": "Mary Smith","dateOfBirth": "1975-08-22","mobileNumber": "8765432109"}
 }'
 
-  Injiverify_VcVerification_V2_WithRevokedVc_Neg:
+  Injiverify_VcVerification_V2_With_Revoked_Vc_Neg:
       endPoint: /v1/verify/v2/vc-verification
       description: Validate that VC is verified properly for Revoked VC
       uniqueIdentifier: TC_InjiVerify_VcVerification_V2_05
@@ -120,7 +120,7 @@ VcVerificationV2:
       "claims": {"Full Name": "Mary Smith","Date of Birth": "1985-11-12","Phone Number": "8765432109"}
 }'
 
-  Injiverify_VcVerification_Valid_CWT_Neg:
+  Injiverify_VcVerification_Invalid_CWT_Neg:
       endPoint: /v1/verify/v2/vc-verification
       description: Validate that API throws an error with invalid CWT VC
       uniqueIdentifier: TC_InjiVerify_VcVerification_V2_07
@@ -145,4 +145,139 @@ VcVerificationV2:
   "expiryCheck": null,
   "statusCheck": [],
   "claims": {}
+}'
+
+  Injiverify_VcVerification_Valid_Json_ld_Smoke:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of valid Json-LD VC
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_08
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationJsonLd
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
+      input: '{
+      }'
+      output: '{
+      "allChecksSuccessful": true,
+      "schemaAndSignatureCheck": {"valid": true,"error": null},
+      "expiryCheck": {"valid": true},
+      "statusCheck": [],
+      "claims": {"fullName": "Mary Smith","dateOfBirth": "1975-08-22","mobileNumber": "8765432109"}
+}'
+
+  Injiverify_VcVerification_Revoked_Json_LD_VC_Smoke:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of revoked Json-LD VC
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_09
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationRevokedJsonLd
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
+      input: '{
+      }'
+      output: '{
+      "allChecksSuccessful": false,
+      "schemaAndSignatureCheck": {"valid": true,"error": null},
+      "expiryCheck": {"valid": true},
+      "statusCheck": [{ "purpose": "revocation", "valid": false, "error": null }],
+      "claims": {"VID": "9876543210","dateOfBirth": "1987/11/25","phone": "+919427357934"}
+}'
+
+
+  Injiverify_VcVerification_Expired_VC_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of Expired Vc
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_10
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationExpiredVc
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
+      input: '{
+      }'
+      output: '{
+     "schemaAndSignatureCheck": {
+    "valid": true,
+    "error": null
+  },
+     "expiryCheck": {
+    "valid": false
+  }
+}'
+
+  Injiverify_VcVerification_invalid_signature_VC_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of invalid signature Vc
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_11
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationInvalidSignature
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
+      input: '{
+      }'
+      output: '{
+     "schemaAndSignatureCheck": {
+    "valid": false,
+    "error": {
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+      "errorMessage": "Exception during Verification: Error while doing verification of verifiable credential: io.mosip.vercred.vcverifier.exception.PublicKeyResolutionFailedException: Public key extraction failed for kid: did:web:mosip.github.io:inji-config:qa-inji1:landregistry#UHNnpAY2hEkSnXqkc3aS07EgTEaw9WC64kpO3jvP9X0"
+    }
+  }
+}'
+
+  Injiverify_VcVerification_Valid_SD-jwt_Smoke:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Submitting the authorization response of valid SD-JWT VC
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_12
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationSdJwt
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
+      input: '{
+      }'
+      output: '{
+     "allChecksSuccessful": true,
+      "schemaAndSignatureCheck": {"valid": true,"error": null},
+      "expiryCheck": {"valid": true},
+      "statusCheck": [],
+      "claims": {"phone_number": "491511234567"}
+}'
+
+  Injiverify_VcVerification_V2_WithOutClaims_attributes_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Validate that claim details are verified when includeClaims attribute is missing in VC verification
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_13
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2Revoked
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
+      input: '{
+        "skipStatusChecks": false,
+        "statusCheckFilters": ["revocation"]
+      }'
+      output: '{
+           "allChecksSuccessful": false,
+      "schemaAndSignatureCheck": {"valid": true,"error": null},
+      "expiryCheck": {"valid": true},
+      "statusCheck": [{ "purpose": "revocation", "valid": false, "error": null }],
+      "claims": {}
+}'
+
+  Injiverify_VcVerification_V2_WithOutStatus_attributes_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Validate that status are not checked with skipStatusChecks attributes is missing in VC verification
+      uniqueIdentifier: TC_InjiVerify_VcVerification_V2_14
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
+      input: '{
+      "statusCheckFilters": ["revocation"],
+      "includeClaims": true
+      }'
+      output: '{
+      "allChecksSuccessful": true,
+      "schemaAndSignatureCheck": {"valid": true,"error": null},
+      "expiryCheck": {"valid": true},
+      "statusCheck": [],
+      "claims": {"fullName": "Mary Smith","dateOfBirth": "1975-08-22","mobileNumber": "8765432109"}
 }'
