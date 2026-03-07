@@ -18,7 +18,8 @@ public class VPSubmissionTest {
         String vpToken = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9...";
         PresentationSubmissionDto presentationSubmission = new PresentationSubmissionDto("id","dId",mock());
 
-        VPSubmission vpSubmission = new VPSubmission(requestId, vpToken, presentationSubmission, null, null, null, null, null);
+        VPSubmission vpSubmission = new VPSubmission(requestId, vpToken,
+                presentationSubmission, null, null, null, null, false);
         assertEquals(requestId, vpSubmission.getRequestId());
         assertEquals(vpToken, vpSubmission.getVpToken());
         assertEquals(presentationSubmission, vpSubmission.getPresentationSubmission());
@@ -59,7 +60,7 @@ public class VPSubmissionTest {
         assertEquals(vpToken, vpSubmission.getVpToken());
         assertEquals(responseCode, vpSubmission.getResponseCode());
         assertEquals(expiryAt, vpSubmission.getResponseCodeExpiryAt());
-        assertEquals(false, vpSubmission.getResponseCodeUsed());
+        assertEquals(false, vpSubmission.isResponseCodeUsed());
     }
 
     @Test
@@ -81,7 +82,7 @@ public class VPSubmissionTest {
 
         assertNull(vpSubmission.getResponseCode());
         assertNull(vpSubmission.getResponseCodeExpiryAt());
-        assertEquals(false, vpSubmission.getResponseCodeUsed());
+        assertEquals(false, vpSubmission.isResponseCodeUsed());
     }
 
     @Test
@@ -103,7 +104,7 @@ public class VPSubmissionTest {
                 true
         );
 
-        assertEquals(true, vpSubmission.getResponseCodeUsed());
+        assertEquals(true, vpSubmission.isResponseCodeUsed());
     }
 
     @Test
@@ -174,6 +175,6 @@ public class VPSubmissionTest {
 
         assertNull(vpSubmission.getResponseCode());
         assertNull(vpSubmission.getResponseCodeExpiryAt());
-        assertEquals(false, vpSubmission.getResponseCodeUsed());
+        assertEquals(false, vpSubmission.isResponseCodeUsed());
     }
 }

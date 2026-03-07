@@ -73,9 +73,7 @@ function installing_inji-verify-service() {
     --set extraEnv[4].name=INJI_VERIFY_CLAIMS_WITH_META_DATA \
     --set-string extraEnv[4].value="_sd\,_sd_alg\,iss\,cnf\,sub\,aud\,exp\,nbf\,iat\,cti" \
     --set extraEnv[5].name=INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS \
-    --set-string extraEnv[5].value="5" \
-    --set extraEnv[6].name=INJI_VERIFY_INCLUDE_RESPONSE_CODE_SECURITY_CHECKS \
-    --set-string extraEnv[6].value="true"
+    --set-string extraEnv[5].value="5"
 
   kubectl -n $NS  get deploy -o name |  xargs -n1 -t  kubectl -n $NS rollout status
 
