@@ -29,8 +29,4 @@ public class InjiVerifyConfigManager extends ConfigManager {
 		init(moduleSpecificPropertiesMap);
 	}
 
-		public static String getInjiVerifyDBURL() {
-		return "jdbc:postgresql://" + getproperty("db-server") + ":" + getproperty("db-port") + "/" + getproperty("inji_verify_db_table");
-	}
-
 }

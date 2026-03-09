@@ -191,7 +191,7 @@ VcVerificationV2:
       role: noauth
       restMethod: post
       inputTemplate: injiverify/VcVerificationV2/VcVerificationExpiredVc
-      outputTemplate: injiverify/VcVerificationV2/VCVerificationExpiredResult
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
       input: '{
       }'
       output: '{
@@ -211,7 +211,7 @@ VcVerificationV2:
       role: noauth
       restMethod: post
       inputTemplate: injiverify/VcVerificationV2/VcVerificationInvalidSignature
-      outputTemplate: injiverify/VcVerificationV2/VCVerificationInvalidSignatureResult
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
       input: '{
       }'
       output: '{
@@ -248,18 +248,18 @@ VcVerificationV2:
       uniqueIdentifier: TC_InjiVerify_VcVerification_V2_13
       role: noauth
       restMethod: post
-      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2WithoutClaimsAttributes
-      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2WithoutClaimsAttributes
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2Revoked
+      outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
       input: '{
         "skipStatusChecks": false,
         "statusCheckFilters": ["revocation"]
       }'
       output: '{
-      "allChecksSuccessful": true,
+           "allChecksSuccessful": false,
       "schemaAndSignatureCheck": {"valid": true,"error": null},
       "expiryCheck": {"valid": true},
-      "statusCheck": [],
-      "claims": {"primaryCropType": "Rice","mobileNumber": "8765432109","landArea": "25.75","fullName": "Mary Smith","secondaryCropType": "Pulses","dateOfBirth": "1975-08-22","landOwnershipType": "Leased"}
+      "statusCheck": [{ "purpose": "revocation", "valid": false, "error": null }],
+      "claims": {}
 }'
 
   Injiverify_VcVerification_V2_WithOutStatus_attributes_Neg:
@@ -268,11 +268,11 @@ VcVerificationV2:
       uniqueIdentifier: TC_InjiVerify_VcVerification_V2_14
       role: noauth
       restMethod: post
-      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2WithoutChecksAttributes
+      inputTemplate: injiverify/VcVerificationV2/VcVerificationV2
       outputTemplate: injiverify/VcVerificationV2/VcVerificationResultV2
       input: '{
-        "statusCheckFilters": ["revocation"],
-        "includeClaims": true
+      "statusCheckFilters": ["revocation"],
+      "includeClaims": true
       }'
       output: '{
       "allChecksSuccessful": true,
