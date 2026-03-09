@@ -38,6 +38,8 @@ const restoreCredentialsFromSession = (): claim[] => {
   }
 };
 
+const initialCredentials = restoreCredentialsFromSession();
+
 const PreloadedState: VerifyState = {
   isLoading: false,
   flowType: "crossDevice",
@@ -45,8 +47,8 @@ const PreloadedState: VerifyState = {
   activeScreen: VerificationSteps["VERIFY"].InitiateVpRequest,
   SelectionPanel: false,
   verificationSubmissionResult: [],
-  selectedCredentials: getVerifiableClaims()?.filter((claim) => claim.essential) ?? [],
-  originalSelectedCredentials: getVerifiableClaims()?.filter((claim) => claim.essential) ?? [],
+  selectedCredentials: [...initialCredentials],
+  originalSelectedCredentials: [...initialCredentials],
   unVerifiedCredentials: [],
   sharingType: VCShareType.SINGLE,
   isPartiallyShared: false,
