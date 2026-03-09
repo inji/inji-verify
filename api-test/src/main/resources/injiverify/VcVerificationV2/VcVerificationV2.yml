@@ -120,7 +120,7 @@ VcVerificationV2:
       "claims": {"Full Name": "Mary Smith","Date of Birth": "1985-11-12","Phone Number": "8765432109"}
 }'
 
-  Injiverify_VcVerification_Valid_CWT_Neg:
+  Injiverify_VcVerification_Invalid_CWT_Neg:
       endPoint: /v1/verify/v2/vc-verification
       description: Validate that API throws an error with invalid CWT VC
       uniqueIdentifier: TC_InjiVerify_VcVerification_V2_07
