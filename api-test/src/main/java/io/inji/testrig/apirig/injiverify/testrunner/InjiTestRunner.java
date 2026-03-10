@@ -68,17 +68,7 @@ public class InjiTestRunner {
 			InjiVerifyConfigManager.init();
 			suiteSetup(getRunType());
 			SkipTestCaseHandler.loadTestcaseToBeSkippedList("testCaseSkippedList.txt");
-			// moduleNamePattern isn't always set; guard against NPE in external GlobalMethods
-			try {
-				String modulePattern = InjiVerifyConfigManager.getproperty("moduleNamePattern");
-				if (modulePattern != null) {
-					GlobalMethods.setModuleNameAndReCompilePattern(modulePattern);
-				} else {
-					LOGGER.warn("moduleNamePattern property is null, skipping pattern setup");
-				}
-			} catch (Exception e) {
-				LOGGER.warn("Ignoring error while setting module name pattern", e);
-			}
+			GlobalMethods.setModuleNameAndReCompilePattern(InjiVerifyConfigManager.getproperty("moduleNamePattern"));
 
 			HealthChecker healthcheck = new HealthChecker();
 			healthcheck.setCurrentRunningModule(BaseTestCase.currentModule);
@@ -108,7 +98,6 @@ public class InjiTestRunner {
 		}
 
 		HealthChecker.bTerminate = true;
-		InjiVerifyUtil.verifyDBCleanup();
 		
 		// Used for generating the test case interdependency JSON file
 		if ("yes".equalsIgnoreCase(generateDependency)) {

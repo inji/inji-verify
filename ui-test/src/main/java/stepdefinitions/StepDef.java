@@ -11,6 +11,10 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.logging.LogEntries;
+import org.openqa.selenium.logging.LogEntry;
+import org.openqa.selenium.logging.LogType;
+import org.openqa.selenium.JavascriptExecutor;
 import org.testng.Assert;
 
 import constants.UiConstants;
@@ -27,6 +31,7 @@ import pages.ScanQRCodePage;
 import pages.UploadQRCode;
 import pages.VpVerification;
 import utils.BaseTest;
+import api.InjiVerifyConfigManager;
 import java.util.Base64;
 import java.io.OutputStream;
 import java.time.LocalDate;
@@ -694,6 +699,57 @@ public class StepDef {
 	        throw e;
 	    }
 	}
+
+    @Then("Verify vc-verification api call in network tab with url")
+    public void verify_vc_verification_api_call_in_network_tab_with_url() {
+        try {
+            String baseUrl = InjiVerifyConfigManager.getInjiVerifyUi();
+            if (baseUrl == null || baseUrl.isEmpty()) {
+                throw new IllegalStateException("injiverify base URL is not configured in injiVerify.properties");
+            }
+
+            String normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+            String expectedUrl = normalizedBaseUrl + "/v1/verify/v2/vc-verification";
+
+            boolean isExpectedCallPresent = false;
+
+            // First try: URLs captured via JS interceptors (fetch / XHR) on the page
+            if (driver instanceof JavascriptExecutor) {
+                Object result = ((JavascriptExecutor) driver)
+                        .executeScript("return window.__networkRequests || [];");
+                if (result instanceof java.util.List<?>) {
+                    java.util.List<?> urls = (java.util.List<?>) result;
+                    isExpectedCallPresent = urls.stream().anyMatch(urlObj -> {
+                        String url = String.valueOf(urlObj);
+                        return url.contains("/v2/vc-verification") && url.contains(expectedUrl);
+                    });
+                }
+            }
+
+            // Fallback: check browser performance logs if interceptors didn't find it
+            if (!isExpectedCallPresent) {
+                LogEntries performanceLogs = driver.manage().logs().get(LogType.PERFORMANCE);
+                isExpectedCallPresent = performanceLogs.getAll().stream().anyMatch((LogEntry entry) -> {
+                    String message = entry.getMessage();
+                    return message != null
+                            && message.contains("Network.requestWillBeSent")
+                            && message.contains("/v2/vc-verification")
+                            && message.contains(expectedUrl);
+                });
+            }
+
+            Assert.assertTrue(isExpectedCallPresent,
+                    "Expected vc-verification API call to URL was not found in captured network data: " + expectedUrl);
+            test.log(Status.PASS,
+                    "Verified vc-verification API call in captured network data with URL: " + expectedUrl);
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element-related error while verifying vc-verification API call in network logs", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying vc-verification API call in network logs", e);
+            throw e;
+        }
+    }
 
     @Then("Upload claim 169 VC")
 	public void upload_claim_169_VC_code() {

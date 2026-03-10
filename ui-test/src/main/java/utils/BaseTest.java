@@ -11,6 +11,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
+import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.logging.LogType;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter;
@@ -32,6 +34,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.io.*;
 import java.util.Properties;
+import java.util.logging.Level;
 
 
 public class BaseTest {
@@ -133,6 +136,11 @@ public class BaseTest {
     // ✅ Common step — attach the bstack:options finally
     capabilities.setCapability("bstack:options", browserstackOptions);
 
+    // Enable performance logging so we can inspect network activity
+    LoggingPreferences logPrefs = new LoggingPreferences();
+    logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+    capabilities.setCapability("goog:loggingPrefs", logPrefs);
+
     logger.info("Final capabilities: {}", capabilities);
 
     // Setup driver (only once)
@@ -146,6 +154,9 @@ public class BaseTest {
     }
     
     driver.get(url);
+
+    // Inject JS hooks to capture network requests (fetch / XHR) in the page context
+    injectNetworkInterceptors();
 	
 	}
 
@@ -242,6 +253,42 @@ public class BaseTest {
 
 	public JavascriptExecutor getJse() {
 		return jse;
+	}
+
+	private void injectNetworkInterceptors() {
+		try {
+			if (driver instanceof JavascriptExecutor) {
+				String script =
+						"window.__networkRequests = window.__networkRequests || [];" +
+						"if (!window.__networkInterceptorInstalled) {" +
+						"  window.__networkInterceptorInstalled = true;" +
+						"  if (window.fetch) {" +
+						"    const origFetch = window.fetch;" +
+						"    window.fetch = function(...args) {" +
+						"      try { window.__networkRequests.push(String(args[0])); } catch (e) {}" +
+						"      return origFetch.apply(this, args);" +
+						"    };" +
+						"  }" +
+						"  if (window.XMLHttpRequest) {" +
+						"    const OriginalXHR = window.XMLHttpRequest;" +
+						"    function WrappedXHR() {" +
+						"      const xhr = new OriginalXHR();" +
+						"      const origOpen = xhr.open;" +
+						"      xhr.open = function(method, url) {" +
+						"        try { window.__networkRequests.push(String(url)); } catch (e) {}" +
+						"        return origOpen.apply(this, arguments);" +
+						"      };" +
+						"      return xhr;" +
+						"    }" +
+						"    window.XMLHttpRequest = WrappedXHR;" +
+						"  }" +
+						"}";
+				((JavascriptExecutor) driver).executeScript(script);
+				logger.info("✅ Network interceptors injected into browser context.");
+			}
+		} catch (Exception e) {
+			logger.warn("Failed to inject network interceptors", e);
+		}
 	}
 
 	public static void pushReportsToS3() {
