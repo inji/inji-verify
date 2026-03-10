@@ -38,32 +38,37 @@ const restoreCredentialsFromSession = (): claim[] => {
   }
 };
 
-const initialCredentials = restoreCredentialsFromSession();
+const createPreloadedState = (): VerifyState => {
+  const initialCredentials = restoreCredentialsFromSession();
 
-const PreloadedState: VerifyState = {
-  isLoading: false,
-  flowType: "crossDevice",
-  method: "VERIFY",
-  activeScreen: VerificationSteps["VERIFY"].InitiateVpRequest,
-  SelectionPanel: false,
-  verificationSubmissionResult: [],
-  selectedCredentials: [...initialCredentials],
-  originalSelectedCredentials: [...initialCredentials],
-  unVerifiedCredentials: [],
-  sharingType: VCShareType.SINGLE,
-  isPartiallyShared: false,
-  isShowResult: false,
-  presentationDefinition: {
-    id: "c4822b58-7fb4-454e-b827-f8758fe27f9a",
-    purpose:
-      "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-    input_descriptors: [] as any[],
-  },
-  sdkInstanceKey: 0,
-  SelectWalletPanel: false,
-  selectedWalletId: undefined,
-  selectedWalletBaseUrl: undefined,
+  return {
+    isLoading: false,
+    flowType: "crossDevice",
+    method: "VERIFY",
+    activeScreen: VerificationSteps["VERIFY"].InitiateVpRequest,
+    SelectionPanel: false,
+    verificationSubmissionResult: [],
+    selectedCredentials: [...initialCredentials],
+    originalSelectedCredentials: [...initialCredentials],
+    unVerifiedCredentials: [],
+    sharingType:
+      initialCredentials.length > 1 ? VCShareType.MULTIPLE : VCShareType.SINGLE,
+    isPartiallyShared: false,
+    isShowResult: false,
+    presentationDefinition: {
+      id: "c4822b58-7fb4-454e-b827-f8758fe27f9a",
+      purpose:
+        "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+      input_descriptors: [] as any[],
+    },
+    sdkInstanceKey: 0,
+    SelectWalletPanel: false,
+    selectedWalletId: undefined,
+    selectedWalletBaseUrl: undefined,
+  };
 };
+
+const PreloadedState: VerifyState = createPreloadedState();
 
 const vpVerificationState = createSlice({
   name: "vpVerification",
@@ -161,7 +166,7 @@ const vpVerificationState = createSlice({
     resetVpRequest: (state) => {
       const prevSdkKey = state.sdkInstanceKey;
       sessionStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
-      Object.assign(state, PreloadedState);
+      Object.assign(state, createPreloadedState());
       state.sdkInstanceKey = prevSdkKey + 1;
     },
   },
