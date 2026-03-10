@@ -37,6 +37,11 @@ function MyApp() {
       }}
       triggerElement={<button>📷 Scan ID Document</button>}
       clientId="CLIENT_ID"
+      vcVerificationV2Request ="vcVerificationV2Request"
+        /*
+        Allows enabling/disabling specific verification checks such as:
+        Schema & signature validation, Expiry validation, Status checks (e.g., revocation)
+       */
     />
   );
 }
@@ -58,6 +63,11 @@ function MyApp() {
       onError={(error) => console.log("Error:", error)}
       triggerElement={<button>📱 Verify with Digital Wallet</button>}
       clientId="CLIENT_ID"
+      vpVerificationV2Request="vpVerificationV2Request"
+        /*
+          Allows enabling/disabling specific verification checks such as:
+          Schema & signature validation, Expiry validation, Status checks (e.g., revocation)
+         */
     />
   );
 }
@@ -65,18 +75,135 @@ function MyApp() {
 
 ## Response Received
 
-When verification is completed, the response received is as below:
+When verification is completed, different response can be received as per vcStatus: SUCCESS | INVALID | EXPIRED | REVOKED.is as below:
 
 ```javascript
+✔️ 1. All checks successful
+
 {
-  vcResults: [
-    {
-      vc: { /* Your verified credential data */ },
-      vcStatus: "SUCCESS" // or  "INVALID", "EXPIRED"
-    }
-  ],
-  vpResultStatus: "SUCCESS" // Overall verification status
+    "allChecksSuccessful": true,
+    "schemaAndSignatureCheck": { "valid": true, "error": null },
+    "expiryCheck": { "valid": true },
+    "statusChecks": [
+    { "purpose": "revocation", "valid": true, "error": null },
+    { "purpose": "suspension", "valid": true, "error": null }
+],
+    "claims": {
+    "givenName": "Alice",
+        "familyName": "Smith",
+        "birthDate": "1992-04-05"
 }
+}
+
+⚠️ 2. VC is valid, but VC expired
+
+
+{
+    "allChecksSuccessful": false,
+    "schemaAndSignatureCheck": { "valid": true, "error": null },
+    "expiryCheck": { "valid": false },
+    "statusChecks": [
+    { "purpose": "revocation", "valid": true, "error": null },
+    { "purpose": "suspension", "valid": true, "error": null }
+],
+    "claims": {
+    "givenName": "Alice",
+        "familyName": "Smith",
+        "birthDate": "1992-04-05"
+}
+}
+
+❌ 3. VC is invalid due to signature verification failure
+
+
+{
+    "allChecksSuccessful": false,
+    "schemaAndSignatureCheck": {
+    "valid": false,
+        "error": { "code": "ERR_SIGNATURE_VERIFICATION_FAILED", "message": "Verification Failed" }
+},
+    "expiryCheck": null,
+    "statusChecks": [],
+    "claims": {}
+}
+
+❌ 4. VC is invalid due to format validation error
+
+
+{
+    "allChecksSuccessful": false,
+    "schemaAndSignatureCheck": {
+    "valid": false,
+        "error": { "code": "ERR_EMPTY_VC", "message": "Validation Error: Input VC JSON string is null or empty." }
+},
+    "expiryCheck": null,
+    "statusChecks": [],
+    "claims": {}
+}
+
+❌ 5. VC valid, but one of the status checks failed
+
+
+{
+    "allChecksSuccessful": false,
+    "schemaAndSignatureCheck": { "valid": true, "error": null },
+    "expiryCheck": { "valid": true },
+    "statusChecks": [
+    { "purpose": "revocation", "valid": true, "error": null },
+    {
+        "purpose": "suspension",
+        "valid": false,
+        "error": { "code": "INVALID_INDEX", "message": "Index is invalid" }
+    }
+],
+    "claims": {
+    "givenName": "Alice",
+        "familyName": "Smith",
+        "birthDate": "1992-04-05"
+}
+}
+
+Response Example for VP Verification
+
+{
+    "transactionId": "txn_11",
+    "allChecksSuccessful": true,
+    "credentialResults": [
+    {
+        "verifiableCredential": "{...}",
+        "allChecksSuccessful": true,
+        "holderProofCheck": { "valid": true, "error": null },
+        "schemaAndSignatureCheck": { "valid": true, "error": null },
+        "expiryCheck": { "valid": true },
+        "statusChecks": [
+            { "purpose": "revocation", "valid": true, "error": null },
+            { "purpose": "suspension", "valid": true, "error": null },
+        ],
+        "claims": {
+            "givenName": "Alice",
+            "familyName": "Smith",
+            "birthDate": "1992-04-05"
+        }
+    },
+    {
+        "verifiableCredential": "eee...xxx",
+        "allChecksSuccessful": false,
+        "holderProofCheck": null,
+        "schemaAndSignatureCheck": { "valid": true, "error": null },
+        "expiryCheck": { "valid": true },
+        "statusChecks": [
+            { "purpose": "revocation", "valid": true, "error": null },
+            { "purpose": "suspension", "valid": false, "error": { "code": "INVALID_INDEX", "message": "Index is invalid" } }
+        ],
+        "claims": {
+            "givenName": "Alice",
+            "familyName": "Smith",
+            "birthDate": "1992-04-05"
+        }
+    }
+]
+}
+
 ```
 
 > **Security Recommendation**
@@ -143,6 +270,7 @@ https://your-backend.com
   isEnableZoom={true} // Allow camera zoom
   isVPSubmissionSupported={false} // This attribute indicates whether VP submission is supported in Inji OVP VC sharing flow. By default, it is false which means that VP token will be directly sent in response. If set to true, then VP token will be submitted to the VP_SUBMISSION_ URL.
   acceptVPWithoutHolderProof={false} // This attribute controls whether unsigned Verifiable Presentations (VPs without proof) are allowed in the Inji OVP VC sharing flow. By default, it is set to false, meaning unsigned VP tokens are not supported and an error is thrown if an unsigned VP is received. If set to true, VP tokens without a signature (proof) are allowed and can be verified. For data-share it is set to true by default.
+  vcVerificationV2Request={vcVerificationV2Request}// This attribute controls status checks, status filters, and whether credential claims are included in the response.
 />
 ```
 
@@ -236,7 +364,7 @@ presentationDefinition={{
 ### QRCodeVerification Specific
 
 | Property                  | Type     | Default | Description                  |
-| ------------------------- | -------- | ------- | ---------------------------- |
+|---------------------------|----------|---------| ---------------------------- |
 | `onVCProcessed`           | function | -       | Get full results immediately |
 | `onVCReceived`            | function | -       | Get transaction ID only      |
 | `isEnableUpload`          | boolean  | true    | Allow file uploads           |
@@ -244,20 +372,21 @@ presentationDefinition={{
 | `isEnableZoom`            | boolean  | true    | Allow camera zoom            |
 | `uploadButtonStyle`       | object   | -       | Custom upload button styling |
 | `isVPSubmissionSupported` | Boolean  | false   | Toggle VP submission support |
+| `vcVerificationV2Request` | object   | -       | VC verification request configuration |
 
 ### OpenID4VPVerification Specific
 
-| Property                   | Type     | Default        | Description                        |
-| -------------------------- | -------- | -------------- | ---------------------------------- |
-| `protocol`                 | string   | "openid4vp://" | Protocol for QR codes (optional)   |
-| `presentationDefinitionId` | string   | -              | Predefined verification template   |
-| `presentationDefinition`   | object   | -              | Custom verification rules          |
-| `onVpProcessed`            | function | -              | Get full results immediately       |
-| `onVpReceived`             | function | -              | Get transaction ID only            |
-| `onQrCodeExpired`          | function | -              | Handle QR code expiration          |
-| `isSameDeviceFlowEnabled`  | boolean  | true           | Enable same-device flow (optional) |
-| `qrCodeStyles`             | object   | -              | Customize QR code appearance       |
-
+| Property                   | Type     | Default       | Description                           |
+|----------------------------| -------- |---------------|---------------------------------------|
+| `protocol`                 | string   | "openid4vp://" | Protocol for QR codes (optional)      |
+| `presentationDefinitionId` | string   | -             | Predefined verification template      |
+| `presentationDefinition`   | object   | -             | Custom verification rules             |
+| `onVpProcessed`            | function | -             | Get full results immediately          |
+| `onVpReceived`             | function | -             | Get transaction ID only               |
+| `onQrCodeExpired`          | function | -             | Handle QR code expiration             |
+| `isSameDeviceFlowEnabled`  | boolean  | true          | Enable same-device flow (optional)    |
+| `qrCodeStyles`             | object   | -             | Customize QR code appearance          |
+| `vpVerificationV2Request`  | object   | -             | VP verification request configuration |
 ## ⚠️ Important Limitations
 
 - **React Only:** Won't work with Angular, Vue, or React Native
