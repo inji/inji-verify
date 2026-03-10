@@ -183,7 +183,7 @@ Response Example for VP Verification
         "holderProofCheck": null,
         "schemaAndSignatureCheck": { "valid": true, "error": null },
         "expiryCheck": { "valid": true },
-        "statusChecks": [
+        "statusCheck": [
             { "purpose": "revocation", "valid": true, "error": null },
         ],
         "claims": {
