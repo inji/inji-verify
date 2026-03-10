@@ -84,7 +84,7 @@ When verification is completed, different response can be received as per vcStat
     "allChecksSuccessful": true,
     "schemaAndSignatureCheck": { "valid": true, "error": null },
     "expiryCheck": { "valid": true },
-    "statusChecks": [
+    "statusCheck": [
     { "purpose": "revocation", "valid": true, "error": null },
 ],
     "claims": {
@@ -101,7 +101,7 @@ When verification is completed, different response can be received as per vcStat
     "allChecksSuccessful": false,
     "schemaAndSignatureCheck": { "valid": true, "error": null },
     "expiryCheck": { "valid": false },
-    "statusChecks": [
+    "statusCheck": [
     { "purpose": "revocation", "valid": true, "error": null },
 ],
     "claims": {
@@ -118,10 +118,10 @@ When verification is completed, different response can be received as per vcStat
     "allChecksSuccessful": false,
     "schemaAndSignatureCheck": {
     "valid": false,
-        "error": { "code": "ERR_SIGNATURE_VERIFICATION_FAILED", "message": "Verification Failed" }
+        "error": { "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED", "message": "Verification Failed" }
 },
     "expiryCheck": null,
-    "statusChecks": [],
+    "statusCheck": [],
     "claims": {}
 }
 
@@ -132,10 +132,10 @@ When verification is completed, different response can be received as per vcStat
     "allChecksSuccessful": false,
     "schemaAndSignatureCheck": {
     "valid": false,
-        "error": { "code": "ERR_EMPTY_VC", "message": "Validation Error: Input VC JSON string is null or empty." }
+        "error": { "errorCode": "ERR_EMPTY_VC", "errorMessage": "Validation Error: Input VC JSON string is null or empty." }
 },
     "expiryCheck": null,
-    "statusChecks": [],
+    "statusCheck": [],
     "claims": {}
 }
 
@@ -146,7 +146,7 @@ When verification is completed, different response can be received as per vcStat
     "allChecksSuccessful": false,
     "schemaAndSignatureCheck": { "valid": true, "error": null },
     "expiryCheck": { "valid": true },
-    "statusChecks": [
+    "statusCheck": [
     { "purpose": "revocation", "valid": true, "error": null },
 ],
     "claims": {
@@ -168,7 +168,7 @@ Response Example for VP Verification
         "holderProofCheck": { "valid": true, "error": null },
         "schemaAndSignatureCheck": { "valid": true, "error": null },
         "expiryCheck": { "valid": true },
-        "statusCheck": [
+        "statusChecks": [
             { "purpose": "revocation", "valid": true, "error": null },
         ],
         "claims": {
@@ -183,7 +183,7 @@ Response Example for VP Verification
         "holderProofCheck": null,
         "schemaAndSignatureCheck": { "valid": true, "error": null },
         "expiryCheck": { "valid": true },
-        "statusCheck": [
+        "statusChecks": [
             { "purpose": "revocation", "valid": true, "error": null },
         ],
         "claims": {
