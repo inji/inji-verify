@@ -37,7 +37,7 @@ function MyApp() {
       }}
       triggerElement={<button>📷 Scan ID Document</button>}
       clientId="CLIENT_ID"
-      vcVerificationV2Request ="vcVerificationV2Request"
+      vcVerificationV2Request ={vcVerificationV2Request}
         /*
         Allows enabling/disabling specific verification checks such as:
         Schema & signature validation, Expiry validation, Status checks (e.g., revocation)
@@ -63,7 +63,7 @@ function MyApp() {
       onError={(error) => console.log("Error:", error)}
       triggerElement={<button>📱 Verify with Digital Wallet</button>}
       clientId="CLIENT_ID"
-      vpVerificationV2Request="vpVerificationV2Request"
+      vpVerificationV2Request={vpVerificationV2Request}
         /*
           Allows enabling/disabling specific verification checks such as:
           Schema & signature validation, Expiry validation, Status checks (e.g., revocation)
@@ -86,7 +86,6 @@ When verification is completed, different response can be received as per vcStat
     "expiryCheck": { "valid": true },
     "statusChecks": [
     { "purpose": "revocation", "valid": true, "error": null },
-    { "purpose": "suspension", "valid": true, "error": null }
 ],
     "claims": {
     "givenName": "Alice",
@@ -104,7 +103,6 @@ When verification is completed, different response can be received as per vcStat
     "expiryCheck": { "valid": false },
     "statusChecks": [
     { "purpose": "revocation", "valid": true, "error": null },
-    { "purpose": "suspension", "valid": true, "error": null }
 ],
     "claims": {
     "givenName": "Alice",
@@ -150,11 +148,6 @@ When verification is completed, different response can be received as per vcStat
     "expiryCheck": { "valid": true },
     "statusChecks": [
     { "purpose": "revocation", "valid": true, "error": null },
-    {
-        "purpose": "suspension",
-        "valid": false,
-        "error": { "code": "INVALID_INDEX", "message": "Index is invalid" }
-    }
 ],
     "claims": {
     "givenName": "Alice",
@@ -175,9 +168,8 @@ Response Example for VP Verification
         "holderProofCheck": { "valid": true, "error": null },
         "schemaAndSignatureCheck": { "valid": true, "error": null },
         "expiryCheck": { "valid": true },
-        "statusChecks": [
+        "statusCheck": [
             { "purpose": "revocation", "valid": true, "error": null },
-            { "purpose": "suspension", "valid": true, "error": null },
         ],
         "claims": {
             "givenName": "Alice",
@@ -193,7 +185,6 @@ Response Example for VP Verification
         "expiryCheck": { "valid": true },
         "statusChecks": [
             { "purpose": "revocation", "valid": true, "error": null },
-            { "purpose": "suspension", "valid": false, "error": { "code": "INVALID_INDEX", "message": "Index is invalid" } }
         ],
         "claims": {
             "givenName": "Alice",
@@ -387,6 +378,7 @@ presentationDefinition={{
 | `isSameDeviceFlowEnabled`  | boolean  | true          | Enable same-device flow (optional)    |
 | `qrCodeStyles`             | object   | -             | Customize QR code appearance          |
 | `vpVerificationV2Request`  | object   | -             | VP verification request configuration |
+
 ## ⚠️ Important Limitations
 
 - **React Only:** Won't work with Angular, Vue, or React Native
