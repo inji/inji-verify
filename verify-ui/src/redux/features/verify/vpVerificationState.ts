@@ -165,7 +165,11 @@ const vpVerificationState = createSlice({
     },
     resetVpRequest: (state) => {
       const prevSdkKey = state.sdkInstanceKey;
-      localStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
+      try {
+        localStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
+      } catch {
+        // Ignore storage errors; state reset must still proceed
+      }
       Object.assign(state, createPreloadedState());
       state.sdkInstanceKey = prevSdkKey + 1;
     },
