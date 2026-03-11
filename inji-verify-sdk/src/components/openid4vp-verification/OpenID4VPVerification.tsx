@@ -128,16 +128,16 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   );
 
   const processVPResultResponse = useCallback(
-    (response: { credentialResults?: CredentialResult[]; transactionId?: string }, txnId?: string) => {
-      const VPResult: VerificationResults =
+    (response: { credentialResults?: CredentialResult[]; transactionId?: string }) => {
+        const VPResult: VerificationResults =
         (response.credentialResults ?? []).map((cred: CredentialResult) => ({
           vc: normalizeVp(cred.verifiableCredential),
           verificationResponse: cred,
         }));
       if (onVPProcessed) {
         onVPProcessed(VPResult);
-      } else if (onVPReceived && (txnId || response.transactionId)) {
-        onVPReceived(txnId ?? response.transactionId ?? "");
+      } else if (onVPReceived && (response.transactionId)) {
+        onVPReceived(response.transactionId);
       }
     },
     [onVPProcessed, onVPReceived]
@@ -193,27 +193,15 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       setLoading(true);
 
       try {
-        if (onVPProcessed && responseCode) {
           const response = await vpResultUsingResponseCode(
             verifyServiceUrl,
             responseCode,
             vpVerificationV2Request
           )
 
-          const VPResult: VerificationResults =
-            (response.credentialResults ?? []).map((cred: CredentialResult) => {
-              const vc = normalizeVp(cred.verifiableCredential);
-
-              return {
-                vc,
-                verificationResponse: cred,
-              };
-            });
-
-          onVPProcessed(VPResult);
+          processVPResultResponse(response);
           resetState();
           return;
-        }
       } catch (error) {
         if (isActiveRef.current) {
           onError(error as AppError);
