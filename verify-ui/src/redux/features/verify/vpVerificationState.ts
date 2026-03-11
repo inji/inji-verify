@@ -21,7 +21,7 @@ const hasValidCredentialStructure = (item: unknown): item is claim => {
 
 const restoreCredentialsFromSession = (): claim[] => {
   try {
-    const saved = sessionStorage.getItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
+    const saved = localStorage.getItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
     if (!saved) return DEFAULT_CREDENTIALS();
     const parsed: unknown = JSON.parse(saved);
     if (!Array.isArray(parsed) || parsed.length === 0) return DEFAULT_CREDENTIALS();
@@ -166,7 +166,7 @@ const vpVerificationState = createSlice({
     resetVpRequest: (state) => {
       const prevSdkKey = state.sdkInstanceKey;
       try {
-        sessionStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
+        localStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
       } catch {
         // Ignore storage errors; state reset must still proceed
       }
