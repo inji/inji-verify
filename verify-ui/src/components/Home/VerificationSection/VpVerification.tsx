@@ -71,7 +71,7 @@ const DisplayActiveStep = () => {
                          }),
                );
                     // Clear persisted selection once we have fetched and processed VP result
-                    localStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
+                    sessionStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
                     dispatch(verificationSubmissionComplete({ verificationResult: processedResults }));
               } catch (error: any) {
                 handleOnError(error);
@@ -116,12 +116,12 @@ const DisplayActiveStep = () => {
 
   useEffect(() => {
     if (originalSelectedCredentials.length === 0) {
-      localStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
+      sessionStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
       return;
     }
 
     if (activeScreen === 3 || unverifiedCredentials.length > 0) {
-      localStorage.setItem(
+      sessionStorage.setItem(
         OVP_SESSION_SELECTED_CREDENTIALS_KEY,
         JSON.stringify(originalSelectedCredentials)
       );
