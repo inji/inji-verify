@@ -99,7 +99,7 @@
       },
       "RequestMissingCredential": {
         "label": "Solicitar credenciais ausentes e gerar código QR",
-        "description": "Clique em <span>Solicitar credenciais ausentes<span> para prosseguir com a verificação do VC ausente ou clique em <span>Reiniciar processo<span> para iniciar todo o processo novamente."
+        "description": "Clique em 'Solicitar credenciais ausentes' para prosseguir com a verificação do VC ausente ou clique em 'Reiniciar processo' para iniciar todo o processo novamente."
       },
       "ScanQrCode": {
         "label": "Digitalize o código QR (use um dispositivo diferente)",

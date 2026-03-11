@@ -99,7 +99,7 @@
       },
       "RequestMissingCredential": {
         "label": "Demander les informations d'identification manquantes et générer un code QR",
-        "description": "Cliquez sur <span>Demander les informations d'identification manquantes<span> pour procéder à la vérification du VC manquant, ou cliquez sur <span>Redémarrer le processus<span> pour recommencer tout le processus."
+        "description": "Cliquez sur 'Demander les informations d'identification manquantes' pour procéder à la vérification du VC manquant, ou cliquez sur 'Redémarrer le processus' pour recommencer tout le processus."
       },
       "ScanQrCode": {
         "label": "Scannez le code QR (utilisez un autre appareil)",

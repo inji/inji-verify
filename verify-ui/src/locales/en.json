@@ -99,7 +99,7 @@
       },
       "RequestMissingCredential": {
         "label": "Request Missing Credentials & Generate QR Code",
-        "description": "Click on <span>Request Missing Credentials<span> to proceed with verifying the missing VC, or click on <span>Restart Process<span> to start the entire process again."
+        "description": "Click on 'Request Missing Credentials' to proceed with verifying the missing VC, or click on 'Restart Process' to start the entire process again."
       },
       "ScanQrCode": {
         "label": "Scan QR Code (Use a Different Device)",
