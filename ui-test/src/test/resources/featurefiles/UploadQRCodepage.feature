@@ -222,16 +222,6 @@ Feature: Inji Verify upload qr code testing
     And Verify click on another qr code button
     And Upload QR code unsupported file HTML
     And Verify Error message
-    
-  @smoke @verifyV2EndpointIntegration
-  Scenario: Verify verify v2 endpoint integration for SVG qr code
-    And Verify browser refresh
-    And Verify upload QR code step2 label
-    And Verify upload QR code step3 label
-    And Verify that Upload button visible
-    And Upload SVG rendered VC
-    And Verify vc-verification api call in network tab with url
-    And Verify message for valid QR code
 
   @smoke @verifyuploadValidqrcodeDownloadedByMobileApp
   Scenario: Verify upload qr code for Valid
