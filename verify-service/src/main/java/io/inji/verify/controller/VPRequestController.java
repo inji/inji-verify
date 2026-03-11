@@ -1,8 +1,10 @@
 package io.inji.verify.controller;
 
-import io.inji.verify.exception.VPRequestNotFoundException;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseCookie;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.ResponseEntity;
 import org.springframework.validation.annotation.Validated;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -12,19 +14,21 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
-
 import io.inji.verify.dto.authorizationrequest.VPRequestCreateDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.exception.PresentationDefinitionNotFoundException;
+import io.inji.verify.exception.VPRequestNotFoundException;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-
+import java.nio.charset.StandardCharsets;
+import java.time.Duration;
+import java.util.Base64;
+import static io.inji.verify.shared.Constants.COOKIE_NAME;
 import static io.inji.verify.shared.Constants.VP_REQUEST_URI;
-
 
 @RequestMapping(VP_REQUEST_URI)
 @RestController
@@ -33,6 +37,18 @@ import static io.inji.verify.shared.Constants.VP_REQUEST_URI;
 public class VPRequestController {
 
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
+
+    @Value("${inji.verify.cookie-secure-value}")
+    boolean cookieIsSecure;
+
+    @Value("${inji.verify.cookie-path}")
+    String cookiePath;
+
+    @Value("${inji.verify.cookie-same-site}")
+    String cookieSameSite;
+
+    @Value("${inji.verify.cookie-duration-in-minute}")
+    int cookieDurationInMinute;
 
     public VPRequestController(VerifiablePresentationRequestService verifiablePresentationRequestService) {
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
@@ -43,10 +59,21 @@ public class VPRequestController {
         if (vpRequestCreate.getPresentationDefinitionId() == null && vpRequestCreate.getPresentationDefinition() == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.BOTH_ID_AND_PD_CANNOT_BE_NULL));
         }
-        try{
+        try {
             VPRequestResponseDto authorizationRequestResponse = verifiablePresentationRequestService.createAuthorizationRequest(vpRequestCreate);
-            return ResponseEntity.status(HttpStatus.CREATED).body(authorizationRequestResponse);
-        }catch (PresentationDefinitionNotFoundException e){
+            String sessionTxnId = authorizationRequestResponse.getTransactionId();
+            String cookieValue = Base64.getEncoder().encodeToString(sessionTxnId.getBytes(StandardCharsets.UTF_8));
+            ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, cookieValue)
+                    .httpOnly(true)
+                    .secure(cookieIsSecure)
+                    .path(cookiePath)
+                    .sameSite(cookieSameSite)
+                    .maxAge(Duration.ofMinutes(cookieDurationInMinute))
+                    .build();
+            return ResponseEntity.status(HttpStatus.CREATED)
+                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                    .body(authorizationRequestResponse);
+        } catch (PresentationDefinitionNotFoundException e) {
             log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_PRESENTATION_DEFINITION));
         }
@@ -65,5 +92,4 @@ public class VPRequestController {
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_AUTH_REQUEST));
         }
     }
-
 }
