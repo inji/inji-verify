@@ -91,7 +91,7 @@
     "VERIFY": {
       "InitiateVpRequest": {
         "label": "Iniciar el proceso de solicitud de VP",
-        "description": "Hacer clic <span> Solicitar credenciales verificables <span> Para iniciar el proceso de verificación de credenciales"
+        "description": "Hacer clic 'Solicitar credenciales verificables' Para iniciar el proceso de verificación de credenciales"
       },
       "SelectCredential": {
         "label": "Seleccionar tipos de credenciales",
@@ -111,7 +111,7 @@
       },
       "ShareVerifiableCredentials": {
         "label": "Compartir credenciales verificables de la billetera",
-        "description": "Entre dispositivos: Haga clic en 'Generar código QR' después de seleccionar las credenciales. Escanee el código QR con una billetera móvil en otro dispositivo que contenga las credenciales seleccionadas. Mismo dispositivo: Haga clic en 'Abrir billetera' para elegir una billetera móvil de la lista de billeteras disponibles en el mismo dispositivo y proceder con el intercambio de credenciales."
+        "description": "Entre dispositivos: Haga clic en 'Generar código QR' después de seleccionar las credenciales. Escanee el código QR con una billetera móvil en otro dispositivo que contenga las credenciales seleccionadas.\n Mismo dispositivo: Haga clic en 'Abrir billetera' para elegir una billetera móvil de la lista de billeteras disponibles en el mismo dispositivo y proceder con el intercambio de credenciales."
       },
       "DisplayResult": {
         "label": "Ver resultados de verificación",

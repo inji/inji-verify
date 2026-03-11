@@ -91,7 +91,7 @@
     "VERIFY": {
       "InitiateVpRequest": {
         "label": "Initiate VP Request Process",
-        "description": "Click <span> Request Verifiable Credentials <span> to initiate the credential verification process"
+        "description": "Click 'Request Verifiable Credentials' to initiate the credential verification process"
       },
       "SelectCredential": {
         "label": "Select Credential Types",
@@ -111,7 +111,7 @@
       },
       "ShareVerifiableCredentials": {
         "label": "Share Verifiable Credentials from Wallet",
-        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs. Same-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
+        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs.\nSame-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
       },
       "DisplayResult": {
         "label": "View Verification Results",
