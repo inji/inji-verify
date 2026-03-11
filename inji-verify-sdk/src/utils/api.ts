@@ -132,8 +132,7 @@ export const vpRequestStatus = async (url: string, reqId: string, abortSignal = 
       signal: abortSignal ? AbortSignal.timeout(5000) : undefined
     });
     if (response.status !== 200) throw new Error("Failed to fetch status");
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {
@@ -179,8 +178,7 @@ export const vpResult = async (url: string, transactionId: string, config?: VPVe
                 transactionId,
             } as AppError;
         }
-        const data = await response.json();
-        return data;
+      return await response.json();
     } catch (error) {
         if (isAppError(error)) {
             throw error as AppError;
