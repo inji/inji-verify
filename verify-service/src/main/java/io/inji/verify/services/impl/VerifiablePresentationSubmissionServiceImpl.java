@@ -3,7 +3,12 @@ package io.inji.verify.services.impl;
 import com.nimbusds.jose.shaded.gson.Gson;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.core.ErrorDto;
-import io.inji.verify.dto.result.*;
+import io.inji.verify.dto.result.VCResultDto;
+import io.inji.verify.dto.result.VPTokenDto;
+import io.inji.verify.dto.result.VPVerificationResultDto;
+import io.inji.verify.dto.result.VerificationRequestDto;
+import io.inji.verify.dto.result.CredentialResultsDto;
+import io.inji.verify.dto.result.HolderProofCheckDto;
 import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.dto.submission.PresentationSubmissionDto;
 import io.inji.verify.dto.submission.VPSubmissionDto;
@@ -393,16 +398,22 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    @Transactional
-    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId, String responseCode) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
+    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null);
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
         return processSubmission(vpSubmission, transactionId, authRequest);
     }
 
     @Override
+    public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId) {
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null);
+        AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
+        return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
+    }
+
+    @Override
     @Transactional
-    public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId, String responseCode) {
+    public VPVerificationResultDto getVPResultUsingResponse(VerificationRequestDto request, List<String> requestIds, String transactionId, String responseCode) {
         VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
         return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
