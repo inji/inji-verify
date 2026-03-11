@@ -211,7 +211,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         clearUrl(["response_code"]);
       }
     },
-    [verifyServiceUrl, onVPProcessed, onError, vpVerificationV2Request]
+    [verifyServiceUrl, onError, vpVerificationV2Request, processVPResultResponse]
   );
 
   const fetchVPStatus = useCallback(
