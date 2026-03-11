@@ -1,0 +1,1 @@
+delete from verify.presentation_definition where id='200';
