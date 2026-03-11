@@ -331,7 +331,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   useEffect(() => {
     if (!isActiveRef.current) {
       const hashParams = new URLSearchParams(window.location.hash.slice(1));
-      const responseCode = hashParams.get("response_code") || null;
+      const searchParams = new URLSearchParams(window.location.search);
+      const responseCode = hashParams.get("response_code") ?? searchParams.get("response_code");
       if (responseCode) {
         isActiveRef.current = true;
         setLoading(true);
