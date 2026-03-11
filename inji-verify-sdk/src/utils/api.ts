@@ -211,7 +211,7 @@ export const vpResultUsingResponseCode = async (url: string, responseCode: strin
     });
 
     if (!response.ok) {
-      const errorData = await response.json();
+      const errorData = await response.json().catch(() => ({}));
       throw {
         errorCode: errorData.errorCode,
         errorMessage: errorData.errorMessage || errorData.error || "Unknown error",
