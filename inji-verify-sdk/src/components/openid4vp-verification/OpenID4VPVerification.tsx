@@ -7,11 +7,16 @@ import {
   VerificationResults,
   CredentialResult
 } from "./OpenID4VPVerification.types";
-import { vpRequestStatus, vpRequest, vpResult } from "../../utils/api";
+import {
+  vpRequestStatus,
+  vpRequest,
+  vpResult,
+  vpResultUsingResponseCode
+} from "../../utils/api";
 import "./OpenID4VPVerification.css";
 import { clearUrl, normalizeVp } from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
-import { OVP_SESSION_REQUEST_ID_KEY, OVP_SESSION_TRANSACTION_ID_KEY, CROSS_DEVICE_FLOW, SAME_DEVICE_FLOW } from "../../utils/constants";
+import { CROSS_DEVICE_FLOW, SAME_DEVICE_FLOW } from "../../utils/constants";
 
 export const isMobileDevice = (): boolean => {
   const userAgent = navigator.userAgent;
@@ -50,6 +55,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   const [loading, setLoading] = useState<boolean>(false);
   const isActiveRef = useRef(false);
   const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
+  const sessionStateRef = useRef<SessionState | null>(null);
 
   const shouldShowQRCode = !loading && qrCodeData;
 
@@ -74,11 +80,6 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   const presentationFlow = isSameDeviceFlowEnabled ? SAME_DEVICE_FLOW : CROSS_DEVICE_FLOW;
 
-  const clearSessionData = useCallback(() => {
-    sessionStorage.removeItem(OVP_SESSION_REQUEST_ID_KEY);
-    sessionStorage.removeItem(OVP_SESSION_TRANSACTION_ID_KEY);
-  }, []);
-
   const resetState = useCallback(() => {
     if (redirectTimeoutRef.current) {
       clearTimeout(redirectTimeoutRef.current);
@@ -87,7 +88,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     setQrCodeData(null);
     setLoading(false);
     isActiveRef.current = false;
-    clearSessionData();
+    sessionStateRef.current = null;
   }, []);
 
   const getPresentationDefinitionParams = useCallback(
@@ -143,7 +144,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   );
 
   const fetchVPResult = useCallback(
-    async (txnId: string, responseCode?: string | null) => {
+    async (txnId: string) => {
       if (!isActiveRef.current) return;
 
       setLoading(true);
@@ -153,7 +154,6 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
           const response = await vpResult(
             verifyServiceUrl,
             txnId,
-            responseCode,
             vpVerificationV2Request
           );
 
@@ -181,15 +181,53 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
           onError(error as AppError);
           resetState();
         }
-      } finally {
-        clearUrl(["response_code"]);
       }
     },
     [verifyServiceUrl, onVPProcessed, onVPReceived, onError, vpVerificationV2Request]
   );
 
+  const fetchVPResultUsingResponseCode = useCallback(
+    async (responseCode: string) => {
+      if (!isActiveRef.current) return;
+
+      setLoading(true);
+
+      try {
+        if (onVPProcessed && responseCode) {
+          const response = await vpResultUsingResponseCode(
+            verifyServiceUrl,
+            responseCode,
+            vpVerificationV2Request
+          )
+
+          const VPResult: VerificationResults =
+            (response.credentialResults ?? []).map((cred: CredentialResult) => {
+              const vc = normalizeVp(cred.verifiableCredential);
+
+              return {
+                vc,
+                verificationResponse: cred,
+              };
+            });
+
+          onVPProcessed(VPResult);
+          resetState();
+          return;
+        }
+      } catch (error) {
+        if (isActiveRef.current) {
+          onError(error as AppError);
+          resetState();
+        }
+      } finally {
+        clearUrl(["response_code"]);
+      }
+    },
+    [verifyServiceUrl, onVPProcessed, onError, vpVerificationV2Request]
+  );
+
   const fetchVPStatus = useCallback(
-    async (reqId: string, txnId: string, responseCode?: string | null) => {
+    async (reqId: string, txnId: string) => {
       if (!isActiveRef.current) return;
 
       try {
@@ -198,7 +236,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         if (response.status === "ACTIVE") {
           fetchVPStatus(reqId, txnId);
         } else if (response.status === "VP_SUBMITTED") {
-          fetchVPResult(txnId, responseCode);
+          fetchVPResult(txnId);
         } else if (response.status === "EXPIRED") {
           resetState();
           onQrCodeExpired();
@@ -233,10 +271,10 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         presentationFlow
       );
 
-      if (isSameDeviceFlowEnabled) {
-        sessionStorage.setItem(OVP_SESSION_REQUEST_ID_KEY, data.requestId);
-        sessionStorage.setItem(OVP_SESSION_TRANSACTION_ID_KEY, data.transactionId);
-      }
+      sessionStateRef.current = {
+        requestId: data.requestId,
+        transactionId: data.transactionId,
+      };
 
       if (!isSameDeviceFlowEnabled || !isMobileDevice()) {
         fetchVPStatus(data.requestId, data.transactionId);
@@ -289,9 +327,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      const requestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
-      const transactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
-      if (document.visibilityState === "visible" && isActiveRef.current && transactionId && requestId) {
+      if (document.visibilityState === "visible" && isActiveRef.current && sessionStateRef.current) {
+        const { requestId, transactionId } = sessionStateRef.current;
         fetchVPStatus(requestId, transactionId);
       }
     };
@@ -305,15 +342,12 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   useEffect(() => {
     if (!isActiveRef.current) {
-      const savedRequestId = sessionStorage.getItem(OVP_SESSION_REQUEST_ID_KEY);
-      const savedTransactionId = sessionStorage.getItem(OVP_SESSION_TRANSACTION_ID_KEY);
-
-      if (savedRequestId && savedTransactionId) {
+      const hashParams = new URLSearchParams(window.location.hash.slice(1));
+      const responseCode = hashParams.get("response_code") || null;
+      if (responseCode) {
         isActiveRef.current = true;
         setLoading(true);
-        const hashParams = new URLSearchParams(window.location.hash.slice(1));
-        const responseCode = hashParams.get("response_code") || null;
-        fetchVPStatus(savedRequestId, savedTransactionId, responseCode);
+        fetchVPResultUsingResponseCode(responseCode);
       }
     }
 
