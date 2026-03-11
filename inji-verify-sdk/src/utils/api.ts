@@ -1,9 +1,14 @@
 import {
-    AppError,
-    PresentationDefinition,
-    VPRequestBody, VPVerificationV2Request,
+  AppError,
+  PresentationDefinition,
+  VPRequestBody,
+  VPVerificationV2Request,
 } from "../components/openid4vp-verification/OpenID4VPVerification.types";
-import { vcSubmissionBody, VCVerificationV2Request, VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
+import {
+  vcSubmissionBody,
+  VCVerificationV2Request,
+  VCVerificationV2Response
+} from "../components/qrcode-verification/QRCodeVerification.types";
 import { QrData } from "../types/OVPSchemeQrData";
 import { isCWT } from "./cborUtils";
 
@@ -97,11 +102,12 @@ export const vpRequest = async (
   if (presentationDefinition)
     requestBody.presentationDefinition = presentationDefinition;
 
-  const requestOptions = {
+  const requestOptions: RequestInit = {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
+    credentials: "include",
     body: JSON.stringify(requestBody),
   };
 
@@ -126,8 +132,7 @@ export const vpRequestStatus = async (url: string, reqId: string, abortSignal = 
       signal: abortSignal ? AbortSignal.timeout(5000) : undefined
     });
     if (response.status !== 200) throw new Error("Failed to fetch status");
-    const data = await response.json();
-    return data;
+    return await response.json();
   } catch (error) {
     console.error(error);
     if (error instanceof Error) {
@@ -146,7 +151,7 @@ const isAppError = (error: unknown): error is AppError => (
   typeof (error as Record<string, unknown>).errorMessage === 'string'
 );
 
-export const vpResult = async (url: string, transactionId: string, responseCode?: string | null, config?: VPVerificationV2Request)  => {
+export const vpResult = async (url: string, transactionId: string, config?: VPVerificationV2Request)  => {
     if (!transactionId) {
         throw new Error("Transaction ID is required for VP verification");
     }
@@ -158,9 +163,6 @@ export const vpResult = async (url: string, transactionId: string, responseCode?
 
     try {
         const baseUrl = new URL(`${url}/v2/vp-results/${transactionId}`);
-        if (responseCode) {
-            baseUrl.searchParams.append("response_code", responseCode);
-        }
         const response = await fetch(baseUrl.toString(), {
             method: "POST",
             headers: {
@@ -176,8 +178,7 @@ export const vpResult = async (url: string, transactionId: string, responseCode?
                 transactionId,
             } as AppError;
         }
-        const data = await response.json();
-        return data;
+      return await response.json();
     } catch (error) {
         if (isAppError(error)) {
             throw error as AppError;
@@ -185,3 +186,42 @@ export const vpResult = async (url: string, transactionId: string, responseCode?
         throw error;
     }
 };
+
+export const vpResultUsingResponseCode = async (url: string, responseCode: string, config?: VPVerificationV2Request) => {
+  if (!responseCode) {
+    throw new Error("Response Code is required for VP verification");
+  }
+  const requestBody = {
+    skipStatusChecks: config?.skipStatusChecks ?? false,
+    statusCheckFilters: config?.statusCheckFilters ?? [],
+    includeClaims: config?.includeClaims ?? false,
+  };
+
+  try {
+    const baseUrl = new URL(`${url}/vp-results`);
+    baseUrl.searchParams.append("response_code", responseCode);
+
+    const response = await fetch(baseUrl.toString(), {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      credentials: "include",
+      body: JSON.stringify(requestBody),
+    });
+
+    if (!response.ok) {
+      const errorData = await response.json();
+      throw {
+        errorCode: errorData.errorCode,
+        errorMessage: errorData.errorMessage || errorData.error || "Unknown error",
+      } as AppError;
+    }
+    return await response.json();
+  } catch (error) {
+    if (isAppError(error)) {
+      throw error as AppError;
+    }
+    throw error;
+  }
+}
