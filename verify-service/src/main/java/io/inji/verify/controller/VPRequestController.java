@@ -61,22 +61,29 @@ public class VPRequestController {
         }
         try {
             VPRequestResponseDto authorizationRequestResponse = verifiablePresentationRequestService.createAuthorizationRequest(vpRequestCreate);
-            String sessionTxnId = authorizationRequestResponse.getTransactionId();
-            String cookieValue = Base64.getEncoder().encodeToString(sessionTxnId.getBytes(StandardCharsets.UTF_8));
-            ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, cookieValue)
-                    .httpOnly(true)
-                    .secure(cookieIsSecure)
-                    .path(cookiePath)
-                    .sameSite(cookieSameSite)
-                    .maxAge(Duration.ofMinutes(cookieDurationInMinute))
-                    .build();
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(authorizationRequestResponse);
+            String presentationFlow = vpRequestCreate.getPresentationFlow();
+
+            ResponseEntity.BodyBuilder response = ResponseEntity.status(HttpStatus.CREATED);
+            if ("same_device".equalsIgnoreCase(presentationFlow)) setCookie(authorizationRequestResponse, response);
+
+            return response.body(authorizationRequestResponse);
         } catch (PresentationDefinitionNotFoundException e) {
             log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_PRESENTATION_DEFINITION));
         }
+    }
+
+    private void setCookie(VPRequestResponseDto authorizationRequestResponse, ResponseEntity.BodyBuilder response) {
+        String sessionTxnId = authorizationRequestResponse.getTransactionId();
+        String cookieValue = Base64.getEncoder().encodeToString(sessionTxnId.getBytes(StandardCharsets.UTF_8));
+        ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, cookieValue)
+                .httpOnly(true)
+                .secure(cookieIsSecure)
+                .path(cookiePath)
+                .sameSite(cookieSameSite)
+                .maxAge(Duration.ofMinutes(cookieDurationInMinute))
+                .build();
+        response.header(HttpHeaders.SET_COOKIE, cookie.toString());
     }
 
     @GetMapping(path = "/{requestId}/status")
