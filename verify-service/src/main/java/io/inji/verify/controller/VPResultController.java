@@ -126,43 +126,64 @@ public class VPResultController {
     @ExceptionHandler(VPSubmissionNotFoundException.class)
     public ResponseEntity<ErrorDto> handleNotFound(VPSubmissionNotFoundException e) {
         log.error(e.getMessage());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_VP_SUBMISSION));
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(new ErrorDto(ErrorCode.NO_VP_SUBMISSION));
     }
 
     @ExceptionHandler(VPWithoutProofException.class)
     public ResponseEntity<ErrorDto> handleInternalError(VPWithoutProofException e) {
         log.error(e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF));
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF));
     }
 
     @ExceptionHandler(VPSubmissionWalletError.class)
     public ResponseEntity<ErrorDto> handleWalletError(VPSubmissionWalletError e) {
         log.error("Received wallet error: {} - {} - ", e.getErrorCode(), e.getErrorDescription());
-        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(e.getErrorCode(), e.getErrorDescription()));
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(new ErrorDto(e.getErrorCode(), e.getErrorDescription()));
     }
 
     @ExceptionHandler(TokenMatchingFailedException.class)
     public ResponseEntity<ErrorDto> handleBadRequest(TokenMatchingFailedException e) {
         log.error(e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.TOKEN_MATCHING_FAILED));
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(new ErrorDto(ErrorCode.TOKEN_MATCHING_FAILED));
     }
 
     @ExceptionHandler(InvalidVpTokenException.class)
     public ResponseEntity<ErrorDto> invalidVpToken(InvalidVpTokenException e) {
         log.error(e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.INVALID_VP_TOKEN));
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(new ErrorDto(ErrorCode.INVALID_VP_TOKEN));
     }
 
     @ExceptionHandler(ResponseCodeException.class)
     public ResponseEntity<ErrorDto> handleResponseCodeException(ResponseCodeException e) {
         log.error("Response Code Error: {}", e.getMessage());
         ErrorCode errorCode = e.getErrorCode();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(errorCode.name(), errorCode.getErrorMessage()));
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(new ErrorDto(errorCode.name(), errorCode.getErrorMessage()));
     }
 
     @ExceptionHandler(MalformedCookieException.class)
     public ResponseEntity<ErrorDto> handleMalformedCookieException(MalformedCookieException e) {
         log.warn("Invalid argument or malformed Base64: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.MALFORMED_COOKIE));
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(new ErrorDto(ErrorCode.MALFORMED_COOKIE));
     }
 }
