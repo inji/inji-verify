@@ -879,16 +879,14 @@
                   }
                 },
                 "url": {
-                  "raw": "{{base_url}}/v1/verify/v2/vp-results/{{txnIdForOpenID4VPSameDevice}}?response_code={{response_code}}",
+                  "raw": "{{base_url}}/v1/verify/vp-results?response_code={{response_code}}",
                   "host": [
                     "{{base_url}}"
                   ],
                   "path": [
                     "v1",
                     "verify",
-                    "v2",
-                    "vp-results",
-                    "{{txnIdForOpenID4VPSameDevice}}"
+                    "vp-results"
                   ],
                   "query": [
                     {
