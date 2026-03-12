@@ -271,6 +271,6 @@ public class VPResultControllerTest {
                         .cookie(new jakarta.servlet.http.Cookie("vp_transaction_id", "not-valid-base64!!!"))
                         .content(objectMapper.writeValueAsString(request)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto("Cookie processing failed","Illegal base64 character 2d"))));
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.MALFORMED_COOKIE))));
     }
 }
