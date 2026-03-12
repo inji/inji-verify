@@ -136,7 +136,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             new PresentationResultWithCredentialStatus(VPVerificationStatus.VALID, vcResults));
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
             .thenReturn(authResponse);
-        VPTokenResultDto resultDto = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+        VPTokenResultDto resultDto = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.SUCCESS, resultDto.getVpResultStatus());
@@ -167,7 +167,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             new PresentationResultWithCredentialStatus(VPVerificationStatus.VALID, vcResults));
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
             .thenReturn(authResponse);
-        VPTokenResultDto resultDto = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+        VPTokenResultDto resultDto = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.SUCCESS, resultDto.getVpResultStatus());
     }
@@ -196,7 +196,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(), anyList()))
                 .thenReturn(summary);
 
-        assertDoesNotThrow(() -> verifiablePresentationSubmissionService.getVPResult(List.of("id"), "tx", null));
+        assertDoesNotThrow(() -> verifiablePresentationSubmissionService.getVPResult(List.of("id"), "tx"));
     }
 
     @Test
@@ -237,7 +237,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(new PresentationResultWithCredentialStatus(VPVerificationStatus.VALID, vcResults2));
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                 .thenReturn(authResponse);
-        VPTokenResultDto resultDto = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+        VPTokenResultDto resultDto = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.SUCCESS, resultDto.getVpResultStatus());
         assertEquals(2, resultDto.getVcResults().size());
@@ -273,7 +273,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                 .thenReturn(authResponse);
 
-        VPTokenResultDto resultDto = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+        VPTokenResultDto resultDto = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.SUCCESS, resultDto.getVpResultStatus());
@@ -287,7 +287,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(new ArrayList<>());
 
         assertThrows(VPSubmissionNotFoundException.class,
-                () -> verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null));
+                () -> verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId));
     }
 
     @Test
@@ -314,7 +314,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -349,7 +349,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -384,7 +384,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -411,7 +411,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -433,7 +433,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(null);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -459,7 +459,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -485,7 +485,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -514,7 +514,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(presentationVerifier.verify(anyString())).thenThrow(new RuntimeException("Verification error"));
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -541,7 +541,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -568,7 +568,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -595,7 +595,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -622,7 +622,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -650,7 +650,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -683,7 +683,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.SUCCESS, resultDto.getVpResultStatus());
@@ -717,7 +717,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(new PresentationResultWithCredentialStatus(VPVerificationStatus.VALID, vcResults));
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -739,7 +739,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(null);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -781,7 +781,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -824,7 +824,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -884,7 +884,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -931,7 +931,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             .thenReturn(authResponse);
 
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.SUCCESS, resultDto.getVpResultStatus());
@@ -986,7 +986,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                 .thenReturn(authResponse);
         VPTokenResultDto resultDto =
-                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
 
         assertNotNull(resultDto);
         assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
@@ -1025,7 +1025,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(presentationVerificationResult.getVcResults()).thenReturn(vcResults);
         when(presentationVerifier.verifyV2(anyString())).thenReturn(presentationVerificationResult);
 
-        VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId, null);
+        VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId);
         List<CredentialResultsDto> credentialResults = result.getCredentialResults();
 
         assertTrue(result.isAllChecksSuccessful());
@@ -1063,7 +1063,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class))).thenReturn(vcResultDto);
 
         VPVerificationResultDto result =
-                verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId);
 
         assertTrue(result.isAllChecksSuccessful());
         assertEquals(1, result.getCredentialResults().size());
@@ -1080,7 +1080,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 false);
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
 
-        assertThrows(VPSubmissionWalletError.class, () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId, null));
+        assertThrows(VPSubmissionWalletError.class, () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId));
     }
 
     @Test
@@ -1101,7 +1101,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
 
-        assertThrows(io.inji.verify.exception.TokenMatchingFailedException.class, () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId, null));
+        assertThrows(io.inji.verify.exception.TokenMatchingFailedException.class, () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId));
     }
 
     @Test
@@ -1125,7 +1125,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
 
         assertThrows(VPWithoutProofException.class,
-                () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId, null));
+                () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId));
     }
 
     @Test
@@ -1136,7 +1136,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(new ArrayList<>());
 
         assertThrows(VPSubmissionNotFoundException.class,
-                () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId, null));
+                () -> verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId));
     }
 
     @Test
@@ -1178,7 +1178,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             utilsMock.when(() -> Utils.extractClaims(eq(vpToken), any(), any(), any()))
                     .thenReturn(expectedClaims);
             VPVerificationResultDto result =
-                    verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId, null);
+                    verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId);
             List<CredentialResultsDto> credentialResults = result.getCredentialResults();
             assertFalse(credentialResults.isEmpty());
 
@@ -1216,7 +1216,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class))).thenReturn(vcResultDto);
 
         VPVerificationResultDto result =
-                verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId, null);
+                verifiablePresentationSubmissionService.getVPResultV2(verificationRequestDto, requestIds, transactionId);
 
         assertTrue(result.isAllChecksSuccessful());
         assertEquals(1, result.getCredentialResults().size());
@@ -1345,7 +1345,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(presentationVerifier.verifyAndGetCredentialStatusV2(anyString(), anyList()))
                 .thenReturn(mockResult);
 
-        VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId, null);
+        VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
         assertFalse(result.isAllChecksSuccessful(), "Overall verification should fail when a credential status fails");
 
         CredentialResultsDto credential = result.getCredentialResults().getFirst();

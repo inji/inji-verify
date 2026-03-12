@@ -149,4 +149,11 @@ public class VPResultController {
         ErrorCode errorCode = e.getErrorCode();
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(errorCode.name(), errorCode.getErrorMessage()));
     }
+
+    @ExceptionHandler(IllegalArgumentException.class)
+    public ResponseEntity<ErrorDto> handleIllegalArgumentException(IllegalArgumentException e) {
+        log.warn("Invalid argument or malformed Base64: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorDto(ErrorCode.SESSION_INTERRUPTED));
+    }
 }
