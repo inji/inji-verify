@@ -14,6 +14,7 @@ import io.inji.verify.exception.InvalidVpTokenException;
 import io.inji.verify.exception.VPSubmissionWalletError;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
 import io.inji.verify.exception.ResponseCodeException;
+import io.inji.verify.exception.MalformedCookieException;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -49,6 +50,9 @@ public class VPResultController {
 
     @Value("${inji.verify.cookie-path}")
     String cookiePath;
+
+    @Value("${inji.verify.cookie-same-site}")
+    String cookieSameSite;
 
     public VPResultController(VerifiablePresentationRequestService verifiablePresentationRequestService, VCSubmissionService vcSubmissionService, VerifiablePresentationSubmissionService verifiablePresentationSubmissionService) {
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
@@ -90,9 +94,14 @@ public class VPResultController {
 
     @PostMapping(path = "/vp-results", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getVPResultUsingResponseCode(@Valid @RequestBody VerificationRequestDto request, @RequestParam(required = false, name = "response_code") String responseCode, @CookieValue(value = COOKIE_NAME, defaultValue = "") String cookie) {
-        if (cookie.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ErrorCode.SESSION_INTERRUPTED));
-        byte[] decodedCookie = Base64.getDecoder().decode(cookie);
-        String transactionId = new String(decodedCookie, StandardCharsets.UTF_8);
+        if (cookie.isEmpty()) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.SESSION_INTERRUPTED));
+        String transactionId;
+        try {
+            byte[] decodedCookie = Base64.getDecoder().decode(cookie);
+            transactionId = new String(decodedCookie, StandardCharsets.UTF_8);
+        } catch (IllegalArgumentException e) {
+            throw new MalformedCookieException(e);
+        }
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
         if (requestIds.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
@@ -109,6 +118,7 @@ public class VPResultController {
                 .httpOnly(true)
                 .secure(cookieIsSecure)
                 .path(cookiePath)
+                .sameSite(cookieSameSite)
                 .maxAge(0)
                 .build();
     }
@@ -150,10 +160,9 @@ public class VPResultController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(errorCode.name(), errorCode.getErrorMessage()));
     }
 
-    @ExceptionHandler(IllegalArgumentException.class)
-    public ResponseEntity<ErrorDto> handleIllegalArgumentException(IllegalArgumentException e) {
+    @ExceptionHandler(MalformedCookieException.class)
+    public ResponseEntity<ErrorDto> handleMalformedCookieException(MalformedCookieException e) {
         log.warn("Invalid argument or malformed Base64: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                .body(new ErrorDto(ErrorCode.SESSION_INTERRUPTED));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.MALFORMED_COOKIE));
     }
 }

@@ -2,6 +2,8 @@ package io.inji.verify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.core.ErrorDto;
+import io.inji.verify.dto.result.VPVerificationResultDto;
+import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPResultStatus;
@@ -17,12 +19,18 @@ import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.http.MediaType;
+import org.springframework.test.util.ReflectionTestUtils;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Base64;
 import java.util.List;
+import static org.hamcrest.Matchers.containsString;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
+import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.header;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
 
@@ -41,6 +49,9 @@ public class VPResultControllerTest {
     @BeforeEach
     public void setUp() {
         VPResultController vpResultController = new VPResultController(verifiablePresentationRequestService, vcSubmissionService, verifiablePresentationSubmissionService);
+        ReflectionTestUtils.setField(vpResultController, "cookieIsSecure", false);
+        ReflectionTestUtils.setField(vpResultController, "cookiePath", "/");
+        ReflectionTestUtils.setField(vpResultController, "cookieSameSite", "Strict");
         mockMvc = MockMvcBuilders.standaloneSetup(vpResultController).build();
     }
 
@@ -171,5 +182,95 @@ public class VPResultControllerTest {
                 .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.INVALID_VP_TOKEN))));
 
         verify(verifiablePresentationSubmissionService, times(1)).getVPResult(requestIds, transactionId);
+    }
+
+    @Test
+    void testGetVPResultUsingResponseCode_Success_ExtractsTransactionIdFromCookie() throws Exception {
+        String transactionId = "tx_same_device";
+        String cookieValue = Base64.getEncoder().encodeToString(transactionId.getBytes(StandardCharsets.UTF_8));
+        List<String> requestIds = List.of("req_sd_001");
+        VerificationRequestDto request = new VerificationRequestDto();
+        VPVerificationResultDto resultDto = new VPVerificationResultDto(transactionId, true, new ArrayList<>());
+
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId)).thenReturn(requestIds);
+        when(verifiablePresentationSubmissionService.getVPResultUsingResponse(any(), eq(requestIds), eq(transactionId), isNull()))
+                .thenReturn(resultDto);
+
+        mockMvc.perform(post("/vp-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new jakarta.servlet.http.Cookie("vp_transaction_id", cookieValue))
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(content().string(objectMapper.writeValueAsString(resultDto)));
+
+        verify(verifiablePresentationRequestService, times(1)).getLatestRequestIdFor(transactionId);
+        verify(verifiablePresentationSubmissionService, times(1))
+                .getVPResultUsingResponse(any(), eq(requestIds), eq(transactionId), isNull());
+    }
+
+    @Test
+    void testGetVPResultUsingResponseCode_Success_DeletesCookie() throws Exception {
+        String transactionId = "tx_delete_cookie";
+        String cookieValue = Base64.getEncoder().encodeToString(transactionId.getBytes(StandardCharsets.UTF_8));
+        List<String> requestIds = List.of("req_dc_001");
+        VerificationRequestDto request = new VerificationRequestDto();
+        VPVerificationResultDto resultDto = new VPVerificationResultDto(transactionId, true, new ArrayList<>());
+
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId)).thenReturn(requestIds);
+        when(verifiablePresentationSubmissionService.getVPResultUsingResponse(any(), eq(requestIds), eq(transactionId), isNull()))
+                .thenReturn(resultDto);
+
+        mockMvc.perform(post("/vp-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new jakarta.servlet.http.Cookie("vp_transaction_id", cookieValue))
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isOk())
+                .andExpect(header().exists("Set-Cookie"))
+                .andExpect(header().string("Set-Cookie", containsString("vp_transaction_id=")))
+                .andExpect(header().string("Set-Cookie", containsString("Max-Age=0")))
+                .andExpect(header().string("Set-Cookie", containsString("HttpOnly")));
+    }
+
+    @Test
+    void testGetVPResultUsingResponseCode_Unauthorized_WhenCookieMissing() throws Exception {
+        VerificationRequestDto request = new VerificationRequestDto();
+
+        mockMvc.perform(post("/vp-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.SESSION_INTERRUPTED))));
+
+        verify(verifiablePresentationRequestService, never()).getLatestRequestIdFor(any());
+    }
+
+    @Test
+    void testGetVPResultUsingResponseCode_NotFound_WhenTransactionIdInvalid() throws Exception {
+        String transactionId = "tx_unknown";
+        String cookieValue = Base64.getEncoder().encodeToString(transactionId.getBytes(StandardCharsets.UTF_8));
+        VerificationRequestDto request = new VerificationRequestDto();
+
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId)).thenReturn(new ArrayList<>());
+
+        mockMvc.perform(post("/vp-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new jakarta.servlet.http.Cookie("vp_transaction_id", cookieValue))
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID))));
+
+        verify(verifiablePresentationSubmissionService, never()).getVPResultUsingResponse(any(), any(), any(), any());
+    }
+
+    @Test
+    void testGetVPResultUsingResponseCode_BadRequest_WhenCookieMalformed() throws Exception {
+        VerificationRequestDto request = new VerificationRequestDto();
+
+        mockMvc.perform(post("/vp-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .cookie(new jakarta.servlet.http.Cookie("vp_transaction_id", "not-valid-base64!!!"))
+                        .content(objectMapper.writeValueAsString(request)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto("Cookie processing failed","Illegal base64 character 2d"))));
     }
 }
