@@ -87,15 +87,23 @@ const DesktopStepper: React.FC = () => {
                     id={`${convertToId(step.label)}-description`}
                     className={`${marginClass} text-normalTextSize text-stepperDescription font-normal col-end-13`}
                   >
-                    {(step.description || "").split("<span>").map((text:string, index:number) =>
-                      index % 2 === 1 ? (
-                        <span key={index} style={{ fontStyle: "italic" }}>
-                          "{text.trim()}"
-                        </span>
-                      ) : (
-                        text
-                      )
-                    )}
+                      {(step.description || "").split("\n").map((line: string, index: number) => {
+                          const containsColon = line.includes(":");
+
+                          if (containsColon) {
+                              const [title, ...rest] = line.split(":");
+
+                              return (
+                                  <ul key={index} className="list-disc pl-6 mt-1">
+                                      <li>
+                                          <strong>{title}:</strong> {rest.join(":")}
+                                      </li>
+                                  </ul>
+                              );
+                          }
+
+                          return <p key={index}>{line}</p>;
+                      })}
                   </div>
                   {!isLastStep(index) && (
                     <div className={`col-end-2 ${isStepCompleted(index + 1) ? "" : "opacity-20"}`}>
