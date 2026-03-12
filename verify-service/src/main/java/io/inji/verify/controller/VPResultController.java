@@ -68,7 +68,10 @@ public class VPResultController {
 
         log.info("Fetching VP result for transactionId: {}", transactionId);
         VPTokenResultDto result = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
-        return ResponseEntity.ok(result);
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(result);
     }
 
     @PostMapping(path = "/v2/vp-results/{transactionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -79,7 +82,10 @@ public class VPResultController {
 
         log.info("Fetching VP result for requestId: {}", requestIds);
         VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
-        return ResponseEntity.ok(result);
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(result);
     }
 
     @PostMapping(path = "/vp-results", consumes = MediaType.APPLICATION_JSON_VALUE)
@@ -92,15 +98,19 @@ public class VPResultController {
         if (requestIds.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
 
         VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultUsingResponse(request, requestIds, transactionId, responseCode);
-        ResponseCookie deleteCookie = ResponseCookie.from(COOKIE_NAME, "")
+        ResponseCookie deleteCookie = getDeleteCookie();
+        return ResponseEntity.status(HttpStatus.OK)
+                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                .body(result);
+    }
+
+    private ResponseCookie getDeleteCookie() {
+        return ResponseCookie.from(COOKIE_NAME, "")
                 .httpOnly(true)
                 .secure(cookieIsSecure)
                 .path(cookiePath)
                 .maxAge(0)
                 .build();
-        return ResponseEntity.status(HttpStatus.OK)
-                .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
-                .body(result);
     }
 
     @ExceptionHandler(VPSubmissionNotFoundException.class)
