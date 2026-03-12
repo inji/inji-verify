@@ -87,14 +87,29 @@ function MobileStepper() {
         <p id={convertToId(label)} className={`font-bold md:text-smallTextSize text-normalTextSize my-1 ${activeStep?.isActive ? "text-black" : "text-stepperLabel"}`}>
           {label}
         </p>
-        <p
-          id={`${convertToId(label)}-description`}
-          className="text-stepperDescription text-smallTextSize md:text-normalTextSize"
-        >
-          {description.split("<span>").map((text, index) =>
-              index % 2 === 1 ? <span key={index} style={{ fontStyle: "italic" }}> &quot;{text.trim()}&quot;</span> : text
-          )}
-        </p>
+
+          <div
+              id={`${convertToId(label)}-description`}
+              className="text-stepperDescription text-smallTextSize md:text-normalTextSize text-left"
+          >
+              {(description || "").split("\n").map((line: string, index: number) => {
+                  const containsColon = line.includes(":");
+                  if (containsColon) {
+                      const [title, ...rest] = line.split(":");
+
+                      return (
+                          <ul key={index} className="list-disc pl-6 mt-1">
+                              <li>
+                                  <strong>{title}:</strong> {rest.join(":")}
+                              </li>
+                          </ul>
+                      );
+                  }
+
+                  return <p key={index}>{line}</p>;
+              })}
+
+          </div>
       </div>
     </div>
   );
