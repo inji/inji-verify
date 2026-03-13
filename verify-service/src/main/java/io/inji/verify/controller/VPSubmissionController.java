@@ -3,7 +3,6 @@ package io.inji.verify.controller;
 import com.nimbusds.jose.shaded.gson.JsonSyntaxException;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.enums.ErrorCode;
-import io.inji.verify.exception.InvalidRequestException;
 import io.inji.verify.exception.RedirectUriNotFoundException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -61,8 +60,6 @@ public class VPSubmissionController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body("INVALID_PRESENTATION_SUBMISSION");
         } catch (RedirectUriNotFoundException e) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.REDIRECT_URI_NOT_FOUND));
-        } catch (InvalidRequestException e) {
-            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.INVALID_REQUEST));
         }
     }
 

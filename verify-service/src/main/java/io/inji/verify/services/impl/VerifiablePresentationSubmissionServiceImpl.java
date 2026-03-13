@@ -22,7 +22,6 @@ import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
-import io.inji.verify.exception.InvalidRequestException;
 import io.inji.verify.exception.RedirectUriNotFoundException;
 import io.inji.verify.exception.VPSubmissionWalletError;
 import io.inji.verify.exception.InvalidVpTokenException;
@@ -161,9 +160,11 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 String violationMessage = violations.iterator().next().getMessage();
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
             }
-            if (!acceptVPWithoutHolderProof) {
-                boolean isValidVpToken = validateVpToken(vpToken, nonce, clientId);
-                if (!isValidVpToken) throw new InvalidRequestException();
+            VPTokenDto vpTokenDto = extractTokens(vpToken);
+            if (!acceptVPWithoutHolderProof && !vpTokenDto.getJsonVpTokens().isEmpty()) {
+                boolean isValidVpToken = validateVpTokens(vpTokenDto.getJsonVpTokens(), nonce, clientId);
+                if (!isValidVpToken)
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.INVALID_REQUEST));
             }
 
             vpSubmissionDto.setState(state);
@@ -177,19 +178,16 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
-    private boolean validateVpToken(String vpToken, String nonce, String clientId) throws InvalidRequestException {
-        try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode vpTokenJson = mapper.readTree(vpToken);
-            JsonNode proofNode = vpTokenJson.path("proof");
-            String challenge = proofNode.path("challenge").asText();
-            String domain = proofNode.path("domain").asText();
-            log.info("Extracted Challenge: {}, Domain: {}", challenge, domain);
-            return (nonce.equals(challenge) && clientId.equals(domain));
-        } catch (Exception e) {
-            log.warn("Failed to parse vpToken for proof extraction: {}", e.getMessage());
-            throw new InvalidRequestException();
-        }
+    private boolean validateVpTokens(List<JSONObject> vpTokens, String nonce, String clientId) {
+        return vpTokens.stream().allMatch(json -> {
+            JSONObject proof = json.optJSONObject("proof");
+            if (proof == null) return false;
+
+            String challenge = proof.optString("challenge");
+            String domain = proof.optString("domain");
+
+            return nonce.equals(challenge) && clientId.equals(domain);
+        });
     }
 
     private String buildRedirectWithResponseCode(String responseCode) {
