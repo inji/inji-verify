@@ -128,8 +128,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         boolean isSameDevice = false, acceptVPWithoutHolderProof = false;
         String nonce = "", clientId = "";
         AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
-        if (authRequest != null) {
-            isSameDevice = isSameDeviceFlow(authRequest);
+        if (authRequest != null && authRequest.getAuthorizationDetails() != null) {
+            isSameDevice = isSameDeviceFlow(authRequest.getAuthorizationDetails());
             nonce = authRequest.getAuthorizationDetails().getNonce();
             clientId = authRequest.getAuthorizationDetails().getClientId();
             acceptVPWithoutHolderProof  = authRequest.getAuthorizationDetails().isAcceptVPWithoutHolderProof();
@@ -551,9 +551,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             }
     }
 
-    private boolean isSameDeviceFlow(AuthorizationRequestCreateResponse authRequest) {
-        if (authRequest == null || authRequest.getAuthorizationDetails() == null) return false;
-        String presentationFlow = authRequest.getAuthorizationDetails().getPresentationFlow();
+    private boolean isSameDeviceFlow(AuthorizationRequestResponseDto authDetail) {
+        String presentationFlow = authDetail.getPresentationFlow();
         return "same_device".equals(presentationFlow);
     }
 
