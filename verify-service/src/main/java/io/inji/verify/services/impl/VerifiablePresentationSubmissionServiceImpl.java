@@ -1,9 +1,16 @@
 package io.inji.verify.services.impl;
 
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.Gson;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.core.ErrorDto;
-import io.inji.verify.dto.result.*;
+import io.inji.verify.dto.result.VCResultDto;
+import io.inji.verify.dto.result.VPTokenDto;
+import io.inji.verify.dto.result.VPVerificationResultDto;
+import io.inji.verify.dto.result.VerificationRequestDto;
+import io.inji.verify.dto.result.CredentialResultsDto;
+import io.inji.verify.dto.result.HolderProofCheckDto;
 import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.dto.submission.PresentationSubmissionDto;
 import io.inji.verify.dto.submission.VPSubmissionDto;
@@ -15,7 +22,15 @@ import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
-import io.inji.verify.exception.*;
+import io.inji.verify.exception.InvalidRequestException;
+import io.inji.verify.exception.RedirectUriNotFoundException;
+import io.inji.verify.exception.VPSubmissionWalletError;
+import io.inji.verify.exception.InvalidVpTokenException;
+import io.inji.verify.exception.CredentialStatusCheckException;
+import io.inji.verify.exception.VPWithoutProofException;
+import io.inji.verify.exception.TokenMatchingFailedException;
+import io.inji.verify.exception.VPSubmissionNotFoundException;
+import io.inji.verify.exception.ResponseCodeException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
@@ -27,7 +42,16 @@ import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
-import io.mosip.vercred.vcverifier.data.*;
+import io.mosip.vercred.vcverifier.data.VPVerificationStatus;
+import io.mosip.vercred.vcverifier.data.PresentationVerificationResultV2;
+import io.mosip.vercred.vcverifier.data.PresentationResultWithCredentialStatus;
+import io.mosip.vercred.vcverifier.data.VCResultWithCredentialStatus;
+import io.mosip.vercred.vcverifier.data.PresentationResultWithCredentialStatusV2;
+import io.mosip.vercred.vcverifier.data.VCResultWithCredentialStatusV2;
+import io.mosip.vercred.vcverifier.data.VerificationStatus;
+import io.mosip.vercred.vcverifier.data.VCResultV2;
+import io.mosip.vercred.vcverifier.data.VerificationResult;
+import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
@@ -52,7 +76,12 @@ import java.util.HashMap;
 import java.util.UUID;
 import java.util.Set;
 import java.util.stream.IntStream;
-import static io.inji.verify.utils.Utils.*;
+import static io.inji.verify.utils.Utils.populateStatusCheckDtoList;
+import static io.inji.verify.utils.Utils.populateSchemaAndSignature;
+import static io.inji.verify.utils.Utils.populateExpiryCheck;
+import static io.inji.verify.utils.Utils.extractClaims;
+import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
+import static io.inji.verify.utils.Utils.isSdJwt;
 
 @Service
 @Slf4j
@@ -98,8 +127,13 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     public ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
         // --- Get presentationFlow from auth request ---
         boolean isSameDevice = false;
+        String nonce = "", clientId = "";
         AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
-        if (authRequest != null) isSameDevice = isSameDeviceFlow(authRequest);
+        if (authRequest != null) {
+            isSameDevice = isSameDeviceFlow(authRequest);
+            nonce = authRequest.getAuthorizationDetails().getNonce();
+            clientId = authRequest.getAuthorizationDetails().getClientId();
+        }
 
         // --- create response redirect_uri for same_device flow ---
         String responseCode = null;
@@ -126,6 +160,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 String violationMessage = violations.iterator().next().getMessage();
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
             }
+            boolean isValidVpToken = validateVpToken(vpToken, nonce, clientId);
+            if (!isValidVpToken) throw new InvalidRequestException();
 
             vpSubmissionDto.setState(state);
             vpSubmissionDto.setVpToken(vpToken);
@@ -136,6 +172,21 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         vpSubmissionDto.setResponseCodeUsed(false);
         saveVPSubmissionDto(vpSubmissionDto);
         return ResponseEntity.status(HttpStatus.OK).body(response);
+    }
+
+    private boolean validateVpToken(String vpToken, String nonce, String clientId) throws InvalidRequestException {
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode vpTokenJson = mapper.readTree(vpToken);
+            JsonNode proofNode = vpTokenJson.path("proof");
+            String challenge = proofNode.path("challenge").asText();
+            String domain = proofNode.path("domain").asText();
+            log.info("Extracted Challenge: {}, Domain: {}", challenge, domain);
+            return (nonce.equals(challenge) && clientId.equals(domain));
+        } catch (Exception e) {
+            log.warn("Failed to parse vpToken for proof extraction: {}", e.getMessage());
+            throw new InvalidRequestException();
+        }
     }
 
     private String buildRedirectWithResponseCode(String responseCode) {
