@@ -7,7 +7,22 @@
 	<listeners>
 		<listener class-name="io.mosip.testrig.apirig.report.EmailableReport" />
 	</listeners>
-
+			<test name="InsertDBData">
+		<parameter name="ymlFile"
+			value="injiverify/InsertDBData/InsertDBData.yml" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.DBIntegration" />
+		</classes>
+	</test>
+		<test name="VpRequestWithPresentationId">
+		<parameter name="ymlFile"
+			value="injiverify/VpRequestWithPresentationId/VpRequestWithPresentationId.yml" />
+		<parameter name="idKeyName" value="transactionId,requestId,id" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
 	<test name="CreateNewVerificationRequest">
 		<parameter name="ymlFile"
 			value="injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest.yml" />

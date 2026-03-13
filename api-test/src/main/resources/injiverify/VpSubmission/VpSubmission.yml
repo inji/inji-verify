@@ -222,3 +222,20 @@ VpSubmission:
       output: '{
       "responseCode": "200"
 }'
+
+  Injiverify_VpSubmission_With_PresentationId_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting the Verifiable Credential (VC) to the PresentationID VP request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_12
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state":"$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_requestId$",
+      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'
