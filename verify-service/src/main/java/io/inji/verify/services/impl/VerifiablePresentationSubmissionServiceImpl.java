@@ -126,13 +126,14 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Override
     public ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
         // --- Get presentationFlow from auth request ---
-        boolean isSameDevice = false;
+        boolean isSameDevice = false, acceptVPWithoutHolderProof = false;
         String nonce = "", clientId = "";
         AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
         if (authRequest != null) {
             isSameDevice = isSameDeviceFlow(authRequest);
             nonce = authRequest.getAuthorizationDetails().getNonce();
             clientId = authRequest.getAuthorizationDetails().getClientId();
+            acceptVPWithoutHolderProof  = authRequest.getAuthorizationDetails().isAcceptVPWithoutHolderProof();
         }
 
         // --- create response redirect_uri for same_device flow ---
@@ -160,8 +161,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 String violationMessage = violations.iterator().next().getMessage();
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
             }
-            boolean isValidVpToken = validateVpToken(vpToken, nonce, clientId);
-            if (!isValidVpToken) throw new InvalidRequestException();
+            if (!acceptVPWithoutHolderProof) {
+                boolean isValidVpToken = validateVpToken(vpToken, nonce, clientId);
+                if (!isValidVpToken) throw new InvalidRequestException();
+            }
 
             vpSubmissionDto.setState(state);
             vpSubmissionDto.setVpToken(vpToken);
