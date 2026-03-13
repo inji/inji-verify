@@ -20,7 +20,8 @@ public enum ErrorCode {
     RESPONSE_CODE_EXPIRED("RESPONSE_CODE_EXPIRED", "Response code has expired"),
     RESPONSE_CODE_USED("RESPONSE_CODE_USED", "Response code has been used"),
     RESPONSE_CODE_NOT_FOUND("RESPONSE_CODE_NOT_FOUND", "Response code is missing for this VP Submission"),
-    REDIRECT_URI_NOT_FOUND("REDIRECT_URI_NOT_FOUND", "Redirect URI configuration is missing");
+    REDIRECT_URI_NOT_FOUND("REDIRECT_URI_NOT_FOUND", "Redirect URI configuration is missing"),
+    INVALID_REQUEST("INVALID_REQUEST", "The client_id or nonce in the VP submission does not match the authorization request");
 
     private final String errorCode;
     private final String errorMessage;
