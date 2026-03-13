@@ -2140,7 +2140,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Test
-    public void testSubmit_ValidateToken_Fails_WhenNonceMismatch() {
+    public void testSubmit_ValidateToken_Returns400_WhenNonceMismatch() {
         String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\",\"challenge\":\"wrong-nonce\",\"domain\":\"my-client\"},\"verifiableCredential\":[]}";
         String presentationSubmission = "{\"id\":\"subId\"}";
         String state = "stateABC";
@@ -2155,13 +2155,15 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-        assertThrows(io.inji.verify.exception.InvalidRequestException.class,
-                () -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertInstanceOf(ErrorDto.class, response.getBody());
         verify(vpSubmissionRepository, never()).save(any());
     }
 
     @Test
-    public void testSubmit_ValidateToken_Fails_WhenDomainMismatch() {
+    public void testSubmit_ValidateToken_Returns400_WhenDomainMismatch() {
         String vpToken = "{\"type\":[\"VerifiablePresentation\"],"
                 + "\"proof\":{\"type\":\"Ed25519Signature2018\",\"challenge\":\"my-nonce\",\"domain\":\"wrong-client\"},"
                 + "\"verifiableCredential\":[]}";
@@ -2178,13 +2180,15 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-        assertThrows(io.inji.verify.exception.InvalidRequestException.class,
-                () -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertInstanceOf(ErrorDto.class, response.getBody());
         verify(vpSubmissionRepository, never()).save(any());
     }
 
     @Test
-    public void testSubmit_ValidateToken_Fails_WhenBothNonceAndDomainMismatch() {
+    public void testSubmit_ValidateToken_Returns400_WhenBothNonceAndDomainMismatch() {
         String vpToken = "{\"type\":[\"VerifiablePresentation\"],"
                 + "\"proof\":{\"type\":\"Ed25519Signature2018\",\"challenge\":\"bad-nonce\",\"domain\":\"bad-client\"},"
                 + "\"verifiableCredential\":[]}";
@@ -2201,15 +2205,15 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-        assertThrows(io.inji.verify.exception.InvalidRequestException.class,
-                () -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertInstanceOf(ErrorDto.class, response.getBody());
         verify(vpSubmissionRepository, never()).save(any());
     }
 
     @Test
-    public void testSubmit_ValidateToken_Fails_WhenProofNodeMissing() {
-        // VP token without a proof field – challenge/domain will be empty strings,
-        // which won't match the real nonce/clientId
+    public void testSubmit_ValidateToken_Returns400_WhenProofNodeMissing() {
         String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"verifiableCredential\":[]}";
         String presentationSubmission = "{\"id\":\"subId\"}";
         String state = "stateABC";
@@ -2224,13 +2228,35 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-        assertThrows(io.inji.verify.exception.InvalidRequestException.class,
-                () -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
+
+        assertEquals(400, response.getStatusCode().value());
+        assertInstanceOf(ErrorDto.class, response.getBody());
         verify(vpSubmissionRepository, never()).save(any());
     }
 
     @Test
-    public void testSubmit_ValidateToken_Fails_WhenVpTokenIsMalformedJson() {
+    public void testSubmit_ValidateToken_ThrowsInvalidVpTokenException_WhenVpTokenIsNull() {
+        String presentationSubmission = "{\"id\":\"subId\"}";
+        String state = "stateABC";
+
+        PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
+
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri", false, "cross_device");
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                state, "txId", authDetails, System.currentTimeMillis() + 100000);
+
+        when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
+        when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
+
+        assertThrows(InvalidVpTokenException.class,
+                () -> verifiablePresentationSubmissionService.submit(null, presentationSubmission, state, null, null));
+        verify(vpSubmissionRepository, never()).save(any());
+    }
+
+    @Test
+    public void testSubmit_ValidateToken_ThrowsInvalidVpTokenException_WhenVpTokenIsMalformedJson() {
         String vpToken = "not-valid-json!!!";
         String presentationSubmission = "{\"id\":\"subId\"}";
         String state = "stateABC";
@@ -2245,16 +2271,17 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-        assertThrows(io.inji.verify.exception.InvalidRequestException.class,
+        assertThrows(InvalidVpTokenException.class,
                 () -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
         verify(vpSubmissionRepository, never()).save(any());
     }
 
     @Test
     public void testSubmit_ValidateToken_Skipped_WhenAcceptVPWithoutHolderProof() {
-        // When acceptVPWithoutHolderProof = true, validateVpToken is not called;
-        // a VP token without a proof (or with mismatched proof) should still be accepted.
-        String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"verifiableCredential\":[]}";
+        // acceptVPWithoutHolderProof = true → validateVpTokens never called; mismatched proof still accepted
+        String vpToken = "{\"type\":[\"VerifiablePresentation\"],"
+                + "\"proof\":{\"challenge\":\"wrong\",\"domain\":\"wrong\"},"
+                + "\"verifiableCredential\":[]}";
         String presentationSubmission = "{\"id\":\"subId\"}";
         String state = "stateABC";
 
@@ -2271,6 +2298,31 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
         ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
+
+        assertEquals(200, response.getStatusCode().value());
+        verify(vpSubmissionRepository, times(1)).save(any(VPSubmission.class));
+    }
+
+    @Test
+    public void testSubmit_ValidateToken_Skipped_WhenOnlySdJwtTokens() {
+        String header = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"typ\":\"vc+sd-jwt\"}".getBytes());
+        String payload = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"sub\":\"123\"}".getBytes());
+        String sig = Base64.getUrlEncoder().withoutPadding().encodeToString("sig".getBytes());
+        String sdJwtToken = header + "." + payload + "." + sig;
+        String presentationSubmission = "{\"id\":\"subId\"}";
+        String state = "stateABC";
+
+        PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
+
+        AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri", false, "cross_device");
+        AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                state, "txId", authDetails, System.currentTimeMillis() + 100000);
+
+        when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
+        when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
+
+        ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(sdJwtToken, presentationSubmission, state, null, null);
 
         assertEquals(200, response.getStatusCode().value());
         verify(vpSubmissionRepository, times(1)).save(any(VPSubmission.class));
@@ -2324,7 +2376,5 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
         assertEquals(ErrorCode.RESPONSE_CODE_NOT_MATCHING, responseCodeException.getErrorCode());
     }
-
-
 }
 
