@@ -1387,8 +1387,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     public void testFetchVpSubmissionIfValid_Success_CrossDevice() throws Exception {
         List<String> requestIds = List.of("req123");
         String requestId = "req123";
-        String responseCode = null;
-        Timestamp expiryAt = null;
 
         VPSubmission vpSubmission = new VPSubmission(
                 requestId,
@@ -1485,9 +1483,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, null);
-        });
+        Exception exception = assertThrows(InvocationTargetException.class, () -> method.invoke(verifiablePresentationSubmissionService, requestIds, null));
 
         assertInstanceOf(VPSubmissionNotFoundException.class, exception.getCause());
         verify(vpSubmissionRepository, times(1)).findAllById(requestIds);
@@ -1533,9 +1529,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
-        });
+        Exception exception = assertThrows(InvocationTargetException.class, () -> method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode));
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
@@ -1584,9 +1578,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, wrongResponseCode);
-        });
+        Exception exception = assertThrows(InvocationTargetException.class, () -> method.invoke(verifiablePresentationSubmissionService, requestIds, wrongResponseCode));
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
@@ -1634,9 +1626,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
-        });
+        Exception exception = assertThrows(InvocationTargetException.class, () -> method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode));
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
@@ -1684,9 +1674,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
-        });
+        Exception exception = assertThrows(InvocationTargetException.class, () -> method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode));
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
@@ -1718,9 +1706,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, null);
-        });
+        Exception exception = assertThrows(InvocationTargetException.class, () -> method.invoke(verifiablePresentationSubmissionService, requestIds, null));
 
         assertInstanceOf(VPSubmissionWalletError.class, exception.getCause());
         VPSubmissionWalletError walletError = (VPSubmissionWalletError) exception.getCause();
@@ -1788,7 +1774,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission savedSubmission = captor.getValue();
         assertEquals(responseCode, savedSubmission.getResponseCode());
         assertEquals(expiryAt, savedSubmission.getResponseCodeExpiryAt());
-        assertEquals(false, savedSubmission.isResponseCodeUsed());
+        assertFalse(savedSubmission.isResponseCodeUsed());
         assertEquals("state123", savedSubmission.getRequestId());
     }
 
@@ -1819,12 +1805,12 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission savedSubmission = captor.getValue();
         assertNull(savedSubmission.getResponseCode());
         assertNull(savedSubmission.getResponseCodeExpiryAt());
-        assertEquals(false, savedSubmission.isResponseCodeUsed());
+        assertFalse(savedSubmission.isResponseCodeUsed());
     }
 
     @Test
-    public void testSubmit_SameDevice_GeneratesResponseCodeAndExpiry() throws Exception {
-        String vpToken = "testToken";
+    public void testSubmit_SameDevice_GeneratesResponseCodeAndExpiry() {
+        String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\",\"challenge\":\"nonce\",\"domain\":\"clientId\"},\"verifiableCredential\":[{\"type\":[\"VerifiableCredential\"],\"credentialSubject\":{\"name\":\"John Doe\"}}]}";
         String presentationSubmission = "{\"id\":\"testId\"}";
         String state = "testState";
 
@@ -1865,13 +1851,13 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission savedSubmission = captor.getValue();
         assertNotNull(savedSubmission.getResponseCode(), "Response code should be generated for same-device flow");
         assertNotNull(savedSubmission.getResponseCodeExpiryAt(), "Response code expiry should be set for same-device flow");
-        assertEquals(false, savedSubmission.isResponseCodeUsed(), "Response code should initially be unused");
+        assertFalse(savedSubmission.isResponseCodeUsed(), "Response code should initially be unused");
         assertEquals(state, savedSubmission.getRequestId());
     }
 
     @Test
-    public void testSubmit_CrossDevice_DoesNotGenerateResponseCode() throws Exception {
-        String vpToken = "testToken";
+    public void testSubmit_CrossDevice_DoesNotGenerateResponseCode() {
+        String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\",\"challenge\":\"nonce\",\"domain\":\"clientId\"},\"verifiableCredential\":[{\"type\":[\"VerifiableCredential\"],\"credentialSubject\":{\"name\":\"John Doe\"}}]}";
         String presentationSubmission = "{\"id\":\"testId\"}";
         String state = "testState";
 
@@ -1911,7 +1897,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         VPSubmission savedSubmission = captor.getValue();
         assertNull(savedSubmission.getResponseCode(), "Response code should NOT be generated for cross-device flow");
         assertNull(savedSubmission.getResponseCodeExpiryAt(), "Response code expiry should NOT be set for cross-device flow");
-        assertEquals(false, savedSubmission.isResponseCodeUsed());
+        assertFalse(savedSubmission.isResponseCodeUsed());
         assertEquals(state, savedSubmission.getRequestId());
     }
 
@@ -1979,7 +1965,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 false
         );
 
-        assertEquals(false, vpSubmission.isResponseCodeUsed(), "responseCodeUsed should be false initially");
+        assertFalse(vpSubmission.isResponseCodeUsed(), "responseCodeUsed should be false initially");
     }
 
     @Test
@@ -1995,7 +1981,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 true
         );
 
-        assertEquals(true, vpSubmission.isResponseCodeUsed(), "responseCodeUsed can be set to true");
+        assertTrue(vpSubmission.isResponseCodeUsed(), "responseCodeUsed can be set to true");
     }
 
     @Test
@@ -2033,12 +2019,13 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         assertEquals(responseCode, vpSubmission.getResponseCode());
         assertEquals(expiryAt, vpSubmission.getResponseCodeExpiryAt());
+        assertNotNull(vpSubmission.getResponseCodeExpiryAt());
         assertTrue(vpSubmission.getResponseCodeExpiryAt().toInstant().isAfter(Instant.now()),
                 "Response code expiry should be in the future");
     }
 
     @Test
-    public void testSubmit_WithError_DoesNotGenerateResponseCode() throws Exception {
+    public void testSubmit_WithError_DoesNotGenerateResponseCode() {
         String error = "access_denied";
         String errorDescription = "User denied access";
         String state = "testState";
@@ -2075,7 +2062,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         assertEquals(errorDescription, savedSubmission.getErrorDescription());
         assertNotNull(savedSubmission.getResponseCode(), "Response code should be generated even for error submission in same-device flow");
         assertNotNull(savedSubmission.getResponseCodeExpiryAt(), "Response code expiry should be set for same-device flow");
-        assertEquals(false, savedSubmission.isResponseCodeUsed());
+        assertFalse(savedSubmission.isResponseCodeUsed());
     }
 
     @Test
@@ -2121,9 +2108,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode);
-        });
+        Exception exception = assertThrows(InvocationTargetException.class, () -> method.invoke(verifiablePresentationSubmissionService, requestIds, responseCode));
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
@@ -2172,9 +2157,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class);
         method.setAccessible(true);
 
-        Exception exception = assertThrows(InvocationTargetException.class, () -> {
-            method.invoke(verifiablePresentationSubmissionService, requestIds, providedResponseCode);
-        });
+        Exception exception = assertThrows(InvocationTargetException.class, () -> method.invoke(verifiablePresentationSubmissionService, requestIds, providedResponseCode));
 
         assertInstanceOf(ResponseCodeException.class, exception.getCause());
         ResponseCodeException responseCodeException = (ResponseCodeException) exception.getCause();
