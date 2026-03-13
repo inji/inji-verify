@@ -179,6 +179,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private boolean validateVpTokens(List<JSONObject> vpTokens, String nonce, String clientId) {
+        if (nonce == null || nonce.isBlank() || clientId == null || clientId.isBlank()) return false;
         return vpTokens.stream().allMatch(json -> {
             JSONObject proof = json.optJSONObject("proof");
             if (proof == null) return false;
