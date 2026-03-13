@@ -1,6 +1,6 @@
 {
   "info": {
-    "_postman_id": "a6678067-c133-4373-8449-0ef8ee3ac6cc",
+    "_postman_id": "a6b72ee0-ee2b-4817-a2d5-ab36b58834a7",
     "name": "Inji_Verify_Postman_Collection",
     "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json",
     "_exporter_id": "47128896"
@@ -1025,7 +1025,7 @@
                     "header": [],
                     "body": {
                       "mode": "raw",
-                      "raw": "{\r\n  \"clientId\": \"injiverify.mosip.net\",\r\n  \"nonce\": \"MTc2Mzk1NTY5NDI5NQ==\",\r\n  \"acceptVPWithoutHolderProof\": true,\r\n  \"presentationDefinition\": {\r\n    \"id\": \"c4822b58-7fb4-454e-b827-f8758fe27f9a\",\r\n    \"purpose\": \"Relying party is requesting your digital ID for the purpose of Self-Authentication\",\r\n    \"input_descriptors\": [\r\n      {\r\n        \"id\": \"id card credential\",\r\n        \"format\": {\r\n          \"ldp_vc\": {\r\n            \"proof_type\": [\r\n              \"Ed25519Signature2020\"\r\n            ]\r\n          }\r\n        },\r\n        \"constraints\": {\r\n          \"fields\": [\r\n            {\r\n              \"path\": [\r\n                \"$.type\"\r\n              ],\r\n              \"filter\": {\r\n                \"type\": \"object\",\r\n                \"pattern\": \"LifeInsuranceCredential\"\r\n              }\r\n            }\r\n          ]\r\n        }\r\n      }\r\n    ]\r\n  }\r\n}",
+                      "raw": "{\r\n  \"clientId\": \"redirect_uri:https://faceb18cd424.ngrok-free.app/verifier/vp-response\",\r\n  \"nonce\": \"oNjl1LmAXj6pqygwQnMBFQ==\",\r\n  \"acceptVPWithoutHolderProof\": true,\r\n  \"presentationDefinition\": {\r\n    \"id\": \"c4822b58-7fb4-454e-b827-f8758fe27f9a\",\r\n    \"purpose\": \"Relying party is requesting your digital ID for the purpose of Self-Authentication\",\r\n    \"input_descriptors\": [\r\n      {\r\n        \"id\": \"id card credential\",\r\n        \"format\": {\r\n          \"ldp_vc\": {\r\n            \"proof_type\": [\r\n              \"Ed25519Signature2020\"\r\n            ]\r\n          }\r\n        },\r\n        \"constraints\": {\r\n          \"fields\": [\r\n            {\r\n              \"path\": [\r\n                \"$.type\"\r\n              ],\r\n              \"filter\": {\r\n                \"type\": \"object\",\r\n                \"pattern\": \"LifeInsuranceCredential\"\r\n              }\r\n            }\r\n          ]\r\n        }\r\n      }\r\n    ]\r\n  }\r\n}",
                       "options": {
                         "raw": {
                           "language": "json"
