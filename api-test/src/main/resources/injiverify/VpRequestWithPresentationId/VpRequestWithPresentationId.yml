@@ -1,7 +1,7 @@
 VpRequestWithPresentationId:
   Injiverify_CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid:
       endPoint: /v1/verify/vp-request
-      description: Creating a Verifiable Presentation (VP) request with presentationDefinitionId
+      description: Creating a new Verifiable Presentation (VP) request with a valid presentationDefinitionId
       uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_01
       role: noauth
       restMethod: post
