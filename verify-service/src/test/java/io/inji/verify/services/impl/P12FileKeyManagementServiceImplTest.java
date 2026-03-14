@@ -1,15 +1,11 @@
+package io.inji.verify.services.impl;
+
 import com.nimbusds.jose.jwk.OctetKeyPair;
 import io.inji.verify.key.impl.P12KeyExtractor;
-import io.inji.verify.services.impl.P12FileKeyManagementServiceImpl;
-import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-
-import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
-import java.security.interfaces.EdECPrivateKey;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
