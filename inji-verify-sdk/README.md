@@ -65,20 +65,63 @@ function MyApp() {
 
 ## Response Received
 
-When verification is completed, the response received is as below:
+When verification is completed, the response received is based on summariseResult attribute.This attribute will decide the format of the response from SDK.
 
+#### QRCodeVerification
+
+If summariseResults=true, then response should be
 ```javascript
 {
-  vcResults: [
-    {
-      vc: { /* Your verified credential data */ },
-      vcStatus: "SUCCESS" // or  "INVALID", "EXPIRED"
-    }
-  ],
-  vpResultStatus: "SUCCESS" // Overall verification status
+    "verificationStatus":"STATUS"
 }
 ```
-
+If summariseResults=false, then response should be
+```javascript
+{
+    "allChecksSuccessful": true,
+        "schemaAndSignatureCheck": { "valid": true, "error": null },
+    "expiryCheck": { "valid": true },
+    "statusChecks": [
+        { "purpose": "revocation", "valid": true, "error": null },
+        { "purpose": "suspension", "valid": true, "error": null }
+    ],
+        "claims": {...}
+}
+```
+#### OpenID4VPVerification
+If summariseResults=true, then response should be
+```javascript
+ {
+        vcResults: [
+            {
+                vc: { /* Your verified credential data */ },
+                vcStatus: "SUCCESS" // or  "INVALID", "EXPIRED"
+            }
+        ],
+            vpResultStatus: "SUCCESS" // Overall verification status
+    }
+```
+If summariseResults=false, then response should be
+```javascript
+{
+    "transactionId": "txn_11",
+        "allChecksSuccessful": true,
+        "credentialResults": [
+        {
+            "verifiableCredential": "{...}",
+            "allChecksSuccessful": true,
+            "holderProofCheck": { "valid": true, "error": null },
+            "schemaAndSignatureCheck": { "valid": true, "error": null },
+            "expiryCheck": { "valid": true },
+            "statusChecks": [
+                { "purpose": "revocation", "valid": true, "error": null },
+                { "purpose": "suspension", "valid": true, "error": null },
+            ],
+            "claims": {..}
+        }
+    ]
+}  
+```
 > **Security Recommendation**
 >
 > Avoid consuming results directly from VPProcessed or VCProcessed.
@@ -143,6 +186,7 @@ https://your-backend.com
   isEnableZoom={true} // Allow camera zoom
   isVPSubmissionSupported={false} // This attribute indicates whether VP submission is supported in Inji OVP VC sharing flow. By default, it is false which means that VP token will be directly sent in response. If set to true, then VP token will be submitted to the VP_SUBMISSION_ URL.
   acceptVPWithoutHolderProof={false} // This attribute controls whether unsigned Verifiable Presentations (VPs without proof) are allowed in the Inji OVP VC sharing flow. By default, it is set to false, meaning unsigned VP tokens are not supported and an error is thrown if an unsigned VP is received. If set to true, VP tokens without a signature (proof) are allowed and can be verified. For data-share it is set to true by default.
+  summariseResults={true} // This attribute will decide the format of the response from SDK
 />
 ```
 
@@ -225,13 +269,14 @@ presentationDefinition={{
 ### Common Props (Both Components)
 
 | Property                     | Type          | Required | Description                                 |
-| ---------------------------- | ------------- | -------- | ------------------------------------------- |
+|------------------------------|---------------| -------- |---------------------------------------------|
 | `verifyServiceUrl`           | string        | ✅       | Backend verification URL                    |
 | `onError`                    | function      | ✅       | Callback invoked when an error occurs       |
 | `triggerElement`             | React element | ❌       | Custom button/element to start verification |
 | `transactionId`              | string        | ❌       | Optional client-side tracking ID            |
 | `clientId`                   | string        | ✅       | Client identifier                           |
 | `acceptVPWithoutHolderProof` | boolean       | ❌       | Allow unsigned Verifiable Presentations     |
+| `summariseResults`           | boolean       | ✅       | Decides format of SDK Response              |
 
 ### QRCodeVerification Specific
 
