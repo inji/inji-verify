@@ -21,6 +21,7 @@ import {
 } from "../../utils/constants";
 import {vpRequest,
     vcSubmission,
+    vcVerification,
     vcVerificationV2,
     vpRequestStatus,
     vpResult
@@ -54,6 +55,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   clientId,
   vcVerificationV2Request,
   isVPSubmissionSupported = false,
+    summariseResults = true
 }) => {
   const [isScanning, setScanning] = useState(false);
   const [isUploading, setUploading] = useState(false);
@@ -482,18 +484,32 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 return;
             }
             if (onVCProcessed) {
-                const response: VCVerificationV2Response = await vcVerificationV2(
-                    vc,
-                    verifyServiceUrl,
-                    vcVerificationV2Request
-                );
-
-                onVCProcessed([
-                    {
+                let processedResult;
+                if (summariseResults) {
+                    //verification flow
+                    const status = await vcVerification(vc, verifyServiceUrl);
+                    processedResult = [
+                        {
+                            vc,
+                            vcStatus: status
+                        }
+                    ];
+                } else {
+                    // V2 verification flow
+                    const response: VCVerificationV2Response = await vcVerificationV2(
                         vc,
-                        verificationResponse: response
-                    }
-                ]);
+                        verifyServiceUrl,
+                        vcVerificationV2Request
+                    );
+
+                    processedResult = [
+                        {
+                            vc,
+                            verificationResponse: response
+                        }
+                    ];
+                }
+                onVCProcessed(processedResult);
             }
         } catch (error) {
             handleError(error);
