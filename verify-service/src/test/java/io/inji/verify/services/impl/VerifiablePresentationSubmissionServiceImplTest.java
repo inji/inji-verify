@@ -1086,9 +1086,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             JSONObject vc = new JSONObject();
             vc.put("type", types);
 
-            List<JSONObject> jsonVpTokens = new ArrayList<>();
-            jsonVpTokens.add(vc);
-
             VPSubmission vpSubmission = new VPSubmission(
                     "state123",
                     vc.toString(),
@@ -1484,6 +1481,154 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Nested
+    class TestVPSessionResults {
+        @Test
+        void testGetVPSessionResults_responseCodeRequiredButMissing() {
+            VerificationRequestDto request = new VerificationRequestDto();
+            request.setResponseCode(null);
+            String transactionId = "tx123";
+            List<String> requestIds = List.of("req123");
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                    "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
+
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
+
+            assertThrows(ResponseCodeException.class, () ->
+                    verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+        }
+
+        @Test
+        void testGetVPSessionResults_submissionNotFound() {
+            VerificationRequestDto request = new VerificationRequestDto();
+            request.setResponseCode("code123");
+            String transactionId = "tx123";
+            List<String> requestIds = List.of("req123");
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, false);
+            AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                    "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
+
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(Collections.emptyList());
+
+            assertThrows(VPSubmissionNotFoundException.class, () ->
+                    verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+        }
+
+        @Test
+        public void testGetVPSessionResults_success() {
+            List<String> requestIds = List.of("req123");
+            String transactionId = "tx123";
+            VerificationRequestDto verificationRequestDto = new VerificationRequestDto(true, List.of(), false, null);
+            String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[{\"type\":[\"VerifiableCredential\"], \"credentialSubject\": {\"name\":\"John Doe\"}}]}";
+            VPSubmission vpSubmission = new VPSubmission("state123", vpToken,
+                    new PresentationSubmissionDto("id", "dId",
+                            List.of(new DescriptorMapDto("id", "format", "path",
+                                    new PathNestedDto("format", "path")))), null,
+                    null, null, null, false);
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+            AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                    "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
+
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
+
+            PresentationVerificationResultV2 presentationVerificationResult = mock(PresentationVerificationResultV2.class);
+            VerificationResult proofVerificationResult = mock(VerificationResult.class);
+            when(presentationVerificationResult.getProofVerificationResult()).thenReturn(proofVerificationResult);
+            when(proofVerificationResult.getVerificationStatus()).thenReturn(true);
+            VerificationResult verificationResult = new VerificationResult(true, "", "");
+            VCResultV2 vcResult = new VCResultV2("{\"type" + "\":[\"VerifiableCredential" + "\"], \"credentialSubject\": {\"name\":\"John Doe\"}}", verificationResult);
+            List<VCResultV2> vcResults = new ArrayList<>();
+            vcResults.add(vcResult);
+            when(presentationVerificationResult.getVcResults()).thenReturn(vcResults);
+            when(presentationVerifier.verifyV2(anyString())).thenReturn(presentationVerificationResult);
+
+            VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPSessionResults(verificationRequestDto, requestIds, transactionId);
+            List<CredentialResultsDto> credentialResults = result.getCredentialResults();
+
+            assertTrue(result.isAllChecksSuccessful());
+            assertEquals(1, credentialResults.size());
+            assertTrue(credentialResults.getFirst().isAllChecksSuccessful());
+            assertTrue(credentialResults.getFirst().getExpiryCheck().isValid());
+            assertTrue(credentialResults.getFirst().getSchemaAndSignatureCheck().isValid());
+            assertTrue(credentialResults.getFirst().getHolderProofCheck().isValid());
+        }
+
+        @Test
+        void testGetVPSessionResults_responseCodeMismatch() {
+            VerificationRequestDto request = new VerificationRequestDto();
+            request.setResponseCode("wrongCode");
+            String transactionId = "tx123";
+            List<String> requestIds = List.of("req123");
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                    "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
+
+            VPSubmission vpSubmission = mock(VPSubmission.class);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
+            when(vpSubmission.getError()).thenReturn(null);
+            when(vpSubmission.getResponseCode()).thenReturn("expectedCode");
+
+            assertThrows(ResponseCodeException.class, () ->
+                    verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+        }
+
+        @Test
+        void testGetVPSessionResults_responseCodeExpired() {
+            VerificationRequestDto request = new VerificationRequestDto();
+            request.setResponseCode("code123");
+            String transactionId = "tx123";
+            List<String> requestIds = List.of("req123");
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                    "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
+
+            VPSubmission vpSubmission = mock(VPSubmission.class);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
+            when(vpSubmission.getError()).thenReturn(null);
+            when(vpSubmission.getResponseCode()).thenReturn("code123");
+            when(vpSubmission.getResponseCodeExpiryAt()).thenReturn(new Timestamp(Instant.now().minus(10, ChronoUnit.MINUTES).toEpochMilli()));
+
+            assertThrows(ResponseCodeException.class, () ->
+                    verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+        }
+
+        @Test
+        void testGetVPSessionResults_responseCodeAlreadyUsed() {
+            VerificationRequestDto request = new VerificationRequestDto();
+            request.setResponseCode("code123");
+            String transactionId = "tx123";
+            List<String> requestIds = List.of("req123");
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                    "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
+
+            VPSubmission vpSubmission = mock(VPSubmission.class);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
+            when(vpSubmission.getError()).thenReturn(null);
+            when(vpSubmission.getResponseCode()).thenReturn("code123");
+            when(vpSubmission.getResponseCodeExpiryAt()).thenReturn(new Timestamp(Instant.now().plus(10, ChronoUnit.MINUTES).toEpochMilli()));
+            when(vpSubmissionRepository.markResponseCodeAsUsed(any())).thenReturn(0);
+
+            assertThrows(ResponseCodeException.class, () ->
+                    verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+        }
+    }
+
+    @Nested
     class FetchVpSubmissionIfValid {
         @Test
         public void testFetchVpSubmissionIfValid_Success_NoResponseCode() throws Exception {
@@ -1850,7 +1995,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             List<String> requestIds = List.of("req123");
             String requestId = "req123";
             String responseCode = "code123";
-            Timestamp expiredAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
+            Timestamp expiredAt = Timestamp.from(Instant.now().minus(5, ChronoUnit.MINUTES));
 
             VPSubmission vpSubmission = new VPSubmission(
                     requestId,
@@ -1954,7 +2099,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false,
                     true
             );
-
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     requestId,
                     "transactionId",
@@ -1964,7 +2108,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
             when(authorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authResponse));
-
 
             Method method = VerifiablePresentationSubmissionServiceImpl.class
                     .getDeclaredMethod("fetchVpSubmissionIfValid", List.class, String.class, boolean.class);
