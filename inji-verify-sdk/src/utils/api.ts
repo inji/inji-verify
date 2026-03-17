@@ -11,43 +11,6 @@ const generateNonce = (): string => {
   return btoa(Date.now().toString());
 };
 
-export const vcVerification = async (credential: unknown, url: string) => {
-    let body: string;
-    let contentType: string;
-
-    if (isCWT(credential)) {
-        body = credential as string;
-        contentType = "application/vc+cwt";
-    } else if (typeof credential === "string") {
-        body = credential;
-        contentType = "application/vc+sd-jwt";
-    } else {
-        body = JSON.stringify(credential);
-        contentType = "application/vc+ld+json";
-    }
-    const requestOptions = {
-        method: "POST",
-        headers: {
-            "Content-Type": contentType,
-        },
-        body: body,
-    };
-
-    try {
-        const response = await fetch(url + "/vc-verification", requestOptions);
-        const data = await response.json();
-        if (response.status !== 200) throw new Error(`Failed VC Verification due to: ${ data.error || "Unknown Error" }`);
-        return data.verificationStatus;
-    } catch (error) {
-        console.error(error);
-        if (error instanceof Error) {
-            throw Error(error.message);
-        } else {
-            throw new Error("An unknown error occurred");
-        }
-    }
-};
-
 export const vcVerificationV2 = async (credential: unknown, url: string, config?: VCVerificationV2Request): Promise<VCVerificationV2Response> => {
     const vcString = isCWT(credential)
         ? (credential as string)

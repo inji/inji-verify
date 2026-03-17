@@ -133,14 +133,15 @@ export interface VCVerificationV2Response {
     claims?: Record<string, any>;
 }
 
-export type VerificationResults =
-    | {
+export interface VCSummarisedVerificationResponse {
+    verificationStatus: "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
+}
+
+export type VerificationResults = {
     vc: any;
-    vcStatus: VcStatus;
-}[]
-    | {
-    vc: any;
-    verificationResponse: VCVerificationV2Response;
+    verificationResponse:
+        | VCVerificationV2Response
+        | VCSummarisedVerificationResponse;
 }[];
 
 export interface vcSubmissionBody {
