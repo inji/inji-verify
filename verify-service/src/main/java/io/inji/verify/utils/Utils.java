@@ -46,15 +46,6 @@ import static io.ipfs.multibase.Base16.bytesToHex;
 @Component
 public final class Utils {
 
-    @Value("${inji.verify.cookie-secure-value:#{true}}")
-    static boolean cookieIsSecure;
-
-    @Value("${inji.verify.cookie-path}")
-    static String cookiePath;
-
-    @Value("${inji.verify.cookie-same-site}")
-    static String cookieSameSite;
-
     private static final Set<String> VALID_SD_JWT_TYPES = Set.of("vc+sd-jwt", "dc+sd-jwt");
 
     public static String generateID(String prefix) {
@@ -323,15 +314,5 @@ public final class Utils {
                 payloadBytes,
                 new CBOREncodeOptions("allowduplicatekeys=false")
         );
-    }
-
-    public static ResponseCookie setCookie(String cookieValue, int maxAge) {
-        return ResponseCookie.from(COOKIE_NAME, cookieValue)
-                .httpOnly(true)
-                .secure(cookieIsSecure)
-                .path(cookiePath)
-                .sameSite(cookieSameSite)
-                .maxAge(Duration.ofMinutes(maxAge))
-                .build();
     }
 }
