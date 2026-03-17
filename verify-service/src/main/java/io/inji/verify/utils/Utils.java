@@ -28,18 +28,32 @@ import io.mosip.vercred.vcverifier.utils.Base64Decoder;
 import io.mosip.vercred.vcverifier.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.inji.verify.shared.Constants.COOKIE_NAME;
 import static io.ipfs.multibase.Base16.bytesToHex;
 
 @Slf4j
 @Component
 public final class Utils {
+
+    @Value("${inji.verify.cookie-secure-value:#{true}}")
+    static boolean cookieIsSecure;
+
+    @Value("${inji.verify.cookie-path}")
+    static String cookiePath;
+
+    @Value("${inji.verify.cookie-same-site}")
+    static String cookieSameSite;
 
     private static final Set<String> VALID_SD_JWT_TYPES = Set.of("vc+sd-jwt", "dc+sd-jwt");
 
@@ -309,5 +323,15 @@ public final class Utils {
                 payloadBytes,
                 new CBOREncodeOptions("allowduplicatekeys=false")
         );
+    }
+
+    public static ResponseCookie setCookie(String cookieValue, int maxAge) {
+        return ResponseCookie.from(COOKIE_NAME, cookieValue)
+                .httpOnly(true)
+                .secure(cookieIsSecure)
+                .path(cookiePath)
+                .sameSite(cookieSameSite)
+                .maxAge(Duration.ofMinutes(maxAge))
+                .build();
     }
 }
