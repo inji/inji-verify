@@ -1174,6 +1174,30 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             assertEquals(VPResultStatus.SUCCESS, resultDto.getVpResultStatus());
             assertFalse(resultDto.getVcResults().isEmpty());
         }
+
+        @Test
+        void testGetVPResult_responseCodeNotUsed_ifResponseCodeVerificationRequiredIsTrue() {
+            VerificationRequestDto request = new VerificationRequestDto();
+            request.setResponseCode("code123");
+            String transactionId = "tx123";
+            List<String> requestIds = List.of("req123");
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                    "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
+
+            VPSubmission vpSubmission = mock(VPSubmission.class);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
+            when(vpSubmission.getError()).thenReturn(null);
+            when(vpSubmission.getResponseCode()).thenReturn("code123");
+            when(vpSubmission.getResponseCodeExpiryAt()).thenReturn(new Timestamp(Instant.now().plus(10, ChronoUnit.MINUTES).toEpochMilli()));
+            when(vpSubmissionRepository.markResponseCodeAsUsed(any())).thenReturn(0);
+
+            ResponseCodeException exception = assertThrows(ResponseCodeException.class, () ->
+                    verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId));
+            assertEquals(ErrorCode.RESPONSE_CODE_NOT_USED, exception.getErrorCode());
+        }
     }
 
     @Nested
@@ -1477,6 +1501,30 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             assertFalse(credential.isAllChecksSuccessful(), "Credential should be marked invalid");
             assertFalse(credential.getStatusCheck().getFirst().isValid(), "Revocation status must be invalid");
+        }
+
+        @Test
+        void testGetVPResultV2_responseCodeNotUsed_ifResponseCodeVerificationRequiredIsTrue() {
+            VerificationRequestDto request = new VerificationRequestDto();
+            request.setResponseCode("code123");
+            String transactionId = "tx123";
+            List<String> requestIds = List.of("req123");
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                    "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
+
+            VPSubmission vpSubmission = mock(VPSubmission.class);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
+            when(vpSubmission.getError()).thenReturn(null);
+            when(vpSubmission.getResponseCode()).thenReturn("code123");
+            when(vpSubmission.getResponseCodeExpiryAt()).thenReturn(new Timestamp(Instant.now().plus(10, ChronoUnit.MINUTES).toEpochMilli()));
+            when(vpSubmissionRepository.markResponseCodeAsUsed(any())).thenReturn(0);
+
+            ResponseCodeException exception = assertThrows(ResponseCodeException.class, () ->
+                    verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId));
+            assertEquals(ErrorCode.RESPONSE_CODE_NOT_USED, exception.getErrorCode());
         }
     }
 
