@@ -35,10 +35,10 @@ import static io.inji.verify.utils.Utils.setCookie;
 @Slf4j
 public class VPRequestController {
 
-    final VerifiablePresentationRequestService verifiablePresentationRequestService;
-
     @Value("${inji.verify.cookie-duration-in-minute:#{5}}")
     int cookieDurationInMinute;
+
+    final VerifiablePresentationRequestService verifiablePresentationRequestService;
 
     public VPRequestController(VerifiablePresentationRequestService verifiablePresentationRequestService) {
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;

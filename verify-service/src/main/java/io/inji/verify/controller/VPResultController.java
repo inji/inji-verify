@@ -33,6 +33,7 @@ import static io.inji.verify.utils.Utils.setCookie;
 @RestController
 @Slf4j
 public class VPResultController {
+
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
 
     final VCSubmissionService vcSubmissionService;
@@ -50,9 +51,10 @@ public class VPResultController {
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
         if (requestIds.isEmpty()) {
+            ResponseCookie deleteCookie = setCookie("", 0);
             return Optional.ofNullable(vcSubmissionService.getVcWithVerification(transactionId))
-                    .map(vc -> ResponseEntity.status(HttpStatus.OK).body((Object) vc))
-                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID)));
+                    .map(vc -> ResponseEntity.status(HttpStatus.OK).header(HttpHeaders.SET_COOKIE, deleteCookie.toString()).body((Object) vc))
+                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).header(HttpHeaders.SET_COOKIE, deleteCookie.toString()).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID)));
         }
 
         log.info("Fetching VP result for transactionId: {}", transactionId);
@@ -64,7 +66,12 @@ public class VPResultController {
     public ResponseEntity<Object> getVPResultV2(@PathVariable String transactionId, @Valid @RequestBody VerificationRequestDto request) {
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
-        if (requestIds.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
+        if (requestIds.isEmpty()) {
+            ResponseCookie deleteCookie = setCookie("", 0);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                    .body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
+        }
 
         log.info("Fetching VP result for requestId: {}", requestIds);
         VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
@@ -77,7 +84,12 @@ public class VPResultController {
         String transactionId = getTransactionId(cookie);
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
-        if (requestIds.isEmpty()) return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
+        if (requestIds.isEmpty()) {
+            ResponseCookie deleteCookie = setCookie("", 0);
+            return ResponseEntity.status(HttpStatus.NOT_FOUND)
+                    .header(HttpHeaders.SET_COOKIE, deleteCookie.toString())
+                    .body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
+        }
 
         VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId);
         ResponseCookie deleteCookie = setCookie("", 0);
