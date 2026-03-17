@@ -1496,8 +1496,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
 
-            assertThrows(ResponseCodeException.class, () ->
-                    verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+            ResponseCodeException exception = assertThrows(ResponseCodeException.class, () ->
+                verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+            assertEquals(ErrorCode.RESPONSE_CODE_NOT_FOUND, exception.getErrorCode());
         }
 
         @Test
@@ -1578,8 +1579,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(vpSubmission.getError()).thenReturn(null);
             when(vpSubmission.getResponseCode()).thenReturn("expectedCode");
 
-            assertThrows(ResponseCodeException.class, () ->
+            ResponseCodeException exception = assertThrows(ResponseCodeException.class, () ->
                     verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+            assertEquals(ErrorCode.RESPONSE_CODE_NOT_MATCHING, exception.getErrorCode());
         }
 
         @Test
@@ -1600,8 +1602,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(vpSubmission.getResponseCode()).thenReturn("code123");
             when(vpSubmission.getResponseCodeExpiryAt()).thenReturn(new Timestamp(Instant.now().minus(10, ChronoUnit.MINUTES).toEpochMilli()));
 
-            assertThrows(ResponseCodeException.class, () ->
+            ResponseCodeException exception = assertThrows(ResponseCodeException.class, () ->
                     verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+            assertEquals(ErrorCode.RESPONSE_CODE_EXPIRED, exception.getErrorCode());
         }
 
         @Test
@@ -1623,8 +1626,9 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(vpSubmission.getResponseCodeExpiryAt()).thenReturn(new Timestamp(Instant.now().plus(10, ChronoUnit.MINUTES).toEpochMilli()));
             when(vpSubmissionRepository.markResponseCodeAsUsed(any())).thenReturn(0);
 
-            assertThrows(ResponseCodeException.class, () ->
+            ResponseCodeException exception = assertThrows(ResponseCodeException.class, () ->
                     verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+            assertEquals(ErrorCode.RESPONSE_CODE_USED, exception.getErrorCode());
         }
     }
 
