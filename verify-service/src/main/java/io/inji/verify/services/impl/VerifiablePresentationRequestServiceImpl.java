@@ -86,16 +86,16 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         String nonce = vpRequestCreate.getNonce() != null ? vpRequestCreate.getNonce() : SecurityUtils.generateNonce();
         String responseUri = verifyServiceBaseUrl + Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI;
         boolean acceptVPWithoutHolderProof = vpRequestCreate.isAcceptVPWithoutHolderProof();
-        String presentationFlow = vpRequestCreate.getPresentationFlow();
+        boolean responseCodeValidationRequired = vpRequestCreate.isResponseCodeValidationRequired();
 
         AuthorizationRequestResponseDto authorizationRequestResponseDto = Optional.ofNullable(vpRequestCreate.getPresentationDefinitionId())
                 .map(presentationDefinitionId -> presentationDefinitionRepository.findById(presentationDefinitionId)
                 .map(presentationDefinition -> {
                     VPDefinitionResponseDto vpDefinitionResponseDto = new VPDefinitionResponseDto(presentationDefinition.getId(), presentationDefinition.getInputDescriptors(), presentationDefinition.getName(), presentationDefinition.getPurpose(), presentationDefinition.getFormat(), presentationDefinition.getSubmissionRequirements());
-                    return new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), presentationDefinition.getURL(), vpDefinitionResponseDto, nonce, responseUri, acceptVPWithoutHolderProof, presentationFlow);
+                    return new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), presentationDefinition.getURL(), vpDefinitionResponseDto, nonce, responseUri, acceptVPWithoutHolderProof, responseCodeValidationRequired);
                 })
                 .orElseThrow(PresentationDefinitionNotFoundException::new))
-                .orElseGet(() -> new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), null, vpRequestCreate.getPresentationDefinition(), nonce, responseUri, acceptVPWithoutHolderProof, presentationFlow));
+                .orElseGet(() -> new AuthorizationRequestResponseDto(vpRequestCreate.getClientId(), null, vpRequestCreate.getPresentationDefinition(), nonce, responseUri, acceptVPWithoutHolderProof, responseCodeValidationRequired));
 
         AuthorizationRequestCreateResponse authorizationRequestCreateResponse = new AuthorizationRequestCreateResponse(requestId, transactionId, authorizationRequestResponseDto, expiresAt);
         authorizationRequestCreateResponseRepository.save(authorizationRequestCreateResponse);
