@@ -25,9 +25,10 @@ import io.inji.verify.services.VerifiablePresentationRequestService;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
 import java.nio.charset.StandardCharsets;
+import java.time.Duration;
 import java.util.Base64;
+import static io.inji.verify.shared.Constants.COOKIE_NAME;
 import static io.inji.verify.shared.Constants.VP_REQUEST_URI;
-import static io.inji.verify.utils.Utils.setCookie;
 
 @RequestMapping(VP_REQUEST_URI)
 @RestController
@@ -37,6 +38,15 @@ public class VPRequestController {
 
     @Value("${inji.verify.cookie-duration-in-minute:#{5}}")
     int cookieDurationInMinute;
+
+    @Value("${inji.verify.cookie-secure-value:#{true}}")
+    boolean cookieIsSecure;
+
+    @Value("${inji.verify.cookie-path}")
+    String cookiePath;
+
+    @Value("${inji.verify.cookie-same-site}")
+    String cookieSameSite;
 
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
 
@@ -54,7 +64,13 @@ public class VPRequestController {
 
             String transactionId = authorizationRequestResponse.getTransactionId();
             String cookieValue = Base64.getEncoder().encodeToString(transactionId.getBytes(StandardCharsets.UTF_8));
-            ResponseCookie cookie = setCookie(cookieValue, cookieDurationInMinute);
+            ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, cookieValue)
+                    .httpOnly(true)
+                    .secure(cookieIsSecure)
+                    .path(cookiePath)
+                    .sameSite(cookieSameSite)
+                    .maxAge(Duration.ofMinutes(cookieDurationInMinute))
+                    .build();
 
             return ResponseEntity.status(HttpStatus.CREATED)
                     .header(HttpHeaders.SET_COOKIE, cookie.toString())
