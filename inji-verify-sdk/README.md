@@ -65,7 +65,7 @@ function MyApp() {
 
 ## Response Received
 
-When verification is completed, the response received is based on summariseResult attribute.This attribute will decide the format of the response from SDK.
+When verification is completed, the response received is based on summariseResults attribute.This attribute will decide the format of the response from SDK.
 
 #### QRCodeVerification
 
@@ -269,14 +269,14 @@ presentationDefinition={{
 ### Common Props (Both Components)
 
 | Property                     | Type          | Required | Description                                 |
-|------------------------------|---------------| -------- |---------------------------------------------|
-| `verifyServiceUrl`           | string        | ✅       | Backend verification URL                    |
-| `onError`                    | function      | ✅       | Callback invoked when an error occurs       |
-| `triggerElement`             | React element | ❌       | Custom button/element to start verification |
-| `transactionId`              | string        | ❌       | Optional client-side tracking ID            |
-| `clientId`                   | string        | ✅       | Client identifier                           |
-| `acceptVPWithoutHolderProof` | boolean       | ❌       | Allow unsigned Verifiable Presentations     |
-| `summariseResults`           | boolean       | ✅       | Decides format of SDK Response              |
+|------------------------------|---------------| ----- |---------------------------------------------|
+| `verifyServiceUrl`           | string        | ✅     | Backend verification URL                    |
+| `onError`                    | function      | ✅     | Callback invoked when an error occurs       |
+| `triggerElement`             | React element | ❌     | Custom button/element to start verification |
+| `transactionId`              | string        | ❌     | Optional client-side tracking ID            |
+| `clientId`                   | string        | ✅     | Client identifier                           |
+| `acceptVPWithoutHolderProof` | boolean       | ❌     | Allow unsigned Verifiable Presentations     |
+| `summariseResults`           | boolean       | ❌     | Decides format of SDK Response              |
 
 ### QRCodeVerification Specific
 

@@ -55,7 +55,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   clientId,
   vcVerificationV2Request,
   isVPSubmissionSupported = false,
-    summariseResults = true
+    summariseResults= false
 }) => {
   const [isScanning, setScanning] = useState(false);
   const [isUploading, setUploading] = useState(false);
