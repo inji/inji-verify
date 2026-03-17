@@ -65,9 +65,9 @@ function MyApp() {
 
 ## Response Received
 
-When verification is completed, the response received is based on summariseResults attribute.This attribute will decide the format of the response from SDK.
+When verification is completed, the response received is based on summariseResults attribute which will decide the format of the response from SDK.
 
-#### QRCodeVerification
+### QRCodeVerification
 
 If summariseResults=true, then response should be
 ```javascript
@@ -88,7 +88,7 @@ If summariseResults=false, then response should be
         "claims": {...}
 }
 ```
-#### OpenID4VPVerification
+### OpenID4VPVerification
 If summariseResults=true, then response should be
 ```javascript
  {
