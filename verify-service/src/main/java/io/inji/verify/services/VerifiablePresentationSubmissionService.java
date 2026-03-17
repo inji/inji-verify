@@ -1,5 +1,6 @@
 package io.inji.verify.services;
 
+import io.inji.verify.dto.VerificationSessionRequestDto;
 import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
@@ -18,5 +19,5 @@ public interface VerifiablePresentationSubmissionService {
     VPVerificationResultDto getVPResultV2(@Valid VerificationRequestDto request, List<String> requestIds, String transactionId);
 
     @Transactional
-    VPVerificationResultDto getVPSessionResults(VerificationRequestDto request, List<String> requestIds, String transactionId);
+    VPVerificationResultDto getVPSessionResults(VerificationSessionRequestDto request, List<String> requestIds, String transactionId);
 }

@@ -1,6 +1,7 @@
 package io.inji.verify.services.impl;
 
 import com.nimbusds.jose.shaded.gson.Gson;
+import io.inji.verify.dto.VerificationSessionRequestDto;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.*;
@@ -409,7 +410,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     @Override
     @Transactional
-    public VPVerificationResultDto getVPSessionResults(VerificationRequestDto request, List<String> requestIds, String transactionId) {
+    public VPVerificationResultDto getVPSessionResults(VerificationSessionRequestDto request, List<String> requestIds, String transactionId) {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
         boolean responseCodeValidationRequired = isResponseCodeValidationRequired(authRequest);
         if (responseCodeValidationRequired && request.getResponseCode() == null) throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
