@@ -17,6 +17,7 @@ import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -33,6 +34,12 @@ import static io.inji.verify.shared.Constants.COOKIE_NAME;
 @RestController
 @Slf4j
 public class VPResultController {
+
+    @Value("${inji.verify.cookie-secure-value:#{true}}")
+    boolean cookieIsSecure;
+
+    @Value("${inji.verify.cookie-path}")
+    String cookiePath;
 
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
 
@@ -73,9 +80,9 @@ public class VPResultController {
     }
 
     @PostMapping(path = "/vp-session-results", consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<Object> getVPSessionResults(@Valid @RequestBody VerificationSessionRequestDto request, @CookieValue(value = COOKIE_NAME, defaultValue = "") String requestCookie, HttpServletResponse response) {
+    public ResponseEntity<Object> getVPSessionResults(@Valid @RequestBody VerificationSessionRequestDto request, @CookieValue(value = COOKIE_NAME) String requestCookie, HttpServletResponse response) {
         try {
-        if (requestCookie.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ErrorCode.SESSION_INTERRUPTED));
+        if (requestCookie.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ErrorCode.VP_SESSION_INVALID));
         String transactionId = getTransactionId(requestCookie);
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
@@ -89,8 +96,10 @@ public class VPResultController {
         } finally {
             log.info("Cleaning up VP session cookie");
             Cookie responseCookie = new Cookie(COOKIE_NAME, "");
+            responseCookie.setHttpOnly(true);
+            responseCookie.setSecure(cookieIsSecure);
             responseCookie.setMaxAge(0);
-            responseCookie.setPath("/");
+            responseCookie.setPath(cookiePath);
             response.addCookie(responseCookie);
         }
     }

@@ -21,8 +21,8 @@ public enum ErrorCode {
     RESPONSE_CODE_USED("RESPONSE_CODE_USED", "Response code has been used"),
     RESPONSE_CODE_NOT_FOUND("RESPONSE_CODE_NOT_FOUND", "Response code is missing for this VP Submission"),
     REDIRECT_URI_NOT_FOUND("REDIRECT_URI_NOT_FOUND", "Redirect URI configuration is missing"),
-    SESSION_INTERRUPTED("SESSION_INTERRUPTED", "Your VP Verification session was interrupted / closed unexpectedly, you can try again"),
-    MALFORMED_COOKIE("MALFORMED_COOKIE", "Your VP Verification session was interrupted due to malformed cookie" ),
+    VP_SESSION_INVALID("VP_SESSION_INVALID", "Your VP verification session is invalid. Please restart the process and try again"),
+    MALFORMED_COOKIE("MALFORMED_COOKIE", "Request cannot be processed due to malformed cookie" ),
     RESPONSE_CODE_NOT_USED("RESPONSE_CODE_NOT_USED", "Transaction was incomplete, response_code was not used" );
 
     private final String errorCode;
