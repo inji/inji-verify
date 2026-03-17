@@ -18,5 +18,4 @@ public class VerificationRequestDto {
     @JsonSetter(nulls = Nulls.AS_EMPTY)
     private List<String> statusCheckFilters = new ArrayList<>();
     private boolean includeClaims = false;
-    private String responseCode;
 }
