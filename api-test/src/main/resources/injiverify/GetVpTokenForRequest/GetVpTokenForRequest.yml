@@ -80,7 +80,7 @@ GetVpTokenForRequest:
 
   Injiverify_GetVpTokenForRequest_Of_PresentationID_All_Valid_Smoke:
       endPoint: /v1/verify/vp-result/{transactionId}
-      description: Returns the final result of a Verifiable Presentation (VP) submission of the presentationDefinitionId VP request.
+      description: Retrieves the verification result status of a VP submission for the given transactionId.
       uniqueIdentifier: TC_InjiVerify_GetVpTokenForRequest_06
       role: noauth
       restMethod: get
