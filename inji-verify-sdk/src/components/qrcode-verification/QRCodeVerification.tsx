@@ -19,11 +19,11 @@ import {
   THROTTLE_FRAMES_PER_SEC,
   ZOOM_STEP,
 } from "../../utils/constants";
-import {vpRequest,
+import {vpSessionRequest,
     vcSubmission,
     vcVerificationV2,
     vpRequestStatus,
-    vpResult
+    vpSessionResults
 } from "../../utils/api";
 import {
     decodeQrData,
@@ -70,6 +70,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const startingRef = useRef(false);
   const shouldEnableZoom = isEnableZoom && isMobile;
   const hasFetchedVPResultRef = useRef(false);
+  const statusCheckStartedRef = useRef(false);
   const clearTimer = () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -354,7 +355,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const createVPRequest = async (presentationDefinition: any) => {
     try {
       let presentationDefinitionId;
-      const data: QrData = await vpRequest(
+      const data: QrData = await vpSessionRequest(
         verifyServiceUrl,
         clientId,
         transactionId ?? undefined,
@@ -466,6 +467,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     sessionStorage.removeItem("transactionId");
     sessionStorage.removeItem("requestId");
     hasFetchedVPResultRef.current = false;
+    statusCheckStartedRef.current = false;
     scanSessionCompletedRef.current = true;
     frameProcessingRef.current = false;
     clearTimer();
@@ -536,7 +538,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 throw new Error("Transaction ID is required to fetch VP result");
             }
 
-            const response = await vpResult(verifyServiceUrl, transactionId, responseCode, vcVerificationV2Request);
+            const response = await vpSessionResults(verifyServiceUrl, responseCode, vcVerificationV2Request);
 
             const VPResult: VerificationResults =
                 (response?.credentialResults ?? []).map((cred: CredentialResult) => {
@@ -634,7 +636,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         const requestId = sessionStorage.getItem("requestId");
         const transactionId = sessionStorage.getItem("transactionId");
 
-        if (requestId && transactionId && !vpToken && !error) {
+        if (requestId && transactionId && !vpToken && !error && !statusCheckStartedRef.current) {
+          statusCheckStartedRef.current = true;
           setLoading(true);
           fetchVPStatus(transactionId, requestId);
         }

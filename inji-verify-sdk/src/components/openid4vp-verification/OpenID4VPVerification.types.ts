@@ -16,6 +16,16 @@ export interface VerificationResult {
 
 export type VerificationResults = VerificationResult[];
 
+export interface VPVerificationSummaryVcResult {
+  vc: Record<string, unknown>;
+  vcStatus: VerificationStatus;
+}
+
+export interface VPVerificationSummaryResponse {
+  vcResults: VPVerificationSummaryVcResult[];
+  vpResultStatus: VerificationStatus;
+}
+
 export interface VPRequestBody {
   clientId: string;
   nonce: string;
@@ -23,7 +33,13 @@ export interface VPRequestBody {
   presentationDefinitionId?: string;
   presentationDefinition?: PresentationDefinition;
   acceptVPWithoutHolderProof?: boolean;
-  presentationFlow?: string
+  /**
+   * When true, the verifier backend will generate a short-lived single-use `response_code`
+   * and return it via redirect for same-device web-wallet flows.
+   *
+   * Must be omitted/false for cross-device and same-device mobile-wallet (deeplink) flows.
+   */
+  responseCodeValidationRequired?: boolean;
 }
 
 type ExclusivePresentationDefinition =
@@ -52,7 +68,9 @@ type ExclusiveCallbacks =
    * Provides the verification result data.
    */
   | {
-      onVPProcessed: (VPResult: VerificationResults) => void;
+      onVPProcessed: (
+        VPResult: VerificationResults | VPVerificationSummaryResponse,
+      ) => void;
       onVPReceived?: never;
     };
 
@@ -158,7 +176,6 @@ export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
 
 export interface SessionState {
   requestId: string;
-  transactionId: string;
 }
 
 export type AppError = {
