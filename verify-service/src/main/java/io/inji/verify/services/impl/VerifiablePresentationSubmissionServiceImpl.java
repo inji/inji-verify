@@ -1,6 +1,7 @@
 package io.inji.verify.services.impl;
 
 import com.nimbusds.jose.shaded.gson.Gson;
+import io.inji.verify.dto.VerificationSessionRequestDto;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.*;
@@ -58,7 +59,6 @@ import static io.inji.verify.utils.Utils.*;
 @Slf4j
 public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePresentationSubmissionService {
 
-    private final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
     @Value("${inji.verify.claims-with-meta-data}")
     List<String> claimsWithMetaData;
 
@@ -68,6 +68,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Value("${inji.verify.redirect-uri:#{null}}")
     String redirectUri;
 
+    final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
     final VPSubmissionRepository vpSubmissionRepository;
     final CredentialsVerifier credentialsVerifier;
     final PresentationVerifier presentationVerifier;
@@ -96,16 +97,15 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     @Override
     public ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
-        // --- Get presentationFlow from auth request ---
-        boolean isSameDevice = false;
+        // --- Get responseCodeValidationRequired from auth request ---
         AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
-        if (authRequest != null) isSameDevice = isSameDeviceFlow(authRequest);
+        boolean responseCodeValidationRequired = isResponseCodeValidationRequired(authRequest);
 
         // --- create response redirect_uri for same_device flow ---
         String responseCode = null;
         Timestamp responseCodeExpiryAt = null;
         Map<String, Object> response = new HashMap<>();
-        if (isSameDevice) {
+        if (responseCodeValidationRequired) {
             responseCode = UUID.randomUUID().toString();
             responseCodeExpiryAt = Timestamp.from(Instant.now().plus(responseCodeExpiryTimeInMins, ChronoUnit.MINUTES));
             String redirectUriWithResponseCode = buildRedirectWithResponseCode(responseCode);
@@ -393,18 +393,24 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    @Transactional
-    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId, String responseCode) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
+    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
         return processSubmission(vpSubmission, transactionId, authRequest);
     }
 
     @Override
-    @Transactional
-    public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId, String responseCode) {
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, responseCode);
+    public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId) {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
+        return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
+    }
+
+    @Override
+    @Transactional
+    public VPVerificationResultDto getVPSessionResults(VerificationSessionRequestDto request, List<String> requestIds, String transactionId) {
+        AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, request.getResponseCode(), authRequest, true);
         return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
     }
 
@@ -468,13 +474,14 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return credentialResults;
     }
 
-    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode) {
+    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode, AuthorizationRequestCreateResponse authRequest, boolean isResponseCodeMandatory) {
         VPSubmission submission = vpSubmissionRepository.findAllById(requestIds)
                 .stream()
                 .findFirst()
                 .orElseThrow(VPSubmissionNotFoundException::new);
 
-        if (responseCode != null) validateResponseCode(responseCode, submission);
+        boolean responseCodeValidationRequired = isResponseCodeValidationRequired(authRequest);
+        if (responseCodeValidationRequired) validateResponseCode(responseCode, submission, isResponseCodeMandatory);
 
         if (submission.getError() != null && !submission.getError().isEmpty())
             throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());
@@ -482,8 +489,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return submission;
     }
 
-    private void validateResponseCode(String responseCode, VPSubmission submission) {
-            if (submission.getResponseCode() == null)
+    private void validateResponseCode(String responseCode, VPSubmission submission, boolean isResponseCodeMandatory) {
+        if (isResponseCodeMandatory) {
+            if (submission.getResponseCode() == null || responseCode == null || submission.getResponseCode().isEmpty())
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
 
             if (!responseCode.equals(submission.getResponseCode()))
@@ -497,12 +505,21 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             if (vpSubmissionRepository.markResponseCodeAsUsed(submission.getRequestId()) == 0) {
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_USED);
             }
+        } else {
+            // This is to support Relying Parties to retrieve VP results after response_code has been used.
+            //  The Relying Parties may maintain a list of past transactions and may want to show results for those. In that case since response_code was consumed once, we can safely show the past results.
+            if (!submission.isResponseCodeUsed()) {
+                throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_USED);
+            }
+        }
     }
 
-    private boolean isSameDeviceFlow(AuthorizationRequestCreateResponse authRequest) {
-        if (authRequest == null || authRequest.getAuthorizationDetails() == null) return false;
-        String presentationFlow = authRequest.getAuthorizationDetails().getPresentationFlow();
-        return "same_device".equals(presentationFlow);
+    private boolean isResponseCodeValidationRequired(AuthorizationRequestCreateResponse authRequest) {
+        boolean responseCodeValidationRequired = false;
+        if (authRequest != null && authRequest.getAuthorizationDetails() != null) {
+            responseCodeValidationRequired = authRequest.getAuthorizationDetails().isResponseCodeValidationRequired();
+        }
+        return responseCodeValidationRequired;
     }
 
     private static HolderProofCheckDto populateHolderProofDto(VerificationResult verificationResult) {
