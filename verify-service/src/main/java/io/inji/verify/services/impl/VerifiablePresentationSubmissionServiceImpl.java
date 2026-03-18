@@ -395,14 +395,14 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Override
     public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
         return processSubmission(vpSubmission, transactionId, authRequest);
     }
 
     @Override
     public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId) {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
         return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
     }
 
@@ -410,7 +410,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Transactional
     public VPVerificationResultDto getVPSessionResults(VerificationSessionRequestDto request, List<String> requestIds, String transactionId) {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, request.getResponseCode(), authRequest);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, request.getResponseCode(), authRequest, true);
         return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
     }
 
@@ -474,14 +474,14 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return credentialResults;
     }
 
-    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode, AuthorizationRequestCreateResponse authRequest) {
+    private VPSubmission fetchVpSubmissionIfValid(List<String> requestIds, String responseCode, AuthorizationRequestCreateResponse authRequest, boolean isResponseCodeMandatory) {
         VPSubmission submission = vpSubmissionRepository.findAllById(requestIds)
                 .stream()
                 .findFirst()
                 .orElseThrow(VPSubmissionNotFoundException::new);
 
         boolean responseCodeValidationRequired = isResponseCodeValidationRequired(authRequest);
-        if (responseCodeValidationRequired) validateResponseCode(responseCode, submission);
+        if (responseCodeValidationRequired) validateResponseCode(responseCode, submission, isResponseCodeMandatory);
 
         if (submission.getError() != null && !submission.getError().isEmpty())
             throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());
@@ -489,9 +489,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return submission;
     }
 
-    private void validateResponseCode(String responseCode, VPSubmission submission) {
-        if (responseCode != null) {
-            if (submission.getResponseCode() == null)
+    private void validateResponseCode(String responseCode, VPSubmission submission, boolean isResponseCodeMandatory) {
+        if (isResponseCodeMandatory) {
+            if (submission.getResponseCode() == null || responseCode == null || submission.getResponseCode().isEmpty())
                 throw new ResponseCodeException(ErrorCode.RESPONSE_CODE_NOT_FOUND);
 
             if (!responseCode.equals(submission.getResponseCode()))
