@@ -7,6 +7,7 @@ import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
 import lombok.Setter;
+import java.util.List;
 
 @AllArgsConstructor
 @NoArgsConstructor
@@ -16,4 +17,9 @@ public class VerificationSessionRequestDto extends VerificationRequestDto {
     @NotEmpty
     @NotNull
     private String responseCode;
+
+    public VerificationSessionRequestDto(boolean skipStatusChecks, List<String> statusCheckFilters, boolean includeClaims, String responseCode) {
+        super(skipStatusChecks, statusCheckFilters, includeClaims);
+        this.responseCode = responseCode;
+    }
 }
