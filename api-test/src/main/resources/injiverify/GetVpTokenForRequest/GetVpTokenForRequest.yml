@@ -77,3 +77,19 @@ GetVpTokenForRequest:
       "errorCode": "VP_WITHOUT_PROOF",
    "errorMessage": "Invalid VP Submission since VP is without proof"
 }'  
+
+  Injiverify_GetVpTokenForRequest_Of_PresentationID_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-result/{transactionId}
+      description: Retrieves the verification result status of a VP submission for the given transactionId.
+      uniqueIdentifier: TC_InjiVerify_GetVpTokenForRequest_06
+      role: noauth
+      restMethod: get
+      inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
+      outputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequestResult
+      input: '{
+      "transactionId":"$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+    "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_transactionId$",
+    "vpResultStatus": "SUCCESS"
+}'
