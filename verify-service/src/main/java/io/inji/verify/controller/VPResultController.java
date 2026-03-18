@@ -28,6 +28,7 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.MissingRequestCookieException;
 import java.util.List;
 import static io.inji.verify.shared.Constants.COOKIE_NAME;
 
@@ -82,7 +83,7 @@ public class VPResultController {
     @PostMapping(path = "/vp-session-results", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getVPSessionResults(@Valid @RequestBody VerificationSessionRequestDto request, @CookieValue(value = COOKIE_NAME) String requestCookie, HttpServletResponse response) {
         try {
-        if (requestCookie.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ErrorCode.VP_SESSION_INVALID));
+        if (requestCookie == null || requestCookie.isEmpty()) return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ErrorCode.VP_SESSION_INVALID));
         String transactionId = getTransactionId(requestCookie);
         List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
 
@@ -154,5 +155,11 @@ public class VPResultController {
     public ResponseEntity<ErrorDto> handleMalformedCookieException(MalformedCookieException e) {
         log.warn("Invalid argument or malformed Base64: {}", e.getMessage());
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.MALFORMED_COOKIE));
+    }
+
+    @ExceptionHandler(MissingRequestCookieException.class)
+    public ResponseEntity<ErrorDto> handleMissingCookie(MissingRequestCookieException e) {
+        log.warn("Required cookie is missing: {}", e.getCookieName());
+        return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ErrorCode.VP_SESSION_INVALID));
     }
 }
