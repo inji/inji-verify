@@ -21,7 +21,7 @@ public class AuthorizationRequestResponseDtoTest {
 
         AuthorizationRequestResponseDto responseDto =
                 new AuthorizationRequestResponseDto(clientId, null,
-                        new VPDefinitionResponseDto(presentationDefinition.getId(),presentationDefinition.getInputDescriptors(),presentationDefinition.getName(),presentationDefinition.getPurpose(),presentationDefinition.getFormat(),presentationDefinition.getSubmissionRequirements()),nonce,responseUri, true, null);
+                        new VPDefinitionResponseDto(presentationDefinition.getId(),presentationDefinition.getInputDescriptors(),presentationDefinition.getName(),presentationDefinition.getPurpose(),presentationDefinition.getFormat(),presentationDefinition.getSubmissionRequirements()),nonce,responseUri, true, false);
 
         assertEquals(Constants.RESPONSE_TYPE, responseDto.getResponseType());
         assertEquals(clientId, responseDto.getClientId());

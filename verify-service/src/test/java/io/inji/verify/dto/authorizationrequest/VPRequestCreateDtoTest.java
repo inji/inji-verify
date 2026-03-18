@@ -21,7 +21,10 @@ public class VPRequestCreateDtoTest {
         FormatDto mockFormatDto = mock();
         VPDefinitionResponseDto presentationDefinition = new VPDefinitionResponseDto("pd123",mockInputDescriptors,"name","purpose" ,mockFormatDto ,mockSubmissionRequirements);
 
-        VPRequestCreateDto vpRequestCreateDto = new VPRequestCreateDto(clientId, transactionId, presentationDefinitionId, nonce, presentationDefinition, false, null);
+        VPRequestCreateDto vpRequestCreateDto =
+                new VPRequestCreateDto(clientId, transactionId,
+                        presentationDefinitionId, nonce,
+                        presentationDefinition, false, false);
 
         assertEquals(clientId, vpRequestCreateDto.getClientId());
         assertEquals(transactionId, vpRequestCreateDto.getTransactionId());
