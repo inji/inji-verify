@@ -1,0 +1,7 @@
+INSERT INTO verify.presentation_definition(
+	id, input_descriptors, name, purpose, vp_format, submission_requirements)
+	VALUES (
+	200,
+	'[{"id":"id card credential","name":"InsuranceCredential","purpose":"Relying party is requesting your digital ID for the purpose of Self-Authentication","group":[""],"format":{"ldp_vc":{"proof_type":["Ed25519Signature2020"]}},"constraints":{"fields":[{"path":["$.type"],"filter":{"type":"object","pattern":"InsuranceCredential"}}]}}]'::jsonb, 
+	'InsuranceCredential', 
+	'Relying party is requesting your digital ID for the purpose of Self-Authentication', null, null);
