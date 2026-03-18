@@ -1,5 +1,6 @@
 package io.inji.verify.controller;
 
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -11,7 +12,6 @@ import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.context.request.async.DeferredResult;
 import io.inji.verify.dto.authorizationrequest.VPRequestCreateDto;
@@ -30,7 +30,6 @@ import java.util.Base64;
 import static io.inji.verify.shared.Constants.COOKIE_NAME;
 import static io.inji.verify.shared.Constants.VP_REQUEST_URI;
 
-@RequestMapping(VP_REQUEST_URI)
 @RestController
 @Validated
 @Slf4j
@@ -54,39 +53,52 @@ public class VPRequestController {
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
     }
 
-    @PostMapping(consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = VP_REQUEST_URI, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createVPRequest(@Valid @RequestBody VPRequestCreateDto vpRequestCreate) {
+        return processCreateVPRequest(vpRequestCreate, false);
+    }
+
+    @PostMapping(path = "/vp-session-request", consumes = MediaType.APPLICATION_JSON_VALUE)
+    public ResponseEntity<Object> createVPSessionRequest(@Valid @RequestBody VPRequestCreateDto vpRequestCreate) {
+        return processCreateVPRequest(vpRequestCreate, true);
+    }
+
+    @NotNull
+    private ResponseEntity<Object> processCreateVPRequest(VPRequestCreateDto vpRequestCreate, boolean createCookie) {
         if (vpRequestCreate.getPresentationDefinitionId() == null && vpRequestCreate.getPresentationDefinition() == null){
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.BOTH_ID_AND_PD_CANNOT_BE_NULL));
         }
         try {
             VPRequestResponseDto authorizationRequestResponse = verifiablePresentationRequestService.createAuthorizationRequest(vpRequestCreate);
 
-            String transactionId = authorizationRequestResponse.getTransactionId();
-            String cookieValue = Base64.getEncoder().encodeToString(transactionId.getBytes(StandardCharsets.UTF_8));
-            ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, cookieValue)
-                    .httpOnly(true)
-                    .secure(cookieIsSecure)
-                    .path(cookiePath)
-                    .sameSite(cookieSameSite)
-                    .maxAge(Duration.ofMinutes(cookieDurationInMinute))
-                    .build();
+            if (createCookie) {
+                String transactionId = authorizationRequestResponse.getTransactionId();
+                String cookieValue = Base64.getEncoder().encodeToString(transactionId.getBytes(StandardCharsets.UTF_8));
+                ResponseCookie cookie = ResponseCookie.from(COOKIE_NAME, cookieValue)
+                        .httpOnly(true)
+                        .secure(cookieIsSecure)
+                        .path(cookiePath)
+                        .sameSite(cookieSameSite)
+                        .maxAge(Duration.ofMinutes(cookieDurationInMinute))
+                        .build();
+                return ResponseEntity.status(HttpStatus.CREATED)
+                        .header(HttpHeaders.SET_COOKIE, cookie.toString())
+                        .body(authorizationRequestResponse);
+            }
 
-            return ResponseEntity.status(HttpStatus.CREATED)
-                    .header(HttpHeaders.SET_COOKIE, cookie.toString())
-                    .body(authorizationRequestResponse);
+            return ResponseEntity.status(HttpStatus.CREATED).body(authorizationRequestResponse);
         } catch (PresentationDefinitionNotFoundException e) {
             log.error(e.getMessage());
             return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_PRESENTATION_DEFINITION));
         }
     }
 
-    @GetMapping(path = "/{requestId}/status")
+    @GetMapping(path = "/vp-request/{requestId}/status")
     public DeferredResult<VPRequestStatusDto> getStatus(@PathVariable String requestId) {
         return verifiablePresentationRequestService.getStatus(requestId);
     }
 
-    @GetMapping(path = "/{requestId}" , produces = "application/oauth-authz-req+jwt")
+    @GetMapping(path = "/vp-request/{requestId}" , produces = "application/oauth-authz-req+jwt")
     public ResponseEntity<Object> getVPRequest(@PathVariable String requestId) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(verifiablePresentationRequestService.getVPRequestJwt(requestId));

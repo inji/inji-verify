@@ -139,7 +139,7 @@ public class VPRequestControllerTest {
     }
 
     @Test
-    public void testCreateVPRequest_SetsCookie() throws Exception {
+    public void testCreateVPSessionRequest_SetsCookie() throws Exception {
         FormatDto formatDto = new FormatDto(null, null, null);
         VPDefinitionResponseDto vpDefinitionResponseDto = new VPDefinitionResponseDto("id", new ArrayList<>(), "name", "purpose", formatDto, new ArrayList<>());
         VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", "pdId", "nonce", vpDefinitionResponseDto, false, true);
@@ -149,7 +149,7 @@ public class VPRequestControllerTest {
 
         String expectedCookieValue = Base64.getEncoder().encodeToString("tId".getBytes(StandardCharsets.UTF_8));
 
-        mockMvc.perform(post("/vp-request")
+        mockMvc.perform(post("/vp-session-request")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated())
