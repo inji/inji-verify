@@ -20,5 +20,5 @@ public class VPRequestCreateDto {
     @Valid
     VPDefinitionResponseDto presentationDefinition;
     boolean acceptVPWithoutHolderProof;
-    String presentationFlow;
+    boolean responseCodeValidationRequired;
 }

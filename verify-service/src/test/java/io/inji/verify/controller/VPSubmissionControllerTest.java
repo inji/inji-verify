@@ -90,7 +90,7 @@ public class VPSubmissionControllerTest {
                 "nonce",
                 "responseUri",
                 false,
-                "same_device"
+                true
         );
 
         AuthorizationRequestCreateResponse authorizationRequestCreateResponse = new AuthorizationRequestCreateResponse(
@@ -285,7 +285,7 @@ public class VPSubmissionControllerTest {
                 "nonce",
                 "responseUri",
                 false,
-                "same_device"
+                true
         );
 
         AuthorizationRequestCreateResponse authorizationRequestCreateResponse = new AuthorizationRequestCreateResponse(
@@ -335,7 +335,7 @@ public class VPSubmissionControllerTest {
                 "nonce",
                 "responseUri",
                 false,
-                "cross_device"
+                false
         );
 
         AuthorizationRequestCreateResponse authorizationRequestCreateResponse = new AuthorizationRequestCreateResponse(
@@ -381,7 +381,7 @@ public class VPSubmissionControllerTest {
                 "nonce",
                 "responseUri",
                 false,
-                "same_device"
+                true
         );
 
         AuthorizationRequestCreateResponse authorizationRequestCreateResponse = new AuthorizationRequestCreateResponse(
