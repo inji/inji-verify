@@ -71,10 +71,10 @@ public class VpVerification extends BasePage {
 	@FindBy(id = "select-credential-types-description")
 	WebElement vpVerificationQrCodeStep2Description;
 
-	@FindBy(id = "share-verifiable-credentials-from-wallet")
+	@FindBy(id = "scan-qr-code-(use-a-different-device)")
 	WebElement vpVerificationQrCodeStep3Label;
 
-	@FindBy(id = "share-verifiable-credentials-from-wallet-description")
+	@FindBy(id = "scan-qr-code-(use-a-different-device)-description")
 	WebElement vpVerificationQrCodeStep3Description;
 
 	@FindBy(id = "view-verification-results")
