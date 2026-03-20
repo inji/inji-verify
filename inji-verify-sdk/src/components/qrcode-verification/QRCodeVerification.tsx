@@ -3,7 +3,7 @@ import {
     CredentialResult,
     QRCodeVerificationProps,
     scanResult,
-    VcStatus, VCVerificationV2Response, VerificationResults
+    VCVerificationV2Response, VerificationResults
 } from "./QRCodeVerification.types";
 import { doFileChecks, scanFilesForQr } from "../../utils/uploadQRCodeUtils";
 import {
@@ -33,10 +33,9 @@ import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
-import {clearUrl, isSdJwt, normalizeVp} from "../../utils/utils";
+import {clearUrl, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
-
 
 const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   scannerActive = true,
@@ -502,7 +501,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
             resetState();
         }
     };
-
 
     const handleError = (error: unknown) => {
         frameProcessingRef.current = false;
