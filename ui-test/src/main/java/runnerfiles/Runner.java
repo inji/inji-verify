@@ -21,12 +21,18 @@ import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.nio.file.*;
 import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
@@ -41,8 +47,7 @@ import java.util.List;
 				"summary","com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"}
 )
 
-public class Runner extends AbstractTestNGCucumberTests{
-
+public class Runner extends AbstractTestNGCucumberTests {
 
 	private static final Logger LOGGER = Logger.getLogger(Runner.class);
 	private static String cachedPath = null;
@@ -50,6 +55,15 @@ public class Runner extends AbstractTestNGCucumberTests{
 	public static String jarUrl = Runner.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 	public static List<String> languageList = new ArrayList<>();
 	public static boolean skipAll = false;
+
+	// ── Known Issues ──────────────────────────────────────────────────────────────
+	public static Map<String, String> knownIssues = new ConcurrentHashMap<>();
+
+	static {
+		loadKnownIssues();
+		System.out.println(">>> Known Issues loaded: " + knownIssues); 
+	}
+	// ─────────────────────────────────────────────────────────────────────────────
 
 
 	public static void main(String[] args) {
@@ -154,14 +168,71 @@ public class Runner extends AbstractTestNGCucumberTests{
 		result.getMethod().setDescription("Running Scenario: " + result.getMethod().getMethodName());
 	}
 
-
-
 	@Test(dataProvider = "scenarios")
 	public void runScenario(PickleWrapper pickle, FeatureWrapper feature) {
 		System.out.println("Running Scenario: " + pickle.getPickle().getName());
 		Thread.currentThread().setName(pickle.getPickle().getName());
 		super.runScenario(pickle, feature);
 	}
+
+	// ── Known Issues ──────────────────────────────────────────────────────────────
+	/**
+	 * Resets all scenario counters between runs (e.g. multi-language loops).
+	 * knownIssueCount is kept in BaseTest alongside the other counters.
+	 */
+	public static void resetCounters() {
+		utils.BaseTest.passedCount = 0;
+		utils.BaseTest.failedCount = 0;
+		utils.BaseTest.totalCount = 0;
+		utils.BaseTest.knownIssueCount = 0;
+	}
+
+	/**
+	 * Loads known issues from {@code src/test/resources/Known_Issues.txt}.
+	 *
+	 * <p>Each non-blank, non-comment line must follow the format:
+	 * <pre>
+	 *   BUGID------Scenario Name
+	 * </pre>
+	 * Lines starting with {@code #} are treated as comments and skipped.
+	 */
+	private static void loadKnownIssues() {
+		InputStream knownIssuesStream = Runner.class.getClassLoader()
+				.getResourceAsStream("config/Known_Issues.txt");
+
+		if (knownIssuesStream == null) {
+			LOGGER.warn("Known issues file not found in classpath: config/Known_Issues.txt");
+			return;
+		}
+
+		try (BufferedReader br = new BufferedReader(
+				new InputStreamReader(knownIssuesStream, StandardCharsets.UTF_8))) {
+
+			String line;
+			while ((line = br.readLine()) != null) {
+				line = line.trim();
+
+				// Skip blank lines and comments
+				if (line.isEmpty() || line.startsWith("#") || !line.contains("------")) {
+					continue;
+				}
+
+				String[] parts = line.split("------", 2);
+				if (parts.length == 2) {
+					String bugId        = parts[0].trim();
+					String scenarioName = parts[1].trim().replaceAll("\\s+", " ");
+					knownIssues.put(scenarioName, bugId);
+				}
+			}
+
+			LOGGER.info("Known Issues Loaded: " + knownIssues);
+
+		} catch (Exception e) {
+			LOGGER.warn("Error reading Known_Issues.txt: " + e.getMessage());
+		}
+	}
+	// ─────────────────────────────────────────────────────────────────────────────
+
 
 	public static String getGlobalResourcePath() {
 		if (cachedPath != null) {
@@ -185,6 +256,7 @@ public class Runner extends AbstractTestNGCucumberTests{
 			return "Global Resource File Path Not Found";
 		}
 	}
+
 	public static String getResourcePath() {
 		return getGlobalResourcePath();
 	}
@@ -198,14 +270,13 @@ public class Runner extends AbstractTestNGCucumberTests{
 		JWKKeyUtil.setLogLevel();
 		CertsUtil.setLogLevel();
 	}
-	
+
 	public static void updateFeaturesPath() {
-		File homeDir = null;
-	    String os = System.getProperty("os.name").toLowerCase();
-	    if (os.contains("windows")) {
-	        System.setProperty("cucumber.features", "src\\test\\resources\\featurefiles\\");
-	    } else {
-	        System.setProperty("cucumber.features", "/home/inji/featurefiles/");
-	    }
-	} 
+		String os = System.getProperty("os.name").toLowerCase();
+		if (os.contains("windows")) {
+			System.setProperty("cucumber.features", "src\\test\\resources\\featurefiles\\");
+		} else {
+			System.setProperty("cucumber.features", "/home/inji/featurefiles/");
+		}
+	}
 }

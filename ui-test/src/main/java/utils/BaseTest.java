@@ -19,6 +19,7 @@ import com.browserstack.local.Local;
 import org.openqa.selenium.logging.LoggingPreferences;
 import org.openqa.selenium.logging.LogType;
 import java.util.logging.Level;
+import org.testng.SkipException;
 
 import io.cucumber.plugin.event.PickleStepTestStep;
 import io.cucumber.plugin.event.TestStep;
@@ -44,9 +45,15 @@ public class BaseTest {
 		this.driver = driver;
 	}
 
-	private static int passedCount = 0;
-	private static int failedCount = 0;
-	private static int totalCount = 0;
+	public static int passedCount = 0;
+	public static int failedCount = 0;
+	public static int totalCount = 0;
+
+	// ── Known Issues ──────────────────────────────────────────────────────────────
+	public static int knownIssueCount = 0;
+	private static final ThreadLocal<Boolean> isKnownIssueScenario = new ThreadLocal<>();
+	// ─────────────────────────────────────────────────────────────────────────────
+
 	public static WebDriver driver;
 
 	public static final String url = System.getenv("env") != null ? System.getenv("TEST_URL")
@@ -69,95 +76,98 @@ public class BaseTest {
 	@Before
 	public void beforeAll(Scenario scenario) throws MalformedURLException {
 
-        this.scenario = scenario;
+		this.scenario = scenario;
 
-	    try {
-	        if (bsLocal == null || !bsLocal.isRunning()) {
-	            bsLocal = new Local();
-	            HashMap<String, String> bsLocalArgs = new HashMap<>();
-	            bsLocalArgs.put("key", accessKey);
-                bsLocalArgs.put("forceLocal", "true");
-	            try {
-	                bsLocal.start(bsLocalArgs);
-	                logger.info("✅ BrowserStack Local tunnel started.");
-	            } catch (Exception e) {
-	                logger.error("Failed to start BrowserStack Local tunnel", e);
-	            }
-	        }
-	    } catch (Exception e) {
-	        logger.error("Failed to initialize BrowserStack Local", e);
-	    }
+		// ── Known Issues: skip scenario early if it is a registered known issue ──────
+		if (runnerfiles.Runner.knownIssues.containsKey(scenario.getName())) {
+			String bugId = runnerfiles.Runner.knownIssues.get(scenario.getName());
+			ExtentReportManager.createTest(scenario.getName());
+			logger.info("Skipping Known Issue Scenario: {} | Bug: {}", scenario.getName(), bugId);
+			isKnownIssueScenario.set(true);
+			throw new org.testng.SkipException(
+					"Known Issue - Skipped: " + scenario.getName() + " | " + bugId);
+		}
+		isKnownIssueScenario.set(false);
+		// ─────────────────────────────────────────────────────────────────────────────
 
-	    totalCount++;
-	    ExtentReportManager.initReport();
-	    ExtentReportManager.createTest(scenario.getName());
-	    ExtentReportManager.logStep("Scenario Started: " + scenario.getName());
+		try {
+			if (bsLocal == null || !bsLocal.isRunning()) {
+				bsLocal = new Local();
+				HashMap<String, String> bsLocalArgs = new HashMap<>();
+				bsLocalArgs.put("key", accessKey);
+				bsLocalArgs.put("forceLocal", "true");
+				try {
+					bsLocal.start(bsLocalArgs);
+					logger.info("✅ BrowserStack Local tunnel started.");
+				} catch (Exception e) {
+					logger.error("Failed to start BrowserStack Local tunnel", e);
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Failed to initialize BrowserStack Local", e);
+		}
 
-	    DesiredCapabilities capabilities = new DesiredCapabilities();
-	    HashMap<String, Object> browserstackOptions = new HashMap<>();
+		totalCount++;
+		ExtentReportManager.initReport();
+		ExtentReportManager.createTest(scenario.getName());
+		ExtentReportManager.logStep("Scenario Started: " + scenario.getName());
 
-	    if (scenario.getSourceTagNames().contains("@mobileView")) {
-        logger.info("📱 Launching test in MOBILE VIEW (Desktop Emulation) via BrowserStack");
+		DesiredCapabilities capabilities = new DesiredCapabilities();
+		HashMap<String, Object> browserstackOptions = new HashMap<>();
 
-        capabilities.setCapability("browserName", "Chrome");
-        capabilities.setCapability("browserVersion", "latest");
+		if (scenario.getSourceTagNames().contains("@mobileView")) {
+			logger.info("📱 Launching test in MOBILE VIEW (Desktop Emulation) via BrowserStack");
 
-        browserstackOptions.put("os", "Windows");
-        browserstackOptions.put("osVersion", "10");
-        browserstackOptions.put("local", "true");
-        browserstackOptions.put("debug", "true");
+			capabilities.setCapability("browserName", "Chrome");
+			capabilities.setCapability("browserVersion", "latest");
 
-        // Add Chrome options for mobile emulation
-        HashMap<String, Object> chromeOptions = new HashMap<>();
-        HashMap<String, Object> mobileEmulation = new HashMap<>();
-        // Instead of using deviceName, set specific device metrics
-        HashMap<String, Object> deviceMetrics = new HashMap<>();
-        deviceMetrics.put("width", 412);  // Galaxy S22 width
-        deviceMetrics.put("height", 915);  // Galaxy S22 height
-        deviceMetrics.put("pixelRatio", 2.625);  // Device pixel ratio
-        deviceMetrics.put("mobile", true);
-        mobileEmulation.put("deviceMetrics", deviceMetrics);
-        mobileEmulation.put("userAgent", "Mozilla/5.0 (Linux; Android 12; SM-S901E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36");
-        chromeOptions.put("mobileEmulation", mobileEmulation);
-        capabilities.setCapability("goog:chromeOptions", chromeOptions);
-    }
-    else {
-        logger.info("🖥️ Launching test in DESKTOP mode");
+			browserstackOptions.put("os", "Windows");
+			browserstackOptions.put("osVersion", "10");
+			browserstackOptions.put("local", "true");
+			browserstackOptions.put("debug", "true");
 
-        capabilities.setCapability("browserName", "Chrome");
-        capabilities.setCapability("browserVersion", "latest");
+			HashMap<String, Object> chromeOptions = new HashMap<>();
+			HashMap<String, Object> mobileEmulation = new HashMap<>();
+			HashMap<String, Object> deviceMetrics = new HashMap<>();
+			deviceMetrics.put("width", 412);
+			deviceMetrics.put("height", 915);
+			deviceMetrics.put("pixelRatio", 2.625);
+			deviceMetrics.put("mobile", true);
+			mobileEmulation.put("deviceMetrics", deviceMetrics);
+			mobileEmulation.put("userAgent",
+					"Mozilla/5.0 (Linux; Android 12; SM-S901E) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/137.0.0.0 Mobile Safari/537.36");
+			chromeOptions.put("mobileEmulation", mobileEmulation);
+			capabilities.setCapability("goog:chromeOptions", chromeOptions);
+		} else {
+			logger.info("🖥️ Launching test in DESKTOP mode");
 
-        browserstackOptions.put("os", "Windows");
-        browserstackOptions.put("osVersion", "10");
-        browserstackOptions.put("local", "true");
-        browserstackOptions.put("debug", "true");
-    }
+			capabilities.setCapability("browserName", "Chrome");
+			capabilities.setCapability("browserVersion", "latest");
 
-    // ✅ Common step — attach the bstack:options finally
-    capabilities.setCapability("bstack:options", browserstackOptions);
-    
-    // Enable performance logging so we can inspect network activity
-    LoggingPreferences logPrefs = new LoggingPreferences();
-    logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
-    capabilities.setCapability("goog:loggingPrefs", logPrefs);
-    logger.info("Final capabilities: {}", capabilities);
+			browserstackOptions.put("os", "Windows");
+			browserstackOptions.put("osVersion", "10");
+			browserstackOptions.put("local", "true");
+			browserstackOptions.put("debug", "true");
+		}
 
-    // Setup driver (only once)
-    driver = new RemoteWebDriver(new URL(URL), capabilities);
-	((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
-    jse = (JavascriptExecutor) driver;
+		capabilities.setCapability("bstack:options", browserstackOptions);
 
-    // Only maximize window for desktop tests
-    if (!scenario.getSourceTagNames().contains("@mobileView")) {
-        driver.manage().window().maximize();
-    }
+		LoggingPreferences logPrefs = new LoggingPreferences();
+		logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+		capabilities.setCapability("goog:loggingPrefs", logPrefs);
+		logger.info("Final capabilities: {}", capabilities);
 
-    driver.get(url);
-    injectNetworkInterceptors();
+		driver = new RemoteWebDriver(new URL(URL), capabilities);
+		((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
+		jse = (JavascriptExecutor) driver;
 
+		if (!scenario.getSourceTagNames().contains("@mobileView")) {
+			driver.manage().window().maximize();
+		}
+
+		driver.get(url);
+		injectNetworkInterceptors();
 	}
-	
-	
 
 
 	@BeforeStep
@@ -180,6 +190,23 @@ public class BaseTest {
 
 	@After
 	public void afterScenario(Scenario scenario) {
+
+		// ── Known Issues: handle skipped-due-to-known-issue scenarios ────────────────
+		if (scenario.getStatus().toString().equalsIgnoreCase("SKIPPED")
+				&& runnerfiles.Runner.knownIssues.containsKey(scenario.getName())) {
+
+			String bugId  = runnerfiles.Runner.knownIssues.get(scenario.getName());
+			String bugUrl = "https://mosip.atlassian.net/browse/" + bugId;
+			knownIssueCount++;
+
+			ExtentReportManager.getTest().skip(
+					"🟠 Skipped due to Known Issue → <a href='" + bugUrl + "' target='_blank'>" + bugId + "</a>");
+
+			ExtentReportManager.flushReport();
+			return; // Skip the rest of the teardown — driver was never started
+		}
+		// ─────────────────────────────────────────────────────────────────────────────
+
 		if (scenario.isFailed()) {
 			failedCount++;
 			ExtentReportManager.getTest().fail("❌ Scenario Failed: " + scenario.getName());
@@ -196,13 +223,12 @@ public class BaseTest {
 					logger.info("🛑 BrowserStack Local tunnel stopped.");
 				} catch (Exception e) {
 					logger.error("Failed to stop BrowserStack Local tunnel", e);
-				}}
+				}
+			}
 		} catch (Exception e) {
 			logger.error("Error in afterScenario", e);
 		}
 	}
-
-
 
 
 	private String getStepName(Scenario scenario) {
@@ -243,7 +269,6 @@ public class BaseTest {
 			}
 			pushReportsToS3();
 		}));
-
 	}
 
 	public WebDriver getDriver() {
@@ -253,7 +278,7 @@ public class BaseTest {
 	public JavascriptExecutor getJse() {
 		return jse;
 	}
-	
+
 	private void injectNetworkInterceptors() {
 		try {
 			if (driver instanceof JavascriptExecutor) {
@@ -303,12 +328,16 @@ public class BaseTest {
 
 		executeLsCommand(System.getProperty("user.dir") + "/test-output/");
 		String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date());
-		String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-"+timestamp + "-T-" + totalCount + "-P-" + passedCount + "-F-" + failedCount + ".html";
-		String newFileName = "InjiVerifyUi-" +name;
+		String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-" + timestamp
+				+ "-T-" + totalCount
+				+ "-P-" + passedCount
+				+ "-F-" + failedCount
+				+ "-KI-" + knownIssueCount
+				+ ".html";
+		String newFileName = "InjiVerifyUi-" + name;
 		File originalReportFile = new File(System.getProperty("user.dir") + "/test-output/ExtentReport.html");
 		File newReportFile = new File(System.getProperty("user.dir") + "/test-output/" + newFileName);
 
-		// Rename the file
 		if (originalReportFile.renameTo(newReportFile)) {
 			logger.info("Report renamed to: {}", newFileName);
 		} else {
@@ -342,11 +371,9 @@ public class BaseTest {
 			Process process;
 
 			if (os.contains("win")) {
-				// Windows command (show all files including hidden)
 				String windowsDirectoryPath = directoryPath.replace("/", File.separator);
 				process = Runtime.getRuntime().exec(new String[] { "cmd.exe", "/c", "dir /a " + windowsDirectoryPath });
 			} else {
-				// Unix-like command (show all files including hidden)
 				process = Runtime.getRuntime().exec(new String[] { "/bin/sh", "-c", "ls -al " + directoryPath });
 			}
 
@@ -372,6 +399,7 @@ public class BaseTest {
 			logger.error("Error executing directory listing command: {}", e.getMessage());
 		}
 	}
+
 	public static String[] fetchIssuerTexts() {
 		String issuerSearchText = null;
 		String issuerSearchTextforSunbird = null;
