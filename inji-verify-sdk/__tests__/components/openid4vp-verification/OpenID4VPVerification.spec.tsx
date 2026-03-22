@@ -114,6 +114,7 @@ describe("OpenID4VPVerification UI Tests", () => {
       onQrCodeExpired,
       onError,
       triggerElement,
+      isSameDeviceFlowEnabled: false,
     });
 
     fireEvent.click(screen.getByRole("button", { name: "Verify" }));
@@ -226,6 +227,7 @@ describe("OpenID4VPVerification UI Tests", () => {
       onQrCodeExpired,
       onError,
       triggerElement: <button>Verify</button>,
+      isSameDeviceFlowEnabled: false,
     });
 
     // Trigger the creation of the VP request
@@ -351,6 +353,7 @@ describe("OpenID4VPVerification UI Tests", () => {
                 clientId="test-client"
                 protocol="testopenid4vp://"
                 presentationDefinition={presentationDefinition}
+                isSameDeviceFlowEnabled={false}
                 onVPProcessed={onVPProcessed}
                 onQrCodeExpired={onQrCodeExpired}
                 onError={onError}
@@ -426,6 +429,4 @@ describe("OpenID4VPVerification UI Tests", () => {
       expect(qr).toBeInTheDocument();
     });
   });
-  
-
 });

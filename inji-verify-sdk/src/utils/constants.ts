@@ -31,11 +31,3 @@ export const acceptedFileTypes = SupportedFileTypes.map(
 
 // Constants for SD-JWT validation
 export const VALID_SD_JWT_TYPES = new Set(['vc+sd-jwt', 'dc+sd-jwt']);
-
-// Constants for session storage
-export const OVP_SESSION_REQUEST_ID_KEY = "ovp_requestId";
-export const OVP_SESSION_TRANSACTION_ID_KEY = "ovp_transactionId";
-
-// Presentation flow types
-export const SAME_DEVICE_FLOW = "same_device";
-export const CROSS_DEVICE_FLOW = "cross_device";
