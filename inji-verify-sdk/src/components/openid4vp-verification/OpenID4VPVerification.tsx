@@ -158,8 +158,6 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   const fetchVPResult = useCallback(
     async (responseCode?: string | null) => {
       if (!isActiveRef.current) return;
-      // if (hasFetchedVPResultRef.current) return;
-      // hasFetchedVPResultRef.current = true;
       setLoading(true);
 
       try {
@@ -285,8 +283,14 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       while (end > 0 && webWalletBaseUrl[end - 1] === "/") end--;
       const baseUrl = webWalletBaseUrl.slice(0, end);
       window.location.href = `${baseUrl}/authorize?${pdParams}`;
-    } else {
+    } else if (isMobileDevice()) {
       window.location.href = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
+    } else {
+      onError({
+        errorMessage: "Same-Device Flow in web needs a baseUrl",
+        errorCode: "MISSING_BASE_URL"
+      });
+      resetState();
     }
   };
 
