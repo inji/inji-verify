@@ -13,6 +13,6 @@ module.exports = {
     '.+\\.(png|jpg|jpeg)$': "<rootDir>/__mocks__/svgFileTransformer.js"
   },
   transformIgnorePatterns: [
-    "node_modules/(?!(iso-639-3|@injistack)/)"
+      "node_modules/(?!(iso-639-3|@injistack|react-redux)/)"
   ]
 };
