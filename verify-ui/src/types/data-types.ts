@@ -121,13 +121,16 @@ export type VerifyState = {
   verificationSubmissionResult: VpSubmissionResultInt[];
   SelectionPanel: boolean;
   isShowResult: boolean;
-  selectedClaims: claim[];
-  originalSelectedClaims: claim[];
-  unVerifiedClaims: claim[];
+  selectedCredentials: claim[];
+  originalSelectedCredentials: claim[];
+  unVerifiedCredentials: claim[];
   sharingType: VCShareType;
   isPartiallyShared: boolean;
   presentationDefinition: PresentationDefinition;
   sdkInstanceKey: number;
+  SelectWalletPanel: boolean;
+  selectedWalletId?: string;
+  selectedWalletBaseUrl?: string;
 };
 
 export enum VCShareType {
@@ -189,3 +192,48 @@ export type credentialSubject = {
   email: string;
   policyExpiresOn: string;
 };
+
+export type WebWallet = {
+  id: string;
+  name: string;
+  iconUrl: string;
+  walletBaseUrl: string;
+};
+export interface ValidationCheck {
+    purpose?: string;
+    valid: boolean;
+    error?: {
+        errorCode?: string;
+        errorMessage?: string;
+    } | null;
+}
+
+export interface VCVerificationV2Response {
+    allChecksSuccessful: boolean;
+    schemaAndSignatureCheck: ValidationCheck;
+    expiryCheck: ValidationCheck;
+    statusCheck: ValidationCheck[];
+    claims?: Record<string, any>;
+}
+
+export interface CredentialResult {
+    verifiableCredential: string | object;
+    allChecksSuccessful: boolean;
+    holderProofCheck?: {
+        valid: boolean;
+        error: any;
+    } | null;
+    schemaAndSignatureCheck?: {
+        valid: boolean;
+        error: any;
+    };
+    expiryCheck?: {
+        valid: boolean;
+    };
+    statusChecks?: {
+        purpose: string;
+        valid: boolean;
+        error: any;
+    }[];
+    claims?: Record<string, any>;
+}

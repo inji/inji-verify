@@ -7,7 +7,7 @@ interface DisplayUnVerifiedVcProps {claim: claim;}
 function DisplayUnVerifiedVc({ claim }: DisplayUnVerifiedVcProps) {
   return (
     <div
-      className={`flex items-center justify-between bg-[#F5F5F5] w-[320px] lg:w-[410px] py-[5px] px-[15px] shadow-lg rounded-[12px] border border-[#C4C4C4]`}
+      className={`flex items-center justify-between bg-[#F5F5F5] w-[339px] lg:w-[410px] min-h-[82px] py-[5px] px-[15px] shadow-lg rounded-[12px] border border-[#C4C4C4]`}
     >
       <div className="flex items-center">
       <img src={claim.logo} alt={claim.logo} className="w-[50px] h-[50px] mr-1" />

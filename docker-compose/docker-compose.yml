@@ -3,7 +3,7 @@ version: '3.8'
 services:
   verify-service:
     container_name: verify-service
-    image: mosipdev/inji-verify-service:develop
+    image: injistackdev/inji-verify-service:develop
     user: root
     ports:
       - "8080:8080"
@@ -21,13 +21,14 @@ services:
       - INJI_DID_VERIFY_PUBLIC_KEY_URI=did:web:VERIFY_SERVICE_PROXY_FOR_LOCALHOST:verify#key-0
       - INJI_KEYSTORE_FILE_PASS=mosip
       - INJI_VERIFY_REDIRECT_URI=https://VERIFY_SERVICE_PROXY_FOR_LOCALHOST
+      - INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS=5
       - INJI_VERIFY_CLAIMS_WITH_META_DATA=_sd,_sd_alg,iss,cnf,sub,aud,exp,nbf,iat,cti
     depends_on:
       - postgres
 
   verify-ui:
     container_name: verify-ui
-    image: mosipdev/inji-verify-ui:develop
+    image: injistackdev/inji-verify-ui:develop
     ports:
       - "3000:8000"
     environment:

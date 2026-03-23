@@ -49,6 +49,10 @@
     "walletSelectorTitle": "Panneau de sélection du portefeuille",
     "walletSelectorDescription": "Veuillez sélectionner un portefeuille pour procéder avec une présentation vérifiable.",
     "walletSearchPlaceholder": "Portefeuilles de recherche",
+    "walletSearchNoResults": "Aucun portefeuille trouvé pour \"{{search}}\"",
+    "openWebWallets": "Ouvrir les portefeuilles Web",
+    "walletSelectorCancel": "Annuler",
+    "walletSelectorProceed": "Procéder",
     "IconToolTip": "Les champs à côté de cette icône indiquent que les informations ont été partagées sélectivement par le porte-portefeuille."
   },
   "VerificationStepsContent": {
@@ -87,7 +91,7 @@
     "VERIFY": {
       "InitiateVpRequest": {
         "label": "Lancer le processus de demande de vice-président",
-        "description": "Faire un clic <span> Demander des informations d'identification vérifiables <span> Pour initier le processus de vérification des informations d'identification"
+        "description": "Faire un clic 'Demander des informations d'identification vérifiables' Pour initier le processus de vérification des informations d'identification"
       },
       "SelectCredential": {
         "label": "Sélectionnez des types d'identification",
@@ -95,7 +99,7 @@
       },
       "RequestMissingCredential": {
         "label": "Demander les informations d'identification manquantes et générer un code QR",
-        "description": "Cliquez sur <span>Demander les informations d'identification manquantes<span> pour procéder à la vérification du VC manquant, ou cliquez sur <span>Redémarrer le processus<span> pour recommencer tout le processus."
+        "description": "Cliquez sur 'Demander les informations d'identification manquantes' pour procéder à la vérification du VC manquant, ou cliquez sur 'Redémarrer le processus' pour recommencer tout le processus."
       },
       "ScanQrCode": {
         "label": "Scannez le code QR (utilisez un autre appareil)",
@@ -103,7 +107,11 @@
       },
       "SelectWallet": {
         "label": "Partagez des informations d'identification vérifiables de Wallet",
-        "description": "Choisissez un portefeuille mobile dans la liste des portefeuilles disponibles sur le même appareil et procédez par le partage des informations d'identification."
+        "description": "Choisissez un portefeuille dans la liste des portefeuilles disponibles et procédez au partage des informations d'identification."
+      },
+      "ShareVerifiableCredentials": {
+        "label": "Partagez des informations d'identification vérifiables de Wallet",
+        "description": "Appareil à appareil : Cliquez sur « Générer un code QR » après avoir sélectionné les informations d'identification. Scannez le code QR à l'aide d'un portefeuille mobile sur un autre appareil contenant les informations d'identification sélectionnées.\n Même appareil : Cliquez sur « Ouvrir le portefeuille » pour choisir un portefeuille mobile parmi la liste des portefeuilles disponibles sur le même appareil et procéder au partage des informations d'identification."
       },
       "DisplayResult": {
         "label": "Afficher les résultats de la vérification",

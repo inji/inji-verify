@@ -69,12 +69,12 @@ function installing_inji-verify-service() {
     --set extraEnv[2].name=INJI_DID_VERIFY_PUBLIC_KEY_URI \
     --set extraEnv[2].value="did:web:${INJIVERIFY_HOST//:/\\:}:v1:verify#key-0" \
     --set extraEnv[3].name=INJI_VERIFY_REDIRECT_URI \
-    --set extraEnv[3].value=" " \
+    --set extraEnv[3].value="https://${INJIVERIFY_HOST}/verify" \
     --set extraEnv[4].name=INJI_VERIFY_CLAIMS_WITH_META_DATA \
-    --set-string extraEnv[4].value="_sd\,_sd_alg\,iss\,cnf\,sub\,aud\,exp\,nbf\,iat\,cti"
-    ## NOTE: Space in --set extraEnv[3].value=" " is intentional. Empty string ("") causes Helm deployment errors.
+    --set-string extraEnv[4].value="_sd\,_sd_alg\,iss\,cnf\,sub\,aud\,exp\,nbf\,iat\,cti" \
+    --set extraEnv[5].name=INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS \
+    --set-string extraEnv[5].value="5"
 
-       
   kubectl -n $NS  get deploy -o name |  xargs -n1 -t  kubectl -n $NS rollout status
 
   echo Installed inji-verify-service service

@@ -4,9 +4,14 @@ import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.NoArgsConstructor;
+import lombok.Setter;
+import java.sql.Timestamp;
 
 @Getter
+@Setter
 @AllArgsConstructor
+@NoArgsConstructor
 public class VPSubmissionDto {
     String vpToken;
     @Valid
@@ -15,4 +20,7 @@ public class VPSubmissionDto {
     String state;
     String error;
     String errorDescription;
+    String responseCode;
+    Timestamp responseCodeExpiryAt;
+    boolean responseCodeUsed;
 }

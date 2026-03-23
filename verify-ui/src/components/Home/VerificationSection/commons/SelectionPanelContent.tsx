@@ -9,7 +9,8 @@ import {
   getVpRequest,
   resetVpRequest,
   setFlowType,
-  setSelectedClaims,
+  setSelectedCredentials,
+  setShowWalletSelector,
 } from "../../../../redux/features/verify/vpVerificationState";
 import { storage } from "../../../../utils/storage";
 import { Button } from "./Button";
@@ -25,15 +26,18 @@ function SelectionPanelContent() {
   let language = useAppSelector((state: RootState) => state.common.language);
   language = language ?? window._env_.DEFAULT_LANG;
   const rtl = isRTL(language);
-  const selectedClaims = useVerifyFlowSelector((state) => state.selectedClaims);
+  const selectedCredentials = useVerifyFlowSelector((state) => state.selectedCredentials);
   const presentationDefinition = useVerifyFlowSelector((state) => state.presentationDefinition );
   const isMobile = isMobileDevice();
+
+  const isCredentialSelected = (cred: claim) =>
+    selectedCredentials.some((c: claim) => c.type === cred.type);
 
   const filteredClaims = getVerifiableClaims()
     .filter((claim) => claim.name.toLowerCase().includes(search.toLowerCase()))
     .sort((a, b) => {
-      const aSelected = selectedClaims.includes(a);
-      const bSelected = selectedClaims.includes(b);
+      const aSelected = isCredentialSelected(a);
+      const bSelected = isCredentialSelected(b);
 
       if (aSelected && !bSelected) return -1;
       if (!aSelected && bSelected) return 1;
@@ -47,18 +51,18 @@ function SelectionPanelContent() {
     setSearch(event.target.value);
   };
 
-  const toggleClaimSelection = (claim: claim) => {
-    if (selectedClaims.includes(claim)) {
+  const toggleClaimSelection = (cred: claim) => {
+    if (isCredentialSelected(cred)) {
       dispatch(
-        setSelectedClaims({
-          selectedClaims: selectedClaims.filter(
-            (c: claim) => claim.name !== c.name
+        setSelectedCredentials({
+          selectedCredentials: selectedCredentials.filter(
+            (c: claim) => c.type !== cred.type
           ),
         })
       );
     } else {
       dispatch(
-        setSelectedClaims({ selectedClaims: [...selectedClaims, claim] })
+        setSelectedCredentials({ selectedCredentials: [...selectedCredentials, cred] })
       );
     }
   };
@@ -70,7 +74,7 @@ function SelectionPanelContent() {
 
   const handleGenerateQR = () => {
     setSearch("");
-    dispatch(getVpRequest({ selectedClaims }));
+    dispatch(getVpRequest({ selectedCredentials }));
     const triggerElement = document.getElementById(
       "OpenID4VPVerification_trigger"
     );
@@ -87,11 +91,15 @@ function SelectionPanelContent() {
     dispatch(setFlowType());
   };
 
+  const handleChooseWallet = () => {
+    dispatch(setShowWalletSelector());
+  };
+
   useEffect(() => {
-    selectedClaims.forEach((claim: claim) =>
-      storage.setItem(storage.ESSENTIAL_CLAIM, claim)
-    );
-  }, [selectedClaims]);
+    selectedCredentials.forEach((cred: claim) => {
+      storage.setItem(storage.ESSENTIAL_CLAIM, cred);
+    });
+  }, [selectedCredentials]);
 
   return (
     <div className="fill-primary grid gap-6 p-3 rounded max-h-[80vh] overflow-y-auto">
@@ -159,7 +167,7 @@ function SelectionPanelContent() {
         {filteredClaims.length > 0 ? (
           <ul className="grid gap-4 max-h-[120px] lg:max-h-[250px] pr-4">
             {filteredClaims.map((claim, index) => {
-              const isSelectedClaim = selectedClaims.includes(claim);
+              const isSelectedClaim = isCredentialSelected(claim);
               return (
                 <li
                   id={`${claim.name}-ItemBox`}
@@ -232,7 +240,7 @@ function SelectionPanelContent() {
           title={t("generateQrCodeBtn")}
           onClick={handleGenerateQR}
           className="w-full text-smallTextSize lg:text-sm lg:mb-2"
-          disabled={selectedClaims.length <= 0}
+          disabled={selectedCredentials.length <= 0}
           variant="fill"
         />
         {isMobile && (
@@ -245,6 +253,16 @@ function SelectionPanelContent() {
             variant="fill"
           />
         )}
+
+        <Button
+          id="verification-open-wallet-button"
+          title={t("openWebWallets")}
+          className="w-full text-smallTextSize lg:text-sm my-2"
+          onClick={handleChooseWallet}
+          disabled={presentationDefinition.input_descriptors.length === 0}
+          variant="fill"
+        />
+
         <Button
           id="selection-panel-back-button"
           className="w-full text-smallTextSize lg:text-sm"

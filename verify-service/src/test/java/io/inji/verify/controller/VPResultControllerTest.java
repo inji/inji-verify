@@ -87,8 +87,7 @@ public class VPResultControllerTest {
         requestIds.add("req112");
 
         when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId)).thenReturn(requestIds);
-        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId))
-                .thenThrow(new VPSubmissionNotFoundException());
+        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId)).thenThrow(new VPSubmissionNotFoundException());
 
         mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
                         .contentType(MediaType.APPLICATION_JSON))
@@ -106,8 +105,7 @@ public class VPResultControllerTest {
         requestIds.add("req112");
 
         when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId)).thenReturn(requestIds);
-        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId))
-                .thenThrow(new VPWithoutProofException());
+        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId)).thenThrow(new VPWithoutProofException());
 
         mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
                 .contentType(MediaType.APPLICATION_JSON))

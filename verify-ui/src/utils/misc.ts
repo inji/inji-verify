@@ -32,6 +32,7 @@ export const getDisplayValue = (data: any): string => {
     }
     return data?.toString();
 }
+
 export const fetchVerificationSteps = (
     method: VerificationMethod,
     isPartiallyShared: boolean,
@@ -57,11 +58,7 @@ export const fetchVerificationSteps = (
             selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.SelectCredential.label")]!);
         }
 
-        if (flowType === "sameDevice") {
-            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.SelectWallet.label")]!);
-        } else {
-            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.ScanQrCode.label")]!);
-        }
+        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label")]!);
 
         selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.DisplayResult.label")]!);
     }

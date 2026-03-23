@@ -248,5 +248,14 @@
       "issuedOn",
       "expiresOn"
     ]
-  }
+  },
+  "WebWallets": [
+    {
+      "_note": "EXTERNAL DEPENDENCY: walletBaseUrl points to a shared dev/integration host. Replace with your own URL before use. Accepts absolute URLs (https://wallet.example.org) or same-env relative paths (/wallet). Empty string disables the entry. See docker-compose/README.md § WebWallets Configuration.",
+      "id": "inji-wallet",
+      "name": "Inji Wallet",
+      "iconUrl": "/assets/inji-web-wallet-icon.svg",
+      "walletBaseUrl": "https://injiweb.dev-int-inji.mosip.net"
+    }
+  ]
 }

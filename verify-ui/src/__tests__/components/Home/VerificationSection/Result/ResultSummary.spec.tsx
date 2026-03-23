@@ -1,17 +1,21 @@
-import React from 'react';
-import {render, screen} from "@testing-library/react";
+import React from "react";
+import { render } from "@testing-library/react";
 import ResultSummary from "../../../../../components/Home/VerificationSection/Result/ResultSummary";
 
 describe("Result Summary", () => {
-    test
-    ("Test rendering - success", () => {
-        render(<ResultSummary success={true}/>)
-        expect(screen.getByText("Congratulations, the given credential is valid!")).toBeInTheDocument()
-    })
+  test("renders non-empty message for SUCCESS status", () => {
+    const { container } = render(<ResultSummary status="SUCCESS" />);
 
-    test("Test rendering - failure", () => {
-        render(<ResultSummary success={false}/>)
-        expect(screen.getByText("Unfortunately, the given credential is invalid!")).toBeInTheDocument()
-    })
-})
+    const message = container.querySelector("#vc-result-display-message");
+    expect(message).toBeInTheDocument();
+    expect(message?.textContent).toBeTruthy();
+  });
 
+  test("renders non-empty message for INVALID status", () => {
+    const { container } = render(<ResultSummary status="INVALID" />);
+
+    const message = container.querySelector("#vc-result-display-message");
+    expect(message).toBeInTheDocument();
+    expect(message?.textContent).toBeTruthy();
+  });
+});

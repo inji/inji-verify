@@ -18,6 +18,7 @@ import org.openqa.selenium.support.ui.FluentWait;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
 import utils.WaitUtil;
+import api.InjiVerifyConfigManager;
 
 public class BasePage {
 	
@@ -30,7 +31,7 @@ public class BasePage {
     }
 
     public void waitForElementVisible(WebDriver driver, WebElement element) {
-        WaitUtil.waitForVisibility(driver, element);
+        WaitUtil.waitForVisibility(driver, element, getTimeout());
     }
 
     public void clickOnElement(WebDriver driver, WebElement element) {
@@ -43,56 +44,54 @@ public class BasePage {
         return wait.until(ExpectedConditions.elementToBeClickable(locator));
     }
 
-    public boolean isElementIsVisible(WebDriver driver, WebElement element) {
-        int maxRetries = 5;
-        int attempts = 0;
+public boolean isElementIsVisible(WebDriver driver, WebElement element) {
+    int maxRetries = 5;
+    int attempts = 0;
 
-        while (attempts < maxRetries) {
+    while (attempts < maxRetries) {
+        try {
+            WaitUtil.waitForVisibility(driver, element, getTimeout());
+            return element.isDisplayed();
+
+        } catch (StaleElementReferenceException e) {
+            logger.error("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
+            attempts++;
+
             try {
-                WaitUtil.waitForVisibility(driver, element);
-                return element.isDisplayed();
-            } catch (StaleElementReferenceException e) {
-                logger.error("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
-                attempts++;
-                try {
-                    Thread.sleep(900);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    return false;
-                }
-            } catch (TimeoutException e) {
-                logger.error("⏰ Timeout waiting for element to be visible.");
-                return false;
+                // Re-wait explicitly instead of Thread.sleep
+                WaitUtil.waitForVisibility(driver, element, getTimeout());
+            } catch (Exception ex) {
+                logger.error("Retry wait failed.");
             }
-        }
-        return false;
-    }
 
-    public boolean isElementIsVisibleAfterIdle(WebDriver driver, WebElement element) {
-        int maxRetries = 5;
-        int attempts = 0;
-
-        while (attempts < maxRetries) {
-            try {
-                WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(getTimeout() * 4)); // scaling for idle
-                wait.until(ExpectedConditions.visibilityOf(element));
-                return element.isDisplayed();
-            } catch (StaleElementReferenceException e) {
-                logger.error("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
-                attempts++;
-                try {
-                    Thread.sleep(900);
-                } catch (InterruptedException ie) {
-                    Thread.currentThread().interrupt();
-                    return false;
-                }
-            } catch (TimeoutException e) {
-                logger.error("⏰ Timeout waiting for element to be visible.");
-                return false;
-            }
+        } catch (TimeoutException e) {
+            logger.error("⏰ Timeout waiting for element to be visible.");
+            return false;
         }
-        return false;
     }
+    return false;
+}
+
+public boolean isElementIsVisibleAfterIdle(WebDriver driver, WebElement element) {
+    int maxRetries = 5;
+    int attempts = 0;
+
+    while (attempts < maxRetries) {
+        try {
+            WaitUtil.waitForVisibility(driver, element, getTimeout() * 4);
+            return element.isDisplayed();
+
+        } catch (StaleElementReferenceException e) {
+            logger.error("⚠️ Attempt " + (attempts + 1) + ": Element went stale. Retrying...");
+            attempts++;
+
+        } catch (TimeoutException e) {
+            logger.error("⏰ Timeout waiting for element to be visible.");
+            return false;
+        }
+    }
+    return false;
+}
 
     public String getText(WebDriver driver, WebElement element) {
         waitForElementVisible(driver, element);
@@ -119,71 +118,69 @@ public class BasePage {
         driver.navigate().back();
     }
 
-    public void uploadFile(WebDriver driver, WebElement fileInputTrigger, String filename) {
-        String filePath = System.getProperty("user.dir") + File.separator + filename;
-        File file = new File(filePath);
+public void uploadFile(WebDriver driver, WebElement fileInput, String filename) {
 
-        if (!file.exists()) {
-            throw new RuntimeException("❌ File not found: " + filePath);
-        }
+    String filePath = System.getProperty("user.dir") + File.separator + filename;
+    File file = new File(filePath);
 
-        By inputLocator = By.xpath("//input[@type='file']");
-        int retries = 3;
-        while (retries-- > 0) {
-            try {
-                fileInputTrigger.click();
-                WebElement fileInputElement = driver.findElement(inputLocator);
-                if (fileInputElement instanceof RemoteWebElement) {
-                    ((RemoteWebElement) fileInputElement).setFileDetector(new LocalFileDetector());
-                }
-                fileInputElement.sendKeys(file.getAbsolutePath());
-                logger.info("✅ File uploaded successfully.");
-                return;
-            } catch (StaleElementReferenceException e) {
-                logger.error("⚠️ Caught stale element exception, retrying...");
-                try { Thread.sleep(1000); } catch (InterruptedException ie) {
-                Thread.currentThread().interrupt();
-                }
-            }
-        }
-
-        throw new RuntimeException("❌ Failed to upload file due to repeated stale element exceptions.");
+    if (!file.exists()) {
+        throw new RuntimeException("File not found: " + filePath);
     }
 
-    public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger, String filename) {
-        String filePath;
-        String os = System.getProperty("os.name").toLowerCase();
-        if (os.contains("win")) {
-            filePath = System.getProperty("user.dir") + "\\src\\test\\resources\\QRCodes\\" + filename;
-        } else {
-            filePath = System.getProperty("user.dir") + "/QRCodes/" + filename;
-        }
-
-        File file = new File(filePath);
-        if (!file.exists()) {
-            throw new RuntimeException("❌ File not found: " + filePath);
-        }
-
-        By inputLocator = By.xpath("//input[@type='file']");
-        int retries = 3;
-        while (retries-- > 0) {
-            try {
-                fileInputTrigger.click();
-                WebElement fileInputElement = driver.findElement(inputLocator);
-                if (fileInputElement instanceof RemoteWebElement) {
-                    ((RemoteWebElement) fileInputElement).setFileDetector(new LocalFileDetector());
-                }
-                fileInputElement.sendKeys(file.getAbsolutePath());
-                logger.info("✅ File uploaded successfully.");
-                return;
-            } catch (StaleElementReferenceException e) {
-                logger.error("⚠️ Caught stale element exception, retrying...");
-                try { Thread.sleep(1000); } catch (InterruptedException ignored) {}
-            }
-        }
-
-        throw new RuntimeException("❌ Failed to upload file due to repeated stale element exceptions.");
+    if (driver instanceof RemoteWebDriver) {
+        ((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
     }
+
+    WaitUtil.waitForPresence(driver, By.xpath("//input[@type='file']"), getTimeout());
+
+    fileInput.sendKeys(file.getAbsolutePath());
+}
+
+
+public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger, String filename) {
+
+    String filePath = System.getProperty("user.dir")
+            + File.separator + "src"
+            + File.separator + "test"
+            + File.separator + "resources"
+            + File.separator + "QRCodes"
+            + File.separator + filename;
+
+    File file = new File(filePath);
+
+    if (!file.exists()) {
+        throw new RuntimeException("❌ File not found: " + filePath);
+    }
+
+    By inputLocator = By.xpath("//input[@type='file']");
+
+    int retries = 3;
+
+    while (retries-- > 0) {
+        try {
+
+            // Click trigger (if required by UI)
+            WaitUtil.waitForClickability(driver, fileInputTrigger);
+            fileInputTrigger.click();
+
+            // ✅ WAIT FOR PRESENCE NOT VISIBILITY
+            WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(getTimeout()));
+            WebElement fileInputElement =
+                    wait.until(ExpectedConditions.presenceOfElementLocated(inputLocator));
+
+            // ✅ Upload file (works even if hidden)
+            fileInputElement.sendKeys(file.getAbsolutePath());
+
+            logger.info("✅ File uploaded successfully.");
+            return;
+
+        } catch (StaleElementReferenceException e) {
+            logger.error("⚠️ Stale element caught, retrying...");
+        }
+    }
+
+    throw new RuntimeException("❌ Failed to upload file after retries.");
+}
 
     public void waitForElementVisibleWithPolling(WebDriver driver, WebElement element) {
         FluentWait<WebDriver> wait = new FluentWait<>(driver)
@@ -228,15 +225,19 @@ public class BasePage {
     }
 
     protected void sendKeysToTextBox(WebDriver driver, WebElement element, String text) {
-        WaitUtil.waitForVisibility(driver, element);
+        WaitUtil.waitForVisibility(driver, element, getTimeout());
         element.sendKeys(text);
     }
     
 	public static int getTimeout() {
 		try {
-			return Integer.parseInt(System.getProperty("explicitWaitTimeout", "30"));
+			String timeout = InjiVerifyConfigManager.getproperty("explicitWaitTimeout");
+			if (timeout != null && !timeout.isEmpty()) {
+				return Integer.parseInt(timeout);
+			}
+			return 30;
 		} catch (NumberFormatException e) {
-            logger.error("Invalid explicitWaitTimeout system property value. Using default 30 seconds.");
+            logger.error("Invalid explicitWaitTimeout value from properties. Using default 30 seconds.");
             return 30;
 		}
 }

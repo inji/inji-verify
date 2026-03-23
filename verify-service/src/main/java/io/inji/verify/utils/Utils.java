@@ -28,13 +28,18 @@ import io.mosip.vercred.vcverifier.utils.Base64Decoder;
 import io.mosip.vercred.vcverifier.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
+
+import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static io.inji.verify.shared.Constants.COOKIE_NAME;
 import static io.ipfs.multibase.Base16.bytesToHex;
 
 @Slf4j

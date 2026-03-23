@@ -22,3 +22,30 @@ const decodeBase64Url = (encoded: string): string => {
     const decodedBytes = Uint8Array.from(decoded, c => c.charCodeAt(0));
     return new TextDecoder().decode(decodedBytes);
 };
+
+export const normalizeVp = (vp: any): Record<string, unknown> => {
+    if (typeof vp === "string") {
+        if (isSdJwt(vp)) return { raw: vp };
+        try {
+            return JSON.parse(vp);
+        } catch {
+            return { raw: vp };
+        }
+    }
+    return vp;
+};
+
+export const clearUrl = (params: string[] = []) => {
+    const url = new URL(window.location.href);
+
+    const hashParamsObj = new URLSearchParams(url.hash.slice(1));
+    params.forEach(param => {
+        url.searchParams.delete(param);
+        hashParamsObj.delete(param);
+    });
+    url.hash = hashParamsObj.toString()
+      ? `#${hashParamsObj.toString()}`
+      : "";
+
+    window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+};

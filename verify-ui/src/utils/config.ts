@@ -4,6 +4,7 @@ import {
     VcStatus,
     VerificationMethod,
     VerificationStep, VerificationStepsContentType,
+    WebWallet,
 } from "../types/data-types";
 import i18next from 'i18next';
 
@@ -87,12 +88,8 @@ export const getVerificationStepsContent = (): VerificationStepsContentType => {
               description: i18next.t("VerificationStepsContent:VERIFY.RequestMissingCredential.description"),
             },
             {
-                label: i18next.t('VerificationStepsContent:VERIFY.ScanQrCode.label'),
-                description: i18next.t('VerificationStepsContent:VERIFY.ScanQrCode.description'),
-            },
-            {
-                label: i18next.t('VerificationStepsContent:VERIFY.SelectWallet.label'),
-                description: i18next.t('VerificationStepsContent:VERIFY.SelectWallet.description'),
+                label: i18next.t('VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label'),
+                description: i18next.t('VerificationStepsContent:VERIFY.ShareVerifiableCredentials.description'),
             },
             {
                 label: i18next.t('VerificationStepsContent:VERIFY.DisplayResult.label'),
@@ -143,9 +140,14 @@ export const OvpQrHeader = window._env_.OVP_QR_HEADER;
 
 let VCRenderOrders: any = {};
 let verifiableClaims: claim[] = [];
+let webWallets: WebWallet[] = [];
 
 export const getVCRenderOrders = () => VCRenderOrders;
 export const getVerifiableClaims = () => verifiableClaims;
+export const getWebWallets = () => webWallets;
+
+
+export const resolveWalletBaseUrl = (url: string): string => url.replace(/\/+$/, "");
 
 export const initializeClaims = async () => {
   try {
@@ -156,6 +158,12 @@ export const initializeClaims = async () => {
     const data = await response.json();
     verifiableClaims = data.verifiableClaims as claim[];
     VCRenderOrders = data.VCRenderOrders as any;
+    webWallets = ((data.WebWallets as WebWallet[]) ?? [])
+      .filter((wallet) => !!wallet.walletBaseUrl)
+      .map((wallet) => ({
+        ...wallet,
+        walletBaseUrl: resolveWalletBaseUrl(wallet.walletBaseUrl),
+      }));
   } catch (error) {
     console.error("Error loading claims from ConfigMap:", error);
   }

@@ -9,12 +9,16 @@ import org.openqa.selenium.OutputType;
 import org.openqa.selenium.TakesScreenshot;
 import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.remote.DesiredCapabilities;
+import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter;
 import com.aventstack.extentreports.reporter.ExtentSparkReporter;
 import com.browserstack.local.Local;
+import org.openqa.selenium.logging.LoggingPreferences;
+import org.openqa.selenium.logging.LogType;
+import java.util.logging.Level;
 
 import io.cucumber.plugin.event.PickleStepTestStep;
 import io.cucumber.plugin.event.TestStep;
@@ -35,7 +39,7 @@ import java.util.Properties;
 
 public class BaseTest {
 	private static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
-	
+
 	public void setDriver(WebDriver driver) {
 		this.driver = driver;
 	}
@@ -45,9 +49,8 @@ public class BaseTest {
 	private static int totalCount = 0;
 	public static WebDriver driver;
 
-	public static final String url = System.getenv("env") != null ? System.getenv("TEST_URL")
-			: InjiVerifyConfigManager.getInjiVerifyUi();
-	
+	public static final String url = InjiVerifyConfigManager.getInjiVerifyUi();
+
 	public static JavascriptExecutor jse;
 	public String PdfNameForMosip = "MosipVerifiableCredential.pdf";
 	public String PdfNameForInsurance = "InsuranceCredential.pdf";
@@ -58,13 +61,13 @@ public class BaseTest {
 	String username = InjiVerifyConfigManager.getproperty("browserstack_username");
 	String accessKey = InjiVerifyConfigManager.getproperty("browserstack_access_key");
 	public final String URL = "https://" + username + ":" + accessKey + "@hub-cloud.browserstack.com/wd/hub";
-	
+
 	private Scenario scenario;
 	Local bsLocal = null;
 
 	@Before
 	public void beforeAll(Scenario scenario) throws MalformedURLException {
-		
+
         this.scenario = scenario;
 
 	    try {
@@ -97,12 +100,12 @@ public class BaseTest {
 
         capabilities.setCapability("browserName", "Chrome");
         capabilities.setCapability("browserVersion", "latest");
-        
+
         browserstackOptions.put("os", "Windows");
         browserstackOptions.put("osVersion", "10");
         browserstackOptions.put("local", "true");
         browserstackOptions.put("debug", "true");
-        
+
         // Add Chrome options for mobile emulation
         HashMap<String, Object> chromeOptions = new HashMap<>();
         HashMap<String, Object> mobileEmulation = new HashMap<>();
@@ -131,21 +134,29 @@ public class BaseTest {
 
     // ✅ Common step — attach the bstack:options finally
     capabilities.setCapability("bstack:options", browserstackOptions);
-
+    
+    // Enable performance logging so we can inspect network activity
+    LoggingPreferences logPrefs = new LoggingPreferences();
+    logPrefs.enable(LogType.PERFORMANCE, Level.ALL);
+    capabilities.setCapability("goog:loggingPrefs", logPrefs);
     logger.info("Final capabilities: {}", capabilities);
 
     // Setup driver (only once)
     driver = new RemoteWebDriver(new URL(URL), capabilities);
+	((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
     jse = (JavascriptExecutor) driver;
-    
+
     // Only maximize window for desktop tests
     if (!scenario.getSourceTagNames().contains("@mobileView")) {
         driver.manage().window().maximize();
     }
-    
+
     driver.get(url);
-	
+    injectNetworkInterceptors();
+
 	}
+	
+	
 
 
 	@BeforeStep
@@ -240,6 +251,42 @@ public class BaseTest {
 
 	public JavascriptExecutor getJse() {
 		return jse;
+	}
+	
+	private void injectNetworkInterceptors() {
+		try {
+			if (driver instanceof JavascriptExecutor) {
+				String script =
+						"window.__networkRequests = window.__networkRequests || [];" +
+						"if (!window.__networkInterceptorInstalled) {" +
+						"  window.__networkInterceptorInstalled = true;" +
+						"  if (window.fetch) {" +
+						"    const origFetch = window.fetch;" +
+						"    window.fetch = function(...args) {" +
+						"      try { window.__networkRequests.push(String(args[0])); } catch (e) {}" +
+						"      return origFetch.apply(this, args);" +
+						"    };" +
+						"  }" +
+						"  if (window.XMLHttpRequest) {" +
+						"    const OriginalXHR = window.XMLHttpRequest;" +
+						"    function WrappedXHR() {" +
+						"      const xhr = new OriginalXHR();" +
+						"      const origOpen = xhr.open;" +
+						"      xhr.open = function(method, url) {" +
+						"        try { window.__networkRequests.push(String(url)); } catch (e) {}" +
+						"        return origOpen.apply(this, arguments);" +
+						"      };" +
+						"      return xhr;" +
+						"    }" +
+						"    window.XMLHttpRequest = WrappedXHR;" +
+						"  }" +
+						"}";
+				((JavascriptExecutor) driver).executeScript(script);
+				logger.info("✅ Network interceptors injected into browser context.");
+			}
+		} catch (Exception e) {
+			logger.warn("Failed to inject network interceptors", e);
+		}
 	}
 
 	public static void pushReportsToS3() {

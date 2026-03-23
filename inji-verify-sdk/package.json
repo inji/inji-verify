@@ -1,6 +1,6 @@
 {
   "name": "@injistack/react-inji-verify-sdk",
-  "version": "0.18.0-beta.2",
+  "version": "0.18.0-beta.20",
   "description": "A react component library to perform Inji verify tasks, such as OpenId4VP sharing, Reading VC QR codes",
   "sideEffects": [
     "*.css"
@@ -12,8 +12,10 @@
     "dist"
   ],
   "scripts": {
+    "prebuild": "npm run test",
     "build": "webpack --config webpack.config.js && tsc --declaration --emitDeclarationOnly --outDir dist",
-    "test": "jest test --coverage",
+    "test:runner": "jest test --coverage --watchman=false",
+    "test": "npm install --prefix node_modules/.peer-test react@18.2.0 react-dom@18.2.0 --no-package-lock --no-save && cross-env NODE_PATH=node_modules/.peer-test/node_modules npm run test:runner",
     "verify": "npm run build",
     "localPublish": "npm version patch && npm run build && npm publish --access public --registry http://localhost:4873"
   },
@@ -57,7 +59,7 @@
     "style-loader": "^4.0.0",
     "ts-loader": "^9.5.2",
     "typescript": "^4.9.5",
-    "webpack": "^5.99.5",
+    "webpack": "^5.105.0",
     "webpack-cli": "^6.0.1"
   },
   "peerDependencies": {

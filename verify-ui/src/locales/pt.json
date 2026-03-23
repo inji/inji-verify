@@ -49,6 +49,10 @@
     "walletSelectorTitle": "Painel de seleção de carteira",
     "walletSelectorDescription": "Selecione uma carteira para prosseguir com a apresentação verificável.",
     "walletSearchPlaceholder": "Carteiras de pesquisa",
+    "walletSearchNoResults": "Nenhuma carteira encontrada para \"{{search}}\"",
+    "openWebWallets": "Abrir carteiras web",
+    "walletSelectorCancel": "Cancelar",
+    "walletSelectorProceed": "Prosseguir",
     "IconToolTip": "Os campos ao lado deste ícone indicam que as informações foram compartilhadas seletivamente pelo suporte da carteira."
   },
   "VerificationStepsContent": {
@@ -87,7 +91,7 @@
     "VERIFY": {
       "InitiateVpRequest": {
         "label": "Iniciar processo de solicitação de VP",
-        "description": "Clique <span> Solicitar credenciais verificáveis <span> Para iniciar o processo de verificação de credenciais"
+        "description": "Clique 'Solicitar credenciais verificáveis' Para iniciar o processo de verificação de credenciais"
       },
       "SelectCredential": {
         "label": "Selecione tipos de credenciais",
@@ -95,7 +99,7 @@
       },
       "RequestMissingCredential": {
         "label": "Solicitar credenciais ausentes e gerar código QR",
-        "description": "Clique em <span>Solicitar credenciais ausentes<span> para prosseguir com a verificação do VC ausente ou clique em <span>Reiniciar processo<span> para iniciar todo o processo novamente."
+        "description": "Clique em 'Solicitar credenciais ausentes' para prosseguir com a verificação do VC ausente ou clique em 'Reiniciar processo' para iniciar todo o processo novamente."
       },
       "ScanQrCode": {
         "label": "Digitalize o código QR (use um dispositivo diferente)",
@@ -103,7 +107,11 @@
       },
       "SelectWallet": {
         "label": "Compartilhar credenciais verificáveis ​​da carteira",
-        "description": "Escolha uma carteira móvel na lista de carteiras disponíveis no mesmo dispositivo e prossiga com o compartilhamento de credenciais."
+        "description": "Escolha uma carteira na lista de carteiras disponíveis e prossiga com o compartilhamento de credenciais."
+      },
+      "ShareVerifiableCredentials": {
+        "label": "Compartilhar credenciais verificáveis ​​da carteira",
+        "description": "Entre dispositivos: Clique em 'Gerar código QR' após selecionar as credenciais. Escaneie o código QR usando uma carteira móvel em outro dispositivo que contenha as credenciais selecionadas.\n Mesmo dispositivo: Clique em 'Abrir carteira' para escolher uma carteira móvel na lista de carteiras disponíveis no mesmo dispositivo e prosseguir com o compartilhamento de credenciais."
       },
       "DisplayResult": {
         "label": "Ver resultados da verificação",

@@ -49,6 +49,10 @@
     "walletSelectorTitle": "Panel de selección de billetera",
     "walletSelectorDescription": "Seleccione una billetera para continuar con una presentación verificable.",
     "walletSearchPlaceholder": "Billeteras de búsqueda",
+    "walletSearchNoResults": "No se encontraron billeteras para \"{{search}}\"",
+    "openWebWallets": "Abrir billeteras web",
+    "walletSelectorCancel": "Cancelar",
+    "walletSelectorProceed": "Proceder",
     "IconToolTip": "Los campos junto a este icono indican que el soporte de billetera compartió selectivamente la información."
   },
   "VerificationStepsContent": {
@@ -87,7 +91,7 @@
     "VERIFY": {
       "InitiateVpRequest": {
         "label": "Iniciar el proceso de solicitud de VP",
-        "description": "Hacer clic <span> Solicitar credenciales verificables <span> Para iniciar el proceso de verificación de credenciales"
+        "description": "Hacer clic 'Solicitar credenciales verificables' Para iniciar el proceso de verificación de credenciales"
       },
       "SelectCredential": {
         "label": "Seleccionar tipos de credenciales",
@@ -95,7 +99,7 @@
       },
       "RequestMissingCredential": {
         "label": "Solicitar credenciales faltantes y generar código QR",
-        "description": "Hacer clic en <span>Solicitar credenciales faltantes<span> para continuar con la verificación del VC que falta, o haga clic en <span>Reiniciar el proceso<span> para comenzar todo el proceso nuevamente."
+        "description": "Hacer clic en 'Solicitar credenciales faltantes' para continuar con la verificación del VC que falta, o haga clic en 'Reiniciar el proceso' para comenzar todo el proceso nuevamente."
       },
       "ScanQrCode": {
         "label": "Escanear el código QR (use un dispositivo diferente)",
@@ -103,7 +107,11 @@
       },
       "SelectWallet": {
         "label": "Compartir credenciales verificables de la billetera",
-        "description": "Elija una billetera móvil de la lista de billeteras disponibles en el mismo dispositivo y continúe con el intercambio de credenciales."
+        "description": "Elija una billetera de la lista de billeteras disponibles y continúe con el intercambio de credenciales."
+      },
+      "ShareVerifiableCredentials": {
+        "label": "Compartir credenciales verificables de la billetera",
+        "description": "Entre dispositivos: Haga clic en 'Generar código QR' después de seleccionar las credenciales. Escanee el código QR con una billetera móvil en otro dispositivo que contenga las credenciales seleccionadas.\n Mismo dispositivo: Haga clic en 'Abrir billetera' para elegir una billetera móvil de la lista de billeteras disponibles en el mismo dispositivo y proceder con el intercambio de credenciales."
       },
       "DisplayResult": {
         "label": "Ver resultados de verificación",

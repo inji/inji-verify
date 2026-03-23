@@ -1,20 +1,30 @@
-export type VerificationStatus = "valid" | "invalid" | "expired";
+export type VerificationStatus = "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
 
 export interface VerificationResult {
-  /**
-  
-  Verified credential data (structured per implementation).
-  */
-  vc: Record<string, unknown>;
+    /**
 
-  /**
-  
-  The status of the verification.
-  */
-  vcStatus: VerificationStatus;
+     Verified credential data (structured per implementation).
+     */
+    vc: Record<string, unknown>;
+
+    /**
+
+     Full verification result, including per-check outcomes and optional claims.
+     */
+    verificationResponse: CredentialResult;
 }
 
 export type VerificationResults = VerificationResult[];
+
+export interface VPVerificationSummaryVcResult {
+  vc: Record<string, unknown>;
+  vcStatus: VerificationStatus;
+}
+
+export interface VPVerificationSummaryResponse {
+  vcResults: VPVerificationSummaryVcResult[];
+  vpResultStatus: VerificationStatus;
+}
 
 export interface VPRequestBody {
   clientId: string;
@@ -23,7 +33,15 @@ export interface VPRequestBody {
   presentationDefinitionId?: string;
   presentationDefinition?: PresentationDefinition;
   acceptVPWithoutHolderProof?: boolean;
+  /**
+   * When true, the verifier backend will generate a short-lived single-use `response_code`
+   * and return it via redirect for same-device web-wallet flows.
+   *
+   * Must be omitted/false for cross-device and same-device mobile-wallet (deeplink) flows.
+   */
+  responseCodeValidationRequired?: boolean;
 }
+
 type ExclusivePresentationDefinition =
   /**
    * ID of the presentation definition used for verification.
@@ -132,16 +150,30 @@ export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
    */
   onError: (error: AppError) => void;
 
-  /**
-   Indicates whether to accept VP submissions without holder proof.
-   When true, allows unsigned VPs (VPs without proof).
-   */
-  acceptVPWithoutHolderProof?: boolean;
+    /**
+     Indicates whether to accept VP submissions without holder proof.
+     When true, allows unsigned VPs (VPs without proof).
+     */
+    acceptVPWithoutHolderProof?: boolean;
+
+    /**
+     The base URL of the wallet.
+     */
+    webWalletBaseUrl?: string;
+
+    /**
+     * Configuration object used to control VP verification behaviour.
+     *
+     * Allows enabling/disabling specific verification checks such as:
+     * - Schema & signature validation
+     * - Expiry validation
+     * - Status checks (e.g., revocation)
+     */
+    vpVerificationV2Request?: VPVerificationV2Request;
 };
 
 export interface SessionState {
   requestId: string;
-  transactionId: string;
 }
 
 export type AppError = {
@@ -149,3 +181,39 @@ export type AppError = {
   errorCode?: string;
   transactionId?: string | null;
 };
+export interface VPVerificationV2Request {
+    skipStatusChecks?: boolean;
+    statusCheckFilters?: string[];
+    includeClaims?: boolean;
+}
+
+export interface VPVerificationV2Response {
+    transactionId: string;
+    allChecksSuccessful: boolean;
+    credentialResults: CredentialResult[];
+}
+
+export interface CredentialResult {
+    verifiableCredential: string | object;
+    allChecksSuccessful: boolean;
+    holderProofCheck?: {
+        valid: boolean;
+        error: any;
+    } | null;
+    schemaAndSignatureCheck?: {
+        valid: boolean;
+        error: any;
+    };
+    expiryCheck?: {
+        valid: boolean;
+    };
+    statusChecks?: {
+        purpose: string;
+        valid: boolean;
+        error: any;
+    }[];
+    claims?: Record<string, any>;
+}
+
+
+

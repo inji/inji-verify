@@ -5,6 +5,10 @@
     {{#each statusCheckFilters}}
       "{{this}}"{{#unless @last}},{{/unless}}
     {{/each}}
-  ],
+  ]
+    {{#if includeClaims}},
   "includeClaims": {{includeClaims}}
+  {{/if}}
 }
+  }
+  

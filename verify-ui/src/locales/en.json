@@ -49,6 +49,10 @@
     "walletSelectorTitle": "Wallet Selection Panel",
     "walletSelectorDescription": "Please select a wallet to proceed with Verifiable Presentation.",
     "walletSearchPlaceholder": "Search Wallets",
+    "walletSearchNoResults": "No wallets found for \"{{search}}\"",
+    "openWebWallets": "Open Web Wallets",
+    "walletSelectorCancel": "Cancel",
+    "walletSelectorProceed": "Proceed",
     "IconToolTip": "Fields next to this icon indicate that the information was shared selectively by the wallet holder."
   },
   "VerificationStepsContent": {
@@ -87,7 +91,7 @@
     "VERIFY": {
       "InitiateVpRequest": {
         "label": "Initiate VP Request Process",
-        "description": "Click <span> Request Verifiable Credentials <span> to initiate the credential verification process"
+        "description": "Click 'Request Verifiable Credentials' to initiate the credential verification process"
       },
       "SelectCredential": {
         "label": "Select Credential Types",
@@ -95,7 +99,7 @@
       },
       "RequestMissingCredential": {
         "label": "Request Missing Credentials & Generate QR Code",
-        "description": "Click on <span>Request Missing Credentials<span> to proceed with verifying the missing VC, or click on <span>Restart Process<span> to start the entire process again."
+        "description": "Click on 'Request Missing Credentials' to proceed with verifying the missing VC, or click on 'Restart Process' to start the entire process again."
       },
       "ScanQrCode": {
         "label": "Scan QR Code (Use a Different Device)",
@@ -103,7 +107,11 @@
       },
       "SelectWallet": {
         "label": "Share Verifiable Credentials from Wallet",
-        "description": "Choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
+        "description": "Choose a wallet from the list of available wallets and proceed with credential sharing."
+      },
+      "ShareVerifiableCredentials": {
+        "label": "Share Verifiable Credentials from Wallet",
+        "description": "Cross-device: Click 'Generate QR Code' after selecting the credentials. Scan the QR code using a mobile wallet on another device that holds the selected VCs.\nSame-device: Click 'Open Wallet' to choose a mobile wallet from the list of available wallets on the same device and proceed with credential sharing."
       },
       "DisplayResult": {
         "label": "View Verification Results",

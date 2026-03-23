@@ -1,0 +1,36 @@
+VpRequestWithPresentationId:
+  Injiverify_CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vp-request
+      description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details.
+      uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
+      outputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdResult
+      input: '{
+      "clientId":"client123",
+      "presentationDefinitionId":"200"
+      }'
+      output: '{
+    "responseType": "vp_token",
+    "clientId": "client123",
+    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
+    "id": "200"
+}'
+
+  Injiverify_CreateNewVerificationRequest_With_Invalid_PresentationId_Neg:
+      endPoint: /v1/verify/vp-request
+      description: Fails to create a VP request due to invalid presentationDefinitionId.
+      uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_02
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
+      outputTemplate: injiverify/VpRequestWithPresentationId/presentationDefinitionIdNegResult
+      input: '{
+      "clientId":"client123",
+      "presentationDefinitionId":"201"
+      }'
+      output: '{
+    "errorCode": "NO_PRESENTATION_DEFINITION",
+    "errorMessage": "No Presentation Definition found for given Presentation Definition ID."
+}'

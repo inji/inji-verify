@@ -14,7 +14,8 @@ class VPSubmissionDtoTest {
         PresentationSubmissionDto presentationSubmission = new PresentationSubmissionDto("submission1", "pd1", List.of(new DescriptorMapDto("id1", "string", "path1", new PathNestedDto("parent", "child"))));
         String state = "PRESENTED";
 
-        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(vpToken, presentationSubmission, state, null, null);
+        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto(vpToken,
+                presentationSubmission, state, null, null, null, null, false);
 
         assertEquals(vpToken, vpSubmissionDto.getVpToken());
         assertEquals(presentationSubmission, vpSubmissionDto.getPresentationSubmission());

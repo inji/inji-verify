@@ -100,19 +100,19 @@ public class UploadQRCode extends BasePage {
 	WebElement fullNameValue;
 
 	public void clickOnUploadQRCodePng() {
-		uploadFile(driver, UploadQRCodeButton, "InsuranceCredential0.png");
+		uploadFile(driver, uploadpath, "InsuranceCredential0.png");
 	}
 
 	public void clickOnAnotherUploadQRCodePng() {
-		uploadFile(driver, UploadQRCodeButton, "InsuranceCredential0.png");
+		uploadFile(driver, uploadpath, "InsuranceCredential0.png");
 	}
 
 	public void clickOnUploadQRCodeJpg() {
-		uploadFile(driver, UploadQRCodeButton, "InsuranceCredential0.jpg");
+		uploadFile(driver, uploadpath, "InsuranceCredential0.jpg");
 	}
 
 	public void clickOnAnotherUploadQRCodeJpg() {
-		uploadFile(driver, UploadQRCodeButton, "InsuranceCredential0.jpg");
+		uploadFile(driver, uploadpath, "InsuranceCredential0.jpg");
 	}
 
 	public void uploadMultiLanguageVc() {
@@ -120,19 +120,19 @@ public class UploadQRCode extends BasePage {
 	}
 
 	public void clickOnUploadQRCodePdf() {
-		uploadFile(driver, UploadQRCodeButton, "InsuranceCredential.pdf");
+		uploadFile(driver, uploadpath, "InsuranceCredential.pdf");
 	}
 
 	public void clickOnAnotherUploadQRCodePdf() {
-		uploadFile(driver, UploadQRCodeButton, "InsuranceCredential.pdf");
+		uploadFile(driver, uploadpath, "InsuranceCredential.pdf");
 	}
 
 	public void clickOnUploadQRCodeJpeg() {
-		uploadFile(driver, UploadQRCodeButton, "InsuranceCredential0.jpeg");
+		uploadFile(driver, uploadpath, "InsuranceCredential0.jpeg");
 	}
 
 	public void clickOnAnotherUploadQRCodeJpeg() {
-		uploadFile(driver, UploadQRCodeButton, "InsuranceCredential0.jpeg");
+		uploadFile(driver, uploadpath, "InsuranceCredential0.jpeg");
 	}
 
 	public void clickOnUploadQRCodeHtml() {

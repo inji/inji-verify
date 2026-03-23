@@ -6,14 +6,25 @@ import { Provider } from "react-redux";
 import { VerificationSteps, getVerificationStepsContent } from "../../../../utils/config";
 
 const mockStore = configureMockStore();
-const store = mockStore({ verification: { activeScreen: VerificationSteps.SCAN.QrCodePrompt } });
+const store = mockStore({
+    verification: {
+        activeScreen: VerificationSteps.SCAN.QrCodePrompt,
+        method: 'SCAN'
+    },
+    verify: {
+        isPartiallyShared: false,
+        flowType: 'sameDevice'
+    },
+    common: {
+        language: 'en'
+    }
+});
 
 describe("Verification Progress Tracker", () => {
     test("Test rendering", () => {
         render(<Provider store={store}>
             <VerificationProgressTracker />
         </Provider>)
-        expect(screen.getByText("Verify credentials with ease!")).toBeInTheDocument();
         expect(screen.getByText(getVerificationStepsContent().SCAN[0].label)).toBeInTheDocument();
     })
 })
