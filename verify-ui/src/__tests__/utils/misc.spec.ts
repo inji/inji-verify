@@ -1,99 +1,130 @@
-import {
-    convertToTitleCase,
-    getDisplayValue,
-    fetchVerificationSteps,
-    getRangeOfNumbers,
-    getFileExtension,
-    checkInternetStatus,
-    convertToId,
-    saveData
-} from "../../utils/misc";
-import i18next from "i18next";
+export {};
 
-jest.mock("i18next", () => ({
-    t: jest.fn((key) => {
-        if (key === "VerificationStepsContent:VERIFY.InitiateVpRequest.label") return "Initiate VP Request";
-        if (key === "VerificationStepsContent:VERIFY.RequestMissingCredential.label") return "Request Missing";
-        if (key === "VerificationStepsContent:VERIFY.SelectCredential.label") return "Select Credential";
-        if (key === "VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label") return "Share Verifiable Credentials from Wallet";
-        if (key === "VerificationStepsContent:VERIFY.DisplayResult.label") return "Display Result";
-        return key;
-    }),
-}));
-
-jest.mock("../../utils/config", () => ({
-    getVerificationStepsContent: jest.fn(() => ({
-        SCAN: [{ label: "Scan Step 1" }],
-        UPLOAD: [{ label: "Upload Step 1" }],
-        VERIFY: [
-            { label: "Initiate VP Request" },
-            { label: "Request Missing" },
-            { label: "Select Credential" },
-            { label: "Share Verifiable Credentials from Wallet" },
-            { label: "Display Result" }
-        ]
-    })),
-    InternetConnectivityCheckTimeout: 1000,
-    InternetConnectivityCheckEndpoint: "https://example.com"
-}));
+let misc: typeof import("../../utils/misc");
 
 describe("misc utilities", () => {
+    beforeEach(() => {
+        jest.resetModules();
+
+        (window as any)._env_ = {
+            INTERNET_CONNECTIVITY_CHECK_ENDPOINT: "https://example.com",
+            INTERNET_CONNECTIVITY_CHECK_TIMEOUT: "1000",
+            DISPLAY_TIMEOUT: "1000",
+            OVP_QR_HEADER: "header",
+        };
+
+        jest.doMock("i18next", () => ({
+            __esModule: true,
+            default: {
+                t: jest.fn((key: string) => {
+                    const map: Record<string, string> = {
+                        "VerificationStepsContent:VERIFY.InitiateVpRequest.label": "Initiate VP Request",
+                        "VerificationStepsContent:VERIFY.RequestMissingCredential.label": "Request Missing",
+                        "VerificationStepsContent:VERIFY.SelectCredential.label": "Select Credential",
+                        "VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label": "Share Verifiable Credentials from Wallet",
+                        "VerificationStepsContent:VERIFY.DisplayResult.label": "Display Result",
+                    };
+                    return map[key] || key;
+                }),
+            },
+        }));
+
+        jest.doMock("../../utils/config", () => ({
+            __esModule: true,
+            InternetConnectivityCheckTimeout: 1000,
+            InternetConnectivityCheckEndpoint: "https://example.com",
+            getVerificationStepsContent: jest.fn(() => ({
+                UPLOAD: [{label: "Upload Step 1", description: "Upload Desc 1"}],
+                SCAN: [{label: "Scan Step 1", description: "Scan Desc 1"}],
+                VERIFY: [{label: "Initiate VP Request", description: "desc 1"},
+                    {label: "Select Credential", description: "desc 2"},
+                    {label: "Request Missing", description: "desc 3"},
+                    {label: "Share Verifiable Credentials from Wallet", description: "desc 4"},
+                    {label: "Display Result", description: "desc 5"}], TO_BE_SELECTED: [],
+            })),
+        }));
+
+        misc = require("../../utils/misc");
+    });
+
+    afterEach(() => {
+        jest.clearAllMocks();
+        jest.resetModules();
+    });
+
     describe("convertToTitleCase", () => {
         test("converts camelCase to Title Case", () => {
-            expect(convertToTitleCase("camelCaseText")).toBe("Camel Case Text");
+            expect(misc.convertToTitleCase("camelCaseText")).toBe("Camel Case Text");
         });
         test("returns empty string for empty input", () => {
-            expect(convertToTitleCase("")).toBe("");
+            expect(misc.convertToTitleCase("")).toBe("");
         });
     });
 
     describe("getDisplayValue", () => {
         test("joins array with commas", () => {
-            expect(getDisplayValue(["A", "B"])).toBe("A, B");
+            expect(misc.getDisplayValue(["A", "B"])).toBe("A, B");
         });
         test("returns string representation for non-array", () => {
-            expect(getDisplayValue(123)).toBe("123");
+            expect(misc.getDisplayValue(123)).toBe("123");
         });
         test("returns undefined for null", () => {
-            expect(getDisplayValue(null)).toBeUndefined();
+            expect(misc.getDisplayValue(null)).toBeUndefined();
         });
     });
 
     describe("fetchVerificationSteps", () => {
         test("returns UPLOAD steps", () => {
-            const steps = fetchVerificationSteps("UPLOAD", false);
+            const steps = misc.fetchVerificationSteps("UPLOAD", false);
+            expect(steps).toHaveLength(1);
             expect(steps[0].label).toBe("Upload Step 1");
+            expect(steps[0].stepNumber).toBe(1);
+            expect(steps[0].isActive).toBe(true);
         });
 
         test("returns SCAN steps", () => {
-            const steps = fetchVerificationSteps("SCAN", false);
+            const steps = misc.fetchVerificationSteps("SCAN", false);
+            expect(steps).toHaveLength(1);
             expect(steps[0].label).toBe("Scan Step 1");
+            expect(steps[0].stepNumber).toBe(1);
+            expect(steps[0].isActive).toBe(true);
         });
 
         test("returns VERIFY steps for sameDevice partially shared", () => {
-            const steps = fetchVerificationSteps("VERIFY", true, "sameDevice", 2);
-            expect(steps.some(s => s.label === "Request Missing")).toBeTruthy();
-            expect(steps.some(s => s.label === "Share Verifiable Credentials from Wallet")).toBeTruthy();
+            const steps = misc.fetchVerificationSteps("VERIFY", true, "sameDevice", 2);
+
+            expect(steps).toHaveLength(4);
+            expect(steps.map((s: any) => s.label)).toEqual([
+                "Initiate VP Request",
+                "Request Missing",
+                "Share Verifiable Credentials from Wallet",
+                "Display Result",
+            ]);
             expect(steps[0].isCompleted).toBe(true);
             expect(steps[1].isActive).toBe(true);
         });
 
         test("returns VERIFY steps for crossDevice not partially shared", () => {
-            const steps = fetchVerificationSteps("VERIFY", false, "crossDevice");
-            expect(steps.some(s => s.label === "Select Credential")).toBeTruthy();
-            expect(steps.some(s => s.label === "Share Verifiable Credentials from Wallet")).toBeTruthy();
+            const steps = misc.fetchVerificationSteps("VERIFY", false, "crossDevice");
+            expect(steps).toHaveLength(4);
+            expect(steps.map((s: any) => s.label)).toEqual([
+                "Initiate VP Request",
+                "Select Credential",
+                "Share Verifiable Credentials from Wallet",
+                "Display Result",
+            ]);
         });
     });
 
     describe("getRangeOfNumbers", () => {
         test("returns array of numbers", () => {
-            expect(getRangeOfNumbers(3)).toEqual([1, 2, 3]);
+            expect(misc.getRangeOfNumbers(3)).toEqual([1, 2, 3]);
         });
     });
 
     describe("getFileExtension", () => {
         test("returns extension", () => {
-            expect(getFileExtension("test.pdf")).toBe("pdf");
+            expect(misc.getFileExtension("test.pdf")).toBe("pdf");
         });
     });
 
@@ -110,29 +141,30 @@ describe("misc utilities", () => {
             if (originalOnLine) {
                 Object.defineProperty(window.navigator, "onLine", originalOnLine);
             }
+            jest.clearAllMocks();
         });
 
         test("returns false if navigator.onLine is false", async () => {
-            Object.defineProperty(window.navigator, 'onLine', { value: false, configurable: true });
-            expect(await checkInternetStatus()).toBe(false);
+            Object.defineProperty(window.navigator, "onLine", {value: false, configurable: true,});
+            await expect(misc.checkInternetStatus()).resolves.toBe(false);
         });
 
         test("returns true if fetch succeeds", async () => {
-            Object.defineProperty(window.navigator, 'onLine', { value: true, configurable: true });
+            Object.defineProperty(window.navigator, "onLine", {value: true, configurable: true,});
             (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true });
-            expect(await checkInternetStatus()).toBe(true);
+            await expect(misc.checkInternetStatus()).resolves.toBe(true);
         });
 
         test("returns false if fetch fails", async () => {
-            Object.defineProperty(window.navigator, 'onLine', { value: true, configurable: true });
+            Object.defineProperty(window.navigator, "onLine", {value: true, configurable: true,});
             (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("Fail"));
-            expect(await checkInternetStatus()).toBe(false);
+            await expect(misc.checkInternetStatus()).resolves.toBe(false);
         });
     });
 
     describe("convertToId", () => {
         test("converts string to kebab-case id", () => {
-            expect(convertToId("Some Content")).toBe("some-content");
+            expect(misc.convertToId("Some Content")).toBe("some-content");
         });
     });
 
@@ -157,27 +189,35 @@ describe("misc utilities", () => {
                 download: "",
                 click: jest.fn(),
             };
-            const createElementSpy = jest.spyOn(document, "createElement").mockReturnValue(mockLink as any);
-            jest.spyOn(document.body, "appendChild").mockImplementation();
-            jest.spyOn(document.body, "removeChild").mockImplementation();
 
-            await saveData({ type: ["VerifiableCredential", "MyType"], data: "test" });
+            jest.spyOn(document, "createElement").mockReturnValue(mockLink as any);
+            jest.spyOn(document.body, "appendChild").mockImplementation(() => mockLink as any);
+            jest.spyOn(document.body, "removeChild").mockImplementation(() => mockLink as any);
+
+            await misc.saveData({ type: ["VerifiableCredential", "MyType"], data: "test" });
 
             expect(mockLink.download).toBe("MyType.json");
             expect(mockLink.click).toHaveBeenCalled();
+            expect(mockCreateObjectURL).toHaveBeenCalled();
+            expect(mockRevokeObjectURL).toHaveBeenCalledWith("blob:url");
         });
 
         test("uses default filename if type is missing", async () => {
-            URL.createObjectURL = jest.fn(() => "blob:url");
-            URL.revokeObjectURL = jest.fn();
+            const mockCreateObjectURL = jest.fn(() => "blob:url");
+            const mockRevokeObjectURL = jest.fn();
+            URL.createObjectURL = mockCreateObjectURL;
+            URL.revokeObjectURL = mockRevokeObjectURL;
 
-            const mockLink = { href: "", download: "", click: jest.fn() };
+            const mockLink = {href: "", download: "", click: jest.fn(),};
             jest.spyOn(document, "createElement").mockReturnValue(mockLink as any);
-            jest.spyOn(document.body, "appendChild").mockImplementation();
-            jest.spyOn(document.body, "removeChild").mockImplementation();
+            jest.spyOn(document.body, "appendChild").mockImplementation(() => mockLink as any);
+            jest.spyOn(document.body, "removeChild").mockImplementation(() => mockLink as any);
 
-            await saveData({ data: "test" });
+            await misc.saveData({ data: "test" });
             expect(mockLink.download).toBe("Inji_Verify_Credential_Data.json");
+            expect(mockLink.click).toHaveBeenCalled();
+            expect(mockCreateObjectURL).toHaveBeenCalled();
+            expect(mockRevokeObjectURL).toHaveBeenCalledWith("blob:url");
         });
     });
 });
