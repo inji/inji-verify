@@ -157,10 +157,9 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   const fetchVPResult = useCallback(
     async (responseCode?: string | null) => {
-      // if (!isActiveRef.current) return;
+      if (!isActiveRef.current) return;
       // if (hasFetchedVPResultRef.current) return;
       // hasFetchedVPResultRef.current = true;
-      console.log("Fetching VP result...");
       setLoading(true);
 
       try {
@@ -225,8 +224,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     isActiveRef.current = true;
     setLoading(true);
     try {
-      const responseCodeValidationRequired = webWalletBaseUrl != null ? true : false;
-      console.log("responseCodeValidationRequired", responseCodeValidationRequired);
+      const responseCodeValidationRequired = webWalletBaseUrl != null;
 
       const data = await vpSessionRequest(
         verifyServiceUrl,
@@ -243,8 +241,6 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
           requestId: data.requestId,
         };
       }
-
-      console.log("isCrossDeviceFlow", isCrossDeviceFlow);
       if (isCrossDeviceFlow) {
         fetchVPStatus(data.requestId);
       }
@@ -315,11 +311,10 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       const hash = window.location.hash;
       const params = new URLSearchParams(hash.substring(1));
       const responseCode = params.get("response_code");
-      console.log("responseCode", responseCode);
       if (responseCode) {
+        isActiveRef.current = true;
         fetchVPResult(responseCode);
       } else {
-        console.log("handleVisibilityChange");
         const savedRequestId = sessionStateRef.current.requestId;
 
         if (savedRequestId) {

@@ -43,6 +43,7 @@ export const vcVerificationV2 = async (credential: unknown, url: string, config?
         throw error instanceof Error ? error : new Error("An unknown error occurred during verification");
     }
 };
+
 export const vcSubmission = async (
   credential: unknown,
   url: string,
@@ -207,7 +208,6 @@ export const vpSessionRequest = async (
   if (responseCodeValidationRequired) {
     requestBody.responseCodeValidationRequired = true;
   }
-  console.log("requestBody", requestBody);
 
   try {
     const response = await fetch(url + "/vp-session-request", {
@@ -249,7 +249,6 @@ export const vpSessionResults = async (
     includeClaims: config?.includeClaims ?? false,
   };
 
-  console.log("requestBody of vp-session-result", requestBody);
   try {
     const response = await fetch(`${url}/vp-session-results`, {
       method: "POST",
@@ -259,7 +258,6 @@ export const vpSessionResults = async (
       },
       body: JSON.stringify(requestBody),
     });
-
     if (!response.ok) {
       const errorData = await response.json().catch(() => ({}));
       throw {
