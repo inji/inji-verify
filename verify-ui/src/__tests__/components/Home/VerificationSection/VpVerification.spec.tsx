@@ -1,18 +1,21 @@
-import { render, screen, fireEvent, waitFor, act } from "@testing-library/react";
+import React, { act } from "react";
+import { render, screen, fireEvent } from "@testing-library/react";
 import { VpVerification } from "../../../../components/Home/VerificationSection/VpVerification";
 import { useVerifyFlowSelector } from "../../../../redux/features/verification/verification.selector";
-import { useAppDispatch } from "../../../../redux/hooks";
 import { VCShareType } from "../../../../types/data-types";
 
-// ---- Mocks ----
+jest.mock("iso-639-3", () => ({
+    iso6393: [],
+}));
+
 const mockDispatch = jest.fn();
 jest.mock("../../../../redux/hooks", () => ({
     useAppDispatch: () => mockDispatch,
 }));
 
 jest.mock("../../../../redux/features/verification/verification.selector", () => ({
-    useVerifyFlowSelector: jest.fn(),
-}));
+        useVerifyFlowSelector: jest.fn(),
+    }));
 
 jest.mock("../../../../redux/features/verify/vpVerificationState", () => {
     const getVpRequest = jest.fn(() => ({ type: "vpVerification/getVpRequest" }));
@@ -49,39 +52,67 @@ jest.mock("../../../../utils/config", () => ({
     })),
 }));
 
-jest.mock("@injistack/react-inji-verify-sdk", () => ({
-    OpenID4VPVerification: (props: any) => (
-        <div
-            data-testid="openid-verification-sdk"
-            onClick={() => {
-                props.onVPProcessed?.([]);
-            }}
-        >
-            SDK MOCK
-        </div>
-    ),
-}));
+jest.mock("@injistack/react-inji-verify-sdk", () => {
+    const React = require("react");
+    return {
+        OpenID4VPVerification: (props: any) =>
+            React.createElement(
+                "div",
+                {
+                    "data-testid": "openid-verification-sdk",
+                    onClick: () => {
+                        props.onVPProcessed?.([]);
+                    },
+                },
+                "SDK MOCK"
+            ),
+    };
+});
 
-jest.mock("../../../../utils/theme-utils", () => ({
-    QrIcon: (props: any) => <div data-testid="qr-icon" {...props} />,
-}));
+jest.mock("../../../../utils/theme-utils", () => {
+    const React = require("react");
+    return {
+        QrIcon: (props: any) =>
+            React.createElement("div", {
+                "data-testid": "qr-icon",
+                ...props,
+            }),
+    };
+});
 
+jest.mock(
+    "../../../../components/Home/VerificationSection/Result/VpSubmissionResult",
+    () => {
+        const React = require("react");
+        return {
+            __esModule: true,
+            default: () =>
+                React.createElement("div", null, "VpSubmissionResult Mock"),
+        };
+    }
+);
 
-jest.mock("../../../../components/Home/VerificationSection/Result/VpSubmissionResult", () => () => <div>VpSubmissionResult Mock</div>);
-jest.mock("../../../../components/commons/Loader", () => () => <div data-testid="loader">Loader Mock</div>);
+jest.mock("../../../../components/commons/Loader", () => {
+    const React = require("react");
+    return {
+        __esModule: true,
+        default: () =>
+            React.createElement(
+                "div",
+                { "data-testid": "loader" },
+                "Loader Mock"
+            ),
+    };
+});
 
-// References to mocks created in the factory, so we can reset implementations in beforeEach
-const { verificationSubmissionComplete: mockVerificationSubmissionComplete } =
-    jest.requireMock("../../../../redux/features/verify/vpVerificationState") as any;
+const {verificationSubmissionComplete: mockVerificationSubmissionComplete} = jest.requireMock("../../../../redux/features/verify/vpVerificationState") as any;
 
 describe("VpVerification Component", () => {
     beforeEach(() => {
         mockDispatch.mockClear();
         (useVerifyFlowSelector as any).mockClear();
-        // Restore the implementation in case clearAllMocks was called elsewhere
-        mockVerificationSubmissionComplete.mockImplementation(
-            () => ({ type: "vpVerification/verificationSubmissionComplete" })
-        );
+        mockVerificationSubmissionComplete.mockImplementation(() => ({
+            type: "vpVerification/verificationSubmissionComplete"}));
     });
 
     const mockState = (overrides = {}) => {
@@ -100,7 +131,7 @@ describe("VpVerification Component", () => {
                 SelectWalletPanel: false,
                 selectedWalletBaseUrl: undefined,
                 sdkInstanceKey: "key",
-                ...overrides
+                ...overrides,
             })
         );
     };
@@ -132,10 +163,9 @@ describe("VpVerification Component", () => {
     test("handles SDK processed event", async () => {
         mockState({ isShowResult: false, flowType: "crossDevice" });
         render(<VpVerification />);
-        const sdkElement = screen.getByTestId("openid-verification-sdk");
 
         await act(async () => {
-            fireEvent.click(sdkElement);
+            fireEvent.click(screen.getByTestId("openid-verification-sdk"));
         });
 
         expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({
