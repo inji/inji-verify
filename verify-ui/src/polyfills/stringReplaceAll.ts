@@ -30,9 +30,12 @@ if (!String.prototype.replaceAll) {
       const search = String(searchValue);
 
       if (search === "") {
-        throw new TypeError(
-          "replaceAll must not be called with an empty string",
-        );
+        const repl = String(replaceValue);
+        let out = repl;
+        for (let i = 0; i < str.length; i++) {
+          out += str[i] + repl;
+        }
+        return out;
       }
 
       if (typeof replaceValue === "function") {
