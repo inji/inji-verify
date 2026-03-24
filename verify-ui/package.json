@@ -9,7 +9,7 @@
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@injistack/pixelpass": "^0.8.0-RC2",
-    "@injistack/react-inji-verify-sdk": "0.18.0-beta.20",
+    "@injistack/react-inji-verify-sdk": "0.18.0-beta.21",
     "@mui/material": "^6.1.2",
     "@reduxjs/toolkit": "^2.2.3",
     "@sd-jwt/crypto-browser": "^0.15.0",
