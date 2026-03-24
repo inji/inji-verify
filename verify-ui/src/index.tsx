@@ -1,5 +1,6 @@
 import './setupEnvironment'; // Ensure this is the first import
 import '../src/utils/i18n'; // Ensure the i18n configuration loads
+import "./polyfills/stringReplaceAll";
 import React from 'react';
 import ReactDOM from 'react-dom/client';
 import './index.css';

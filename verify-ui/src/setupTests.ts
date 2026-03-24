@@ -2,7 +2,13 @@
 // allows you to do things like:
 // expect(element).toHaveTextContent(/react/i)
 // learn more: https://github.com/testing-library/jest-dom
-import '@testing-library/jest-dom';
+import "./polyfills/stringReplaceAll";
+import "@testing-library/jest-dom";
+
+/** Every test case runs with String.prototype.replaceAll (polyfill on older Node). */
+beforeEach(() => {
+    expect("jest-replace-all".replaceAll("-", " ")).toBe("jest replace all");
+});
 
 (window as any)._env_ = {
     INTERNET_CONNECTIVITY_CHECK_ENDPOINT: "https://dns.google/",
