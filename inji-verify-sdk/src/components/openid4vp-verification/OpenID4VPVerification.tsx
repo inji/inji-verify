@@ -287,8 +287,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       window.location.href = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
     } else {
       onError({
-        errorMessage: "Same-Device Flow in web needs a baseUrl",
-        errorCode: "MISSING_BASE_URL"
+        errorMessage: "Same device flow can be enabled in desktop mode for only Web Wallets. Provide a valid webWalletBaseUrl",
+        errorCode: "MISSING_WEB_WALLET_BASE_URL"
       });
       resetState();
     }
