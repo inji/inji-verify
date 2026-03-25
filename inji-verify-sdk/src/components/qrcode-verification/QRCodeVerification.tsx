@@ -21,7 +21,6 @@ import {
 } from "../../utils/constants";
 import {vpRequest,
     vcSubmission,
-    vcVerification,
     vcVerificationV2,
     vpRequestStatus,
     vpResult
@@ -34,7 +33,7 @@ import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
-import {clearUrl, normalizeVp} from "../../utils/utils";
+import {clearUrl, deriveStatusFromResponse, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
 
@@ -484,32 +483,24 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 return;
             }
             if (onVCProcessed) {
-                let processedResult;
-                if (summariseResults) {
-                    //verification flow
-                    const status = await vcVerification(vc, verifyServiceUrl);
-                    processedResult = [
-                        {
-                            vc,
-                            vcStatus: status
-                        }
-                    ];
-                } else {
-                    // V2 verification flow
-                    const response: VCVerificationV2Response = await vcVerificationV2(
-                        vc,
-                        verifyServiceUrl,
-                        vcVerificationV2Request
-                    );
+                const response: VCVerificationV2Response = await vcVerificationV2(
+                    vc,
+                    verifyServiceUrl,
+                    vcVerificationV2Request
+                );
 
-                    processedResult = [
-                        {
-                            vc,
-                            verificationResponse: response
-                        }
-                    ];
-                }
-                onVCProcessed(processedResult);
+                const verificationResponse = summariseResults
+                    ? {
+                        verificationStatus: deriveStatusFromResponse(response)
+                    }
+                    : response;
+
+                onVCProcessed([
+                    {
+                        vc,
+                        verificationResponse
+                    }
+                ]);
             }
         } catch (error) {
             handleError(error);
