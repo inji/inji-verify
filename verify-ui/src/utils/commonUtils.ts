@@ -283,6 +283,11 @@ export const isVPSubmissionSupported = () => {
   return value?.toLowerCase() === "true";
 };
 
+export const isSummariseResultsEnabled = () => {
+    const value = window._env_?.VERIFY_SUMMARISED_RESULTS;
+    return value?.toLowerCase() === "true";
+};
+
 export const vcVerificationV2Request = {
     skipStatusChecks: false,
     statusCheckFilters: ["revocation"],

@@ -9,7 +9,7 @@ import {
 import { raiseAlert } from "../redux/features/alerts/alerts.slice";
 import { useAppDispatch } from "../redux/hooks";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import {evaluateVcStatus,getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../utils/commonUtils";
+import {evaluateVcStatus, getClientId, isSummariseResultsEnabled, isVPSubmissionSupported, vcVerificationV2Request,} from "../utils/commonUtils";
 
 export const Upload = () => {
   const { t } = useTranslation("Upload");
@@ -31,13 +31,19 @@ export const Upload = () => {
   );
 
     const handleOnVCProcessed = (data: any[]) => {
-        const vc = data[0].vc;
-        const verificationResponse = data[0].verificationResponse;
-        const vcStatus = evaluateVcStatus(verificationResponse);
+        const vc = data?.[0]?.vc;
+        const verificationResponse = data?.[0]?.verificationResponse;
+        let vcStatus;
 
+        if (verificationResponse && "verificationStatus" in verificationResponse) {
+            vcStatus = verificationResponse.verificationStatus;
+        } else {
+            vcStatus = evaluateVcStatus(verificationResponse);
+        }
         dispatch(verificationComplete({verificationResult: {
                     vc,
-                    vcStatus
+                    vcStatus,
+                    verificationResponse
                 }
             })
         );
@@ -70,6 +76,7 @@ export const Upload = () => {
             clientId={getClientId()}
             isVPSubmissionSupported={isVPSubmissionSupported()}
             vcVerificationV2Request ={vcVerificationV2Request}
+            summariseResults={isSummariseResultsEnabled()}
           />
         </div>
         <div className="grid text-center content-center justify-center pt-2">
