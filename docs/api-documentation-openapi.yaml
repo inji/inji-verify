@@ -1835,7 +1835,7 @@ components:
         responseCode:
           type: string
           nullable: true
-          description: 'response_code for which VP results are to be retrieved, can be null'
+          description: 'The `response_code` from `redirect_uri`, for which VP results are to be retrieved. It can be null, if corresponding Auth Request was created with `responseCodeValidationRequired=false`'
         skipStatusChecks:
           type: boolean
           default: false
