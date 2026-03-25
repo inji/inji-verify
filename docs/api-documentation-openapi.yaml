@@ -48,13 +48,13 @@ paths:
 
         - Optional field  
         - Must be a **unique UUID** if provided  
-        - If not provided, the system generates a value with prefix:  `req_<uuid>`
+        - If not provided, the system generates a value with prefix:  `txn_<uuid>`
 
 
         ### requestId
 
         - Automatically generated for each `transactionId`  
-        - Format:  `txn_<uuid>`
+        - Format:  `req_<uuid>`
 
         - Used to create the **Authorization Request** in the OpenID4VP flow  
 
@@ -219,13 +219,13 @@ paths:
 
         - Optional field  
         - Must be a **unique UUID** if provided  
-        - If not provided, the system generates: `req_<uuid>`
+        - If not provided, the system generates: `txn_<uuid>`
          
 
         ### request_id
 
         - Automatically generated for each `transaction_id`  
-        - Format: `txn_<uuid>`
+        - Format: `req_<uuid>`
         ---
 
         ## Endpoint Behavior
@@ -248,7 +248,7 @@ paths:
 
         ### Cookie Behavior
 
-        The `transaction_id` is base64Endcoded and is set as an **HttpOnly cookie**:
+        The `transaction_id` is base64Encoded and is set as an **HttpOnly cookie**:
 
         #### Response Header
 
@@ -276,7 +276,7 @@ paths:
         ---
 
         > Important Notes:
-        > - The `transaction_id` is base64Endcoded and set as an HttpOnly cookie is **only set by this endpoint** (`/vp-session-request`)
+        > - The `transaction_id` is base64Encoded and set as an HttpOnly cookie is **only set by this endpoint** (`/vp-session-request`)
         > - It is **not set** in the `/vp-request` endpoint
         > - This endpoint is intended for **session-based flows**
       operationId: createVPSessionRequest
@@ -830,6 +830,10 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/VpVerificationResponse'
+        '401':
+          description: |+
+            The endpoint returns 401 Unauthorized with error code `VP_SESSION_INVALID` when the cookie is missing or empty.
+
         '404':
           description: |-
             This response indicates that an `error` occurred during the Verifiable Presentation (VP) request processing in the wallet, which is sent to the Verifier.
@@ -1356,7 +1360,7 @@ components:
           example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2cCI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSJdLCJ0eXBlIjpbIlZlcmlmaWFibGVQcmVzZW50YXRpb24iXSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlsiZXlKaGJHY2lPaUpGVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmhkV1FpT2lKb2RIUndjem92TDNabGNtbG1lUzVrWlhZeExtMXZjMmx3TG01bGRDOXlaWE53YjI1elpYTWlMQ0pqYkdGcGJYTWlPbnNpWVdkbElqb3hPSDBzSW1semN5STZJbWgwZEhCek9pOHZkbVZ5YVdaNUxtUmxkakV1Ylc5emFYQXVibVYwTDJselozSmhiblJsY25NaUxDSnVZbVlpT2pFMk9ESTVOekF3TURBc0ltVjRjQ0k2TVRjd05qazNNREF3TUgwLnNpZ25hdHVyZSJdfSwibm9uY2UiOiJub25jZV8xMjM0NSIsImF1ZCI6ImNsaWVudDEyMyJ9.signature
         state:
           type: string
-          description: 'The `requestId` created for the transaction. It is used to link the authorization response back to the original request.'
+          description: The `requestId` created for the transaction. It is used to link the authorization response back to the original request.
           example: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
         error:
           type: string
@@ -1366,7 +1370,7 @@ components:
         error_description:
           type: string
           nullable: true
-          description: 'Optional error message for the transaction sent by the wallet. It can be null when there is no `error`.'
+          description: Optional error message for the transaction sent by the wallet. It can be null when there is no `error`.
           example: Something went wrong with the request configuration.
         presentation_submission:
           type: object
