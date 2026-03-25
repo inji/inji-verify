@@ -198,7 +198,7 @@ paths:
         This endpoint initiates a **Verifiable Presentation (VP) session request**. It is similar to `/vp-request`, but additionally establishes a session using cookies.
 
         **The request body is the same as `/vp-request`**, along with the addition of the new attribute:
-        `response_code_validation_required`.
+        `responseCodeValidationRequired`.
 
         ---
 
@@ -210,7 +210,7 @@ paths:
           - `presentationDefinitionId`, or
           - `presentationDefinition`
 
-        ### response_code_validation_required
+        ### responseCodeValidationRequired
 
         - Boolean flag controlling response behavior in subsequent `/vp-submission` flow
         - Default: `false`
@@ -244,15 +244,15 @@ paths:
 
         The response contains:
         - Authorization Request payload (used by UI to generate QR code or redirect)
-        - `transaction_id` set as a cookie
+        - base64Encoded `transaction_id` set as a cookie
 
         ### Cookie Behavior
 
-        The `transaction_id` is set as an **HttpOnly cookie**:
+        The `transaction_id` is base64Endcoded and is set as an **HttpOnly cookie**:
 
         #### Response Header
 
-        `Set-Cookie: transaction_id=<uuid>; HttpOnly; Secure
+        `Set-Cookie: transaction_id=<base64EncodedUuid>; HttpOnly; Secure
         `
 
         #### Cookie Configuration
@@ -276,7 +276,7 @@ paths:
         ---
 
         > Important Notes:
-        > - The `transaction_id` cookie is **only set by this endpoint** (`/vp-session-request`)
+        > - The `transaction_id` is base64Endcoded and set as an HttpOnly cookie is **only set by this endpoint** (`/vp-session-request`)
         > - It is **not set** in the `/vp-request` endpoint
         > - This endpoint is intended for **session-based flows**
       operationId: createVPSessionRequest
@@ -303,7 +303,7 @@ paths:
             This information can be used by the client application to generate a QR code or otherwise initiate the VP flow with the wallet.
           headers:
             Set-Cookie:
-              description: HttpOnly cookie containing transaction_id
+              description: HttpOnly cookie containing base64Encoded transaction_id
               schema:
                 type: string
           content:
@@ -806,7 +806,7 @@ paths:
   /vp-session-results:
     post:
       summary: Get the VP session results for a  given Transaction Id (Cookie) and response_code
-      description: "## Description\n\nRetrieves detailed verification results for a Verifiable Presentation (VP) session.\n\n**The request & response body is the similar to `/v2/vp-results/{transaction_id}`.**\n\nThis is the primary endpoint now used by` @injistack/react-inji-verify-sdk`\nfor all flows (same-device and cross-device), replacing `/vp-result/{transactionId}`\n\nThe session is identified using a **`transaction_id` cookie** (required).  \nIf the cookie is missing or invalid, the API returns **401 Unauthorized**.\n\nIf the corresponding Auth Request has`responseCodeValidationRequired=true`, a **`response_code`** must be provided and must be:\n- Valid  \n- Not expired  \n- Not previously used  \n\nAfter processing, the session cookie is cleared to prevent reuse.\n\n---\n\n## \U0001F9FE Request Body\n\nOptional parameters to control processing:\n\n- **response_code**: Required only if validation is enabled  \n- **skipStatusChecks**: Skip all credential status checks  \n- **statusCheckFilters**: Run only selected checks (`revocation`, `suspension`)  \n- **includeClaims**: Include credential claims in response  \n\n---\n\n## \U0001F501 Processing Logic\n\n1. Extract `transaction_id` from cookie  \n2. Check if `response_code` validation is required  \n\n- If **not required** → process request directly  \n- If **required**:\n  - With `response_code` → validate and process  \n  - Without `response_code` → return error  \n\n---\n\n## \U0001F36A Session Handling\n\n- `transaction_id` cookie is mandatory  \n- Issued during VP request flow  \n- Cleared after response to prevent reuse  \n\n---\n\n## \U0001F4E6 Response\n\nReturns verification results including:\n- Overall success status  \n- Per-credential validation details  \n- Optional claims  \n\n---\n"
+      description: "## Description\n\nRetrieves detailed verification results for a Verifiable Presentation (VP) session.\n\n**The request & response body is the similar to `/v2/vp-results/{transaction_id}`.**\n\nThis is the primary endpoint now used by` @injistack/react-inji-verify-sdk`\nfor all flows (same-device and cross-device), replacing `/vp-result/{transactionId}`\n\nThe session is identified using a **`base64Encoded_transaction_id` cookie** (required).  \nIf the cookie is missing or invalid, the API returns **401 Unauthorized**.\n\nIf the corresponding Auth Request has`responseCodeValidationRequired=true`, a **`response_code`** must be provided and must be:\n- Valid  \n- Not expired  \n- Not previously used  \n\nAfter processing, the session cookie is cleared to prevent reuse.\n\n---\n\n## \U0001F9FE Request Body\n\nOptional parameters to control processing:\n\n- **response_code**: Required only if validation is enabled  \n- **skipStatusChecks**: Skip all credential status checks  \n- **statusCheckFilters**: Run only selected checks (`revocation`, `suspension`)  \n- **includeClaims**: Include credential claims in response  \n\n---\n\n## \U0001F501 Processing Logic\n\n1. Extract `transaction_id` from cookie  \n2. Check if `response_code` validation is required  \n\n- If **not required** → process request directly  \n- If **required**:\n  - With `response_code` → validate and process  \n  - Without `response_code` → return error  \n\n---\n\n## \U0001F36A Session Handling\n\n- `transaction_id` cookie is mandatory  \n- Issued during VP request flow  \n- Cleared after response to prevent reuse  \n\n---\n\n## \U0001F4E6 Response\n\nReturns verification results including:\n- Overall success status  \n- Per-credential validation details  \n- Optional claims  \n\n---\n"
       operationId: getVpSessionResults
       tags:
         - VP Results
@@ -816,7 +816,7 @@ paths:
           required: true
           schema:
             type: string
-          description: Transaction ID from VP request
+          description: Base64Encoded Transaction ID from VP request
       requestBody:
         required: false
         content:
@@ -1347,29 +1347,31 @@ components:
     AuthorizationResponse:
       type: object
       required:
-        - vp_token
-        - presentation_submission
         - state
       properties:
         vp_token:
           type: string
-          description: 'vp_token - REQUIRED. JSON String or JSON object that MUST contain a single Verifiable Presentation or an array of JSON Strings and JSON objects each of them containing a Verifiable Presentations. This is the core payload submitted by the wallet. With release 0.15.0, this should/must be null when there is error'
+          nullable: true
+          description: 'The `vp_token` should be null, when there in an `error`. JSON String or JSON object that MUST contain a single Verifiable Presentation or an array of JSON Strings and JSON objects each of them containing a Verifiable Presentations. This is the core payload submitted by the wallet.'
           example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2cCI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSJdLCJ0eXBlIjpbIlZlcmlmaWFibGVQcmVzZW50YXRpb24iXSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlsiZXlKaGJHY2lPaUpGVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmhkV1FpT2lKb2RIUndjem92TDNabGNtbG1lUzVrWlhZeExtMXZjMmx3TG01bGRDOXlaWE53YjI1elpYTWlMQ0pqYkdGcGJYTWlPbnNpWVdkbElqb3hPSDBzSW1semN5STZJbWgwZEhCek9pOHZkbVZ5YVdaNUxtUmxkakV1Ylc5emFYQXVibVYwTDJselozSmhiblJsY25NaUxDSnVZbVlpT2pFMk9ESTVOekF3TURBc0ltVjRjQ0k2TVRjd05qazNNREF3TUgwLnNpZ25hdHVyZSJdfSwibm9uY2UiOiJub25jZV8xMjM0NSIsImF1ZCI6ImNsaWVudDEyMyJ9.signature
         state:
           type: string
-          description: The requestId created for the transaction. It is used to link the authorization response back to the original request.
+          description: 'The `requestId` created for the transaction. It is used to link the authorization response back to the original request.'
           example: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
         error:
           type: string
-          description: The error code for the transaction sent by the wallet. It can be null when there is no error.
+          nullable: true
+          description: 'The `error` should be null, when there is no error. It has the the error code for the transaction sent by the wallet. '
           example: invalid_scope
         error_description:
           type: string
-          description: Optional error message for the transaction sent by the wallet. It can be null when there is no error.
+          nullable: true
+          description: 'Optional error message for the transaction sent by the wallet. It can be null when there is no `error`.'
           example: Something went wrong with the request configuration.
         presentation_submission:
           type: object
-          description: 'With release 0.15.0, this should/must be null when there is error'
+          nullable: true
+          description: 'The `presentation_submission` should be null, when there in an `error`.'
           required:
             - id
             - definition_id
