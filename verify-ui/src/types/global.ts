@@ -4,7 +4,6 @@ declare global {
     interface Window {
         encodeData: (data: string) => void;
         _env_: {
-            VERIFY_SUMMARISED_RESULTS: string;
             DEFAULT_LANG: string;
             DEFAULT_TITLE: string;
             DEFAULT_THEME: string;

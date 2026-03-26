@@ -1,4 +1,4 @@
-import { claim, LdpVc, VcStatus, CredentialResult, VCVerificationV2Response} from "../types/data-types";
+import { claim, LdpVc, VcStatus, CredentialResult} from "../types/data-types";
 import { EXCLUDE_KEYS_SD_JWT_VC, getVCRenderOrders } from "./config";
 import { getLanguageCodes } from "./i18n";
 
@@ -283,11 +283,6 @@ export const isVPSubmissionSupported = () => {
   return value?.toLowerCase() === "true";
 };
 
-export const isSummariseResultsEnabled = () => {
-    const value = window._env_?.VERIFY_SUMMARISED_RESULTS;
-    return value?.toLowerCase() === "true";
-};
-
 export const vcVerificationV2Request = {
     skipStatusChecks: false,
     statusCheckFilters: ["revocation"],
@@ -299,32 +294,6 @@ export const vpVerificationV2Request = {
     includeClaims: true
 };
 
-export const evaluateVcStatus = (response: VCVerificationV2Response) => {
-
-    if (!response.schemaAndSignatureCheck?.valid) {
-        return "INVALID";
-    }
-
-    if (!response.expiryCheck?.valid) {
-        return "EXPIRED";
-    }
-
-    if (response.statusCheck?.length) {
-        for (const status of response.statusCheck) {
-            if (status.error) {
-                throw new Error(status.error.errorMessage || "Status check error occurred")
-            }
-
-            const isRevoked =
-                status.purpose === "revocation" &&
-                !status.valid &&
-                status.error == null;
-
-            if (isRevoked) return "REVOKED";
-        }
-    }
-    return response.allChecksSuccessful ? "SUCCESS" : "INVALID";
-};
 export const evaluateVpStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
 
     if (!cred.schemaAndSignatureCheck?.valid) {
