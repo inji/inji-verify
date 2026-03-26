@@ -354,7 +354,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         transactionId ?? undefined,
         presentationDefinitionId,
         presentationDefinition,
-        true // acceptVPWithoutHolderProof is set to true for DataShare VCs
+        true, // acceptVPWithoutHolderProof is set to true for DataShare VCs
+        true // responseCodeValidationRequired is set to true for DataShare VCs
       );
 
       return data;
@@ -526,7 +527,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       if (hasFetchedVPResultRef.current) return;
       hasFetchedVPResultRef.current = true;
       try {
-            if (!responseCode) throw new Error("Response code is required to fetch VP result");
+            if (!responseCode) throw new Error("Invalid redirect_uri. The response code is missing.");
               
             const response = await vpSessionResults(verifyServiceUrl, responseCode, vcVerificationV2Request);
 
@@ -610,6 +611,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         clearUrl(["vp_token", "presentation_submission"]);
       }
       else if (isVPSubmissionSupported && responseCode && !error) {
+        setLoading(true);
         fetchVPResult(responseCode);
       }
     } catch (error) {
