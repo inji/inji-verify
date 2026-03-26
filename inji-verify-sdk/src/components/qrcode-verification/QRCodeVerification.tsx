@@ -412,7 +412,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
         if (!isVPSubmissionSupported) {
             const encodedOrigin = encodeURIComponent(window.location.origin);
-            window.location.href = `${redirectUrl}&client_id=${clientId}&redirect_uri=${encodedOrigin}%2F#`;
+            window.location.href = `${redirectUrl}&client_id=${clientId}`;
             return;
         }
 
@@ -556,6 +556,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         } catch (error) {
             handleError(error);
             resetState();
+        } finally {
+            clearUrl(["response_code"]);
         }
     };
 
