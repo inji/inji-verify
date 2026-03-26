@@ -32,7 +32,7 @@ import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
-import {clearUrl, normalizeVp} from "../../utils/utils";
+import {clearUrl, deriveStatusFromResponse, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
 
@@ -53,6 +53,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   clientId,
   vcVerificationV2Request,
   isVPSubmissionSupported = false,
+  summariseResults = true
 }) => {
   const [isScanning, setScanning] = useState(false);
   const [isUploading, setUploading] = useState(false);
@@ -477,10 +478,16 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                     vcVerificationV2Request
                 );
 
+                const verificationResponse = summariseResults
+                    ? {
+                        verificationStatus: deriveStatusFromResponse(response)
+                    }
+                    : response;
+
                 onVCProcessed([
                     {
                         vc,
-                        verificationResponse: response
+                        verificationResponse
                     }
                 ]);
             }

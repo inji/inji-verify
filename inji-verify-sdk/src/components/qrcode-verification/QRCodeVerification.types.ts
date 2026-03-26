@@ -101,6 +101,10 @@ export type QRCodeVerificationProps = ExclusiveCallbacks & {
      * - Status checks (e.g., revocation)
      */
     vcVerificationV2Request?: VCVerificationV2Request;
+
+    /*This attribute will decide the format of the response from SDK*/
+
+    summariseResults?: boolean;
 };
 
 export type VcStatus = "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
@@ -129,9 +133,15 @@ export interface VCVerificationV2Response {
     claims?: Record<string, any>;
 }
 
+export interface VCSummarisedVerificationResponse {
+    verificationStatus: "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
+}
+
 export type VerificationResults = {
     vc: any;
-    verificationResponse: VCVerificationV2Response;
+    verificationResponse:
+        | VCVerificationV2Response
+        | VCSummarisedVerificationResponse;
 }[];
 
 export interface vcSubmissionBody {
