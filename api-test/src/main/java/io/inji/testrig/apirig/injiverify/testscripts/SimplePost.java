@@ -1,6 +1,5 @@
 package io.inji.testrig.apirig.injiverify.testscripts;
 
-import java.lang.reflect.Field;
 import java.util.List;
 import java.util.Map;
 
@@ -15,8 +14,6 @@ import org.testng.annotations.AfterMethod;
 import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
-import org.testng.internal.BaseTestMethod;
-import org.testng.internal.TestResult;
 
 import io.inji.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
 import io.inji.testrig.apirig.injiverify.utils.InjiVerifyUtil;

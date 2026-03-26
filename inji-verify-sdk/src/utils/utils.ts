@@ -1,4 +1,5 @@
 import {VALID_SD_JWT_TYPES} from "./constants";
+import {VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
 
 export const isSdJwt = (vpToken: string): boolean => {
     try {
@@ -48,4 +49,36 @@ export const clearUrl = (params: string[] = []) => {
       : "";
 
     window.history.replaceState(null, "", url.pathname + url.search + url.hash);
+};
+
+export const deriveStatusFromResponse = (
+    response: VCVerificationV2Response
+): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
+
+    if (!response.schemaAndSignatureCheck?.valid) {
+        return "INVALID";
+    }
+
+    if (!response.expiryCheck?.valid) {
+        return "EXPIRED";
+    }
+
+    if (response.statusCheck?.length) {
+        for (const status of response.statusCheck) {
+            if (status.error) {
+                throw new Error(
+                    status.error.errorMessage || "Status check error occurred"
+                );
+            }
+
+            const isRevoked =
+                status.purpose === "revocation" &&
+                !status.valid &&
+                status.error == null;
+
+            if (isRevoked) return "REVOKED";
+        }
+    }
+
+    return response.allChecksSuccessful ? "SUCCESS" : "INVALID";
 };

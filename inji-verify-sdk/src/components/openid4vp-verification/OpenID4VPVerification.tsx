@@ -157,10 +157,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   const fetchVPResult = useCallback(
     async (responseCode?: string | null) => {
-      // if (!isActiveRef.current) return;
-      // if (hasFetchedVPResultRef.current) return;
-      // hasFetchedVPResultRef.current = true;
-      console.log("Fetching VP result...");
+      if (!isActiveRef.current) return;
       setLoading(true);
 
       try {
@@ -225,8 +222,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     isActiveRef.current = true;
     setLoading(true);
     try {
-      const responseCodeValidationRequired = webWalletBaseUrl != null ? true : false;
-      console.log("responseCodeValidationRequired", responseCodeValidationRequired);
+      const responseCodeValidationRequired = webWalletBaseUrl != null;
 
       const data = await vpSessionRequest(
         verifyServiceUrl,
@@ -243,8 +239,6 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
           requestId: data.requestId,
         };
       }
-
-      console.log("isCrossDeviceFlow", isCrossDeviceFlow);
       if (isCrossDeviceFlow) {
         fetchVPStatus(data.requestId);
       }
@@ -289,8 +283,14 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       while (end > 0 && webWalletBaseUrl[end - 1] === "/") end--;
       const baseUrl = webWalletBaseUrl.slice(0, end);
       window.location.href = `${baseUrl}/authorize?${pdParams}`;
-    } else {
+    } else if (isMobileDevice()) {
       window.location.href = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
+    } else {
+      onError({
+        errorMessage: "Same device flow can be enabled in desktop mode for only Web Wallets. Provide a valid webWalletBaseUrl",
+        errorCode: "MISSING_WEB_WALLET_BASE_URL"
+      });
+      resetState();
     }
   };
 
@@ -315,11 +315,10 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       const hash = window.location.hash;
       const params = new URLSearchParams(hash.substring(1));
       const responseCode = params.get("response_code");
-      console.log("responseCode", responseCode);
       if (responseCode) {
+        isActiveRef.current = true;
         fetchVPResult(responseCode);
       } else {
-        console.log("handleVisibilityChange");
         const savedRequestId = sessionStateRef.current.requestId;
 
         if (savedRequestId) {

@@ -49,8 +49,7 @@ public class BaseTest {
 	private static int totalCount = 0;
 	public static WebDriver driver;
 
-	public static final String url = System.getenv("env") != null ? System.getenv("TEST_URL")
-			: InjiVerifyConfigManager.getInjiVerifyUi();
+	public static final String url = InjiVerifyConfigManager.getInjiVerifyUi();
 
 	public static JavascriptExecutor jse;
 	public String PdfNameForMosip = "MosipVerifiableCredential.pdf";
