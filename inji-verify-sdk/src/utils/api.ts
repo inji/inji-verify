@@ -145,46 +145,6 @@ const isAppError = (error: unknown): error is AppError => (
   typeof (error as Record<string, unknown>).errorMessage === 'string'
 );
 
-export const vpResult = async (url: string, transactionId: string, responseCode?: string | null, config?: VPVerificationV2Request)  => {
-    if (!transactionId) {
-        throw new Error("Transaction ID is required for VP verification");
-    }
-    const requestBody = {
-        skipStatusChecks: config?.skipStatusChecks ?? false,
-        statusCheckFilters: config?.statusCheckFilters ?? [],
-        includeClaims: config?.includeClaims ?? false,
-    };
-
-    try {
-        const baseUrl = new URL(`${url}/v2/vp-results/${transactionId}`);
-        if (responseCode) {
-            baseUrl.searchParams.append("response_code", responseCode);
-        }
-        const response = await fetch(baseUrl.toString(), {
-            method: "POST",
-            headers: {
-                "Content-Type": "application/json",
-            },
-            body: JSON.stringify(requestBody),
-        });
-        if (!response.ok) {
-            const errorData = await response.json().catch(() => ({}));
-            throw {
-                errorCode: errorData.errorCode,
-                errorMessage: errorData.errorMessage || errorData.error || "Unknown error",
-                transactionId,
-            } as AppError;
-        }
-        const data = await response.json();
-        return data;
-    } catch (error) {
-        if (isAppError(error)) {
-            throw error as AppError;
-        }
-        throw error;
-    }
-};
-
 export const vpSessionRequest = async (
   url: string,
   clientId: string,
