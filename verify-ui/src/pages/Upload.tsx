@@ -9,7 +9,7 @@ import {
 import { raiseAlert } from "../redux/features/alerts/alerts.slice";
 import { useAppDispatch } from "../redux/hooks";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import {evaluateVcStatus,getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../utils/commonUtils";
+import { getClientId, isVPSubmissionSupported, vcVerificationV2Request,} from "../utils/commonUtils";
 
 export const Upload = () => {
   const { t } = useTranslation("Upload");
@@ -30,14 +30,15 @@ export const Upload = () => {
     </div>
   );
 
-    const handleOnVCProcessed = (data: any[]) => {
+  const handleOnVCProcessed = (data: any[]) => {
         const vc = data[0].vc;
         const verificationResponse = data[0].verificationResponse;
-        const vcStatus = evaluateVcStatus(verificationResponse);
+        const vcStatus = verificationResponse.verificationStatus;
 
         dispatch(verificationComplete({verificationResult: {
                     vc,
-                    vcStatus
+                    vcStatus,
+                    verificationResponse
                 }
             })
         );

@@ -7,7 +7,7 @@ import {
 } from "../../../redux/features/verification/verification.slice";
 import { raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import {evaluateVcStatus, getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
+import {getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
 
 function QrScanner({ onClose, scannerActive }: {
   onClose: () => void;
@@ -21,14 +21,15 @@ function QrScanner({ onClose, scannerActive }: {
     setIsScanning(true);
   }, []);
 
-    const handleOnVCProcessed = (data: any[]) => {
+  const handleOnVCProcessed = (data: any[]) => {
         const vc = data[0].vc;
         const verificationResponse = data[0].verificationResponse;
-        const vcStatus = evaluateVcStatus(verificationResponse);
+        const vcStatus = verificationResponse.verificationStatus;
 
         dispatch(verificationComplete({verificationResult: {
                     vc,
-                    vcStatus
+                    vcStatus,
+                    verificationResponse
                 }
             })
         );
