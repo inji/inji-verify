@@ -36,7 +36,7 @@ import java.util.concurrent.ConcurrentHashMap;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-		features = {"/home/inji/featurefiles/"},
+		features = {},
 		dryRun = !true,
 		glue = {"stepdefinitions", "utils"},
 		snippets = SnippetType.CAMELCASE,
@@ -60,8 +60,8 @@ public class Runner extends AbstractTestNGCucumberTests {
 	public static Map<String, String> knownIssues = new ConcurrentHashMap<>();
 
 	static {
-		loadKnownIssues();
-		System.out.println(">>> Known Issues loaded: " + knownIssues); 
+		updateFeaturesPath();  
+		loadKnownIssues(); 
 	}
 	// ─────────────────────────────────────────────────────────────────────────────
 
@@ -271,12 +271,25 @@ public class Runner extends AbstractTestNGCucumberTests {
 		CertsUtil.setLogLevel();
 	}
 
-	public static void updateFeaturesPath() {
-		String os = System.getProperty("os.name").toLowerCase();
-		if (os.contains("windows")) {
-			System.setProperty("cucumber.features", "src\\test\\resources\\featurefiles\\");
-		} else {
-			System.setProperty("cucumber.features", "/home/inji/featurefiles/");
-		}
-	}
+	   public static void updateFeaturesPath() {
+	        String existingFeatures = System.getProperty("cucumber.features");
+
+	        // If the caller already specified a path (specific feature/tag), respect it
+	        if (existingFeatures != null && !existingFeatures.trim().isEmpty()) {
+	            LOGGER.info("cucumber.features already set by caller, skipping override: " + existingFeatures);
+	            return;
+	        }
+
+	        String os = System.getProperty("os.name").toLowerCase();
+	        String featuresPath;
+
+	        if (os.contains("windows")) {
+	            featuresPath = "src\\test\\resources\\featurefiles\\";
+	        } else {
+	            featuresPath = "/home/inji/featurefiles/";
+	        }
+
+	        System.setProperty("cucumber.features", featuresPath);
+	        LOGGER.info("cucumber.features set to: " + featuresPath);
+	    }
 }
