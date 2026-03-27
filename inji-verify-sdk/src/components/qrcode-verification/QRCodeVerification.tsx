@@ -380,13 +380,12 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     }
   };
 
-  const buildRedirectUrl = (
+  const buildOnlineSharingUrl = (
     baseRedirectUrl: string,
     state: string,
     responseUri: string,
     nonce: string
   ) => {
-    const redirectUri = `${window.location.origin}/`;
 
     const url = new URL(baseRedirectUrl);
     url.hash = "";
@@ -436,7 +435,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
         if (!responseUri || !nonce) throw new Error("Unable to access the shared VC, due to missing responseUri or nonce in authorization details");
         //call the redirectUrl
-        window.location.href = buildRedirectUrl(parsedUrl.toString(), state, responseUri, nonce);
+        window.location.href = buildOnlineSharingUrl(parsedUrl.toString(), state, responseUri, nonce);
         return;
       }
 
