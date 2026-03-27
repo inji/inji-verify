@@ -523,8 +523,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   }
 
     const fetchVPResult = async (responseCode: string | null) => {
-        if (hasFetchedVPResultRef.current) return;
-        hasFetchedVPResultRef.current = true;
+      if (hasFetchedVPResultRef.current) return;
+      hasFetchedVPResultRef.current = true;
         try {
             if (!responseCode) {
                 throw new Error("Invalid redirect_uri. The response code is missing.");
@@ -535,8 +535,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
             const credentialResults = response?.credentialResults ?? [];
 
             if (!credentialResults.length) {
-                throw new Error(
-                    "An unexpected error occurred while processing the shared VC. No credentialResults found."
+                throw new Error("An unexpected error occurred while processing the shared VC. No credentialResults found."
                 );
             }
             if (onVCProcessed) {

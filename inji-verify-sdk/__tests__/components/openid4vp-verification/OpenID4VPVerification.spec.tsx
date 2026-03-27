@@ -289,13 +289,12 @@ describe("OpenID4VPVerification UI Tests", () => {
         });
     });
 
-    it("should handle VP result with presentationDefinition and call onVPProcessed", async () => {
+    it("should handle VP result with presentationDefinition and summariseResults=true", async () => {
         const mockTransactionId = "mock-txn-id";
         const mockRequestId = "mock-req-id";
 
         const fetchMock = jest
             .fn()
-            // vpRequest
             .mockResolvedValueOnce({
                 ok: true,
                 status: 201,
@@ -305,13 +304,11 @@ describe("OpenID4VPVerification UI Tests", () => {
                     authorizationDetails: {},
                 }),
             })
-            // vpRequestStatus
             .mockResolvedValueOnce({
                 ok: true,
                 status: 200,
                 json: async () => ({ status: "VP_SUBMITTED" }),
             })
-            // vpResult
             .mockResolvedValueOnce({
                 ok: true,
                 status: 200,
@@ -333,33 +330,23 @@ describe("OpenID4VPVerification UI Tests", () => {
         global.fetch = fetchMock as jest.Mock;
 
         const onVPProcessed = jest.fn();
-        const onQrCodeExpired = jest.fn();
-        const onError = jest.fn();
-
-        const presentationDefinition = {
-            purpose: "test",
-            input_descriptors: [
-                {
-                    id: "email_input",
-                },
-            ],
-        };
-
-        const vpVerificationV2Request = {};
 
         render(
             <OpenID4VPVerification
                 verifyServiceUrl="https://example.com/verify"
                 clientId="test-client"
                 protocol="testopenid4vp://"
-                presentationDefinition={presentationDefinition}
+                presentationDefinition={{
+                    purpose: "test",
+                    input_descriptors: [{ id: "email_input" }],
+                }}
                 isSameDeviceFlowEnabled={false}
                 onVPProcessed={onVPProcessed}
-                onQrCodeExpired={onQrCodeExpired}
-                onError={onError}
+                onQrCodeExpired={jest.fn()}
+                onError={jest.fn()}
                 triggerElement={<button>Verify</button>}
-                vpVerificationV2Request={vpVerificationV2Request}
-                summariseResults={false}
+                vpVerificationV2Request={{}}
+                summariseResults={true}
             />
         );
 
@@ -372,20 +359,19 @@ describe("OpenID4VPVerification UI Tests", () => {
         const result = onVPProcessed.mock.calls[0][0];
 
         expect(result).toEqual(
-            expect.arrayContaining([
-                expect.objectContaining({
-                    vc: { id: "vc1" },
-                    verificationResponse: expect.objectContaining({
-                        allChecksSuccessful: true,
+            expect.objectContaining({
+                vpResultStatus: "INVALID",
+                vcResults: expect.arrayContaining([
+                    expect.objectContaining({
+                        vc: { id: "vc1" },
+                        vcStatus: expect.any(String),
                     }),
-                }),
-                expect.objectContaining({
-                    vc: { id: "vc2" },
-                    verificationResponse: expect.objectContaining({
-                        allChecksSuccessful: false,
+                    expect.objectContaining({
+                        vc: { id: "vc2" },
+                        vcStatus: expect.any(String),
                     }),
-                }),
-            ])
+                ]),
+            })
         );
     });
 
