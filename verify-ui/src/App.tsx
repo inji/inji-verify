@@ -47,7 +47,15 @@ const router = createBrowserRouter([
           if (initialHomeLoad) {
             initialHomeLoad = false;
             const searchParams = new URLSearchParams(window.location.search);
-            if (searchParams.has("response_code")) {
+            const hashParams = new URLSearchParams(
+              window.location.hash.startsWith("#")
+                ? window.location.hash.slice(1)
+                : window.location.hash
+            );
+            if (
+              searchParams.has("response_code") ||
+              hashParams.has("response_code")
+            ) {
               const storedPath = localStorage.getItem("path");
               if (storedPath && storedPath !== "/") {
                 return redirect(
