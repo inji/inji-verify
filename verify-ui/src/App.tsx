@@ -3,7 +3,7 @@ import "./App.css";
 import Home from "./pages/Home";
 import Offline from "./pages/Offline";
 import { Scan } from "./pages/Scan";
-import { RouterProvider, createBrowserRouter } from "react-router-dom";
+import { RouterProvider, createBrowserRouter, redirect } from "react-router-dom";
 import AlertMessage from "./components/commons/AlertMessage";
 import PreloadImages from "./components/commons/PreloadImages";
 import PageNotFound404 from "./pages/PageNotFound404";
@@ -16,10 +16,24 @@ import { goToHomeScreen } from "./redux/features/verification/verification.slice
 import { Verify } from "./pages/Verify";
 import PageTemplate from "./components/PageTemplate";
 
+const methodToPath: Record<VerificationMethod, string> = {
+  UPLOAD: Pages.Home,
+  SCAN: Pages.Scan,
+  VERIFY: Pages.VerifyCredentials,
+};
+
 function switchToVerificationMethod(method: VerificationMethod) {
+  if (!localStorage.getItem("path")) {
+    localStorage.setItem("path", "/");
+  }
+  localStorage.setItem("path", methodToPath[method]);
   store.dispatch(goToHomeScreen({ method }));
   return null;
 }
+
+// True only for the very first load of the Home route within this page session.
+// Subsequent navigations to "/" (e.g. clicking the Upload tab) must NOT redirect.
+let initialHomeLoad = true;
 
 const router = createBrowserRouter([
   {
@@ -28,8 +42,22 @@ const router = createBrowserRouter([
     children: [
       {
         path: Pages.Home,
-        element: <Home/>,
-        loader: () => switchToVerificationMethod("UPLOAD"),
+        element: <Home />,
+        loader: () => {
+          if (initialHomeLoad) {
+            initialHomeLoad = false;
+            const searchParams = new URLSearchParams(window.location.search);
+            if (searchParams.has("response_code")) {
+              const storedPath = localStorage.getItem("path");
+              if (storedPath && storedPath !== "/") {
+                return redirect(
+                  `${storedPath}${window.location.search}${window.location.hash}`
+                );
+              }
+            }
+          }
+          return switchToVerificationMethod("UPLOAD");
+        },
       },
       {
         path: Pages.Scan,
