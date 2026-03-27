@@ -1,5 +1,5 @@
 import {VALID_SD_JWT_TYPES} from "./constants";
-import {VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
+import {CredentialResult, VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
 
 export const isSdJwt = (vpToken: string): boolean => {
     try {
@@ -81,4 +81,37 @@ export const deriveStatusFromResponse = (
     }
 
     return response.allChecksSuccessful ? "SUCCESS" : "INVALID";
+};
+export const deriveVPStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
+    if (!cred.schemaAndSignatureCheck?.valid) return "INVALID";
+
+    if (!cred.expiryCheck?.valid) return "EXPIRED";
+
+    if (cred.statusChecks?.length) {
+        for (const status of cred.statusChecks) {
+            if (status.error) {
+                throw new Error(status.error.errorMessage || "Status check error occurred");
+            }
+
+            const isRevoked =
+                status.purpose === "revocation" &&
+                !status.valid &&
+                status.error == null;
+
+            if (isRevoked) return "REVOKED";
+        }
+    }
+
+    return cred.allChecksSuccessful ? "SUCCESS" : "INVALID";
+};
+
+export const deriveOverallVPStatus = (
+    vcResults: { vcStatus: string }[]
+): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
+    const statuses = vcResults.map((v) => v.vcStatus);
+
+    if (statuses.includes("REVOKED")) return "REVOKED";
+    if (statuses.includes("EXPIRED")) return "EXPIRED";
+    if (statuses.includes("INVALID")) return "INVALID";
+    return "SUCCESS";
 };

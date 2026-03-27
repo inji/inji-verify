@@ -170,6 +170,10 @@ export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
      * - Status checks (e.g., revocation)
      */
     vpVerificationV2Request?: VPVerificationV2Request;
+
+    /*This attribute will decide the format of the response from SDK*/
+
+    summariseResults?: boolean;
 };
 
 export interface SessionState {

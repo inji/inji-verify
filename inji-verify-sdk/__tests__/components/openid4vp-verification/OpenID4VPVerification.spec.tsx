@@ -359,6 +359,7 @@ describe("OpenID4VPVerification UI Tests", () => {
                 onError={onError}
                 triggerElement={<button>Verify</button>}
                 vpVerificationV2Request={vpVerificationV2Request}
+                summariseResults={false}
             />
         );
 

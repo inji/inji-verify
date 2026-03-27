@@ -13,7 +13,7 @@ import {
   vpSessionResults,
 } from "../../utils/api";
 import "./OpenID4VPVerification.css";
-import { clearUrl, normalizeVp } from "../../utils/utils";
+import {clearUrl, deriveOverallVPStatus, deriveVPStatus, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 
 export const isMobileDevice = (): boolean => {
@@ -47,7 +47,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   isSameDeviceFlowEnabled = true,
   acceptVPWithoutHolderProof = false,
   webWalletBaseUrl,
-  vpVerificationV2Request
+  vpVerificationV2Request,
+  summariseResults = true
 }) => {
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
@@ -134,27 +135,42 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   );
 
   const processVPResultResponse = useCallback(
-    (response: {
-      credentialResults?: CredentialResult[];
-      transactionId?: string;
-    }) => {
-      const credentialResults = response.credentialResults ?? [];
+      (response: {
+            credentialResults?: CredentialResult[];
+            transactionId?: string;
+        }) => {
+            const credentialResults = response.credentialResults ?? [];
 
-      if (onVPProcessed) {
-        const VPResult: VerificationResults = credentialResults.map(
-          (cred: CredentialResult) => ({
-            vc: normalizeVp(cred.verifiableCredential),
-            verificationResponse: cred,
-          }),
-        );
-        onVPProcessed(VPResult);
-      } else if (onVPReceived && response.transactionId) {
-        onVPReceived(response.transactionId ?? "");
-      }
-    },
-    [onVPProcessed, onVPReceived]
-  );
+            if (onVPProcessed) {
+                if (summariseResults) {
+                    //  Summarised response
+                    const vcResults = credentialResults.map((cred: CredentialResult) => {
+                        const vc = normalizeVp(cred.verifiableCredential);
+                        const vcStatus = deriveVPStatus(cred);
 
+                        return {vc, vcStatus,};
+                    });
+
+                    const vpResultStatus = deriveOverallVPStatus(vcResults);
+
+                    onVPProcessed({
+                        vcResults,
+                        vpResultStatus,
+                    } as any);
+                } else {
+                    const VPResult: VerificationResults = credentialResults.map(
+                        (cred: CredentialResult) => ({
+                            vc: normalizeVp(cred.verifiableCredential),
+                            verificationResponse: cred,
+                        }),
+                    );
+                    onVPProcessed(VPResult);}
+            } else if (onVPReceived && response.transactionId) {
+                onVPReceived(response.transactionId);
+            }
+        },
+        [onVPProcessed, onVPReceived, summariseResults]
+    );
   const fetchVPResult = useCallback(
     async (responseCode?: string | null) => {
       if (!isActiveRef.current) return;
