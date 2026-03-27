@@ -7,7 +7,7 @@ import {
 } from "../../../redux/features/verification/verification.slice";
 import { raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import {getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
+import {evaluateVpStatus, getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
 
 function QrScanner({ onClose, scannerActive }: {
   onClose: () => void;
@@ -21,19 +21,17 @@ function QrScanner({ onClose, scannerActive }: {
     setIsScanning(true);
   }, []);
 
-  const handleOnVCProcessed = (data: any[]) => {
-        const vc = data[0].vc;
-        const verificationResponse = data[0].verificationResponse;
-        const vcStatus = verificationResponse.verificationStatus;
-
-        dispatch(verificationComplete({verificationResult: {
-                    vc,
-                    vcStatus,
-                    verificationResponse
-                }
-            })
-        );
-    };
+  const handleOnVCProcessed = async (vcResults: any[]) => {
+    const processedResults = await Promise.all(
+      vcResults.map(async (vcResult) => {
+        let vc = vcResult.vc;
+        const verificationResponse = vcResult.verificationResponse;
+        const vcStatus = evaluateVpStatus(vcResult.verificationResponse);
+        return { vc, vcStatus: vcStatus, verificationResponse };
+      }),
+    );
+    dispatch(verificationComplete({ verificationResult: processedResults }));
+  };
 
   return (
     <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black lg:relative lg:inset-auto lg:w-[21rem] lg:h-auto lg:aspect-square lg:bg-transparent">
