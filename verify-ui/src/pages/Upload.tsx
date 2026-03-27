@@ -30,30 +30,41 @@ export const Upload = () => {
     </div>
   );
 
-  const handleOnVCProcessed = async (vcResults: any[]) => {
-    const processedResults = await Promise.all(
-      vcResults.map(async (vcResult) => {
-        let vc = vcResult.vc;
+  const handleOnVCProcessed = (vcResults: any[]) => {
+    try {
+      const processedResults = vcResults.map((vcResult) => {
+        const vc = vcResult.vc;
         const verificationResponse = vcResult.verificationResponse;
-        const vcStatus = evaluateVpStatus(vcResult.verificationResponse);
-        return { vc, vcStatus: vcStatus, verificationResponse };
-      }),
-    );
-    const selectedResult = processedResults[0];
-    if (!selectedResult) {
+        const vcStatus = evaluateVpStatus(verificationResponse);
+        return { vc, vcStatus, verificationResponse };
+      });
+      const selectedResult = processedResults[0];
+      if (!selectedResult) {
+        dispatch(
+          raiseAlert({
+            message: "No verification result to display.",
+            severity: "error",
+            open: true,
+          }),
+        );
+        dispatch(goToHomeScreen({}));
+        return;
+      }
+      dispatch(
+        verificationComplete({ verificationResult: selectedResult }),
+      );
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Verification failed.";
       dispatch(
         raiseAlert({
-          message: "No verification result to display.",
+          message,
           severity: "error",
           open: true,
         }),
       );
       dispatch(goToHomeScreen({}));
-      return;
     }
-    dispatch(
-      verificationComplete({ verificationResult: selectedResult }),
-    );
   };
 
   return (
