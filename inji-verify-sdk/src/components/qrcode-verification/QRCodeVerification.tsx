@@ -411,7 +411,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
         if (!isVPSubmissionSupported) {
             const encodedOrigin = encodeURIComponent(window.location.origin);
-            window.location.href = `${redirectUrl}&client_id=${clientId}`;
+            window.location.href = `${redirectUrl}&client_id=${clientId}&redirect_uri=${encodedOrigin}%2F#`;
             return;
         }
 
