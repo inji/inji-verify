@@ -39,7 +39,21 @@ export const Upload = () => {
         return { vc, vcStatus: vcStatus, verificationResponse };
       }),
     );
-    dispatch(verificationComplete({ verificationResult: processedResults }));
+    const selectedResult = processedResults[0];
+    if (!selectedResult) {
+      dispatch(
+        raiseAlert({
+          message: "No verification result to display.",
+          severity: "error",
+          open: true,
+        }),
+      );
+      dispatch(goToHomeScreen({}));
+      return;
+    }
+    dispatch(
+      verificationComplete({ verificationResult: selectedResult }),
+    );
   };
 
   return (

@@ -30,7 +30,20 @@ function QrScanner({ onClose, scannerActive }: {
         return { vc, vcStatus: vcStatus, verificationResponse };
       }),
     );
-    dispatch(verificationComplete({ verificationResult: processedResults }));
+    const selectedResult = processedResults[0];
+    if (!selectedResult) {
+      dispatch(
+        raiseAlert({
+          message: "No verification result to display.",
+          severity: "error",
+        }),
+      );
+      dispatch(goToHomeScreen({}));
+      return;
+    }
+    dispatch(
+      verificationComplete({ verificationResult: selectedResult }),
+    );
   };
 
   return (
