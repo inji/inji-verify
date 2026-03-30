@@ -1,0 +1,259 @@
+VcVerificationES256K:
+  Injiverify_VcVerificationES256K_All_Valid_Smoke:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification for ES256K VC and expects the endpoint to validate the VC
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256K/VcVerificationES256K
+      outputTemplate: injiverify/VcVerificationES256K/VcVerificationES256KResult
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://piyush7034.github.io/my-files/farmer.json"}
+        ],
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "FarmerCredential"}
+        ],
+        "issuer": "did:web:vharsh.github.io:DID:echarsh",
+        "issuanceDate": "2025-02-04T08:07:11.686Z",
+        "expirationDate": "2027-02-04T08:07:11.685Z",
+        "credentialSubject_id": "did:jwk:eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsInVzZSI6InNpZyIsImtpZCI6ImhXM0JtVnVWY3ZSR3U5S0FIWllzYnRGS0otallWUFUwZW96S2FrT3FGclEiLCJhbGciOiJSUzI1NiIsIm4iOiJoRHJYTnhpdENlbjdqM2dWNEI2N0NraTdnOHhIbWhUSm1CNjFuRDV2S183a2ExRWVXNTRuVkpYREctdWxrVndDQVJUb2pjTmxlYm03TkZzVTItSDFzdS1SdmQ2NHBhdVBoUGxUSHE2c0c3aW1mSk9QUnhHRGt5WWlDTjZlYWo5VHlWSms5c3pydHVvWXl1blZqWWZyV08zUTl6MkhMUTZON0NUT0cwT1N2TzlzUlZFNFhrY3R6MFkxNGhxeEMzaTZnYllzT3hjZzRMLWFyOW1rQkxmODctekd0elhicjlXeGp3Qjg4aU5VRjgtd0lsM3AwLWpWOG9UdzRDaTlreWxpZkVCb2N6OTJPU0tpM2FCV0JWSHgzZm10ZE12ZVBYbkRHTEhwUlF0UnZjelhxRnR0Mm9SRjNLQTZieEtsdmFXd0dlYnRnMDhhTXhGazAtWFdxNzV3VncifQ==",
+        "fullName": "${fullName}",
+        "mobileNumber": "${mobileNumber}",
+        "dateOfBirth": "25-05-1990",
+        "gender": "${gender}",
+        "state": "${state}",
+        "district": "${district}",
+        "villageOrTown": "${villageOrTown}",
+        "postalCode": "${postalCode}",
+        "landArea": "3 hectares",
+        "landOwnershipType": "Owner",
+        "primaryCropType": "Maize",
+        "secondaryCropType": "Rice",
+        "face": "${face}",
+        "farmerID": "${farmerID}",
+        "proof_type": "EcdsaSecp256k1Signature2019",
+        "proof_created": "2025-02-04T02:37:11Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:vharsh.github.io:DID:echarsh#key-0",
+        "jws": "eyJ4NXQjUzI1NiI6InBZYXh6VWtrVnZKSzQ2X3NCUFRNNEhaSHdGTWItNUYxZzV0MEFjam5ONlkiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJraWQiOiJmU3ZrX0RkdUJtTDJUdG5hTUZPYjBOUE9pT3BFOVlOQWhlX3RBM1J4Q3g0IiwiYWxnIjoiRVMyNTZLIn0..SPVFEQp_VJE9a6y_7iMDMXw1iwIPk0d3W_9nPv2UMyekhRyb59OW-DIIHWGZb7YawYwSZLX0ZxA6SdLGtOhqpQ"
+      }'
+      output: '{
+          "verificationStatus": "SUCCESS"
+}'
+  Injiverify_VcVerificationES256K_ExpiredVC_Smoke:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification for ES256K VC with expired VC
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_02
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256K/VcVerificationES256K
+      outputTemplate: injiverify/VcVerificationES256K/VcVerificationES256KResult
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://piyush7034.github.io/my-files/farmer.json"}
+        ],
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "FarmerCredential"}
+        ],
+        "issuer": "did:web:vharsh.github.io:DID:echarsh",
+        "issuanceDate": "2025-02-04T08:07:11.686Z",
+        "expirationDate": "2026-02-04T08:07:11.685Z",
+        "credentialSubject_id": "did:jwk:eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsInVzZSI6InNpZyIsImtpZCI6ImhXM0JtVnVWY3ZSR3U5S0FIWllzYnRGS0otallWUFUwZW96S2FrT3FGclEiLCJhbGciOiJSUzI1NiIsIm4iOiJoRHJYTnhpdENlbjdqM2dWNEI2N0NraTdnOHhIbWhUSm1CNjFuRDV2S183a2ExRWVXNTRuVkpYREctdWxrVndDQVJUb2pjTmxlYm03TkZzVTItSDFzdS1SdmQ2NHBhdVBoUGxUSHE2c0c3aW1mSk9QUnhHRGt5WWlDTjZlYWo5VHlWSms5c3pydHVvWXl1blZqWWZyV08zUTl6MkhMUTZON0NUT0cwT1N2TzlzUlZFNFhrY3R6MFkxNGhxeEMzaTZnYllzT3hjZzRMLWFyOW1rQkxmODctekd0elhicjlXeGp3Qjg4aU5VRjgtd0lsM3AwLWpWOG9UdzRDaTlreWxpZkVCb2N6OTJPU0tpM2FCV0JWSHgzZm10ZE12ZVBYbkRHTEhwUlF0UnZjelhxRnR0Mm9SRjNLQTZieEtsdmFXd0dlYnRnMDhhTXhGazAtWFdxNzV3VncifQ==",
+        "fullName": "${fullName}",
+        "mobileNumber": "${mobileNumber}",
+        "dateOfBirth": "25-05-1990",
+        "gender": "${gender}",
+        "state": "${state}",
+        "district": "${district}",
+        "villageOrTown": "${villageOrTown}",
+        "postalCode": "${postalCode}",
+        "landArea": "3 hectares",
+        "landOwnershipType": "Owner",
+        "primaryCropType": "Maize",
+        "secondaryCropType": "Rice",
+        "face": "${face}",
+        "farmerID": "${farmerID}",
+        "proof_type": "EcdsaSecp256k1Signature2019",
+        "proof_created": "2025-02-04T02:37:11Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:vharsh.github.io:DID:echarsh#key-0",
+        "jws": "eyJ4NXQjUzI1NiI6InBZYXh6VWtrVnZKSzQ2X3NCUFRNNEhaSHdGTWItNUYxZzV0MEFjam5ONlkiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJraWQiOiJmU3ZrX0RkdUJtTDJUdG5hTUZPYjBOUE9pT3BFOVlOQWhlX3RBM1J4Q3g0IiwiYWxnIjoiRVMyNTZLIn0..SPVFEQp_VJE9a6y_7iMDMXw1iwIPk0d3W_9nPv2UMyekhRyb59OW-DIIHWGZb7YawYwSZLX0ZxA6SdLGtOhqpQ"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+  Injiverify_VcVerificationES256K_Invalid_DID_Smoke:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification for ES256K VC with invalid DID value
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_03
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256K/VcVerificationES256K
+      outputTemplate: injiverify/VcVerificationES256K/VcVerificationES256KResult
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://piyush7034.github.io/my-files/farmer.json"}
+        ],
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "FarmerCredential"}
+        ],
+        "issuer": "invalidDID",
+        "issuanceDate": "2025-02-04T08:07:11.686Z",
+        "expirationDate": "2027-02-04T08:07:11.685Z",
+        "credentialSubject_id": "did:jwk:eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsInVzZSI6InNpZyIsImtpZCI6ImhXM0JtVnVWY3ZSR3U5S0FIWllzYnRGS0otallWUFUwZW96S2FrT3FGclEiLCJhbGciOiJSUzI1NiIsIm4iOiJoRHJYTnhpdENlbjdqM2dWNEI2N0NraTdnOHhIbWhUSm1CNjFuRDV2S183a2ExRWVXNTRuVkpYREctdWxrVndDQVJUb2pjTmxlYm03TkZzVTItSDFzdS1SdmQ2NHBhdVBoUGxUSHE2c0c3aW1mSk9QUnhHRGt5WWlDTjZlYWo5VHlWSms5c3pydHVvWXl1blZqWWZyV08zUTl6MkhMUTZON0NUT0cwT1N2TzlzUlZFNFhrY3R6MFkxNGhxeEMzaTZnYllzT3hjZzRMLWFyOW1rQkxmODctekd0elhicjlXeGp3Qjg4aU5VRjgtd0lsM3AwLWpWOG9UdzRDaTlreWxpZkVCb2N6OTJPU0tpM2FCV0JWSHgzZm10ZE12ZVBYbkRHTEhwUlF0UnZjelhxRnR0Mm9SRjNLQTZieEtsdmFXd0dlYnRnMDhhTXhGazAtWFdxNzV3VncifQ==",
+        "fullName": "${fullName}",
+        "mobileNumber": "${mobileNumber}",
+        "dateOfBirth": "25-05-1990",
+        "gender": "${gender}",
+        "state": "${state}",
+        "district": "${district}",
+        "villageOrTown": "${villageOrTown}",
+        "postalCode": "${postalCode}",
+        "landArea": "3 hectares",
+        "landOwnershipType": "Owner",
+        "primaryCropType": "Maize",
+        "secondaryCropType": "Rice",
+        "face": "${face}",
+        "farmerID": "${farmerID}",
+        "proof_type": "EcdsaSecp256k1Signature2019",
+        "proof_created": "2025-02-04T02:37:11Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:vharsh.github.io:DID:echarsh#key-0",
+        "jws": "eyJ4NXQjUzI1NiI6InBZYXh6VWtrVnZKSzQ2X3NCUFRNNEhaSHdGTWItNUYxZzV0MEFjam5ONlkiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJraWQiOiJmU3ZrX0RkdUJtTDJUdG5hTUZPYjBOUE9pT3BFOVlOQWhlX3RBM1J4Q3g0IiwiYWxnIjoiRVMyNTZLIn0..SPVFEQp_VJE9a6y_7iMDMXw1iwIPk0d3W_9nPv2UMyekhRyb59OW-DIIHWGZb7YawYwSZLX0ZxA6SdLGtOhqpQ"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+  Injiverify_VcVerificationES256K_Invalid_proofTypeSignatureValue_Smoke:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification for ES256K VC with invalid proof Type ECC R1 Signature value
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_04
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256K/VcVerificationES256K
+      outputTemplate: injiverify/VcVerificationES256K/VcVerificationES256KResult
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://piyush7034.github.io/my-files/farmer.json"}
+        ],
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "FarmerCredential"}
+        ],
+        "issuer": "did:web:vharsh.github.io:DID:echarsh",
+        "issuanceDate": "2025-02-04T08:07:11.686Z",
+        "expirationDate": "2027-02-04T08:07:11.685Z",
+        "credentialSubject_id": "did:jwk:eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsInVzZSI6InNpZyIsImtpZCI6ImhXM0JtVnVWY3ZSR3U5S0FIWllzYnRGS0otallWUFUwZW96S2FrT3FGclEiLCJhbGciOiJSUzI1NiIsIm4iOiJoRHJYTnhpdENlbjdqM2dWNEI2N0NraTdnOHhIbWhUSm1CNjFuRDV2S183a2ExRWVXNTRuVkpYREctdWxrVndDQVJUb2pjTmxlYm03TkZzVTItSDFzdS1SdmQ2NHBhdVBoUGxUSHE2c0c3aW1mSk9QUnhHRGt5WWlDTjZlYWo5VHlWSms5c3pydHVvWXl1blZqWWZyV08zUTl6MkhMUTZON0NUT0cwT1N2TzlzUlZFNFhrY3R6MFkxNGhxeEMzaTZnYllzT3hjZzRMLWFyOW1rQkxmODctekd0elhicjlXeGp3Qjg4aU5VRjgtd0lsM3AwLWpWOG9UdzRDaTlreWxpZkVCb2N6OTJPU0tpM2FCV0JWSHgzZm10ZE12ZVBYbkRHTEhwUlF0UnZjelhxRnR0Mm9SRjNLQTZieEtsdmFXd0dlYnRnMDhhTXhGazAtWFdxNzV3VncifQ==",
+        "fullName": "${fullName}",
+        "mobileNumber": "${mobileNumber}",
+        "dateOfBirth": "25-05-1990",
+        "gender": "${gender}",
+        "state": "${state}",
+        "district": "${district}",
+        "villageOrTown": "${villageOrTown}",
+        "postalCode": "${postalCode}",
+        "landArea": "3 hectares",
+        "landOwnershipType": "Owner",
+        "primaryCropType": "Maize",
+        "secondaryCropType": "Rice",
+        "face": "${face}",
+        "farmerID": "${farmerID}",
+        "proof_type": "EcdsaSecp256r1Signature2019",
+        "proof_created": "2025-02-04T02:37:11Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:vharsh.github.io:DID:echarsh#key-0",
+        "jws": "eyJ4NXQjUzI1NiI6InBZYXh6VWtrVnZKSzQ2X3NCUFRNNEhaSHdGTWItNUYxZzV0MEFjam5ONlkiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJraWQiOiJmU3ZrX0RkdUJtTDJUdG5hTUZPYjBOUE9pT3BFOVlOQWhlX3RBM1J4Q3g0IiwiYWxnIjoiRVMyNTZLIn0..SPVFEQp_VJE9a6y_7iMDMXw1iwIPk0d3W_9nPv2UMyekhRyb59OW-DIIHWGZb7YawYwSZLX0ZxA6SdLGtOhqpQ"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+  Injiverify_VcVerificationES256K_without_proofField_Smoke:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification for ES256K VC without proof field
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_05
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256K/VcVerificationES256K
+      outputTemplate: injiverify/VcVerificationES256K/VcVerificationES256KResult
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://piyush7034.github.io/my-files/farmer.json"}
+        ],
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "FarmerCredential"}
+        ],
+        "issuer": "did:web:vharsh.github.io:DID:echarsh",
+        "issuanceDate": "2025-02-04T08:07:11.686Z",
+        "expirationDate": "2027-02-04T08:07:11.685Z",
+        "credentialSubject_id": "did:jwk:eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsInVzZSI6InNpZyIsImtpZCI6ImhXM0JtVnVWY3ZSR3U5S0FIWllzYnRGS0otallWUFUwZW96S2FrT3FGclEiLCJhbGciOiJSUzI1NiIsIm4iOiJoRHJYTnhpdENlbjdqM2dWNEI2N0NraTdnOHhIbWhUSm1CNjFuRDV2S183a2ExRWVXNTRuVkpYREctdWxrVndDQVJUb2pjTmxlYm03TkZzVTItSDFzdS1SdmQ2NHBhdVBoUGxUSHE2c0c3aW1mSk9QUnhHRGt5WWlDTjZlYWo5VHlWSms5c3pydHVvWXl1blZqWWZyV08zUTl6MkhMUTZON0NUT0cwT1N2TzlzUlZFNFhrY3R6MFkxNGhxeEMzaTZnYllzT3hjZzRMLWFyOW1rQkxmODctekd0elhicjlXeGp3Qjg4aU5VRjgtd0lsM3AwLWpWOG9UdzRDaTlreWxpZkVCb2N6OTJPU0tpM2FCV0JWSHgzZm10ZE12ZVBYbkRHTEhwUlF0UnZjelhxRnR0Mm9SRjNLQTZieEtsdmFXd0dlYnRnMDhhTXhGazAtWFdxNzV3VncifQ==",
+        "fullName": "${fullName}",
+        "mobileNumber": "${mobileNumber}",
+        "dateOfBirth": "25-05-1990",
+        "gender": "${gender}",
+        "state": "${state}",
+        "district": "${district}",
+        "villageOrTown": "${villageOrTown}",
+        "postalCode": "${postalCode}",
+        "landArea": "3 hectares",
+        "landOwnershipType": "Owner",
+        "primaryCropType": "Maize",
+        "secondaryCropType": "Rice",
+        "face": "${face}"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+  Injiverify_VcVerificationES256K_Invalid_Context_Smoke:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification for ES256K VC with invalid context value
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_06
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256K/VcVerificationES256K
+      outputTemplate: injiverify/VcVerificationES256K/VcVerificationES256KResult
+      input: '{
+        "@context": [
+          {"context_value": "invalidContext"},
+          {"context_value": "invalidContext"}
+        ],
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "FarmerCredential"}
+        ],
+        "issuer": "did:web:vharsh.github.io:DID:echarsh",
+        "issuanceDate": "2025-02-04T08:07:11.686Z",
+        "expirationDate": "2027-02-04T08:07:11.685Z",
+        "credentialSubject_id": "did:jwk:eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsInVzZSI6InNpZyIsImtpZCI6ImhXM0JtVnVWY3ZSR3U5S0FIWllzYnRGS0otallWUFUwZW96S2FrT3FGclEiLCJhbGciOiJSUzI1NiIsIm4iOiJoRHJYTnhpdENlbjdqM2dWNEI2N0NraTdnOHhIbWhUSm1CNjFuRDV2S183a2ExRWVXNTRuVkpYREctdWxrVndDQVJUb2pjTmxlYm03TkZzVTItSDFzdS1SdmQ2NHBhdVBoUGxUSHE2c0c3aW1mSk9QUnhHRGt5WWlDTjZlYWo5VHlWSms5c3pydHVvWXl1blZqWWZyV08zUTl6MkhMUTZON0NUT0cwT1N2TzlzUlZFNFhrY3R6MFkxNGhxeEMzaTZnYllzT3hjZzRMLWFyOW1rQkxmODctekd0elhicjlXeGp3Qjg4aU5VRjgtd0lsM3AwLWpWOG9UdzRDaTlreWxpZkVCb2N6OTJPU0tpM2FCV0JWSHgzZm10ZE12ZVBYbkRHTEhwUlF0UnZjelhxRnR0Mm9SRjNLQTZieEtsdmFXd0dlYnRnMDhhTXhGazAtWFdxNzV3VncifQ==",
+        "fullName": "${fullName}",
+        "mobileNumber": "${mobileNumber}",
+        "dateOfBirth": "25-05-1990",
+        "gender": "${gender}",
+        "state": "${state}",
+        "district": "${district}",
+        "villageOrTown": "${villageOrTown}",
+        "postalCode": "${postalCode}",
+        "landArea": "3 hectares",
+        "landOwnershipType": "Owner",
+        "primaryCropType": "Maize",
+        "secondaryCropType": "Rice",
+        "face": "${face}",
+        "farmerID": "${farmerID}",
+        "proof_type": "EcdsaSecp256k1Signature2019",
+        "proof_created": "2025-02-04T02:37:11Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:vharsh.github.io:DID:echarsh#key-0",
+        "jws": "eyJ4NXQjUzI1NiI6InBZYXh6VWtrVnZKSzQ2X3NCUFRNNEhaSHdGTWItNUYxZzV0MEFjam5ONlkiLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJraWQiOiJmU3ZrX0RkdUJtTDJUdG5hTUZPYjBOUE9pT3BFOVlOQWhlX3RBM1J4Q3g0IiwiYWxnIjoiRVMyNTZLIn0..SPVFEQp_VJE9a6y_7iMDMXw1iwIPk0d3W_9nPv2UMyekhRyb59OW-DIIHWGZb7YawYwSZLX0ZxA6SdLGtOhqpQ"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
