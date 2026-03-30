@@ -109,7 +109,7 @@ export const deriveVPStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | 
 export const deriveOverallVPStatus = (
     vcResults: { vcStatus: string }[]
 ): "SUCCESS" | "INVALID" => {
-    return vcResults.every(v => v.vcStatus === "SUCCESS")
+    return vcResults.length > 0 && vcResults.every(v => v.vcStatus === "SUCCESS")
         ? "SUCCESS"
         : "INVALID";
 };
