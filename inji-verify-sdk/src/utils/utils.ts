@@ -83,19 +83,20 @@ export const deriveStatusFromResponse = (
     return response.allChecksSuccessful ? "SUCCESS" : "INVALID";
 };
 export const deriveVPStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
-    if (!cred.schemaAndSignatureCheck?.valid) return "INVALID";
+    if (cred.holderProofCheck?.valid === false) return "INVALID";
 
-    if (!cred.expiryCheck?.valid) return "EXPIRED";
+    if (cred.schemaAndSignatureCheck?.valid === false) return "INVALID";
+
+    if (cred.expiryCheck?.valid === false) return "EXPIRED";
 
     if (cred.statusChecks?.length) {
         for (const status of cred.statusChecks) {
             if (status.error) {
-                throw new Error(status.error.errorMessage || "Status check error occurred");
-            }
+                throw new Error(status.error.errorMessage || "Status check error occurred");}
 
             const isRevoked =
                 status.purpose === "revocation" &&
-                !status.valid &&
+                    status.valid === false &&
                 status.error == null;
 
             if (isRevoked) return "REVOKED";
@@ -107,11 +108,8 @@ export const deriveVPStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | 
 
 export const deriveOverallVPStatus = (
     vcResults: { vcStatus: string }[]
-): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
-    const statuses = vcResults.map((v) => v.vcStatus);
-
-    if (statuses.includes("REVOKED")) return "REVOKED";
-    if (statuses.includes("EXPIRED")) return "EXPIRED";
-    if (statuses.includes("INVALID")) return "INVALID";
-    return "SUCCESS";
+): "SUCCESS" | "INVALID" => {
+    return vcResults.every(v => v.vcStatus === "SUCCESS")
+        ? "SUCCESS"
+        : "INVALID";
 };

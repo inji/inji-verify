@@ -540,7 +540,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
             }
             if (onVCProcessed) {
                 if (summariseResults) {
-                    //  Summarised response
                     const vcResults = credentialResults.map((cred: CredentialResult) => {
                         const vc = normalizeVp(cred.verifiableCredential);
                         const vcStatus = deriveVPStatus(cred);
@@ -553,18 +552,18 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
                     const vpResultStatus = deriveOverallVPStatus(vcResults);
 
-                    onVCProcessed({
-                        vcResults,
-                        vpResultStatus,
-                    } as any);
-                } else {
-                    const VPResult: VerificationResults = credentialResults.map(
-                        (cred: CredentialResult) => ({
-                            vc: normalizeVp(cred.verifiableCredential),
-                            verificationResponse: cred,
-                        })
-                    );
-                    onVCProcessed(VPResult);
+                    const result: VerificationResults = [
+                        {
+                            vc: vcResults[0]?.vc || {},
+                            verificationResponse: {
+                                vcResults,
+                                vpResultStatus,
+                            },
+                        },
+                    ];
+
+                    onVCProcessed(result);
+
                 }
             } else if (onVCReceived) {
                 const txnId = response.transactionId ?? transactionId;

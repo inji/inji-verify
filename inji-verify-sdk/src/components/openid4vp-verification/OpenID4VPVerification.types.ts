@@ -1,5 +1,5 @@
 export type VerificationStatus = "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
-
+export type OverallVPStatus = "SUCCESS" | "INVALID";
 export interface VerificationResult {
     /**
 
@@ -11,19 +11,17 @@ export interface VerificationResult {
 
      Full verification result, including per-check outcomes and optional claims.
      */
-    verificationResponse: CredentialResult;
+    verificationResponse: CredentialResult | VpSummarisedVerificationResponse;
 }
 
 export type VerificationResults = VerificationResult[];
 
-export interface VPVerificationSummaryVcResult {
-  vc: Record<string, unknown>;
-  vcStatus: VerificationStatus;
-}
-
-export interface VPVerificationSummaryResponse {
-  vcResults: VPVerificationSummaryVcResult[];
-  vpResultStatus: VerificationStatus;
+export interface VpSummarisedVerificationResponse {
+    vcResults: {
+        vc: Record<string, unknown>;
+        vcStatus: VerificationStatus;
+    }[];
+    vpResultStatus: OverallVPStatus;
 }
 
 export interface VPRequestBody {

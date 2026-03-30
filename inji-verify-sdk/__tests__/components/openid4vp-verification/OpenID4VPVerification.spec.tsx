@@ -358,20 +358,26 @@ describe("OpenID4VPVerification UI Tests", () => {
 
         const result = onVPProcessed.mock.calls[0][0];
 
-        expect(result).toEqual(
-            expect.objectContaining({
-                vpResultStatus: "INVALID",
-                vcResults: expect.arrayContaining([
-                    expect.objectContaining({
-                        vc: { id: "vc1" },
-                        vcStatus: expect.any(String),
-                    }),
-                    expect.objectContaining({
-                        vc: { id: "vc2" },
-                        vcStatus: expect.any(String),
-                    }),
-                ]),
-            })
+        expect(Array.isArray(result)).toBe(true);
+        expect(result.length).toBeGreaterThan(0);
+
+        const response = result[0].verificationResponse;
+
+        expect(response).toMatchObject({
+            vpResultStatus: "INVALID",
+        });
+
+        expect(response.vcResults).toEqual(
+            expect.arrayContaining([
+                expect.objectContaining({
+                    vc: { id: "vc1" },
+                    vcStatus: "SUCCESS",
+                }),
+                expect.objectContaining({
+                    vc: { id: "vc2" },
+                    vcStatus: "EXPIRED",
+                }),
+            ])
         );
     });
 

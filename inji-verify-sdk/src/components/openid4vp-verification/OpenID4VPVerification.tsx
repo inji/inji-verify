@@ -143,20 +143,25 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
             if (onVPProcessed) {
                 if (summariseResults) {
-                    //  Summarised response
-                    const vcResults = credentialResults.map((cred: CredentialResult) => {
+                    const vcResults = credentialResults.map((cred) => {
                         const vc = normalizeVp(cred.verifiableCredential);
                         const vcStatus = deriveVPStatus(cred);
-
-                        return {vc, vcStatus,};
+                        return { vc, vcStatus };
                     });
 
                     const vpResultStatus = deriveOverallVPStatus(vcResults);
 
-                    onVPProcessed({
-                        vcResults,
-                        vpResultStatus,
-                    } as any);
+                    const result: VerificationResults = [
+                        {
+                            vc: vcResults[0]?.vc || {},
+                            verificationResponse: {
+                                vcResults,
+                                vpResultStatus,
+                            },
+                        },
+                    ];
+
+                    onVPProcessed(result);
                 } else {
                     const VPResult: VerificationResults = credentialResults.map(
                         (cred: CredentialResult) => ({
