@@ -50,6 +50,11 @@ function VerificationMethodTabs(props: any) {
   const carouselRef: any = useRef<HTMLDivElement>();
 
   function switchToVerificationMethod(method: VerificationMethod) {
+    if (!localStorage.getItem("path")) localStorage.setItem("path", "/");
+    localStorage.setItem(
+      "path",
+      method === "UPLOAD" ? Pages.Home : method === "SCAN" ? Pages.Scan : Pages.VerifyCredentials
+    );
     dispatch(goToHomeScreen({ method }));
     dispatch(resetVpRequest());
   }

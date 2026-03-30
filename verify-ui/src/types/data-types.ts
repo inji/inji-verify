@@ -64,6 +64,7 @@ export type OvpFlowData = {
 export type VerificationResult = {
   vc?: AnyVc;
   vcStatus?: VcStatus;
+  verificationResponse?: unknown;
 };
 
 export type LanguageObject = {

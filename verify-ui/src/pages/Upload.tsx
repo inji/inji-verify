@@ -9,7 +9,7 @@ import {
 import { raiseAlert } from "../redux/features/alerts/alerts.slice";
 import { useAppDispatch } from "../redux/hooks";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import {evaluateVcStatus,getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../utils/commonUtils";
+import { evaluateVpStatus, getClientId, isVPSubmissionSupported, vcVerificationV2Request,} from "../utils/commonUtils";
 
 export const Upload = () => {
   const { t } = useTranslation("Upload");
@@ -30,18 +30,42 @@ export const Upload = () => {
     </div>
   );
 
-    const handleOnVCProcessed = (data: any[]) => {
-        const vc = data[0].vc;
-        const verificationResponse = data[0].verificationResponse;
-        const vcStatus = evaluateVcStatus(verificationResponse);
-
-        dispatch(verificationComplete({verificationResult: {
-                    vc,
-                    vcStatus
-                }
-            })
+  const handleOnVCProcessed = (vcResults: any[]) => {
+    try {
+      const processedResults = vcResults.map((vcResult) => {
+        const vc = vcResult.vc;
+        const verificationResponse = vcResult.verificationResponse;
+        const vcStatus = evaluateVpStatus(verificationResponse);
+        return { vc, vcStatus, verificationResponse };
+      });
+      const selectedResult = processedResults[0];
+      if (!selectedResult) {
+        dispatch(
+          raiseAlert({
+            message: "No verification result to display.",
+            severity: "error",
+            open: true,
+          }),
         );
-    };
+        dispatch(goToHomeScreen({}));
+        return;
+      }
+      dispatch(
+        verificationComplete({ verificationResult: selectedResult }),
+      );
+    } catch (error: unknown) {
+      const message =
+        error instanceof Error ? error.message : "Verification failed.";
+      dispatch(
+        raiseAlert({
+          message,
+          severity: "error",
+          open: true,
+        }),
+      );
+      dispatch(goToHomeScreen({}));
+    }
+  };
 
   return (
     <div className="flex flex-col pt-0 pb-[100px] lg:py-[42px] px-0 lg:px-[104px] text-center content-center justify-center">
