@@ -32,7 +32,7 @@ import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
-import {clearUrl, deriveOverallVPStatus, deriveStatusFromResponse, deriveVPStatus, normalizeVp} from "../../utils/utils";
+import {clearUrl, summariseVPResult, summariseVCResult, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
 
@@ -480,7 +480,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
                 const verificationResponse = summariseResults
                     ? {
-                        verificationStatus: deriveStatusFromResponse(response)
+                        verificationStatus: summariseVCResult(response)
                     }
                     : response;
 
@@ -542,7 +542,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 if (summariseResults) {
                     const vcResults = credentialResults.map((cred: CredentialResult) => {
                         const vc = normalizeVp(cred.verifiableCredential);
-                        const vcStatus = deriveVPStatus(cred);
+                        const vcStatus = summariseVPResult(cred);
 
                         return {
                             vc,
@@ -550,7 +550,10 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                         };
                     });
 
-                    const vpResultStatus = deriveOverallVPStatus(vcResults);
+                    const vpResultStatus = credentialResults.length > 0 &&
+                        credentialResults.every((c: CredentialResult) => c.allChecksSuccessful)
+                            ? "SUCCESS"
+                            : "INVALID";
 
                     const result: VerificationResults = [
                         {

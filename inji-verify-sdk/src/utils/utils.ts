@@ -51,7 +51,7 @@ export const clearUrl = (params: string[] = []) => {
     window.history.replaceState(null, "", url.pathname + url.search + url.hash);
 };
 
-export const deriveStatusFromResponse = (
+export const summariseVCResult = (
     response: VCVerificationV2Response
 ): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
 
@@ -82,7 +82,7 @@ export const deriveStatusFromResponse = (
 
     return response.allChecksSuccessful ? "SUCCESS" : "INVALID";
 };
-export const deriveVPStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
+export const summariseVPResult = (cred: CredentialResult): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
     if (cred.holderProofCheck?.valid === false) return "INVALID";
 
     if (cred.schemaAndSignatureCheck?.valid === false) return "INVALID";
@@ -104,12 +104,4 @@ export const deriveVPStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | 
     }
 
     return cred.allChecksSuccessful ? "SUCCESS" : "INVALID";
-};
-
-export const deriveOverallVPStatus = (
-    vcResults: { vcStatus: string }[]
-): "SUCCESS" | "INVALID" => {
-    return vcResults.length > 0 && vcResults.every(v => v.vcStatus === "SUCCESS")
-        ? "SUCCESS"
-        : "INVALID";
 };

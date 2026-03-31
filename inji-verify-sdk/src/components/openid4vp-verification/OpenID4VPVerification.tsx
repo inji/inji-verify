@@ -13,7 +13,7 @@ import {
   vpSessionResults,
 } from "../../utils/api";
 import "./OpenID4VPVerification.css";
-import {clearUrl, deriveOverallVPStatus, deriveVPStatus, normalizeVp} from "../../utils/utils";
+import {clearUrl, summariseVPResult, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 
 export const isMobileDevice = (): boolean => {
@@ -145,11 +145,13 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
                 if (summariseResults) {
                     const vcResults = credentialResults.map((cred) => {
                         const vc = normalizeVp(cred.verifiableCredential);
-                        const vcStatus = deriveVPStatus(cred);
+                        const vcStatus = summariseVPResult(cred);
                         return { vc, vcStatus };
                     });
 
-                    const vpResultStatus = deriveOverallVPStatus(vcResults);
+                    const vpResultStatus = credentialResults.length > 0 &&
+                    credentialResults.every((c: CredentialResult) => c.allChecksSuccessful)
+                        ? "SUCCESS" : "INVALID";
 
                     const result: VerificationResults = [
                         {
