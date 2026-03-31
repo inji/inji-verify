@@ -169,8 +169,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                     JSONObject proof = jsonVPToken.optJSONObject("proof");
                     if (proof == null) throw new InvalidVpTokenException();
 
-                    String challenge = proof.optString("challenge");
-                    String domain = proof.optString("domain");
+                    String challenge = proof.optString("challenge", null);
+                    String domain = proof.optString("domain", null);
 
                     if (challenge == null || domain == null) throw new InvalidVpTokenException();
                     if (!nonce.equals(challenge)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
