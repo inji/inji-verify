@@ -161,12 +161,22 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
             }
             VPTokenDto vpTokenDto = extractTokens(vpToken);
-            if (!acceptVPWithoutHolderProof && !vpTokenDto.getJsonVpTokens().isEmpty()) {
-                boolean isValidVpToken = validateVpTokens(vpTokenDto.getJsonVpTokens(), nonce, clientId);
-                if (!isValidVpToken)
-                    return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.INVALID_REQUEST));
-            }
 
+            if (!acceptVPWithoutHolderProof) {
+                if (nonce == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
+                if (clientId == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
+                for (JSONObject jsonVPToken : vpTokenDto.getJsonVpTokens()) {
+                    JSONObject proof = jsonVPToken.optJSONObject("proof");
+                    if (proof == null) throw new InvalidVpTokenException();
+
+                    String challenge = proof.optString("challenge");
+                    String domain = proof.optString("domain");
+
+                    if (challenge == null || domain == null) throw new InvalidVpTokenException();
+                    if (!nonce.equals(challenge)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
+                    if (!clientId.equals(domain)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
+                }
+            }
 
             vpSubmissionDto.setState(state);
             vpSubmissionDto.setVpToken(vpToken);
@@ -177,20 +187,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         vpSubmissionDto.setResponseCodeUsed(false);
         saveVPSubmissionDto(vpSubmissionDto);
         return ResponseEntity.status(HttpStatus.OK).body(response);
-    }
-
-    private boolean validateVpTokens(List<JSONObject> vpTokens, String nonce, String clientId) {
-        log.info("Validating vpTokens");
-        if (nonce == null || nonce.isBlank() || clientId == null || clientId.isBlank()) return false;
-        return vpTokens.stream().allMatch(json -> {
-            JSONObject proof = json.optJSONObject("proof");
-            if (proof == null) return false;
-
-            String challenge = proof.optString("challenge");
-            String domain = proof.optString("domain");
-
-            return nonce.equals(challenge) && clientId.equals(domain);
-        });
     }
 
     private String buildRedirectWithResponseCode(String responseCode) {
