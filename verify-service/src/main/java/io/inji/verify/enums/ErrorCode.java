@@ -24,7 +24,8 @@ public enum ErrorCode {
     VP_SESSION_INVALID("VP_SESSION_INVALID", "Your VP verification session is invalid. Please restart the process and try again"),
     MALFORMED_COOKIE("MALFORMED_COOKIE", "Request cannot be processed due to malformed cookie" ),
     RESPONSE_CODE_NOT_USED("RESPONSE_CODE_NOT_USED", "Transaction was incomplete, response_code was not used" ),
-    INVALID_REQUEST("INVALID_REQUEST", "The client_id or nonce in the VP submission does not match the authorization request");
+    NONCE_VALIDATION_FAILED("invalid_request", "Nonce validation failed due to invalid nonce"),
+    CLIENT_ID_VALIDATION_FAILED("invalid_request", "Client id validation failed due to invalid client id");
 
     private final String errorCode;
     private final String errorMessage;
