@@ -153,15 +153,13 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
                     credentialResults.every((c: CredentialResult) => c.allChecksSuccessful)
                         ? "SUCCESS" : "INVALID";
 
-                    const result: VerificationResults = [
-                        {
-                            vc: vcResults[0]?.vc || {},
-                            verificationResponse: {
-                                vcResults,
-                                vpResultStatus,
-                            },
+                    const result: VerificationResults = vcResults.map(v => ({
+                        vc: v.vc,
+                        verificationResponse: {
+                            vcResults,
+                            vpResultStatus,
                         },
-                    ];
+                    }));
 
                     onVPProcessed(result);
                 } else {
