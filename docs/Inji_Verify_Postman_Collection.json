@@ -1788,6 +1788,11 @@
                   "script": {
                     "exec": [
                       "var responseJson = pm.response.json();",
+                      "pm.test('returns validation failure', function () {",
+                      "  pm.expect(pm.response.code).to.be.oneOf([400, 422]);",
+                      "  pm.expect(responseJson).to.have.property('errorCode');",
+                      "  pm.expect(responseJson.errorCode).to.be.oneOf(['VP_NONCE_VALIDATION_FAILED','VP_CLIENT_ID_VALIDATION_FAILED']);",
+                      "});",
                       "var redirectUri = responseJson.redirect_uri;",
                       "",
                       "if (redirectUri) {",
