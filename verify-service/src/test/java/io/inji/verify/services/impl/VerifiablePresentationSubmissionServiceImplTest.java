@@ -408,7 +408,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         }
 
         @Test
-        public void testSubmit_ValidateToken_Returns400_WhenProofNodeMissing() {
+        public void testSubmit_ValidateToken_ReturnsInvalidVPToken_WhenProofNodeMissing() {
             String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"verifiableCredential\":[]}";
             String presentationSubmission = "{\"id\":\"subId\"}";
             String state = "stateABC";
@@ -423,11 +423,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
             when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-            ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
-
-            assertEquals(400, response.getStatusCode().value());
-            assertInstanceOf(ErrorDto.class, response.getBody());
-            verify(vpSubmissionRepository, never()).save(any());
+            assertThrows(InvalidVpTokenException.class,() -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
         }
 
         @Test
