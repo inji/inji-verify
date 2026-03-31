@@ -36,6 +36,7 @@ import io.inji.verify.repository.VPSubmissionRepository;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;
 import jakarta.validation.Validator;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -55,6 +56,7 @@ import java.util.*;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
+@Slf4j
 public class VerifiablePresentationSubmissionServiceImplTest {
 
     @Mock
@@ -354,14 +356,15 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             assertEquals(400, response.getStatusCode().value());
             assertInstanceOf(ErrorDto.class, response.getBody());
+            ErrorDto error = (ErrorDto) response.getBody();
+            assertEquals(ErrorCode.NONCE_VALIDATION_FAILED.getErrorCode(), error.getErrorCode());
+            assertEquals(ErrorCode.NONCE_VALIDATION_FAILED.getErrorMessage(), error.getErrorMessage());
             verify(vpSubmissionRepository, never()).save(any());
         }
 
         @Test
         public void testSubmit_ValidateToken_Returns400_WhenDomainMismatch() {
-            String vpToken = "{\"type\":[\"VerifiablePresentation\"],"
-                    + "\"proof\":{\"type\":\"Ed25519Signature2018\",\"challenge\":\"my-nonce\",\"domain\":\"wrong-client\"},"
-                    + "\"verifiableCredential\":[]}";
+            String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\",\"challenge\":\"my-nonce\",\"domain\":\"wrong-client\"},\"verifiableCredential\":[]}";
             String presentationSubmission = "{\"id\":\"subId\"}";
             String state = "stateABC";
 
@@ -379,14 +382,15 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             assertEquals(400, response.getStatusCode().value());
             assertInstanceOf(ErrorDto.class, response.getBody());
+            ErrorDto error = (ErrorDto) response.getBody();
+            assertEquals(ErrorCode.CLIENT_ID_VALIDATION_FAILED.getErrorCode(), error.getErrorCode());
+            assertEquals(ErrorCode.CLIENT_ID_VALIDATION_FAILED.getErrorMessage(), error.getErrorMessage());
             verify(vpSubmissionRepository, never()).save(any());
         }
 
         @Test
         public void testSubmit_ValidateToken_Returns400_WhenBothNonceAndDomainMismatch() {
-            String vpToken = "{\"type\":[\"VerifiablePresentation\"],"
-                    + "\"proof\":{\"type\":\"Ed25519Signature2018\",\"challenge\":\"bad-nonce\",\"domain\":\"bad-client\"},"
-                    + "\"verifiableCredential\":[]}";
+            String vpToken = "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\",\"challenge\":\"bad-nonce\",\"domain\":\"bad-client\"},\"verifiableCredential\":[]}";
             String presentationSubmission = "{\"id\":\"subId\"}";
             String state = "stateABC";
 
@@ -404,6 +408,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             assertEquals(400, response.getStatusCode().value());
             assertInstanceOf(ErrorDto.class, response.getBody());
+            ErrorDto error = (ErrorDto) response.getBody();
+            assertEquals("invalid_request", error.getErrorCode());
             verify(vpSubmissionRepository, never()).save(any());
         }
 
@@ -424,6 +430,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
             assertThrows(InvalidVpTokenException.class,() -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
+            verify(vpSubmissionRepository, never()).save(any());
         }
 
         @Test
