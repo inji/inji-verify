@@ -1,0 +1,36 @@
+{
+  "@context": [{{#each @context}}"{{context_value}}"{{#unless @last}}, {{/unless}}{{/each}}],
+  "id": "{{id}}",
+  "type": [{{#each type}}"{{type_value}}"{{#unless @last}}, {{/unless}}{{/each}}],
+  "issuer": "{{issuer}}",
+  "issuanceDate": "{{issuanceDate}}",
+  "expirationDate": "{{expirationDate}}",
+  "credentialSubject": {
+    "RuralPropertyName": "{{RuralPropertyName}}",
+    "LegalReserveArea": {{LegalReserveArea}},
+    "Municipality": "{{Municipality}}",
+    "RegistrationDate": "{{RegistrationDate}}",
+    "NumberOfCAR": "{{NumberOfCAR}}",
+    "Latitude": "{{Latitude}}",
+    "FiscalModules": {{FiscalModules}},
+    "NetArea": {{NetArea}},
+    "Longitude": "{{Longitude}}",
+    "TotalArea": {{TotalArea}},
+    "HolderName": "{{HolderName}}",
+    "TotalDeclaredArea": {{TotalDeclaredArea}},
+    "PermanentPreservationArea": {{PermanentPreservationArea}},
+    "NativeVegetationRemnant": {{NativeVegetationRemnant}},
+    "AdministrativeEasementArea": {{AdministrativeEasementArea}},
+    "CPF": "{{CPF}}",
+    "ProtocolCode": "{{ProtocolCode}}",
+    "ConsolidatedArea": {{ConsolidatedArea}},
+    "RestrictedUseArea": {{RestrictedUseArea}}
+  },
+  "proof": {
+    "type": "{{proof_type}}",
+    "created": "{{proof_created}}",
+    "proofPurpose": "{{proofPurpose}}",
+    "verificationMethod": "{{verificationMethod}}",
+    "proofValue": "{{proofValue}}"
+  }
+}
