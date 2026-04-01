@@ -49,7 +49,7 @@ VcVerificationES256:
       output: '{
           "verificationStatus": "SUCCESS"
 }'
-  Injiverify_VcVerificationES256_invalidCredentialSubject_Smoke:
+  Injiverify_VcVerificationES256_invalidCredentialSubject_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification ES256 VC with invalid Credential Subject
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256_02
@@ -99,7 +99,7 @@ VcVerificationES256:
       output: '{
           "verificationStatus": "INVALID"
 }'
-  Injiverify_VcVerificationES256_invalidProofJws_Smoke:
+  Injiverify_VcVerificationES256_invalidProofJws_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification ES256 VC with invalid Proof Jws
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256_03
@@ -149,7 +149,7 @@ VcVerificationES256:
       output: '{
           "verificationStatus": "INVALID"
 }'
-  Injiverify_VcVerificationES256_invalidProofType_Smoke:
+  Injiverify_VcVerificationES256_invalidProofType_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification ES256 VC with invalid Proof Type
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256_04
@@ -199,7 +199,7 @@ VcVerificationES256:
       output: '{
           "verificationStatus": "INVALID"
 }'
-  Injiverify_VcVerificationES25_invalidDID_Smoke:
+  Injiverify_VcVerificationES256_invalidDID_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification ES256 VC with invalid DID
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256_05
@@ -249,7 +249,7 @@ VcVerificationES256:
       output: '{
           "verificationStatus": "INVALID"
 }'
-  Injiverify_VcVerificationES256_expiredVC_Smoke:
+  Injiverify_VcVerificationES256_expiredVC_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification ES256 VC with expired VC
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256_06
@@ -300,7 +300,7 @@ VcVerificationES256:
           "verificationStatus": "INVALID"
 }'
 
-  Injiverify_VcVerificationES256_RevokedVC_Smoke:
+  Injiverify_VcVerificationES256_RevokedVC_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification ES256 VC with Revoked VC
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256_07
@@ -350,7 +350,7 @@ VcVerificationES256:
       output: '{
           "verificationStatus": "INVALID"
 }'
-  Injiverify_VcVerificationES256_InvalidVC_Smoke:
+  Injiverify_VcVerificationES256_InvalidVC_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification ES256 VC with invalid VC without issuer
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256_08

@@ -43,7 +43,7 @@ VcVerificationES256K:
       output: '{
           "verificationStatus": "SUCCESS"
 }'
-  Injiverify_VcVerificationES256K_ExpiredVC_Smoke:
+  Injiverify_VcVerificationES256K_ExpiredVC_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification for ES256K VC with expired VC
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_02
@@ -87,7 +87,7 @@ VcVerificationES256K:
       output: '{
           "verificationStatus": "INVALID"
 }'
-  Injiverify_VcVerificationES256K_Invalid_DID_Smoke:
+  Injiverify_VcVerificationES256K_Invalid_DID_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification for ES256K VC with invalid DID value
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_03
@@ -131,7 +131,7 @@ VcVerificationES256K:
       output: '{
           "verificationStatus": "INVALID"
 }'
-  Injiverify_VcVerificationES256K_Invalid_proofTypeSignatureValue_Smoke:
+  Injiverify_VcVerificationES256K_Invalid_proofTypeSignatureValue_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification for ES256K VC with invalid proof Type ECC R1 Signature value
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_04
@@ -175,7 +175,7 @@ VcVerificationES256K:
       output: '{
           "verificationStatus": "INVALID"
 }'
-  Injiverify_VcVerificationES256K_without_proofField_Smoke:
+  Injiverify_VcVerificationES256K_without_proofField_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification for ES256K VC without proof field
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_05
@@ -213,7 +213,7 @@ VcVerificationES256K:
       output: '{
           "verificationStatus": "INVALID"
 }'
-  Injiverify_VcVerificationES256K_Invalid_Context_Smoke:
+  Injiverify_VcVerificationES256K_Invalid_Context_Neg:
       endPoint: /v1/verify/vc-verification
       description: Performing VC verification for ES256K VC with invalid context value
       uniqueIdentifier: TC_InjiVerify_VcVerificationES256K_06
