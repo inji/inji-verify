@@ -32,7 +32,7 @@ import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
-import {clearUrl, deriveStatusFromResponse, normalizeVp} from "../../utils/utils";
+import {clearUrl, summariseVPResult, summariseVCResult, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
 
@@ -480,7 +480,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
                 const verificationResponse = summariseResults
                     ? {
-                        verificationStatus: deriveStatusFromResponse(response)
+                        verificationStatus: summariseVCResult(response)
                     }
                     : response;
 
@@ -522,31 +522,52 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     return atob(base64);
   }
 
-  const fetchVPResult = async (responseCode: string | null) => {
+    const fetchVPResult = async (responseCode: string | null) => {
       if (hasFetchedVPResultRef.current) return;
       hasFetchedVPResultRef.current = true;
-      try {
-            if (!responseCode) throw new Error("Invalid redirect_uri. The response code is missing.");
-              
+        try {
+            if (!responseCode) {
+                throw new Error("Invalid redirect_uri. The response code is missing.");
+            }
+
             const response = await vpSessionResults(verifyServiceUrl, responseCode, vcVerificationV2Request);
 
-            const VPResult: VerificationResults =
-                (response?.credentialResults ?? []).map((cred: CredentialResult) => {
-                    const vc = normalizeVp(cred.verifiableCredential);
+            const credentialResults = response?.credentialResults ?? [];
 
-                    return {
-                        vc,
-                        verificationResponse: cred,
-                    };
-                });
-
-            if (!VPResult.length) {
-                throw new Error(
-                    "An unexpected error occurred while processing the shared VC. No credentialResults found."
+            if (!credentialResults.length) {
+                throw new Error("An unexpected error occurred while processing the shared VC. No credentialResults found."
                 );
             }
             if (onVCProcessed) {
-                onVCProcessed(VPResult);
+                if (summariseResults) {
+                    const vcResults = credentialResults.map((cred: CredentialResult) => {
+                        const vc = normalizeVp(cred.verifiableCredential);
+                        const vcStatus = summariseVPResult(cred);
+
+                        return {
+                            vc,
+                            vcStatus,
+                        };
+                    });
+
+                    const vpResultStatus = credentialResults.length > 0 &&
+                        credentialResults.every((c: CredentialResult) => c.allChecksSuccessful)
+                            ? "SUCCESS"
+                            : "INVALID";
+
+                    const result: VerificationResults = [
+                        {
+                            vc: vcResults[0]?.vc || {},
+                            verificationResponse: {
+                                vcResults,
+                                vpResultStatus,
+                            },
+                        },
+                    ];
+
+                    onVCProcessed(result);
+
+                }
             } else if (onVCReceived) {
                 const txnId = response.transactionId ?? transactionId;
                 onVCReceived(txnId);
