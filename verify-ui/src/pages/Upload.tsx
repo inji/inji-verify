@@ -33,7 +33,9 @@ export const Upload = () => {
 const handleOnVCProcessed = (data: any[]) => {
         const vc = data[0].vc;
         const verificationResponse = data[0].verificationResponse;
-        const vcStatus = verificationResponse.verificationStatus;
+    const vcStatus = verificationResponse.verificationStatus ??
+                  verificationResponse.vcResults?.[0]?.vcStatus ??
+                   verificationResponse.vpResultStatus;
         dispatch(verificationComplete({verificationResult: {
                     vc,
                     vcStatus,
