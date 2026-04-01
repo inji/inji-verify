@@ -7,7 +7,7 @@ import {
 } from "../../../redux/features/verification/verification.slice";
 import { raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import {evaluateVpStatus, getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
+import { getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
 
 function QrScanner({ onClose, scannerActive }: {
   onClose: () => void;
@@ -21,40 +21,19 @@ function QrScanner({ onClose, scannerActive }: {
     setIsScanning(true);
   }, []);
 
-  const handleOnVCProcessed = (vcResults: any[]) => {
-    try {
-      const processedResults = vcResults.map((vcResult) => {
-        const vc = vcResult.vc;
-        const verificationResponse = vcResult.verificationResponse;
-        const vcStatus = evaluateVpStatus(verificationResponse);
-        return { vc, vcStatus, verificationResponse };
-      });
-      const selectedResult = processedResults[0];
-      if (!selectedResult) {
-        dispatch(
-          raiseAlert({
-            message: "No verification result to display.",
-            severity: "error",
-          }),
+const handleOnVCProcessed = (data: any[]) => {
+        const vc = data[0].vc;
+        const verificationResponse = data[0].verificationResponse;
+        const vcStatus = verificationResponse.verificationStatus;
+
+        dispatch(verificationComplete({verificationResult: {
+                    vc,
+                    vcStatus,
+                    verificationResponse
+                }
+            })
         );
-        dispatch(goToHomeScreen({}));
-        return;
-      }
-      dispatch(
-        verificationComplete({ verificationResult: selectedResult }),
-      );
-    } catch (error: unknown) {
-      const message =
-        error instanceof Error ? error.message : "Verification failed.";
-      dispatch(
-        raiseAlert({
-          message,
-          severity: "error",
-        }),
-      );
-      dispatch(goToHomeScreen({}));
-    }
-  };
+};
 
   return (
     <div className="fixed inset-0 z-[100000] flex items-center justify-center bg-black lg:relative lg:inset-auto lg:w-[21rem] lg:h-auto lg:aspect-square lg:bg-transparent">
