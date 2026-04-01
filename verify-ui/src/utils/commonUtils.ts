@@ -1,4 +1,4 @@
-import { claim, LdpVc, VcStatus, CredentialResult} from "../types/data-types";
+import { claim, LdpVc, VcStatus} from "../types/data-types";
 import { EXCLUDE_KEYS_SD_JWT_VC, getVCRenderOrders } from "./config";
 import { getLanguageCodes } from "./i18n";
 
@@ -294,29 +294,3 @@ export const vpVerificationV2Request = {
     includeClaims: true
 };
 
-export const evaluateVpStatus = (cred: CredentialResult): "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED" => {
-
-    if (!cred.schemaAndSignatureCheck?.valid) {
-        return "INVALID";
-    }
-
-    if (!cred.expiryCheck?.valid) {
-        return "EXPIRED";
-    }
-
-    if (cred.statusChecks?.length) {
-        for (const status of cred.statusChecks) {
-            if (status.error) {
-                throw new Error(status.error.errorMessage || "Status check error occurred")
-            }
-
-            const isRevoked =
-                status.purpose === "revocation" &&
-                !status.valid &&
-                status.error == null;
-
-            if (isRevoked) return "REVOKED";
-        }
-    }
-    return cred.allChecksSuccessful ? "SUCCESS" : "INVALID";
-};
