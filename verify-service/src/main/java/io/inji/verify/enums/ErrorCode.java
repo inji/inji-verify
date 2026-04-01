@@ -23,7 +23,9 @@ public enum ErrorCode {
     REDIRECT_URI_NOT_FOUND("REDIRECT_URI_NOT_FOUND", "Redirect URI configuration is missing"),
     VP_SESSION_INVALID("VP_SESSION_INVALID", "Your VP verification session is invalid. Please restart the process and try again"),
     MALFORMED_COOKIE("MALFORMED_COOKIE", "Request cannot be processed due to malformed cookie" ),
-    RESPONSE_CODE_NOT_USED("RESPONSE_CODE_NOT_USED", "Transaction was incomplete, response_code was not used" );
+    RESPONSE_CODE_NOT_USED("RESPONSE_CODE_NOT_USED", "Transaction was incomplete, response_code was not used" ),
+    NONCE_VALIDATION_FAILED("invalid_request", "Nonce validation failed due to invalid nonce"),
+    CLIENT_ID_VALIDATION_FAILED("invalid_request", "Client id validation failed due to invalid client id");
 
     private final String errorCode;
     private final String errorMessage;
