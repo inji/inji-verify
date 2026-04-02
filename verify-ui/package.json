@@ -9,7 +9,7 @@
     "@emotion/react": "^11.13.3",
     "@emotion/styled": "^11.13.0",
     "@injistack/pixelpass": "^0.8.0-RC2",
-    "@injistack/react-inji-verify-sdk": "0.18.0-beta.26",
+    "@injistack/react-inji-verify-sdk": "0.18.0-beta.27",
     "@mui/material": "^6.1.2",
     "@reduxjs/toolkit": "^2.2.3",
     "@sd-jwt/crypto-browser": "^0.15.0",
@@ -82,7 +82,8 @@
     "jest-environment-jsdom": "^29.7.0",
     "jsdom": "^20.0.0",
     "react-app-rewired": "^2.2.1",
-    "ts-jest": "^29.1.2"
+    "ts-jest": "^29.1.2",
+    "yaml": "^2.8.3"
   },
   "overrides": {
     "nth-check": "2.0.1"

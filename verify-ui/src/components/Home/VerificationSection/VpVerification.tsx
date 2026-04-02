@@ -19,7 +19,7 @@ import { Button } from "./commons/Button";
 import { useTranslation } from "react-i18next";
 import {VerificationResults} from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
 import {decodeSdJwtToken} from "../../../utils/decodeSdJwt";
-import {evaluateVpStatus, vpVerificationV2Request} from "../../../utils/commonUtils";
+import {vpVerificationV2Request} from "../../../utils/commonUtils";
 
 const DisplayActiveStep = () => {
   const { t } = useTranslation("Verify");
@@ -60,22 +60,35 @@ const DisplayActiveStep = () => {
 
     const handleOnVpProcessed = async (vpResults: VerificationResults) => {
         try {
-               const processedResults = await Promise.all(
-                     vpResults.map(async (vpResult) => {
-                            let vc = vpResult.vc;
-                           if (typeof vc === "string") {
-                               vc = await decodeSdJwtToken(vc);
-                           }
-                           const vpStatus = evaluateVpStatus(vpResult.verificationResponse);
-                           return { vc, vcStatus: vpStatus };
-                         }),
-               );
-                    // Clear persisted selection once we have fetched and processed VP result
-                    localStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
-                    dispatch(verificationSubmissionComplete({ verificationResult: processedResults }));
-              } catch (error: any) {
-                handleOnError(error);
-              }
+            const processedResults = await Promise.all(
+                vpResults.flatMap(async (vpResult) => {
+                    const response = vpResult.verificationResponse;
+                    if ("vcResults" in response && Array.isArray(response.vcResults)) {
+
+                        return Promise.all(
+                            response.vcResults.map(async (item, i) => {
+                                let vc = item.vc;
+                                if (typeof vc === "string") {
+                                    vc = await decodeSdJwtToken(vc);
+                                }
+
+                                return {vc, vcStatus: item.vcStatus,
+                                };
+                            })
+                        );
+                    }
+                    throw new Error("Expected summarised VP response with vcResults");
+                })
+            );
+
+            const flattenedResults = processedResults.flat();
+            localStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
+            dispatch(verificationSubmissionComplete({verificationResult: flattenedResults,
+                })
+            );
+        } catch (error: any) {
+            handleOnError(error);
+        }
     };
 
   const handleOnQrExpired = () => {

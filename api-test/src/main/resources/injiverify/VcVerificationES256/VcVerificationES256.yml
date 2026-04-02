@@ -1,0 +1,401 @@
+VcVerificationES256:
+  Injiverify_VcVerificationES256_All_Valid_Smoke:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification for Land Registry ES256 VC and expects SUCCESS
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256/VcVerificationES256
+      outputTemplate: injiverify/VcVerificationES256/VcVerificationES256Result
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json"},
+          {"context_value": "https://w3id.org/security/suites/ed25519-2020/v1"}
+        ],
+        "id": "https://mosip.io/credential/a6ab3eba-f8f1-4bc4-8ba6-8a86f04daec5",
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "RegistrationReceiptCredential"}
+        ],
+        "issuer": "did:web:inji.github.io:inji-config:qa-inji1:landregistry",
+        "issuanceDate": "2026-03-26T07:45:59.374Z",
+        "expirationDate": "2028-03-25T07:45:59.374Z",
+        "RuralPropertyName": "Guimaraes Plateau",
+        "LegalReserveArea": 400.3,
+        "Municipality": "Saint John of Alliance, State: Goias",
+        "RegistrationDate": "2024-10-25T16:40:31Z",
+        "NumberOfCAR": "GO-5220009-75F5.A618.6575.4003.BC3B.3901.93D4.E5C0",
+        "Latitude": "13.25",
+        "FiscalModules": 16.6739,
+        "NetArea": 3400,
+        "Longitude": "10.38",
+        "TotalArea": 1167.1764,
+        "HolderName": "Guimaraes Plateau National Park",
+        "TotalDeclaredArea": 1167.1764,
+        "PermanentPreservationArea": 250.2,
+        "NativeVegetationRemnant": 650.4,
+        "AdministrativeEasementArea": 67.8901,
+        "CPF": "931.877.970-40",
+        "ProtocolCode": "GO-5220009-6C3F.E6F7.FB51.C627.CC38.D58A.2A48.FCC8",
+        "ConsolidatedArea": 2700.5,
+        "RestrictedUseArea": 150.1,
+        "proof_type": "EcdsaSecp256r1Signature2019",
+        "proof_created": "2026-03-26T07:45:59Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:inji.github.io:inji-config:qa-inji1:landregistry#i9UN92j4oK60qFoACqXodq4LDpJ7McRuMn60JTf6rDI",
+        "proofValue": "z4gNKvTHVUX1PfzCrM4mxydPrzvUsfMc2sX1siJCTM7B1UGQwEDR3CxMNm6ibc9iEAjBq1qz6hYGnvyMUW1GmeW5c"
+      }'
+      output: '{
+          "verificationStatus": "SUCCESS"
+}'
+  Injiverify_VcVerificationES256_invalidCredentialSubject_Neg:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification ES256 VC with invalid Credential Subject
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256_02
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256/VcVerificationES256
+      outputTemplate: injiverify/VcVerificationES256/VcVerificationES256Result
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json"},
+          {"context_value": "https://w3id.org/security/suites/ed25519-2020/v1"}
+        ],
+        "id": "https://mosip.io/credential/a6ab3eba-f8f1-4bc4-8ba6-8a86f04daec5",
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "RegistrationReceiptCredential"}
+        ],
+        "issuer": "did:web:inji.github.io:inji-config:qa-inji1:landregistry",
+        "issuanceDate": "2026-03-26T07:45:59.374Z",
+        "expirationDate": "2028-03-25T07:45:59.374Z",
+        "RuralPropertyName": "invalidvalue",
+        "LegalReserveArea": 400.3,
+        "Municipality": "invalidvalue",
+        "RegistrationDate": "2024-10-25T16:40:31Z",
+        "NumberOfCAR": "GO-5220009-75F5.A618.6575.4003.BC3B.3901.93D4.E5C0",
+        "Latitude": "13.25",
+        "FiscalModules": 16.6739,
+        "NetArea": 3400,
+        "Longitude": "10.38",
+        "TotalArea": 1167.1764,
+        "HolderName": "Guimaraes Plateau National Park",
+        "TotalDeclaredArea": 1167.1764,
+        "PermanentPreservationArea": 250.2,
+        "NativeVegetationRemnant": 650.4,
+        "AdministrativeEasementArea": 67.8901,
+        "CPF": "931.877.970-40",
+        "ProtocolCode": "GO-5220009-6C3F.E6F7.FB51.C627.CC38.D58A.2A48.FCC8",
+        "ConsolidatedArea": 2700.5,
+        "RestrictedUseArea": 150.1,
+        "proof_type": "EcdsaSecp256r1Signature2019",
+        "proof_created": "2026-03-26T07:45:59Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:inji.github.io:inji-config:qa-inji1:landregistry#i9UN92j4oK60qFoACqXodq4LDpJ7McRuMn60JTf6rDI",
+        "proofValue": "z4gNKvTHVUX1PfzCrM4mxydPrzvUsfMc2sX1siJCTM7B1UGQwEDR3CxMNm6ibc9iEAjBq1qz6hYGnvyMUW1GmeW5c"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+  Injiverify_VcVerificationES256_invalidProofJws_Neg:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification ES256 VC with invalid Proof Jws
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256_03
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256/VcVerificationES256
+      outputTemplate: injiverify/VcVerificationES256/VcVerificationES256Result
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json"},
+          {"context_value": "https://w3id.org/security/suites/ed25519-2020/v1"}
+        ],
+        "id": "https://mosip.io/credential/a6ab3eba-f8f1-4bc4-8ba6-8a86f04daec5",
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "RegistrationReceiptCredential"}
+        ],
+        "issuer": "did:web:inji.github.io:inji-config:qa-inji1:landregistry",
+        "issuanceDate": "2026-03-26T07:45:59.374Z",
+        "expirationDate": "2028-03-25T07:45:59.374Z",
+        "RuralPropertyName": "Guimaraes Plateau",
+        "LegalReserveArea": 400.3,
+        "Municipality": "Saint John of Alliance, State: Goias",
+        "RegistrationDate": "2024-10-25T16:40:31Z",
+        "NumberOfCAR": "GO-5220009-75F5.A618.6575.4003.BC3B.3901.93D4.E5C0",
+        "Latitude": "13.25",
+        "FiscalModules": 16.6739,
+        "NetArea": 3400,
+        "Longitude": "10.38",
+        "TotalArea": 1167.1764,
+        "HolderName": "Guimaraes Plateau National Park",
+        "TotalDeclaredArea": 1167.1764,
+        "PermanentPreservationArea": 250.2,
+        "NativeVegetationRemnant": 650.4,
+        "AdministrativeEasementArea": 67.8901,
+        "CPF": "931.877.970-40",
+        "ProtocolCode": "GO-5220009-6C3F.E6F7.FB51.C627.CC38.D58A.2A48.FCC8",
+        "ConsolidatedArea": 2700.5,
+        "RestrictedUseArea": 150.1,
+        "proof_type": "EcdsaSecp256r1Signature2019",
+        "proof_created": "2026-03-26T07:45:59Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:inji.github.io:inji-config:qa-inji1:landregistry#i9UN92j4oK60qFoACqXodq4LDpJ7McRuMn60JTf6rDI",
+        "proofValue": "invalidValue"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+  Injiverify_VcVerificationES256_invalidProofType_Neg:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification ES256 VC with invalid Proof Type
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256_04
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256/VcVerificationES256
+      outputTemplate: injiverify/VcVerificationES256/VcVerificationES256Result
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json"},
+          {"context_value": "https://w3id.org/security/suites/ed25519-2020/v1"}
+        ],
+        "id": "https://mosip.io/credential/a6ab3eba-f8f1-4bc4-8ba6-8a86f04daec5",
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "RegistrationReceiptCredential"}
+        ],
+        "issuer": "did:web:inji.github.io:inji-config:qa-inji1:landregistry",
+        "issuanceDate": "2026-03-26T07:45:59.374Z",
+        "expirationDate": "2028-03-25T07:45:59.374Z",
+        "RuralPropertyName": "Guimaraes Plateau",
+        "LegalReserveArea": 400.3,
+        "Municipality": "Saint John of Alliance, State: Goias",
+        "RegistrationDate": "2024-10-25T16:40:31Z",
+        "NumberOfCAR": "GO-5220009-75F5.A618.6575.4003.BC3B.3901.93D4.E5C0",
+        "Latitude": "13.25",
+        "FiscalModules": 16.6739,
+        "NetArea": 3400,
+        "Longitude": "10.38",
+        "TotalArea": 1167.1764,
+        "HolderName": "Guimaraes Plateau National Park",
+        "TotalDeclaredArea": 1167.1764,
+        "PermanentPreservationArea": 250.2,
+        "NativeVegetationRemnant": 650.4,
+        "AdministrativeEasementArea": 67.8901,
+        "CPF": "931.877.970-40",
+        "ProtocolCode": "GO-5220009-6C3F.E6F7.FB51.C627.CC38.D58A.2A48.FCC8",
+        "ConsolidatedArea": 2700.5,
+        "RestrictedUseArea": 150.1,
+        "proof_type": "EcdsaSecp256k1Signature2019",
+        "proof_created": "2026-03-26T07:45:59Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:inji.github.io:inji-config:qa-inji1:landregistry#i9UN92j4oK60qFoACqXodq4LDpJ7McRuMn60JTf6rDI",
+        "proofValue": "z4gNKvTHVUX1PfzCrM4mxydPrzvUsfMc2sX1siJCTM7B1UGQwEDR3CxMNm6ibc9iEAjBq1qz6hYGnvyMUW1GmeW5c"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+  Injiverify_VcVerificationES256_invalidDID_Neg:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification ES256 VC with invalid DID
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256_05
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256/VcVerificationES256
+      outputTemplate: injiverify/VcVerificationES256/VcVerificationES256Result
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json"},
+          {"context_value": "https://w3id.org/security/suites/ed25519-2020/v1"}
+        ],
+        "id": "https://mosip.io/credential/a6ab3eba-f8f1-4bc4-8ba6-8a86f04daec5",
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "RegistrationReceiptCredential"}
+        ],
+        "issuer": "did:web:inji.github.io:inji-config:qa-inji1:landregistry",
+        "issuanceDate": "2026-03-26T07:45:59.374Z",
+        "expirationDate": "2028-03-25T07:45:59.374Z",
+        "RuralPropertyName": "Guimaraes Plateau",
+        "LegalReserveArea": 400.3,
+        "Municipality": "Saint John of Alliance, State: Goias",
+        "RegistrationDate": "2024-10-25T16:40:31Z",
+        "NumberOfCAR": "GO-5220009-75F5.A618.6575.4003.BC3B.3901.93D4.E5C0",
+        "Latitude": "13.25",
+        "FiscalModules": 16.6739,
+        "NetArea": 3400,
+        "Longitude": "10.38",
+        "TotalArea": 1167.1764,
+        "HolderName": "Guimaraes Plateau National Park",
+        "TotalDeclaredArea": 1167.1764,
+        "PermanentPreservationArea": 250.2,
+        "NativeVegetationRemnant": 650.4,
+        "AdministrativeEasementArea": 67.8901,
+        "CPF": "931.877.970-40",
+        "ProtocolCode": "GO-5220009-6C3F.E6F7.FB51.C627.CC38.D58A.2A48.FCC8",
+        "ConsolidatedArea": 2700.5,
+        "RestrictedUseArea": 150.1,
+        "proof_type": "EcdsaSecp256r1Signature2019",
+        "proof_created": "2026-03-26T07:45:59Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "invalidDIDValue",
+        "proofValue": "z4gNKvTHVUX1PfzCrM4mxydPrzvUsfMc2sX1siJCTM7B1UGQwEDR3CxMNm6ibc9iEAjBq1qz6hYGnvyMUW1GmeW5c"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+  Injiverify_VcVerificationES256_expiredVC_Neg:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification ES256 VC with expired VC
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256_06
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256/VcVerificationES256Revoked
+      outputTemplate: injiverify/VcVerificationES256/VcVerificationES256Result
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json"},
+          {"context_value": "https://w3id.org/security/suites/ed25519-2020/v1"}
+        ],
+        "id": "https://mosip.io/credential/a6ab3eba-f8f1-4bc4-8ba6-8a86f04daec5",
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "RegistrationReceiptCredential"}
+        ],
+        "issuer": "did:web:inji.github.io:inji-config:qa-inji1:landregistry",
+        "issuanceDate": "2026-03-26T07:45:59.374Z",
+        "expirationDate": "2026-03-29T07:45:59.374Z",
+        "RuralPropertyName": "Guimaraes Plateau",
+        "LegalReserveArea": 400.3,
+        "Municipality": "Saint John of Alliance, State: Goias",
+        "RegistrationDate": "2024-10-25T16:40:31Z",
+        "NumberOfCAR": "GO-5220009-75F5.A618.6575.4003.BC3B.3901.93D4.E5C0",
+        "Latitude": "13.25",
+        "FiscalModules": 16.6739,
+        "NetArea": 3400,
+        "Longitude": "10.38",
+        "TotalArea": 1167.1764,
+        "HolderName": "Guimaraes Plateau National Park",
+        "TotalDeclaredArea": 1167.1764,
+        "PermanentPreservationArea": 250.2,
+        "NativeVegetationRemnant": 650.4,
+        "AdministrativeEasementArea": 67.8901,
+        "CPF": "931.877.970-40",
+        "ProtocolCode": "GO-5220009-6C3F.E6F7.FB51.C627.CC38.D58A.2A48.FCC8",
+        "ConsolidatedArea": 2700.5,
+        "RestrictedUseArea": 150.1,
+        "proof_type": "EcdsaSecp256r1Signature2019",
+        "proof_created": "2026-03-26T07:45:59Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:inji.github.io:inji-config:qa-inji1:landregistry#i9UN92j4oK60qFoACqXodq4LDpJ7McRuMn60JTf6rDI",
+        "proofValue": "z4gNKvTHVUX1PfzCrM4mxydPrzvUsfMc2sX1siJCTM7B1UGQwEDR3CxMNm6ibc9iEAjBq1qz6hYGnvyMUW1GmeW5c"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+
+  Injiverify_VcVerificationES256_RevokedVC_Neg:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification ES256 VC with Revoked VC
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256_07
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256/VcVerificationES256Revoked
+      outputTemplate: injiverify/VcVerificationES256/VcVerificationES256Result
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json"},
+          {"context_value": "https://w3id.org/security/suites/ed25519-2020/v1"}
+        ],
+        "id": "https://mosip.io/credential/a6ab3eba-f8f1-4bc4-8ba6-8a86f04daec5",
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "RegistrationReceiptCredential"}
+        ],
+        "issuer": "did:web:inji.github.io:inji-config:qa-inji1:landregistry",
+        "issuanceDate": "2026-03-26T07:45:59.374Z",
+        "expirationDate": "2028-03-25T07:45:59.374Z",
+        "RuralPropertyName": "Guimaraes Plateau",
+        "LegalReserveArea": 400.3,
+        "Municipality": "Saint John of Alliance, State: Goias",
+        "RegistrationDate": "2024-10-25T16:40:31Z",
+        "NumberOfCAR": "GO-5220009-75F5.A618.6575.4003.BC3B.3901.93D4.E5C0",
+        "Latitude": "13.25",
+        "FiscalModules": 16.6739,
+        "NetArea": 3400,
+        "Longitude": "10.38",
+        "TotalArea": 1167.1764,
+        "HolderName": "Guimaraes Plateau National Park",
+        "TotalDeclaredArea": 1167.1764,
+        "PermanentPreservationArea": 250.2,
+        "NativeVegetationRemnant": 650.4,
+        "AdministrativeEasementArea": 67.8901,
+        "CPF": "931.877.970-40",
+        "ProtocolCode": "GO-5220009-6C3F.E6F7.FB51.C627.CC38.D58A.2A48.FCC8",
+        "ConsolidatedArea": 2700.5,
+        "RestrictedUseArea": 150.1,
+        "proof_type": "EcdsaSecp256r1Signature2019",
+        "proof_created": "2026-03-26T07:45:59Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:inji.github.io:inji-config:qa-inji1:landregistry#i9UN92j4oK60qFoACqXodq4LDpJ7McRuMn60JTf6rDI",
+        "proofValue": "z4gNKvTHVUX1PfzCrM4mxydPrzvUsfMc2sX1siJCTM7B1UGQwEDR3CxMNm6ibc9iEAjBq1qz6hYGnvyMUW1GmeW5c"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'
+  Injiverify_VcVerificationES256_InvalidVC_Neg:
+      endPoint: /v1/verify/vc-verification
+      description: Performing VC verification ES256 VC with invalid VC without issuer
+      uniqueIdentifier: TC_InjiVerify_VcVerificationES256_08
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationES256/VcVerificationES256
+      outputTemplate: injiverify/VcVerificationES256/VcVerificationES256Result
+      input: '{
+        "@context": [
+          {"context_value": "https://www.w3.org/2018/credentials/v1"},
+          {"context_value": "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json"},
+          {"context_value": "https://w3id.org/security/suites/ed25519-2020/v1"}
+        ],
+        "id": "https://mosip.io/credential/a6ab3eba-f8f1-4bc4-8ba6-8a86f04daec5",
+        "type": [
+          {"type_value": "VerifiableCredential"},
+          {"type_value": "RegistrationReceiptCredential"}
+        ],
+        "issuanceDate": "2026-03-26T07:45:59.374Z",
+        "expirationDate": "2028-03-25T07:45:59.374Z",
+        "RuralPropertyName": "Guimaraes Plateau",
+        "LegalReserveArea": 400.3,
+        "Municipality": "Saint John of Alliance, State: Goias",
+        "RegistrationDate": "2024-10-25T16:40:31Z",
+        "NumberOfCAR": "GO-5220009-75F5.A618.6575.4003.BC3B.3901.93D4.E5C0",
+        "Latitude": "13.25",
+        "FiscalModules": 16.6739,
+        "NetArea": 3400,
+        "Longitude": "10.38",
+        "TotalArea": 1167.1764,
+        "HolderName": "Guimaraes Plateau National Park",
+        "TotalDeclaredArea": 1167.1764,
+        "PermanentPreservationArea": 250.2,
+        "NativeVegetationRemnant": 650.4,
+        "AdministrativeEasementArea": 67.8901,
+        "CPF": "931.877.970-40",
+        "ProtocolCode": "GO-5220009-6C3F.E6F7.FB51.C627.CC38.D58A.2A48.FCC8",
+        "ConsolidatedArea": 2700.5,
+        "RestrictedUseArea": 150.1,
+        "proof_type": "EcdsaSecp256r1Signature2019",
+        "proof_created": "2026-03-26T07:45:59Z",
+        "proofPurpose": "assertionMethod",
+        "verificationMethod": "did:web:inji.github.io:inji-config:qa-inji1:landregistry#i9UN92j4oK60qFoACqXodq4LDpJ7McRuMn60JTf6rDI",
+        "proofValue": "z4gNKvTHVUX1PfzCrM4mxydPrzvUsfMc2sX1siJCTM7B1UGQwEDR3CxMNm6ibc9iEAjBq1qz6hYGnvyMUW1GmeW5c"
+      }'
+      output: '{
+          "verificationStatus": "INVALID"
+}'

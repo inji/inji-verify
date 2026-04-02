@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useEffect, useRef, useState } from 'react';
 import { GradientScanIcon, QrIcon, WhiteScanIcon } from '../../../utils/theme-utils';
 import { Button } from "./commons/Button";
 import {useAppDispatch} from "../../../redux/hooks";
@@ -7,6 +7,7 @@ import {checkInternetStatus} from "../../../utils/misc";
 import {updateInternetConnectionStatus} from "../../../redux/features/application-state/application-state.slice";
 import { ScanOutline } from '../../../utils/theme-utils';
 import { useTranslation } from 'react-i18next';
+import { Pages } from '../../../utils/config';
 
 const Scan = () => {
   const dispatch = useAppDispatch();
@@ -53,6 +54,24 @@ const Scan = () => {
 };
 
 export const ScanQrCode = () => {
+  const dispatch = useAppDispatch();
+  const openedScannerForResponseCodeRef = useRef(false);
+
+  useEffect(() => {
+    if (openedScannerForResponseCodeRef.current) return;
+    const searchParams = new URLSearchParams(window.location.search);
+    const rawHash = window.location.hash;
+    const hashParams = new URLSearchParams(
+      rawHash.startsWith('#') ? rawHash.slice(1) : rawHash
+    );
+    const hasResponseCode =
+      searchParams.has('response_code') || hashParams.has('response_code');
+    if (!hasResponseCode) return;
+    if (localStorage.getItem('path') !== Pages.Scan) return;
+    openedScannerForResponseCodeRef.current = true;
+    dispatch(qrReadInit({ method: 'SCAN' }));
+  }, [dispatch]);
+
   return (
     <div className="flex flex-col pt-0 pb-[100px] lg:py-[42px] px-0 lg:px-[104px] text-center content-center justify-center">
     <div className="xs:col-end-13">

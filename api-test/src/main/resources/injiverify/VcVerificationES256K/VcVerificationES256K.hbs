@@ -1,0 +1,31 @@
+{
+  "@context": [{{#each @context}}"{{context_value}}"{{#unless @last}}, {{/unless}}{{/each}}],
+  "issuer": "{{issuer}}",
+  "type": [{{#each type}}"{{type_value}}"{{#unless @last}}, {{/unless}}{{/each}}],
+  "issuanceDate": "{{issuanceDate}}",
+  "expirationDate": "{{expirationDate}}",
+  "credentialSubject": {
+    "id": "{{credentialSubject_id}}",
+    "fullName": "{{fullName}}",
+    "mobileNumber": "{{mobileNumber}}",
+    "dateOfBirth": "{{dateOfBirth}}",
+    "gender": "{{gender}}",
+    "state": "{{state}}",
+    "district": "{{district}}",
+    "villageOrTown": "{{villageOrTown}}",
+    "postalCode": "{{postalCode}}",
+    "landArea": "{{landArea}}",
+    "landOwnershipType": "{{landOwnershipType}}",
+    "primaryCropType": "{{primaryCropType}}",
+    "secondaryCropType": "{{secondaryCropType}}",
+    "face": "{{face}}",
+    "farmerID": "{{farmerID}}"
+  },
+  "proof": {
+    "type": "{{proof_type}}",
+    "created": "{{proof_created}}",
+    "proofPurpose": "{{proofPurpose}}",
+    "verificationMethod": "{{verificationMethod}}",
+    "jws": "{{jws}}"
+  }
+}
