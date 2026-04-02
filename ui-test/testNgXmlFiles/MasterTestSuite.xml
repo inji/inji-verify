@@ -3,8 +3,8 @@
 
 <suite name="Master Suite">
 	<suite-files>
-		<suite-file path="InjiVerifyPrerequisiteSuite.xml" />
+		 <suite-file path="InjiVerifyPrerequisiteSuite.xml" />
 		<suite-file path="TestNg.xml" />
-		<suite-file path="InjiVerifyPostrequisiteSuite.xml" />
+		 <suite-file path="InjiVerifyPostrequisiteSuite.xml" />
 	</suite-files>
 </suite>

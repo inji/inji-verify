@@ -9,6 +9,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.FindBy;
 import java.time.Duration;
 import org.openqa.selenium.support.PageFactory;
+import utils.BaseTest;
 import utils.WaitUtil;
 
 public class UploadQRCode extends BasePage {
@@ -100,19 +101,19 @@ public class UploadQRCode extends BasePage {
 	WebElement fullNameValue;
 
 	public void clickOnUploadQRCodePng() {
-		uploadFile(driver, uploadpath, "InsuranceCredential0.png");
+		uploadFile(driver, uploadpath, BaseTest.getInsuranceCredentialPngPath());
 	}
 
 	public void clickOnAnotherUploadQRCodePng() {
-		uploadFile(driver, uploadpath, "InsuranceCredential0.png");
+		uploadFile(driver, uploadpath, BaseTest.getInsuranceCredentialPngPath());
 	}
 
 	public void clickOnUploadQRCodeJpg() {
-		uploadFile(driver, uploadpath, "InsuranceCredential0.jpg");
+		uploadFile(driver, uploadpath, BaseTest.getInsuranceCredentialJpgPath());
 	}
 
 	public void clickOnAnotherUploadQRCodeJpg() {
-		uploadFile(driver, uploadpath, "InsuranceCredential0.jpg");
+		uploadFile(driver, uploadpath, BaseTest.getInsuranceCredentialJpgPath());
 	}
 
 	public void uploadMultiLanguageVc() {
@@ -120,19 +121,19 @@ public class UploadQRCode extends BasePage {
 	}
 
 	public void clickOnUploadQRCodePdf() {
-		uploadFile(driver, uploadpath, "InsuranceCredential.pdf");
+		uploadFile(driver, uploadpath, BaseTest.getDownloadedInsurancePdfPath());
 	}
 
 	public void clickOnAnotherUploadQRCodePdf() {
-		uploadFile(driver, uploadpath, "InsuranceCredential.pdf");
+		uploadFile(driver, uploadpath, BaseTest.getDownloadedInsurancePdfPath());
 	}
 
 	public void clickOnUploadQRCodeJpeg() {
-		uploadFile(driver, uploadpath, "InsuranceCredential0.jpeg");
+		uploadFile(driver, uploadpath, BaseTest.getInsuranceCredentialJpegPath());
 	}
 
 	public void clickOnAnotherUploadQRCodeJpeg() {
-		uploadFile(driver, uploadpath, "InsuranceCredential0.jpeg");
+		uploadFile(driver, uploadpath, BaseTest.getInsuranceCredentialJpegPath());
 	}
 
 	public void clickOnUploadQRCodeHtml() {
@@ -154,6 +155,21 @@ public class UploadQRCode extends BasePage {
 
 	public void clickOnUploadLargeSizeQRCode() {
 		uploadFileForStaticQr(driver, UploadQRCodeButton, "largesize.PNG");
+
+	}
+
+	public void clickOnUploadSmallSizeQRCode() {
+		uploadFileForStaticQr(driver, UploadQRCodeButton, "SmallFileSize.png");
+
+	}
+
+	public void clickOnUploadBoundaryMinSizeQRCode() {
+		uploadFileForStaticQr(driver, UploadQRCodeButton, "QRCode_10KB.jpg");
+
+	}
+
+	public void clickOnUploadBoundaryMaxSizeQRCode() {
+		uploadFileForStaticQr(driver, UploadQRCodeButton, "QRCode_5MB.png");
 
 	}
 
@@ -205,6 +221,18 @@ public class UploadQRCode extends BasePage {
 	public void clickOnUploadQRCodeLargeFileSize() {
 		uploadFileForStaticQr(driver, UploadQRCodeButton, "LargeFileSize.png");
 
+	}
+
+	public boolean isUploadFileInputPresent() {
+		return !driver.findElements(By.xpath("//input[@type='file']")).isEmpty();
+	}
+
+	public boolean isUploadFileInputEnabled() {
+		try {
+			return uploadpath.isEnabled();
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	public boolean isVisibleErrorIcon() {

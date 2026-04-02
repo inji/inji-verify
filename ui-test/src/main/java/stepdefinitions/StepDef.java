@@ -1,45 +1,28 @@
 
 package stepdefinitions;
 
-import com.aventstack.extentreports.ExtentTest;
-
-import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.NoSuchWindowException;
-import org.openqa.selenium.TimeoutException;
-import org.openqa.selenium.WebDriver;
-import org.openqa.selenium.WebElement;
-import org.openqa.selenium.support.ui.ExpectedConditions;
-import org.openqa.selenium.support.ui.WebDriverWait;
 import org.testng.Assert;
 
 import constants.UiConstants;
-import io.cucumber.java.en.And;
+import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
 import io.cucumber.java.en.When;
-import io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId;
 
 import java.io.IOException;
-import pages.BLE;
-import pages.HomePage;
-import pages.ScanQRCodePage;
-import pages.UploadQRCode;
-import pages.VpVerification;
+
 import utils.BaseTest;
 import java.util.Base64;
 import java.io.OutputStream;
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-import java.time.Duration;
 import java.io.FileOutputStream;
 import java.io.File;
+
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
-import org.codehaus.plexus.util.Expand;
 import org.apache.pdfbox.rendering.PDFRenderer;
 import org.apache.pdfbox.pdmodel.PDPage;
-import utils.ExtentReportManager;
 import utils.ScreenshotUtil;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.openqa.selenium.logging.LogEntries;
@@ -49,7 +32,6 @@ import org.openqa.selenium.JavascriptExecutor;
 import api.InjiVerifyConfigManager;
 
 
-import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 
 import static org.junit.Assert.assertFalse;
@@ -60,50 +42,7 @@ import static org.testng.Assert.assertTrue;
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
 
-public class StepDef {
-
-	String pageTitle;
-	public WebDriver driver;
-	public BaseTest baseTest;
-	private HomePage homePage;
-	private BLE ble;
-	private VpVerification vpverification;
-	private ScanQRCodePage scanqrcode;
-	private UploadQRCode uploadqrcode;
-    public static String policynumber =SimplePostForAutoGenId.policyNumber;
-    public static String fullname =SimplePostForAutoGenId.fullName;
-    public static String dob =SimplePostForAutoGenId.dob;
-	ExtentTest test = ExtentReportManager.getTest();
-	public static String screenshotPath = System.getProperty("user.dir")+"/test-output/screenshots";
-	static LocalDate date = LocalDate.parse(dob);
-	public static String formattedDate = date.format(DateTimeFormatter.ofPattern("MM-dd-yyyy"));
-
-	public StepDef() {
-		this.baseTest =  new BaseTest();
-		this.driver = baseTest.getDriver();
-		if (driver == null) {
-			throw new RuntimeException("WebDriver is null in StepDef! Check if BaseTest initializes correctly.");
-		}
-		this.homePage = new HomePage(driver);
-		this.ble = new BLE(driver);
-		this.vpverification = new VpVerification(driver);
-		this.scanqrcode = new ScanQRCodePage(driver);
-		this.uploadqrcode = new UploadQRCode(driver);
-
-	}
-	
-	
-    public static void logFailure(ExtentTest test, WebDriver driver, String message, Exception e) {
-        test.log(Status.FAIL, message + ": " + e.getMessage());
-        test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
-        ScreenshotUtil.attachScreenshot(driver, "FailureScreenshot");
-    }
-    
-    public void logFailure(ExtentTest test, WebDriver driver, String message, Throwable throwable) {
-        test.log(Status.FAIL, message);
-        test.log(Status.FAIL, throwable);
-        ScreenshotUtil.attachScreenshot(driver, "FailureScreenshot");
-    }
+public class StepDef extends BaseSteps {
 
 
     @Given("User gets the title of the page")
@@ -120,7 +59,7 @@ public class StepDef {
         }
     }
 
-    @When("Validate the title of the page")
+    @Then("Validate the title of the page")
     public void validateTheTitleOfThePage() {
         try {
             String actualTitle = homePage.getPageTitle();
@@ -281,7 +220,7 @@ public class StepDef {
             throw e;
         }
     }
-    
+
     @When("User click on continue")
     public void verifyClickOnContinueButton() {
         try {
@@ -433,12 +372,12 @@ public class StepDef {
     public void verifyCopyrightText() {
         try {
             String actualCopyrightText = homePage.getVerifyCopyrightText();
-            Assert.assertEquals(actualCopyrightText, UiConstants.COPYRIGHT_INFO, 
+            Assert.assertEquals(actualCopyrightText, UiConstants.COPYRIGHT_INFO,
                 "Copyright text does not match the expected value.");
-            test.log(Status.PASS, "Copyright text verification successful. Expected: " 
+            test.log(Status.PASS, "Copyright text verification successful. Expected: "
                 + UiConstants.COPYRIGHT_INFO + ", Actual: " + actualCopyrightText);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Copyright text verification failed. Expected: " 
+            test.log(Status.FAIL, "Copyright text verification failed. Expected: "
                 + UiConstants.COPYRIGHT_INFO + ", but found: " + homePage.getVerifyCopyrightText());
             throw e;
         } catch (NoSuchElementException e) {
@@ -454,12 +393,12 @@ public class StepDef {
     public void verifyUploadQRCodeStep1Label() {
         try {
             String actualLabel = homePage.getUploadQRCodeStep1Label();
-            Assert.assertEquals(actualLabel, UiConstants.UPLOAD_QR_CODE_STEP1_LABEL, 
+            Assert.assertEquals(actualLabel, UiConstants.UPLOAD_QR_CODE_STEP1_LABEL,
                 "Step 1 label for Upload QR Code does not match the expected value.");
-            test.log(Status.PASS, "Upload QR Code Step 1 label verification successful. Expected: " 
+            test.log(Status.PASS, "Upload QR Code Step 1 label verification successful. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP1_LABEL + ", Actual: " + actualLabel);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Upload QR Code Step 1 label verification failed. Expected: " 
+            test.log(Status.FAIL, "Upload QR Code Step 1 label verification failed. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP1_LABEL + ", but found: " + homePage.getUploadQRCodeStep1Label());
             throw e;
         } catch (NoSuchElementException e) {
@@ -475,12 +414,12 @@ public class StepDef {
     public void verifyUploadQRCodeStep1Description() {
         try {
             String actualDescription = homePage.getUploadQRCodeStep1Description();
-            Assert.assertEquals(actualDescription, UiConstants.UPLOAD_QR_CODE_STEP1_DESCRIPTION, 
+            Assert.assertEquals(actualDescription, UiConstants.UPLOAD_QR_CODE_STEP1_DESCRIPTION,
                 "Step 1 description for Upload QR Code does not match the expected value.");
-            test.log(Status.PASS, "Upload QR Code Step 1 description verification successful. Expected: " 
+            test.log(Status.PASS, "Upload QR Code Step 1 description verification successful. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP1_DESCRIPTION + ", Actual: " + actualDescription);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Upload QR Code Step 1 description verification failed. Expected: " 
+            test.log(Status.FAIL, "Upload QR Code Step 1 description verification failed. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP1_DESCRIPTION + ", but found: " + homePage.getUploadQRCodeStep1Description());
             throw e;
         } catch (NoSuchElementException e) {
@@ -496,12 +435,12 @@ public class StepDef {
     public void verifyUploadQRCodeStep2Label() {
         try {
             String actualLabel = homePage.getUploadQRCodeStep2Label();
-            Assert.assertEquals(actualLabel, UiConstants.UPLOAD_QR_CODE_STEP2_LABEL, 
+            Assert.assertEquals(actualLabel, UiConstants.UPLOAD_QR_CODE_STEP2_LABEL,
                 "Step 2 label for Upload QR Code does not match the expected value.");
-            test.log(Status.PASS, "Upload QR Code Step 2 label verification successful. Expected: " 
+            test.log(Status.PASS, "Upload QR Code Step 2 label verification successful. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP2_LABEL + ", Actual: " + actualLabel);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Upload QR Code Step 2 label verification failed. Expected: " 
+            test.log(Status.FAIL, "Upload QR Code Step 2 label verification failed. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP2_LABEL + ", but found: " + homePage.getUploadQRCodeStep2Label());
             throw e;
         } catch (NoSuchElementException e) {
@@ -517,12 +456,12 @@ public class StepDef {
     public void verifyUploadQRCodeStep2Description() {
         try {
             String actualDescription = homePage.getUploadQRCodeStep2Description();
-            Assert.assertEquals(actualDescription, UiConstants.UPLOAD_QR_CODE_STEP2_DESCRIPTION, 
+            Assert.assertEquals(actualDescription, UiConstants.UPLOAD_QR_CODE_STEP2_DESCRIPTION,
                 "Step 2 description for Upload QR Code does not match the expected value.");
-            test.log(Status.PASS, "Upload QR Code Step 2 description verification successful. Expected: " 
+            test.log(Status.PASS, "Upload QR Code Step 2 description verification successful. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP2_DESCRIPTION + ", Actual: " + actualDescription);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Upload QR Code Step 2 description verification failed. Expected: " 
+            test.log(Status.FAIL, "Upload QR Code Step 2 description verification failed. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP2_DESCRIPTION + ", but found: " + homePage.getUploadQRCodeStep2Description());
             throw e;
         } catch (NoSuchElementException e) {
@@ -538,12 +477,12 @@ public class StepDef {
     public void verifyUploadQRCodeStep3Label() {
         try {
             String actualLabel = homePage.getUploadQRCodeStep3Label();
-            Assert.assertEquals(actualLabel, UiConstants.UPLOAD_QR_CODE_STEP3_LABEL, 
+            Assert.assertEquals(actualLabel, UiConstants.UPLOAD_QR_CODE_STEP3_LABEL,
                 "Step 3 label for Upload QR Code does not match the expected value.");
-            test.log(Status.PASS, "Upload QR Code Step 3 label verification successful. Expected: " 
+            test.log(Status.PASS, "Upload QR Code Step 3 label verification successful. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP3_LABEL + ", Actual: " + actualLabel);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Upload QR Code Step 3 label verification failed. Expected: " 
+            test.log(Status.FAIL, "Upload QR Code Step 3 label verification failed. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP3_LABEL + ", but found: " + homePage.getUploadQRCodeStep3Label());
             throw e;
         } catch (NoSuchElementException e) {
@@ -559,12 +498,12 @@ public class StepDef {
     public void verifyUploadQRCodeStep3Description() {
         try {
             String actualDescription = homePage.getUploadQRCodeStep3Description();
-            Assert.assertEquals(actualDescription, UiConstants.UPLOAD_QR_CODE_STEP3_DESCRIPTION, 
+            Assert.assertEquals(actualDescription, UiConstants.UPLOAD_QR_CODE_STEP3_DESCRIPTION,
                 "Step 3 description for Upload QR Code does not match the expected value.");
-            test.log(Status.PASS, "Upload QR Code Step 3 description verification successful. Expected: " 
+            test.log(Status.PASS, "Upload QR Code Step 3 description verification successful. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP3_DESCRIPTION + ", Actual: " + actualDescription);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Upload QR Code Step 3 description verification failed. Expected: " 
+            test.log(Status.FAIL, "Upload QR Code Step 3 description verification failed. Expected: "
                 + UiConstants.UPLOAD_QR_CODE_STEP3_DESCRIPTION + ", but found: " + homePage.getUploadQRCodeStep3Description());
             throw e;
         } catch (NoSuchElementException e) {
@@ -625,12 +564,12 @@ public class StepDef {
     public void verifyFileFormatConstraintsText() {
         try {
             String actualText = homePage.getFormatConstraintText();
-            Assert.assertEquals(actualText, UiConstants.FILE_FORMAT_CONSTRAINTS_TEXT, 
+            Assert.assertEquals(actualText, UiConstants.FILE_FORMAT_CONSTRAINTS_TEXT,
                 "File format constraints text does not match the expected value.");
-            test.log(Status.PASS, "File format constraints text verification successful. Expected: " 
+            test.log(Status.PASS, "File format constraints text verification successful. Expected: "
                 + UiConstants.FILE_FORMAT_CONSTRAINTS_TEXT + ", Actual: " + actualText);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "File format constraints text verification failed. Expected: " 
+            test.log(Status.FAIL, "File format constraints text verification failed. Expected: "
                 + UiConstants.FILE_FORMAT_CONSTRAINTS_TEXT + ", but found: " + homePage.getFormatConstraintText());
             throw e;
         } catch (NoSuchElementException e) {
@@ -717,7 +656,7 @@ public class StepDef {
 	        throw e;
 	    }
 	}
-	
+
     @When("Upload another QR code file png")
     public void uploadAnotherQRCodeFile() {
         try {
@@ -761,7 +700,7 @@ public class StepDef {
             throw e;
         }
     }
-    
+
     @Then("verify policy issued on value")
     public void verify_policy_issued_on_value() {
         try {
@@ -777,7 +716,7 @@ public class StepDef {
         }
     }
 
-    
+
     @Then("verify full name value")
     public void verify_full_name_value() {
         try {
@@ -793,7 +732,7 @@ public class StepDef {
         }
     }
 
-    
+
     @Then("verify policy expires on value")
     public void verify_policy_expires_on_value() {
         try {
@@ -824,8 +763,8 @@ public class StepDef {
             throw e;
         }
     }
-    
-    
+
+
     @Then("Verify click on another qr code button")
     public void verify_clickOn_another_qr_code_button_on_successful_verification() {
         try {
@@ -875,12 +814,12 @@ public class StepDef {
     public void verifyCongratulationsMessageOnSuccessfulVerification() {
         try {
             String actualMessage = uploadqrcode.getCongratulationtext();
-            Assert.assertEquals(actualMessage, UiConstants.CONGRATULATIONS_MESSAGE, 
+            Assert.assertEquals(actualMessage, UiConstants.VERIFICATION_SUCCESS_MESSAGE,
                 "Congratulations message does not match the expected value.");
             test.log(Status.PASS, "Successfully verified the congratulations message: " + actualMessage);
         } catch (AssertionError e) {
-            logFailure(test, driver, "Congratulations message verification failed. Expected: " 
-                + UiConstants.CONGRATULATIONS_MESSAGE + ", but found: " + uploadqrcode.getCongratulationtext(), e);
+            logFailure(test, driver, "Congratulations message verification failed. Expected: "
+                + UiConstants.VERIFICATION_SUCCESS_MESSAGE + ", but found: " + uploadqrcode.getCongratulationtext(), e);
             throw e;
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while verifying the congratulations message", e);
@@ -895,11 +834,11 @@ public class StepDef {
     public void verifyToastMessage() {
         try {
             String actualToastMessage = uploadqrcode.getQRCodeUploadedSuccessToastMessage();
-            Assert.assertEquals(actualToastMessage, UiConstants.SUCCESS_TOAST_MESSAGE, 
+            Assert.assertEquals(actualToastMessage, UiConstants.SUCCESS_TOAST_MESSAGE,
                 "Toast message does not match the expected value.");
             test.log(Status.PASS, "Successfully verified the toast message: " + actualToastMessage);
         } catch (AssertionError e) {
-            logFailure(test, driver, "Toast message verification failed. Expected: " 
+            logFailure(test, driver, "Toast message verification failed. Expected: "
                 + UiConstants.SUCCESS_TOAST_MESSAGE + ", but found: " + uploadqrcode.getQRCodeUploadedSuccessToastMessage(), e);
             throw e;
         } catch (NoSuchElementException e) {
@@ -953,7 +892,7 @@ public class StepDef {
             throw e;
         }
     }
-	
+
     @When("Upload another QR code file PDF")
     public void uploadAnotherQRCodeFilePdf() {
         try {
@@ -982,7 +921,7 @@ public class StepDef {
             throw e;
         }
     }
-	
+
     @When("Upload another QR code file JPG")
     public void uploadAnotherQRCodeFileJpg() {
         try {
@@ -1127,15 +1066,15 @@ public class StepDef {
     public void verifyErrorMessageForInvalidQRCode() {
         try {
             String actualErrorMessage = uploadqrcode.getErrorTextInvalidQRCode();
-            Assert.assertEquals(actualErrorMessage, UiConstants.ERROR_MESSAGE_INVALID_QR, 
+            Assert.assertEquals(actualErrorMessage, UiConstants.ERROR_MESSAGE_INVALID_QR,
                 "Error message does not match for invalid QR code.");
-            test.log(Status.PASS, "Error message validation successful. Expected: " + 
+            test.log(Status.PASS, "Error message validation successful. Expected: " +
                 UiConstants.ERROR_MESSAGE_INVALID_QR + ", Actual: " + actualErrorMessage);
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while verifying the error message for invalid QR code", e);
             throw e;
         } catch (AssertionError e) {
-            logFailure(test, driver, "Error message validation failed for invalid QR code. Expected: " + 
+            logFailure(test, driver, "Error message validation failed for invalid QR code. Expected: " +
                 UiConstants.ERROR_MESSAGE_INVALID_QR + ", but found: " + uploadqrcode.getErrorTextInvalidQRCode(), e);
             throw e;
         } catch (Exception e) {
@@ -1148,15 +1087,15 @@ public class StepDef {
     public void verifyErrorMessage() {
         try {
             String actualErrorMessage = uploadqrcode.getErromessageForUnSupportedFromat();
-            Assert.assertEquals(actualErrorMessage, UiConstants.ERROR_UNSUPPORTED_FORMAT, 
+            Assert.assertEquals(actualErrorMessage, UiConstants.ERROR_UNSUPPORTED_FORMAT,
                 "Error message does not match for unsupported file format.");
-            test.log(Status.PASS, "Error message validation successful. Expected: " + 
+            test.log(Status.PASS, "Error message validation successful. Expected: " +
                 UiConstants.ERROR_UNSUPPORTED_FORMAT + ", Actual: " + actualErrorMessage);
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while verifying the error message for unsupported format", e);
             throw e;
         } catch (AssertionError e) {
-            logFailure(test, driver, "Error message validation failed for unsupported format. Expected: " + 
+            logFailure(test, driver, "Error message validation failed for unsupported format. Expected: " +
                 UiConstants.ERROR_UNSUPPORTED_FORMAT + ", but found: " + uploadqrcode.getErromessageForUnSupportedFromat(), e);
             throw e;
         } catch (Exception e) {
@@ -1184,15 +1123,15 @@ public class StepDef {
     public void verifyInfoMessageLargeFileSize() {
         try {
             String actualMessage = uploadqrcode.getErrorMessageLargerFileSize();
-            Assert.assertEquals(actualMessage, UiConstants.ERROR_MESSAGE_LARGEFILE_QR, 
+            Assert.assertEquals(actualMessage, UiConstants.ERROR_MESSAGE_LARGEFILE_QR,
                 "Mismatch in error message for large QR code file.");
-            test.log(Status.PASS, "Verified info message for large QR code file upload successfully. Expected: " + 
+            test.log(Status.PASS, "Verified info message for large QR code file upload successfully. Expected: " +
                 UiConstants.ERROR_MESSAGE_LARGEFILE_QR + ", Actual: " + actualMessage);
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while verifying the error message for large QR code file", e);
             throw e;
         } catch (AssertionError e) {
-            logFailure(test, driver, "Error message validation failed for large QR code file. Expected: " + 
+            logFailure(test, driver, "Error message validation failed for large QR code file. Expected: " +
                 UiConstants.ERROR_MESSAGE_LARGEFILE_QR + ", but found: " + uploadqrcode.getErrorMessageLargerFileSize(), e);
             throw e;
         } catch (Exception e) {
@@ -1228,177 +1167,40 @@ public class StepDef {
         }
     }
 
-    @When("verify click on scan the qr tab")
-    public void verifyClickOnScanTheQrTab() {
+    @When("Click browser back button")
+    public void clickBrowserBackButton() {
         try {
-            scanqrcode.clickOnScanQRButtonTab();
-            test.log(Status.PASS, "Clicked on 'Scan QR' tab successfully.");
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while clicking 'Scan QR' tab", e);
-            throw e;
+            uploadqrcode.browserBackButton(driver);
+            test.log(Status.PASS, "Browser back button clicked successfully.");
         } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while clicking 'Scan QR' tab", e);
+            logFailure(test, driver, "Unexpected error while clicking browser back button", e);
             throw e;
         }
     }
 
-    @When("Verify scan qr code step1 label")
-    public void verifyScanQRCodeStep1Label() {
+    @Then("Validate offline upload error message with please try again button")
+    public void validateOfflineUploadErrorMessageWithPleaseTryAgainButton() {
         try {
-            String actualLabel = scanqrcode.getScanQRCodeStep1Label();
-            Assert.assertEquals(actualLabel, UiConstants.SCAN_QR_CODE_STEP1_LABEL, 
-                "Scan QR Code Step 1 label does not match.");
-            test.log(Status.PASS, "Verified Scan QR Code Step 1 label successfully. Expected: " 
-                + UiConstants.SCAN_QR_CODE_STEP1_LABEL + ", Actual: " + actualLabel);
+            Assert.assertEquals(
+                    homePage.getNoInternetTitle(),
+                    UiConstants.NO_INTERNET_TITLE,
+                    "Offline upload title does not match."
+            );
+            Assert.assertEquals(
+                    homePage.getNoInternetDescription(),
+                    UiConstants.NO_INTERNET_DESCRIPTION,
+                    "Offline upload description does not match."
+            );
+            Assert.assertTrue(homePage.isTryAgainButtonVisible(), "Please try again button is not visible.");
+            test.log(Status.PASS, "Offline upload error state validated successfully.");
         } catch (AssertionError e) {
-            logFailure(test, driver, "Mismatch in Scan QR Code Step 1 label", e);
+            test.log(Status.FAIL, "Offline upload error validation failed: " + e.getMessage());
             throw e;
         } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code Step 1 label", e);
+            logFailure(test, driver, "Element not found while validating offline upload error state", e);
             throw e;
         } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code Step 1 label", e);
-            throw e;
-        }
-    }
-
-    @When("Verify scan qr code step1 description")
-    public void verifyScanQRCodeStep1Description() {
-        try {
-            String actualDescription = scanqrcode.getScanQRCodeStep1Description();
-            Assert.assertEquals(actualDescription, UiConstants.SCAN_QR_CODE_STEP1_DESCRIPTION, 
-                "Scan QR Code Step 1 description does not match.");
-            test.log(Status.PASS, "Verified Scan QR Code Step 1 description successfully. Expected: " 
-                + UiConstants.SCAN_QR_CODE_STEP1_DESCRIPTION + ", Actual: " + actualDescription);
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Mismatch in Scan QR Code Step 1 description", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code Step 1 description", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code Step 1 description", e);
-            throw e;
-        }
-    }
-
-    @When("Verify scan qr code step2 label")
-    public void verifyScanQRCodeStep2Label() {
-        try {
-            String actualLabel = scanqrcode.getScanQRCodeStep2Label();
-            Assert.assertEquals(actualLabel, UiConstants.SCAN_QR_CODE_STEP2_LABEL, 
-                "Scan QR Code Step 2 label does not match.");
-            test.log(Status.PASS, "Verified Scan QR Code Step 2 label successfully. Expected: " 
-                + UiConstants.SCAN_QR_CODE_STEP2_LABEL + ", Actual: " + actualLabel);
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Mismatch in Scan QR Code Step 2 label", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code Step 2 label", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code Step 2 label", e);
-            throw e;
-        }
-    }
-
-    @When("Verify scan qr code step2 description")
-    public void verifyScanQRCodeStep2Description() {
-        try {
-            String actualDescription = scanqrcode.getScanQRCodeStep2Description();
-            Assert.assertEquals(actualDescription, UiConstants.SCAN_QR_CODE_STEP2_DESCRIPTION, 
-                "Scan QR Code Step 2 description does not match.");
-            test.log(Status.PASS, "Verified Scan QR Code Step 2 description successfully. Expected: " 
-                + UiConstants.SCAN_QR_CODE_STEP2_DESCRIPTION + ", Actual: " + actualDescription);
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Mismatch in Scan QR Code Step 2 description", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code Step 2 description", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code Step 2 description", e);
-            throw e;
-        }
-    }
-
-    @When("Verify scan qr code step3 label")
-    public void verifyScanQRCodeStep3Label() {
-        try {
-            String actualLabel = scanqrcode.getScanQRCodeStep3Label();
-            Assert.assertEquals(actualLabel, UiConstants.SCAN_QR_CODE_STEP3_LABEL, 
-                "Scan QR Code Step 3 label does not match.");
-            test.log(Status.PASS, "Verified Scan QR Code Step 3 label successfully. Expected: " 
-                + UiConstants.SCAN_QR_CODE_STEP3_LABEL + ", Actual: " + actualLabel);
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Mismatch in Scan QR Code Step 3 label", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code Step 3 label", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code Step 3 label", e);
-            throw e;
-        }
-    }
-
-    @When("Verify scan qr code step3 description")
-    public void verifyScanQRCodeStep3Description() {
-        try {
-            String actualDescription = scanqrcode.getScanQRCodeStep3Description();
-            Assert.assertEquals(actualDescription, UiConstants.SCAN_QR_CODE_STEP3_DESCRIPTION, 
-                "Scan QR Code Step 3 description does not match.");
-            test.log(Status.PASS, "Verified Scan QR Code Step 3 description successfully. Expected: " 
-                + UiConstants.SCAN_QR_CODE_STEP3_DESCRIPTION + ", Actual: " + actualDescription);
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Mismatch in Scan QR Code Step 3 description", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code Step 3 description", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code Step 3 description", e);
-            throw e;
-        }
-    }
-
-
-    @When("Verify scan qr code step4 label")
-    public void verifyScanQRCodeStep4Label() {
-        try {
-            String actualLabel = scanqrcode.getScanQRCodeStep4Label();
-            Assert.assertEquals(actualLabel, UiConstants.SCAN_QR_CODE_STEP4_LABEL, 
-                "Scan QR Code Step 4 label does not match.");
-            test.log(Status.PASS, "Verified Scan QR Code Step 4 label successfully. Expected: " 
-                + UiConstants.SCAN_QR_CODE_STEP4_LABEL + ", Actual: " + actualLabel);
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Mismatch in Scan QR Code Step 4 label", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code Step 4 label", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code Step 4 label", e);
-            throw e;
-        }
-    }
-
-    @When("Verify scan qr code step4 description")
-    public void verifyScanQRCodeStep4Description() {
-        try {
-            String actualDescription = scanqrcode.getScanQRCodeStep4Description();
-            Assert.assertEquals(actualDescription, UiConstants.SCAN_QR_CODE_STEP4_DESCRIPTION, 
-                "Scan QR Code Step 4 description does not match.");
-            test.log(Status.PASS, "Verified Scan QR Code Step 4 description successfully. Expected: " 
-                + UiConstants.SCAN_QR_CODE_STEP4_DESCRIPTION + ", Actual: " + actualDescription);
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Mismatch in Scan QR Code Step 4 description", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code Step 4 description", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code Step 4 description", e);
+            logFailure(test, driver, "Unexpected error while validating offline upload error state", e);
             throw e;
         }
     }
@@ -1454,91 +1256,6 @@ public class StepDef {
         }
     }
 
-    @When("Verify scan qr code area")
-    public void verifyScanQRCodeArea() {
-        try {
-            Assert.assertTrue(scanqrcode.isVisibleScanQRCodeArea(), "Scan QR Code area is not visible.");
-            test.log(Status.PASS, "Scan QR Code area is visible.");
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Scan QR Code area is not visible", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code area", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code area", e);
-            throw e;
-        }
-    }
-
-    @When("verify scan qr code icon")
-    public void verifyScanQRCodeIcon() {
-        try {
-            Assert.assertTrue(scanqrcode.isVisibleScanQRCodeIcon(), "Scan QR Code icon is not visible.");
-            test.log(Status.PASS, "Scan QR Code icon is visible.");
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Scan QR Code icon is not visible", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code icon", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code icon", e);
-            throw e;
-        }
-    }
-
-    @When("verify scan qr code button")
-    public void verifyScanQRCodeButton() {
-        try {
-            Assert.assertTrue(scanqrcode.isVisibleScanQRCodeButton(), "Scan QR Code button is not visible.");
-            test.log(Status.PASS, "Scan QR Code button is visible.");
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Scan QR Code button is not visible", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code button", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code button", e);
-            throw e;
-        }
-    }
-
-    @When("verify click on scan qr code button")
-    public void verifyClickOnScanQRCodeButton() {
-    	try {
-            Assert.assertTrue(scanqrcode.isVisibleScanQRCodeButton(), "Scan QR Code button is not visible.");
-            test.log(Status.PASS, "Scan QR Code button is visible.");
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Scan QR Code button is not visible", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while verifying Scan QR Code button", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code button", e);
-            throw e;
-        }
-    }
-
-    @When("Verify scan qr code step2 label after")
-    public void verifyScanQRCodeStep2LabelAfter() {
-        try {
-            Assert.assertTrue(scanqrcode.isVisibleScanQRCodeStep2LabelAfter(), "Scan QR Code Step 2 label is not visible after.");
-            test.log(Status.PASS, "Scan QR Code Step 2 label is correctly displayed after.");
-        } catch (AssertionError e) {
-            logFailure(test, driver, "Scan QR Code Step 2 label is missing after verification", e);
-            throw e;
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found: Scan QR Code Step 2 label after verification", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while verifying Scan QR Code Step 2 label after", e);
-            throw e;
-        }
-    }
-
     @When("Verify VP verification step3 label after")
     public void verifyVPVerificationStep3LabelAfter() {
         try {
@@ -1569,37 +1286,6 @@ public class StepDef {
             throw e;
         }
     }
-
-    @When("verify click on okay button")
-    public void verifyClickOnOkayButton() {
-        try {
-            scanqrcode.clickOnOkayButton();
-            test.log(Status.PASS, "Successfully clicked on the Okay button.");
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Failed to find the Okay button while attempting to click", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while clicking on the Okay button", e);
-            throw e;
-        }
-    }
-
-    @When("verify click on back button")
-    public void verifyClickOnBackButton() {
-        try {
-            scanqrcode.clickOnBackButton();
-            Assert.assertTrue(true, "Back button click action performed.");
-            test.log(Status.PASS, "Successfully clicked on the Back button.");
-        } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Failed to find the Back button while attempting to click", e);
-            throw e;
-        } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while clicking on the Back button", e);
-            throw e;
-        }
-    }
-
-
 
 	@When("Click on BLE tab")
 	public void click_on_ble_tab() {
@@ -1700,78 +1386,6 @@ public class StepDef {
 	    }
 	}
 
-	@When("Verify scan line on scanning area")
-	public void verify_scan_line_on_scanning_area() {
-	    try {
-	        boolean isScanLineVisible = scanqrcode.isVisibleScanLine();
-	        Assert.assertTrue(isScanLineVisible, "Scan line is not visible on the scanning area.");
-	        test.log(Status.PASS, "Scan line is visible on the scanning area.");
-	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Scan line verification failed: Scan line is not visible on the scanning area.");
-	        throw e;
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while verifying scan line on scanning area", e);
-	        throw e;
-	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error while verifying scan line on scanning area", e);
-	        throw e;
-	    }
-	}
-
-	@When("Verify idle timeout message for scan QR code")
-	public void verify_idle_timeout_message_for_scan_qr_code() {
-	    try {
-	        String actualMessage = scanqrcode.getTextScannerTimeoutMessage();
-	        Assert.assertEquals(actualMessage, UiConstants.ERROR_MESSAGE_SCAN_TIMEOUT, "Idle timeout message does not match the expected value.");
-	        test.log(Status.PASS, "Idle timeout message verification successful. Expected: " + UiConstants.ERROR_MESSAGE_SCAN_TIMEOUT + ", Actual: " + actualMessage);
-	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Idle timeout message verification failed. Expected: " + UiConstants.ERROR_MESSAGE_SCAN_TIMEOUT + ", but found: " + scanqrcode.getTextScannerTimeoutMessage());
-	        throw e;
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while verifying idle timeout message for scan QR code", e);
-	        throw e;
-	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error while verifying idle timeout message for scan QR code", e);
-	        throw e;
-	    }
-	}
-
-	@When("Verify close button on timeout message")
-	public void verify_close_button_on_timeout_message() {
-	    try {
-	        boolean isCloseButtonVisible = scanqrcode.isVisibleCloseIconTimeoutMessage();
-	        Assert.assertTrue(isCloseButtonVisible, "Close button on timeout message is not visible.");
-	        test.log(Status.PASS, "Close button on timeout message is visible.");
-	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Close button verification failed: Close button on timeout message is not visible.");
-	        throw e;
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while verifying close button on timeout message", e);
-	        throw e;
-	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error while verifying close button on timeout message", e);
-	        throw e;
-	    }
-	}
-
-	@When("Verify click on close button on timeout message")
-	public void verify_click_on_close_button_on_timeout_message() {
-	    try {
-	        scanqrcode.clickOnCloseIconTimeoutMessage();
-	        test.log(Status.PASS, "Successfully clicked on the close button on the timeout message.");
-	        test.log(Status.PASS, "Timeout message is no longer visible after clicking close.");
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while clicking on close button on timeout message", e);
-	        throw e;
-	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Close button click verification failed: Timeout message is still visible.");
-	        throw e;
-	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error while clicking on close button on timeout message", e);
-	        throw e;
-	    }
-	}
-
 	@When("Upload QR code file Expired png")
 	public void upload_qr_code_file_expired_png() {
 	    try {
@@ -1808,11 +1422,11 @@ public class StepDef {
 	    }
 	}
 
-	
+
 	@When("Upload QR code file Expired jpeg")
 	public void uploadQrCodeFileExpiredJpeg() {
         try {
-            uploadqrcode.clickOnUploadExpiredQRCodeJpgExpired(); 
+            uploadqrcode.clickOnUploadExpiredQRCodeJpgExpired();
 	        Assert.assertTrue(true, "Expired JPEG QR code uploaded successfully.");
 	        test.log(Status.PASS, "Successfully uploaded expired QR code (JPEG format).");
 	    } catch (NoSuchElementException e) {
@@ -1824,11 +1438,11 @@ public class StepDef {
 	    }
 	}
 
-	
+
 	@When("Upload QR code file Expired pdf")
 	public void uploadQrCodeFileExpiredPdf() {
 	    try {
-	        uploadqrcode.clickOnUploadExpiredQRCodepngExpired(); 
+	        uploadqrcode.clickOnUploadExpiredQRCodepngExpired();
 	        Assert.assertTrue(true, "Expired PDF QR code uploaded successfully.");
 	        test.log(Status.PASS, "Successfully uploaded expired QR code (PDF format).");
 	    } catch (NoSuchElementException e) {
@@ -1844,13 +1458,13 @@ public class StepDef {
 	public void verify_message_for_valid_qr_code() {
 	    try {
 	        String actualMessage = uploadqrcode.getErrorMessageForExpiredQRCode();
-	        Assert.assertEquals(actualMessage, UiConstants.CONGRATULATIONS_MESSAGE);
+	        Assert.assertEquals(actualMessage, UiConstants.VERIFICATION_SUCCESS_MESSAGE);
 	        test.log(Status.PASS, "Valid QR code message verified successfully: " + actualMessage);
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while verifying message for valid QR code", e);
 	        throw e;
 	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Message verification failed: Expected '" + UiConstants.CONGRATULATIONS_MESSAGE + "' but got '" + uploadqrcode.getErrorMessageForExpiredQRCode() + "'");
+	        test.log(Status.FAIL, "Message verification failed: Expected '" + UiConstants.VERIFICATION_SUCCESS_MESSAGE + "' but got '" + uploadqrcode.getErrorMessageForExpiredQRCode() + "'");
 	        throw e;
 	    } catch (Exception e) {
 	        logFailure(test, driver, "Unexpected error while verifying message for valid QR code", e);
@@ -1865,7 +1479,7 @@ public class StepDef {
 	        Assert.assertEquals(actualMessage, UiConstants.ERROR_MESSAGE_EXPIRED_QR);
 	        test.log(Status.PASS, "Successfully verified the error message for expired QR code: " + actualMessage);
 	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Verification failed: Expected '" + UiConstants.ERROR_MESSAGE_EXPIRED_QR 
+	        test.log(Status.FAIL, "Verification failed: Expected '" + UiConstants.ERROR_MESSAGE_EXPIRED_QR
 	                + "', but found '" + uploadqrcode.getErrorMessageForExpiredQRCode() + "'");
 	        throw e;
 	    } catch (NoSuchElementException e) {
@@ -1887,7 +1501,7 @@ public class StepDef {
 	        throw e;
 	    }
 	}
-	
+
 	@When("Open inji verify in new tab")
 	public void open_inji_verify_in_new_tab() {
 	    try {
@@ -1938,8 +1552,8 @@ public class StepDef {
 	        throw e;
 	    }
 	}
-	
-	
+
+
     @Then("User search the issuers sunbird")
     public void user_search_the_issuers_sunbird() throws Exception {
         try {
@@ -1963,8 +1577,8 @@ public class StepDef {
             throw e;
         }
     }
-    
-    
+
+
 
 	@When("User click on StayProtected Insurance credentials button")
 	public void user_click_on_download_StayProtected_Insurance_button() {
@@ -2066,13 +1680,13 @@ public class StepDef {
 	        throw e;
 	    }
 	}
-	
+
     @Then("User enter the policy number")
     public void user_enter_the_policy_number() {
         try {
             Thread.sleep(3000); // Consider using WebDriverWait instead of Thread.sleep for better efficiency.
-            homePage.enterPolicyNumer(policynumber);
-            test.log(Status.PASS, "User successfully entered the policy number: " + policynumber);
+            homePage.enterPolicyNumer(policyNumber);
+            test.log(Status.PASS, "User successfully entered the policy number: " + policyNumber);
         } catch (NoSuchElementException e) {
             test.log(Status.FAIL, "Element not found while entering the policy number: " + e.getMessage());
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
@@ -2174,27 +1788,27 @@ public class StepDef {
 	        Thread.sleep(10000);
 	        boolean fileExists = (boolean) baseTest.getJse().executeScript("browserstack_executor: {\"action\": \"fileExists\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
 	        assertTrue("PDF file 'InsuranceCredential.pdf' was not found on BrowserStack.", fileExists);
-	        test.log(Status.PASS, "PDF file 'InsuranceCredential.pdf' exists on BrowserStack."); 
+	        test.log(Status.PASS, "PDF file 'InsuranceCredential.pdf' exists on BrowserStack.");
 	        String base64EncodedFile = (String) baseTest.getJse().executeScript("browserstack_executor: {\"action\": \"getFileContent\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
 
 	        byte[] data = Base64.getDecoder().decode(base64EncodedFile);
-	        String filePath = System.getProperty("user.dir") + "/InsuranceCredential.pdf";
+	        String filePath = BaseTest.getDownloadedInsurancePdfPath();
 	        OutputStream stream = new FileOutputStream(filePath);
 	        stream.write(data);
 	        stream.close();
-	     
+
 	        File pdfFile = new File(filePath);
 	        PDDocument document = PDDocument.load(pdfFile);
 	        PDFTextStripper stripper = new PDFTextStripper();
 	        String text = stripper.getText(document);
-	        document.close(); 
+	        document.close();
 
 	        assertFalse("PDF content is empty.", text.trim().isEmpty());
 	        test.log(Status.PASS, "PDF file 'InsuranceCredential.pdf' downloaded and contains content.");
 
 	    } catch (InterruptedException e) {
 	        test.log(Status.FAIL, "Interrupted while waiting for PDF download: " + e.getMessage());
-	        Thread.currentThread().interrupt(); 
+	        Thread.currentThread().interrupt();
 	        throw new RuntimeException(e);
 	    } catch (AssertionError e) {
 	        test.log(Status.FAIL, e.getMessage());
@@ -2209,10 +1823,48 @@ public class StepDef {
 
 	}
 
+	@Before(value = "@needsInsuranceArtifacts", order = 1)
+	public void prepareInsuranceCredentialArtifactsHook() throws Exception {
+	    try {
+	        synchronized (BaseTest.getInsuranceArtifactsLock()) {
+	            File pdfFile = new File(BaseTest.getDownloadedInsurancePdfPath());
+	            File pngFile = new File(BaseTest.getInsuranceCredentialPngPath());
+	            File jpgFile = new File(BaseTest.getInsuranceCredentialJpgPath());
+	            File jpegFile = new File(BaseTest.getInsuranceCredentialJpegPath());
+
+	            if (pdfFile.exists() && pngFile.exists() && jpgFile.exists() && jpegFile.exists()) {
+	                test.log(Status.PASS, "Insurance credential artifacts are already prepared for this run.");
+	                return;
+	            }
+
+	            openInjiWebInNewTab();
+	            verifyClickOnContinueButton();
+	            user_search_the_issuers_sunbird();
+	            user_click_on_download_StayProtected_Insurance_button();
+	            user_click_on_health_insurance_id_by_e_signet_button();
+	            user_click_on_validity_dropdown_button();
+	            user_click_on_no_limit_button();
+	            user_click_on_proceed_button();
+	            user_enter_the_policy_number();
+	            user_enter_the_full_name();
+	            user_enter_the_date_of_birth();
+	            user_click_on_login_button();
+	            user_verify_download_success_text_displayed();
+	            user_verify_pdf_is_downloaded();
+	            verify_that_user_convert_pdf_into_png();
+	            open_inji_verify_in_new_tab();
+
+	            test.log(Status.PASS, "Prepared shared insurance credential artifacts for this run.");
+	        }
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Failed while preparing insurance credential artifacts", e);
+	        throw e;
+	    }
+	}
+
 	@When("Verify that user convert pdf into png")
 	public void verify_that_user_convert_pdf_into_png() throws IOException {
-	    String pdfPath = System.getProperty("user.dir") + "/InsuranceCredential.pdf";
-	    String outputPath = System.getProperty("user.dir") + "/InsuranceCredential";
+	    String pdfPath = BaseTest.getDownloadedInsurancePdfPath();
 
 	    try {
 	        PDDocument document = PDDocument.load(new File(pdfPath));
@@ -2226,9 +1878,9 @@ public class StepDef {
 	            PDPage page = document.getPage(i);
 	            BufferedImage image = renderer.renderImage(i);
 
-	            String outputFileNamepng = outputPath + (i) + ".png";
-	            String outputFileNamejpg = outputPath + (i) + ".jpg";
-	            String outputFileNamejpeg = outputPath + (i) + ".jpeg";
+	            String outputFileNamepng = BaseTest.getInsuranceCredentialPngPath();
+	            String outputFileNamejpg = BaseTest.getInsuranceCredentialJpgPath();
+	            String outputFileNamejpeg = BaseTest.getInsuranceCredentialJpegPath();
 
 	            ImageIO.write(image, "png", new File(outputFileNamepng));
 	            ImageIO.write(image, "jpg", new File(outputFileNamejpg));
@@ -2285,12 +1937,12 @@ public class StepDef {
 	        throw e;
 	    }
 	}
-	
+
     @When("User enter the full name")
     public void user_enter_the_full_name() {
         try {
-        	homePage.enterFullName(fullname);
-            test.log(Status.PASS, "User successfully entered the full name: " + fullname);
+        	homePage.enterFullName(fullName);
+            test.log(Status.PASS, "User successfully entered the full name: " + fullName);
         } catch (NoSuchElementException e) {
             test.log(Status.FAIL, "Element not found while entering the full name: " + e.getMessage());
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
@@ -2320,7 +1972,7 @@ public class StepDef {
             throw e;
         }
     }
-	
+
     @When("User enter the date of birth {string}")
     public void user_enter_the_date_of_birth1(String dateOfBirth) {
         try {
@@ -2436,7 +2088,7 @@ public class StepDef {
 	        throw e;
 	    }
 	}
-	
+
 	@Then("Verify that Upload button visible")
 	public void verify_that_upload_button_visible() {
 	    try {
@@ -2448,6 +2100,21 @@ public class StepDef {
 	        throw e;
 	    } catch (Exception e) {
 	        logFailure(test, driver, "Unexpected error while verifying Upload button visibility", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Verify upload file input is present and enabled")
+	public void verify_upload_file_input_is_present_and_enabled() {
+	    try {
+	        Assert.assertTrue(uploadqrcode.isUploadFileInputPresent(), "Upload file input is not present.");
+	        Assert.assertTrue(uploadqrcode.isUploadFileInputEnabled(), "Upload file input is not enabled.");
+	        test.log(Status.PASS, "Upload file input is present and enabled.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying upload file input availability", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while verifying upload file input availability", e);
 	        throw e;
 	    }
 	}
@@ -2687,13 +2354,13 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	        throw e;
 	    }
 	}
-	
-	
+
+
 	@Then("Upload Large size not supported QR code file")
 	public void upload_large_size_not_supported_qr_code_file() {
 	    try {
 	        uploadqrcode.clickOnUploadLargeSizeQRCode();
-     
+
 	        test.log(Status.PASS, "Successfully verified large size QR code file is not supported and appropriate error is shown.");
 	    } catch (AssertionError e) {
 	        test.log(Status.FAIL, "Verification failed: Expected error message for large QR code not shown.");
@@ -2706,7 +2373,53 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	        throw e;
 	    }
 	}
-	
+
+	@Then("Upload small size not supported QR code file")
+	public void uploadSmallSizeNotSupportedQrCodeFile() {
+	    try {
+	        uploadqrcode.clickOnUploadSmallSizeQRCode();
+
+	        test.log(Status.PASS, "Successfully verified small size QR code file is not supported and appropriate error is shown.");
+	    } catch (AssertionError e) {
+	        test.log(Status.FAIL, "Verification failed: Expected error message for small QR code not shown.");
+	        throw e;
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while uploading small size QR code", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while uploading small size QR code", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Upload 10KB QR code file")
+	public void upload10KbQrCodeFile() {
+	    try {
+	        uploadqrcode.clickOnUploadBoundaryMinSizeQRCode();
+	        test.log(Status.PASS, "Successfully uploaded the boundary valid QR code file of size 10KB.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while uploading 10KB QR code file", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while uploading 10KB QR code file", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Upload 5MB QR code file")
+	public void upload5MbQrCodeFile() {
+	    try {
+	        uploadqrcode.clickOnUploadBoundaryMaxSizeQRCode();
+	        test.log(Status.PASS, "Successfully uploaded the boundary valid QR code file of size 5MB.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while uploading 5MB QR code file", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while uploading 5MB QR code file", e);
+	        throw e;
+	    }
+	}
+
 	@Then("Click on ble tab")
 	public void click_on_ble_tab1() {
 	    try {
@@ -2723,7 +2436,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	        throw e;
 	    }
 	}
-	
+
 	@Then("Verify Large size alert message")
 	public void verify_message_for_large_size_qr_code() {
 	    try {
@@ -2745,7 +2458,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	        throw e;
 	    }
 	}
-	
+
 	@Then("Upload blur QR code file")
 	public void upload_blur_qrcode_file() {
         try {
@@ -2834,23 +2547,6 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 
-	
-	@Then("verify scan qr code area")
-	public void verify_scan_qr_code_area() {
-	    try {
-	        Assert.assertTrue(scanqrcode.isVisibleScanQRCodeArea());
-	        test.log(Status.PASS, "Successfully verified that the Scan QR Code area is visible.");
-	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Verification failed: Scan QR Code area is not visible.");
-	        throw e;
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while verifying Scan QR Code area", e);
-	        throw e;
-	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error occurred while verifying Scan QR Code area", e);
-	        throw e;
-	    }
-	}
 
 	@Then("Verify click sort by button")
 	public void user_click_on_sort_button() {
@@ -2868,7 +2564,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	        throw e;
 	    }
 	}
-	
+
 	@Then("Verify click Sort AtoZ button")
 	public void user_click_on_sort_a_z_button() {
 	    try {
@@ -3020,7 +2716,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	    }
 	}
 
-	
+
 	@Then("Uncheck MOSIP ID")
 	public void uncheck_mosip_id() {
 	    try {
@@ -3035,7 +2731,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	    }
 	}
 
-	
+
 	@Then("Select Health Insurance")
 	public void select_health_insurance() {
 	    try {
@@ -3092,7 +2788,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	    }
 	}
 
-	
+
 	@Then("Select Land Registry")
 	public void uncheck_land_registry() {
 	    try {
@@ -3110,7 +2806,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	@Then("User enter the credential type {string}")
 	public void user_enter_the_credential_type(String credentialType) {
 	    try {
-	        Thread.sleep(3000); 
+	        Thread.sleep(3000);
 	        vpverification.enterCredentialType(credentialType);
 	        test.log(Status.PASS, "Successfully entered credential type: " + credentialType);
 	    } catch (InterruptedException e) {
@@ -3131,17 +2827,17 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	public void verify_that_upload_icon_visible() {
 		Assert.assertTrue(homePage.isUploadIconIsVisible());
 	}
-	
+
         @When("Verify if name value is present in arabic")
     public void verifyIfNameValueIsPresentInArabic() {
         try {
             String actualLabel = homePage.getNameValueInArabic();
-            Assert.assertEquals(actualLabel, UiConstants.NAME_VALUE_IN_ARABIC, 
+            Assert.assertEquals(actualLabel, UiConstants.NAME_VALUE_IN_ARABIC,
                 "Name value in arabic does not match the expected value.");
-            test.log(Status.PASS, "Name value in arabic verification successful. Expected: " 
+            test.log(Status.PASS, "Name value in arabic verification successful. Expected: "
                 + UiConstants.NAME_VALUE_IN_ARABIC + ", Actual: " + actualLabel);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Name value in arabic verification failed. Expected: " 
+            test.log(Status.FAIL, "Name value in arabic verification failed. Expected: "
                 + UiConstants.NAME_VALUE_IN_ARABIC + ", but found: " + homePage.getNameValueInArabic());
             throw e;
         } catch (NoSuchElementException e) {
@@ -3157,12 +2853,12 @@ public void verify_upload_button_visible_after_2_mins_idle() {
     public void verifyIfNameValueIsPresentInFrench() {
         try {
             String actualLabel = homePage.getNameValueInFrench();
-            Assert.assertEquals(actualLabel, UiConstants.NAME_VALUE_IN_FRENCH, 
+            Assert.assertEquals(actualLabel, UiConstants.NAME_VALUE_IN_FRENCH,
                 "Name value in french does not match the expected value.");
-            test.log(Status.PASS, "Name value in french verification successful. Expected: " 
+            test.log(Status.PASS, "Name value in french verification successful. Expected: "
                 + UiConstants.NAME_VALUE_IN_FRENCH + ", Actual: " + actualLabel);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Name value in french verification failed. Expected: " 
+            test.log(Status.FAIL, "Name value in french verification failed. Expected: "
                 + UiConstants.NAME_VALUE_IN_FRENCH + ", but found: " + homePage.getNameValueInFrench());
             throw e;
         } catch (NoSuchElementException e) {
@@ -3178,12 +2874,12 @@ public void verify_upload_button_visible_after_2_mins_idle() {
     public void verifyIfGenderValueIsPresentInArabic() {
         try {
             String actualLabel = homePage.getGenderValueInArabic();
-            Assert.assertEquals(actualLabel, UiConstants.GENDER_VALUE_IN_ARABIC, 
+            Assert.assertEquals(actualLabel, UiConstants.GENDER_VALUE_IN_ARABIC,
                 "Gender value in arabic does not match the expected value.");
-            test.log(Status.PASS, "Gender value in arabic verification successful. Expected: " 
+            test.log(Status.PASS, "Gender value in arabic verification successful. Expected: "
                 + UiConstants.GENDER_VALUE_IN_ARABIC + ", Actual: " + actualLabel);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Gender value in arabic verification failed. Expected: " 
+            test.log(Status.FAIL, "Gender value in arabic verification failed. Expected: "
                 + UiConstants.GENDER_VALUE_IN_ARABIC + ", but found: " + homePage.getGenderValueInArabic());
             throw e;
         } catch (NoSuchElementException e) {
@@ -3199,12 +2895,12 @@ public void verify_upload_button_visible_after_2_mins_idle() {
     public void verifyIfGenderValueIsPresentInFrench() {
         try {
             String actualLabel = homePage.getGenderValueInFrench();
-            Assert.assertEquals(actualLabel, UiConstants.GENDER_VALUE_IN_FRENCH, 
+            Assert.assertEquals(actualLabel, UiConstants.GENDER_VALUE_IN_FRENCH,
                 "Gender value in French does not match the expected value.");
-            test.log(Status.PASS, "Gender value in French verification successful. Expected: " 
+            test.log(Status.PASS, "Gender value in French verification successful. Expected: "
                 + UiConstants.GENDER_VALUE_IN_FRENCH + ", Actual: " + actualLabel);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Gender value in French verification failed. Expected: " 
+            test.log(Status.FAIL, "Gender value in French verification failed. Expected: "
                 + UiConstants.GENDER_VALUE_IN_FRENCH + ", but found: " + homePage.getGenderValueInFrench());
             throw e;
         } catch (NoSuchElementException e) {
@@ -3249,4 +2945,51 @@ public void verify_upload_button_visible_after_2_mins_idle() {
             throw e;
         }
     }
+
+    @When("User enters wrong URL in the address bar")
+    public void userEntersWrongUrlInTheAddressBar() {
+        try {
+            driver.get("http://invalid-url-for-testing.com");
+            test.log(Status.PASS, "Navigated to an invalid URL successfully.");
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while navigating to an invalid URL", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify error message for wrong URL")
+    public void verifyErrorMessageForWrongUrl() {
+        try {
+            String pageSource = driver.getPageSource();
+
+            if (BaseTest.isUsingBrowserStack()) {
+
+                Assert.assertTrue(
+                        pageSource.contains("Unable to display the page"),
+                        "Expected BrowserStack error page not shown"
+                );
+
+                test.log(Status.PASS, "BrowserStack error page validated");
+
+            } else {
+
+                Assert.assertTrue(
+                        pageSource.contains("This site can’t be reached"),
+                        "Expected browser error page not shown"
+                );
+
+                Assert.assertTrue(
+                        pageSource.contains("DNS_PROBE_FINISHED_NXDOMAIN"),
+                        "Expected DNS error not shown"
+                );
+
+                test.log(Status.PASS, "Local browser error page validated");
+            }
+
+        } catch (AssertionError e) {
+            test.log(Status.FAIL, "Error page validation failed: " + e.getMessage());
+            throw e;
+        }
+    }
 }
+

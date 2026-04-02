@@ -1,1 +1,5 @@
-[object Object]
+[object Object][Tue, 31 Mar 2026 07:57:06 GMT] Error from server Error: listen EADDRINUSE: address already in use \\.\pipe\browserstack\daemonInstance - \\.\pipe\browserstack\daemonInstance
+[Wed, 01 Apr 2026 08:07:57 GMT] Error from server Error: listen EADDRINUSE: address already in use \\.\pipe\browserstack\daemonInstance - \\.\pipe\browserstack\daemonInstance
+[Thu, 02 Apr 2026 10:23:52 GMT] Error from server Error: listen EADDRINUSE: address already in use \\.\pipe\browserstack\daemonInstance - \\.\pipe\browserstack\daemonInstance
+[Thu, 02 Apr 2026 10:34:53 GMT] Error from server Error: listen EADDRINUSE: address already in use \\.\pipe\browserstack\daemonInstance - \\.\pipe\browserstack\daemonInstance
+[Thu, 02 Apr 2026 10:42:43 GMT] Error from server Error: listen EADDRINUSE: address already in use \\.\pipe\browserstack\daemonInstance - \\.\pipe\browserstack\daemonInstance

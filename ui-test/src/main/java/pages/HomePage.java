@@ -58,7 +58,7 @@ public class HomePage extends BasePage {
 
 	@FindBy(xpath = "//button[@id='help-button']")
 	WebElement helpButton;
-	
+
 	@FindBy(xpath = "//button[.//span[text()='Continue as Guest']]")
 	WebElement continueButton;
 
@@ -136,7 +136,7 @@ public class HomePage extends BasePage {
 
 	@FindBy(xpath = "//button[contains(@data-testid, 'DataShareFooter-Success-Button')]")
 	WebElement getOnOnProceed;
-	
+
 	@FindBy(xpath = "//h3[@data-testid='ItemBox-Text' and text()='Health Insurance']")
 	WebElement healthInsurance;
 
@@ -172,6 +172,15 @@ public class HomePage extends BasePage {
 
 	@FindBy(xpath = "(//span[contains(@class, 'bg-gradient-to-r') and contains(text(), 'Get Started')])[1]")
 	WebElement getStartedButton;
+
+	@FindBy(id = "no-internet-connection")
+	WebElement noInternetConnection;
+
+	@FindBy(id = "no-internet-description")
+	WebElement noInternetDescription;
+
+	@FindBy(id = "please-try-again-button")
+	WebElement tryAgainButton;
 
 
 	public Boolean isLogoDisplayed() {
@@ -215,7 +224,7 @@ public class HomePage extends BasePage {
 	public void clickOnHelpButton() {
 		clickOnElement(driver, helpButton);
 	}
-	
+
 	public void clickOnContinueButton() {
 		clickOnElement(driver, continueButton);
 	}
@@ -493,6 +502,19 @@ public String isSuccessMessageDisplayed() {
 
 	}
 
-
-
+	public String getNoInternetTitle() {
+		return getText(driver, noInternetConnection);
 	}
+
+	public String getNoInternetDescription() {
+		return getText(driver, noInternetDescription);
+	}
+
+	public boolean isTryAgainButtonVisible() {
+		return isElementIsVisible(driver, tryAgainButton);
+	}
+
+	public void clickOnTryAgainButton() {
+		clickOnElement(driver, tryAgainButton);
+	}
+}
