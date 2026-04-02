@@ -60,6 +60,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const [isLoading, setLoading] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(INITIAL_ZOOM_LEVEL);
   const [isMobile, setIsMobile] = useState(false);
+  const [activeFlow, setActiveFlow] = useState<"scan" | "inline" | null>(null);
+  const hasTrigger = Boolean(triggerElement);
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement("canvas"));
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamingRef = useRef(false);
@@ -69,6 +71,10 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const startingRef = useRef(false);
   const shouldEnableZoom = isEnableZoom && isMobile;
   const hasFetchedVPResultRef = useRef(false);
+  const triggerButtonRef = useRef<HTMLButtonElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileDialogOpenRef = useRef(false);
+
   const clearTimer = () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -313,10 +319,14 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
+      fileDialogOpenRef.current = false;
       clearTimer();
       stopVideoStream();
       const file = e.target?.files?.[0];
-      if (!file || !doFileChecks(file)) return (e.target.value = "");
+      if (!file || !doFileChecks(file)) {
+        e.target.value = "";
+        return;
+      }
       setUploading(true);
       const result: scanResult = await scanFilesForQr(file);
       if (result.error) throw result.error;
@@ -328,6 +338,32 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       handleError(error);
     }
   };
+
+  const handleFileInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    // Prevent opening if dialog is already open
+    if (fileDialogOpenRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    fileDialogOpenRef.current = true;
+  };
+
+  // Detect when file dialog closes
+  useEffect(() => {
+    const handleFocus = () => {
+      if (fileDialogOpenRef.current) {
+        setTimeout(() => {
+          if (!isUploading) {
+            fileDialogOpenRef.current = false;
+          }
+        }, 100);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [isUploading]);
 
   const processScanResult = async (data: any) => {
     setLoading(true);
@@ -457,11 +493,36 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     hasFetchedVPResultRef.current = false;
     scanSessionCompletedRef.current = true;
     frameProcessingRef.current = false;
+    fileDialogOpenRef.current = false;
     clearTimer();
     stopVideoStream();
     setScanning(false);
     setUploading(false);
     setLoading(false);
+    setActiveFlow(null);
+  };
+
+  const handleTriggerClick = () => {
+    if (isUploading || isScanning || isLoading || fileDialogOpenRef.current) return;
+
+    if (isEnableScan && isEnableUpload) {
+      scanSessionCompletedRef.current = false;
+      setActiveFlow("inline");
+      return;
+    }
+
+    if (isEnableScan) {
+      scanSessionCompletedRef.current = false;
+      setActiveFlow("scan");
+      return;
+    }
+
+    if (isEnableUpload) {
+      const fileInput = fileInputRef.current || document.getElementById(uploadButtonId || "upload-qr") as HTMLInputElement;
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
   };
 
     const triggerCallbacks = async (vc: any) => {
@@ -563,6 +624,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const startScanning =
     Boolean(scannerActive) &&
     isEnableScan &&
+    (hasTrigger ? activeFlow === "scan" || activeFlow === "inline" : true) &&
     !isUploading &&
     !isScanning &&
     !scanSessionCompletedRef.current;
@@ -575,7 +637,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       clearTimer();
       stopVideoStream();
     }
-  }, [scannerActive, startScanning, startVideoStream, stopVideoStream]);
+  }, [scannerActive, startScanning, startVideoStream, stopVideoStream, activeFlow, hasTrigger]);
 
   useEffect(() => {
     const resize = () => setIsMobile(window.innerWidth < 768);
@@ -636,8 +698,13 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
   return (
     <div className="qrcode-container">
-      {triggerElement && !isUploading && !isScanning && !isLoading && (
-        <div className="cursor-pointer">{triggerElement}</div>
+      {hasTrigger && !isUploading && !isScanning && !isLoading && activeFlow === null && (
+        <div
+          className="cursor-pointer"
+          onClick={handleTriggerClick}
+        >
+          {triggerElement}
+        </div>
       )}
       {(isUploading || isScanning || isLoading) && (
         <div className="loader"></div>
@@ -653,6 +720,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
               <button
                 onClick={() => {
                   stopVideoStream();
+                  setActiveFlow(null);
                   onClose?.();
                 }}
                 className="qr-close-button"
@@ -707,13 +775,15 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
             )}
           </div>
         )}
-        {isEnableUpload && (
+        {isEnableUpload &&
+          (!hasTrigger || activeFlow !== null || !isEnableScan) && (
           <div
             className={`upload-container ${
               shouldEnableZoom ? "fixed-enabled" : "default"
             }`}
           >
             <input
+              ref={fileInputRef}
               type="file"
               id={uploadButtonId || "upload-qr"}
               name={uploadButtonId || "upload-qr"}
@@ -722,6 +792,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                 uploadButtonStyle || "upload-button-default"
               }`}
               onChange={handleUpload}
+              onClick={handleFileInputClick}
               disabled={isUploading}
             />
           </div>
