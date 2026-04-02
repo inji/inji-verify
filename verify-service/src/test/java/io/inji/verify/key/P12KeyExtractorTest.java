@@ -1,10 +1,10 @@
+package io.inji.verify.key;
 
 import io.inji.verify.key.impl.P12KeyExtractor;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.springframework.core.io.Resource;
 import org.springframework.core.io.ResourceLoader;
-
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.security.KeyPair;
@@ -12,11 +12,9 @@ import java.security.KeyPairGenerator;
 import java.security.KeyStore;
 import java.security.cert.X509Certificate;
 import java.util.Date;
-
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
-
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;

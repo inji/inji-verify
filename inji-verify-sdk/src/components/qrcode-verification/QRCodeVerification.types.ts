@@ -1,3 +1,5 @@
+import {OverallVPStatus, VerificationStatus} from "../openid4vp-verification/OpenID4VPVerification.types";
+
 type ExclusiveCallbacks =
   /**
    * Callback triggered when the verification presentation (VP) is received.
@@ -141,8 +143,17 @@ export type VerificationResults = {
     vc: any;
     verificationResponse:
         | VCVerificationV2Response
-        | VCSummarisedVerificationResponse;
+        | VCSummarisedVerificationResponse
+        | VpSummarisedVerificationResponse;
 }[];
+
+export interface VpSummarisedVerificationResponse {
+    vcResults: {
+        vc: Record<string, unknown>;
+        vcStatus: VerificationStatus;
+    }[];
+    vpResultStatus: OverallVPStatus;
+}
 
 export interface vcSubmissionBody {
   vc: any;
