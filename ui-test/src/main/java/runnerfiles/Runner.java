@@ -141,7 +141,7 @@ public class Runner extends AbstractTestNGCucumberTests{
 	}
 
 	@Override
-	@DataProvider(parallel = false)
+	@DataProvider(parallel = true)
 	public Object[][] scenarios() {
 		Object[][] scenarios = super.scenarios();
 		System.out.println("Number of scenarios provided: " + scenarios.length);
@@ -175,10 +175,10 @@ public class Runner extends AbstractTestNGCucumberTests{
 	 * knownIssueCount is kept in BaseTest alongside the other counters.
 	 */
 	public static void resetCounters() {
-		utils.BaseTest.passedCount = 0;
-		utils.BaseTest.failedCount = 0;
-		utils.BaseTest.totalCount = 0;
-		utils.BaseTest.knownIssueCount = 0;
+		utils.BaseTest.passedCount.set(0);
+		utils.BaseTest.failedCount.set(0);
+		utils.BaseTest.totalCount.set(0);
+		utils.BaseTest.knownIssueCount.set(0);
 	}
 
 	/**

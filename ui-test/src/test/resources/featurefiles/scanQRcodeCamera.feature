@@ -58,15 +58,15 @@ Feature: Inji Verify scan qr code camera testing
     And click on scan qr code button
     Then validate camera can be accessed again for scan qr code
 
-  @smoke @verifyScanValidQrCodeLessThan8Mp @withoutBrowserstack @scan @qr_valid @camera_lt_8mp
-  Scenario: Verify the scan feature with camera less than 8mp
+  @smoke @verifyScanValidQrCode8Mp @withoutBrowserstack @scan @qr_valid @camera_8mp
+  Scenario: Verify the scan feature with camera 8mp
     And click on scan qr code button
     Then validate that QR code is scanned successfully
     And validate the step 3 after scanning the QR code
     And validate the step 4 after scanning the QR code
 
-  @smoke @verifyScanValidQrCodeGreaterThan15Mp @withoutBrowserstack @scan @qr_valid @camera_gt_15mp
-  Scenario: Verify the scan feature with camera greater than 15mp
+  @smoke @verifyScanValidQrCode15Mp @withoutBrowserstack @scan @qr_valid @camera_15mp
+  Scenario: Verify the scan feature with camera 15mp
     And click on scan qr code button
     Then validate that QR code is scanned successfully
     And validate the step 3 after scanning the QR code
@@ -97,8 +97,6 @@ Feature: Inji Verify scan qr code camera testing
 
   @smoke @withoutBrowserstack @scan @qr_valid @browser_back_navigation
   Scenario: Verify browser back from scan page returns user to upload screen
-    And Verify that Upload button visible
-    And click on scan qr code tab
     And click on scan qr code button
     When Click browser back button
     Then Verify that Upload button visible

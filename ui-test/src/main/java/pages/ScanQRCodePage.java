@@ -63,6 +63,9 @@ public class ScanQRCodePage extends BasePage {
 	@FindBy(xpath = "//button[@id='verification-back-button']")
 	WebElement backButton;
 
+	@FindBy(css = "div.qrcode-container video.qr-video")
+	WebElement activeScanVideo;
+
 	@FindBy(id="camera-access-denied-okay-button")
 	WebElement okayButton;
 
@@ -160,6 +163,10 @@ public class ScanQRCodePage extends BasePage {
 
 	public boolean isVisibleBackButton() {
 		return isElementIsVisible(driver, backButton);
+	}
+
+	public boolean isVisibleActiveScanVideo() {
+		return isElementIsVisible(driver, activeScanVideo);
 	}
 
 	public void clickOnBackButton() {

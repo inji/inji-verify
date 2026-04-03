@@ -153,7 +153,7 @@ public void uploadFile(WebDriver driver, WebElement fileInput, String filename) 
         throw new RuntimeException("File not found: " + file.getAbsolutePath());
     }
 
-    if (driver instanceof RemoteWebDriver) {
+    if (BaseTest.isUsingBrowserStack() && driver instanceof RemoteWebDriver) {
         ((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
     }
 

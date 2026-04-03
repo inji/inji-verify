@@ -181,15 +181,9 @@ public class VpVerification extends BasePage {
 			((JavascriptExecutor) driver).executeScript("var copyright = document.getElementById('copyrights-content');"
 					+ "if(copyright) { copyright.style.display = 'none'; }");
 
-			// Wait a bit for the viewport changes to take effect
-			Thread.sleep(500);
-
 			// Scroll the button into view
 			((JavascriptExecutor) driver).executeScript(
-					"arguments[0].scrollIntoView({behavior: 'smooth', block: 'center'});", verifiableCredentialsButton);
-
-			// Wait for scroll
-			Thread.sleep(500);
+					"arguments[0].scrollIntoView({behavior: 'instant', block: 'center'});", verifiableCredentialsButton);
 
 			// Click the button
 			((JavascriptExecutor) driver).executeScript("arguments[0].click();", verifiableCredentialsButton);

@@ -25,6 +25,7 @@ import io.mosip.testrig.apirig.utils.S3Adapter;
 
 import com.aventstack.extentreports.Status;
 import java.lang.reflect.Field;
+import java.net.HttpURLConnection;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.text.SimpleDateFormat;
@@ -33,30 +34,38 @@ import java.util.HashMap;
 import java.util.List;
 import java.io.*;
 import java.nio.file.Files;
+import java.nio.charset.StandardCharsets;
 import java.util.Properties;
+import java.util.Base64;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Semaphore;
 
 public class BaseTest extends BaseTestUtil{
 	private static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
+	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
 	public void setDriver(WebDriver driver) {
-		BaseTest.driver = driver;
+		driverHolder.set(driver);
 	}
 
-	public static int passedCount = 0;
-	public static int failedCount = 0;
-	public static int totalCount = 0;
+	public static final AtomicInteger passedCount = new AtomicInteger(0);
+	public static final AtomicInteger failedCount = new AtomicInteger(0);
+	public static final AtomicInteger totalCount = new AtomicInteger(0);
 
 	// ── Known Issues ──────────────────────────────────────────────────────────────
-	public static int knownIssueCount = 0;
+	public static final AtomicInteger knownIssueCount = new AtomicInteger(0);
 	private static final ThreadLocal<Boolean> isKnownIssueScenario = new ThreadLocal<>();
 	// ─────────────────────────────────────────────────────────────────────────────
 
-	public static WebDriver driver;
+	private static final ThreadLocal<WebDriver> driverHolder = new ThreadLocal<>();
 	private static final ThreadLocal<Boolean> browserStackSession = ThreadLocal.withInitial(() -> Boolean.TRUE);
 	private static final ThreadLocal<String> scanQrCodeFile = new ThreadLocal<>();
 	private static final ThreadLocal<String> scanCameraProfile = new ThreadLocal<>();
 	private static final ThreadLocal<Boolean> autoAllowScanCamera = ThreadLocal.withInitial(() -> Boolean.TRUE);
 	private static final ThreadLocal<String> scenarioRuntimeDir = new ThreadLocal<>();
+	private static final ThreadLocal<Boolean> failedStepScreenshotCaptured = ThreadLocal.withInitial(() -> Boolean.FALSE);
 	private static final Object insuranceArtifactsLock = new Object();
 	private static volatile String downloadedInsurancePdfPath;
 	private static volatile String insuranceCredentialPngPath;
@@ -66,7 +75,7 @@ public class BaseTest extends BaseTestUtil{
 	public static final String url = InjiVerifyConfigManager.getInjiVerifyUi();
 	private static final String buildIdentifier = "#" + new SimpleDateFormat("dd-MMM-HH:mm").format(new Date());
 
-	public static JavascriptExecutor jse;
+	private static final ThreadLocal<JavascriptExecutor> jseHolder = new ThreadLocal<>();
 	public String PdfNameForMosip = "MosipVerifiableCredential.pdf";
 	public String PdfNameForInsurance = "InsuranceCredential.pdf";
 	public String PdfNameForLifeInsurance = "InsuranceCredential.pdf";
@@ -78,7 +87,12 @@ public class BaseTest extends BaseTestUtil{
 	public final String URL = "https://" + username + ":" + accessKey + "@hub-cloud.browserstack.com/wd/hub";
 
 	private Scenario scenario;
-	Local bsLocal = null;
+	// Shared BrowserStack Local tunnel — started once, reused across parallel scenarios
+	private static volatile Local bsLocal = null;
+	private static final Object bsLocalLock = new Object();
+	// Limits concurrent BrowserStack sessions to the plan's allowed maximum (read from injiVerify.properties)
+	private static final Semaphore bsSessionSlots = new Semaphore(
+			Integer.parseInt(InjiVerifyConfigManager.getproperty("browserstack_max_sessions").trim()), true);
 
 	@Before
 	public void beforeAll(Scenario scenario) throws MalformedURLException {
@@ -100,10 +114,14 @@ public class BaseTest extends BaseTestUtil{
 		boolean browserStackEnabled = Boolean.parseBoolean(InjiVerifyConfigManager.getproperty("runOnBrowserStack").trim());
 		initialiseScenarioRuntimeArtifacts(scenario);
 		initialiseSharedInsuranceArtifactPaths();
+		totalCount.incrementAndGet();
+		ExtentReportManager.initReport();
+		ExtentReportManager.createTest(scenario.getName());
+		ExtentReportManager.logStep("Scenario Started: " + scenario.getName());
 		boolean scanMode = scenario.getSourceTagNames().contains("@scan");
 		if (scanMode) {
-			scanQrCodeFile.set(resolveScanQrCodeFile(scenario));
 			scanCameraProfile.set(resolveScanCameraProfile(scenario));
+			scanQrCodeFile.set(resolveScanQrCodeFile(scenario));
 			autoAllowScanCamera.set(shouldAutoAllowScanCamera(scenario));
 		}
 		boolean useBrowserStack = browserStackEnabled
@@ -113,30 +131,29 @@ public class BaseTest extends BaseTestUtil{
 		browserStackSession.set(useBrowserStack);
 
 		if (useBrowserStack) {
-			try {
-				if (bsLocal == null || !bsLocal.isRunning()) {
-					bsLocal = new Local();
-					HashMap<String, String> bsLocalArgs = new HashMap<>();
-					bsLocalArgs.put("key", accessKey);
-					bsLocalArgs.put("forceLocal", "true");
-					try {
+			synchronized (bsLocalLock) {
+				try {
+					if (bsLocal == null || !bsLocal.isRunning()) {
+						bsLocal = new Local();
+						HashMap<String, String> bsLocalArgs = new HashMap<>();
+						bsLocalArgs.put("key", accessKey);
+						bsLocalArgs.put("forceLocal", "true");
 						bsLocal.start(bsLocalArgs);
 						logger.info("BrowserStack Local tunnel started.");
-					} catch (Exception e) {
-						logger.error("Failed to start BrowserStack Local tunnel", e);
 					}
+				} catch (Exception e) {
+					logger.error("Failed to start BrowserStack Local tunnel", e);
 				}
-			} catch (Exception e) {
-				logger.error("Failed to initialize BrowserStack Local", e);
 			}
 		}
 
-		totalCount++;
-		ExtentReportManager.initReport();
-		ExtentReportManager.createTest(scenario.getName());
-		ExtentReportManager.logStep("Scenario Started: " + scenario.getName());
-
 		if (useBrowserStack) {
+			try {
+				bsSessionSlots.acquire();
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				throw new RuntimeException("Interrupted waiting for a BrowserStack session slot", e);
+			}
 			DesiredCapabilities capabilities = new DesiredCapabilities();
 			HashMap<String, Object> browserstackOptions = new HashMap<>();
 
@@ -161,20 +178,21 @@ public class BaseTest extends BaseTestUtil{
 
 			capabilities.setCapability("bstack:options", browserstackOptions);
 			logger.info("Final capabilities: {}", capabilities);
-			driver = new RemoteWebDriver(new URL(URL), capabilities);
-			((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
+			WebDriver newDriver = new RemoteWebDriver(new URL(URL), capabilities);
+			((RemoteWebDriver) newDriver).setFileDetector(new LocalFileDetector());
+			driverHolder.set(newDriver);
 		} else {
 			ChromeOptions chromeOptions = getLocalChromeOptions(scanMode, mobileView);
-			driver = new ChromeDriver(chromeOptions);
+			driverHolder.set(new ChromeDriver(chromeOptions));
 		}
 
-		jse = (JavascriptExecutor) driver;
+		jseHolder.set((JavascriptExecutor) driverHolder.get());
 
 		if (!mobileView) {
-			driver.manage().window().maximize();
+			driverHolder.get().manage().window().maximize();
 		}
 
-		driver.get(url);
+		driverHolder.get().get(url);
 	}
 
 	private void initialiseScenarioRuntimeArtifacts(Scenario scenario) {
@@ -229,6 +247,7 @@ public class BaseTest extends BaseTestUtil{
 		if (scenario.isFailed()) {
 			ExtentCucumberAdapter.getCurrentStep().log(Status.FAIL, "Step Failed: " + stepName);
 			captureScreenshot();
+			failedStepScreenshotCaptured.set(Boolean.TRUE);
 		} else {
 			ExtentCucumberAdapter.getCurrentStep().log(Status.PASS, "Step Passed: " + stepName);
 		}
@@ -243,7 +262,7 @@ public class BaseTest extends BaseTestUtil{
 
 			String bugId  = runnerfiles.Runner.knownIssues.get(scenario.getName());
 			String bugUrl = "https://mosip.atlassian.net/browse/" + bugId;
-			knownIssueCount++;
+			knownIssueCount.incrementAndGet();
 
 			ExtentReportManager.getTest().skip(
 					"🟠 Skipped due to Known Issue → <a href='" + bugUrl + "' target='_blank'>" + bugId + "</a>");
@@ -254,42 +273,55 @@ public class BaseTest extends BaseTestUtil{
 		// ─────────────────────────────────────────────────────────────────────────────
 
 		if (scenario.isFailed()) {
-			failedCount++;
+			failedCount.incrementAndGet();
+			attachLocalFailureScreenshotIfNeeded();
 			ExtentReportManager.getTest().fail("❌ Scenario Failed: " + scenario.getName());
 		} else {
-			passedCount++;
+			passedCount.incrementAndGet();
 			ExtentReportManager.getTest().pass("✅ Scenario Passed: " + scenario.getName());
 		}
 
 		markBrowserStackSessionStatus(scenario);
+		attachBrowserStackVideoLinkIfFailed(scenario);
 		ExtentReportManager.flushReport();
 		try {
-			if (isUsingBrowserStack() && bsLocal != null && bsLocal.isRunning() && (passedCount + failedCount == totalCount)) {
-				try {
-					bsLocal.stop();
-					logger.info("🛑 BrowserStack Local tunnel stopped.");
-				} catch (Exception e) {
-					logger.error("Failed to stop BrowserStack Local tunnel", e);
+			int done = passedCount.get() + failedCount.get();
+			if (isUsingBrowserStack() && bsLocal != null && bsLocal.isRunning() && done == totalCount.get()) {
+				synchronized (bsLocalLock) {
+					done = passedCount.get() + failedCount.get();
+					if (bsLocal != null && bsLocal.isRunning() && done == totalCount.get()) {
+						try {
+							bsLocal.stop();
+							logger.info("BrowserStack Local tunnel stopped.");
+						} catch (Exception e) {
+							logger.error("Failed to stop BrowserStack Local tunnel", e);
+						}
+					}
 				}
 			}
 		} catch (Exception e) {
 			logger.error("Error in afterScenario", e);
 		} finally {
-			if (driver != null) {
-				driver.quit();
-				driver = null;
+			WebDriver currentDriver = driverHolder.get();
+			if (currentDriver != null) {
+				currentDriver.quit();
 			}
-			jse = null;
+			if (isUsingBrowserStack()) {
+				bsSessionSlots.release();
+			}
+			driverHolder.remove();
+			jseHolder.remove();
 			browserStackSession.remove();
 			scanQrCodeFile.remove();
 			scanCameraProfile.remove();
 			autoAllowScanCamera.remove();
 			scenarioRuntimeDir.remove();
+			failedStepScreenshotCaptured.remove();
 		}
 	}
 
 	private void markBrowserStackSessionStatus(Scenario scenario) {
-		if (!isUsingBrowserStack() || driver == null) {
+		if (!isUsingBrowserStack() || driverHolder.get() == null) {
 			return;
 		}
 
@@ -303,11 +335,87 @@ public class BaseTest extends BaseTestUtil{
 					status,
 					escapeForJson(reason)
 			);
-			((JavascriptExecutor) driver).executeScript(executorCommand);
+			((JavascriptExecutor) driverHolder.get()).executeScript(executorCommand);
 			logger.info("BrowserStack session marked as {} for scenario: {}", status, scenario.getName());
 		} catch (Exception e) {
 			logger.error("Unable to update BrowserStack session status for scenario: {}", scenario.getName(), e);
 		}
+	}
+
+	private void attachBrowserStackVideoLinkIfFailed(Scenario scenario) {
+		if (!scenario.isFailed() || !isUsingBrowserStack() || driverHolder.get() == null || ExtentReportManager.getTest() == null) {
+			return;
+		}
+
+		try {
+			String sessionDetailsJson = (String) ((JavascriptExecutor) driverHolder.get())
+					.executeScript("browserstack_executor: {\"action\": \"getSessionDetails\"}");
+			if (sessionDetailsJson == null || sessionDetailsJson.trim().isEmpty()) {
+				return;
+			}
+
+			JsonNode sessionDetails = OBJECT_MAPPER.readTree(sessionDetailsJson);
+			String link = firstNonBlank(
+					getJsonText(sessionDetails, "video_url"),
+					getJsonText(sessionDetails, "videoUrl"),
+					getJsonText(sessionDetails, "public_url"),
+					getJsonText(sessionDetails, "publicUrl"),
+					getJsonText(sessionDetails, "dashboard_url"),
+					getJsonText(sessionDetails, "dashboardUrl"),
+					getJsonText(sessionDetails, "session_url"),
+					getJsonText(sessionDetails, "sessionUrl"));
+
+			if (link != null) {
+				ExtentReportManager.getTest().fail(
+						"<a href='" + escapeHtmlAttribute(link) + "' target='_blank'>Click here for BrowserStack video/session</a>");
+				logger.info("Attached BrowserStack video/session link for failed scenario: {}", scenario.getName());
+				return;
+			}
+
+			String hashedId = firstNonBlank(getJsonText(sessionDetails, "hashed_id"), getJsonText(sessionDetails, "hashedId"));
+			if (hashedId != null) {
+				ExtentReportManager.getTest().fail("BrowserStack session id: " + hashedId);
+			}
+		} catch (Exception e) {
+			logger.warn("Unable to fetch BrowserStack session details for scenario: {}", scenario.getName(), e);
+		}
+	}
+
+	private void attachLocalFailureScreenshotIfNeeded() {
+		if (isUsingBrowserStack() || ExtentReportManager.getTest() == null
+				|| Boolean.TRUE.equals(failedStepScreenshotCaptured.get())) {
+			return;
+		}
+
+		WebDriver currentDriver = driverHolder.get();
+		if (currentDriver == null) {
+			return;
+		}
+
+		ScreenshotUtil.attachScreenshot(currentDriver, "LocalFailureScreenshot");
+		failedStepScreenshotCaptured.set(Boolean.TRUE);
+	}
+
+	private String getJsonText(JsonNode node, String fieldName) {
+		JsonNode value = node.get(fieldName);
+		if (value == null || value.isNull()) {
+			return null;
+		}
+		String text = value.asText();
+		return text == null || text.trim().isEmpty() ? null : text;
+	}
+
+	private String firstNonBlank(String... values) {
+		for (String value : values) {
+			if (value != null && !value.trim().isEmpty()) {
+				return value;
+			}
+		}
+		return null;
+	}
+
+	private String escapeHtmlAttribute(String value) {
+		return value.replace("&", "&amp;").replace("'", "&#39;").replace("\"", "&quot;");
 	}
 
 	private String escapeForJson(String value) {
@@ -335,12 +443,14 @@ public class BaseTest extends BaseTestUtil{
 	}
 
 	private void captureScreenshot() {
-		if (driver != null) {
-			byte[] screenshot = ((TakesScreenshot) driver).getScreenshotAs(OutputType.BYTES);
+		WebDriver currentDriver = driverHolder.get();
+		if (currentDriver != null) {
+			byte[] screenshot = ((TakesScreenshot) currentDriver).getScreenshotAs(OutputType.BYTES);
 			ExtentCucumberAdapter.getCurrentStep().addScreenCaptureFromBase64String(
 					java.util.Base64.getEncoder().encodeToString(screenshot),
 					"Failure Screenshot"
 			);
+			failedStepScreenshotCaptured.set(Boolean.TRUE);
 		}
 	}
 
@@ -357,11 +467,11 @@ public class BaseTest extends BaseTestUtil{
 	}
 
 	public WebDriver getDriver() {
-		return driver;
+		return driverHolder.get();
 	}
 
 	public JavascriptExecutor getJse() {
-		return jse;
+		return jseHolder.get();
 	}
 
 	public static boolean isUsingBrowserStack() {
@@ -384,6 +494,10 @@ public class BaseTest extends BaseTestUtil{
 		return scenarioRuntimeDir.get();
 	}
 
+	public static void markFailureScreenshotCaptured() {
+		failedStepScreenshotCaptured.set(Boolean.TRUE);
+	}
+
 	public static String getDownloadedInsurancePdfPath() {
 		return downloadedInsurancePdfPath;
 	}
@@ -404,16 +518,75 @@ public class BaseTest extends BaseTestUtil{
 		return insuranceArtifactsLock;
 	}
 
-	public static void pushReportsToS3() {
-
-		try {
-			Thread.sleep(20000);
-		} catch (InterruptedException e) {
-			e.printStackTrace();
+	public static void updateBrowserStackNetworkProfile(String networkProfile) {
+		WebDriver currentDriver = driverHolder.get();
+		if (!Boolean.TRUE.equals(browserStackSession.get()) || !(currentDriver instanceof RemoteWebDriver)) {
+			throw new IllegalStateException("BrowserStack network profile can be updated only for active RemoteWebDriver sessions.");
 		}
 
+		String sessionId = ((RemoteWebDriver) currentDriver).getSessionId().toString();
+		String userName = InjiVerifyConfigManager.getproperty("browserstack_username");
+		String accessKey = InjiVerifyConfigManager.getproperty("browserstack_access_key");
+		String endpoint = "https://api.browserstack.com/automate/sessions/" + sessionId + "/update_network.json";
+		String payload = "{\"networkProfile\":\"" + networkProfile + "\"}";
+
+		HttpURLConnection connection = null;
+		try {
+			connection = (HttpURLConnection) new URL(endpoint).openConnection();
+			connection.setRequestMethod("PUT");
+			connection.setRequestProperty("Authorization", "Basic " + Base64.getEncoder()
+					.encodeToString((userName + ":" + accessKey).getBytes(StandardCharsets.UTF_8)));
+			connection.setRequestProperty("Content-Type", "application/json");
+			connection.setDoOutput(true);
+			try (OutputStream outputStream = connection.getOutputStream()) {
+				outputStream.write(payload.getBytes(StandardCharsets.UTF_8));
+			}
+
+			int responseCode = connection.getResponseCode();
+			if (responseCode < 200 || responseCode >= 300) {
+				String errorBody = readConnectionBody(connection);
+				throw new RuntimeException("BrowserStack network profile update failed with status " + responseCode
+						+ (errorBody == null || errorBody.isEmpty() ? "" : (": " + errorBody)));
+			}
+		} catch (IOException e) {
+			throw new RuntimeException("Failed to update BrowserStack network profile to '" + networkProfile + "'.", e);
+		} finally {
+			if (connection != null) {
+				connection.disconnect();
+			}
+		}
+	}
+
+	private static String readConnectionBody(HttpURLConnection connection) {
+		InputStream stream = null;
+		try {
+			stream = connection.getErrorStream() != null ? connection.getErrorStream() : connection.getInputStream();
+			if (stream == null) {
+				return null;
+			}
+			BufferedReader reader = new BufferedReader(new InputStreamReader(stream, StandardCharsets.UTF_8));
+			StringBuilder builder = new StringBuilder();
+			String line;
+			while ((line = reader.readLine()) != null) {
+				builder.append(line);
+			}
+			return builder.toString();
+		} catch (IOException e) {
+			return null;
+		} finally {
+			if (stream != null) {
+				try {
+					stream.close();
+				} catch (IOException ignored) {
+				}
+			}
+		}
+	}
+
+	public static void pushReportsToS3() {
+
 		String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date());
-		String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-" + timestamp + "-T-" + totalCount + "-P-" + passedCount + "-F-" + failedCount + ".html";
+		String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-" + timestamp + "-T-" + totalCount.get() + "-P-" + passedCount.get() + "-F-" + failedCount.get() + ".html";
 		String newFileName = "InjiVerifyUi-" + name;
 		File originalReportFile = new File(System.getProperty("user.dir") + "/test-output/ExtentReport.html");
 		File newReportFile = new File(System.getProperty("user.dir") + "/test-output/" + newFileName);
@@ -463,11 +636,11 @@ public class BaseTest extends BaseTestUtil{
 		if (scenario.getSourceTagNames().contains("@camera_2mp")) {
 			return "2mp";
 		}
-		if (scenario.getSourceTagNames().contains("@camera_lt_8mp")) {
-			return "lt_8mp";
+		if (scenario.getSourceTagNames().contains("@camera_8mp")) {
+			return "8mp";
 		}
-		if (scenario.getSourceTagNames().contains("@camera_gt_15mp")) {
-			return "gt_15mp";
+		if (scenario.getSourceTagNames().contains("@camera_15mp")) {
+			return "15mp";
 		}
 		if (scenario.getSourceTagNames().contains("@camera_low_light")) {
 			return "low_light";

@@ -41,6 +41,10 @@ import static org.testng.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;
+import org.openqa.selenium.By;
+import org.openqa.selenium.support.ui.ExpectedConditions;
+import org.openqa.selenium.support.ui.WebDriverWait;
+import java.time.Duration;
 
 public class StepDef extends BaseSteps {
 
@@ -1684,7 +1688,6 @@ public class StepDef extends BaseSteps {
     @Then("User enter the policy number")
     public void user_enter_the_policy_number() {
         try {
-            Thread.sleep(3000); // Consider using WebDriverWait instead of Thread.sleep for better efficiency.
             homePage.enterPolicyNumer(policyNumber);
             test.log(Status.PASS, "User successfully entered the policy number: " + policyNumber);
         } catch (NoSuchElementException e) {
@@ -1692,11 +1695,6 @@ public class StepDef extends BaseSteps {
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
             ScreenshotUtil.attachScreenshot(driver, "FailureScreenshot");
             throw e;
-        } catch (InterruptedException e) {
-            test.log(Status.FAIL, "Thread was interrupted while waiting to enter the policy number: " + e.getMessage());
-            test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
-            Thread.currentThread().interrupt(); // Restore interrupted state
-            throw new RuntimeException(e);
         } catch (Exception e) {
             test.log(Status.FAIL, "Unexpected error while entering the policy number: " + e.getMessage());
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
@@ -1737,13 +1735,8 @@ public class StepDef extends BaseSteps {
 	@When("User enter the otp {string}")
 	public void user_enter_the_otp(String otpString) {
 	    try {
-	        Thread.sleep(3000);
 	        homePage.enterOtp(otpString);
 	        test.log(Status.PASS, "Successfully entered OTP: " + otpString);
-	    } catch (InterruptedException e) {
-	        test.log(Status.FAIL, "Interrupted while waiting to enter OTP: " + e.getMessage());
-	        Thread.currentThread().interrupt(); // Restore interrupted state
-	        throw new RuntimeException(e);
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while entering OTP", e);
 	        throw e;
@@ -1785,8 +1778,12 @@ public class StepDef extends BaseSteps {
 	@When("User verify pdf is downloaded")
 	public void user_verify_pdf_is_downloaded() throws IOException {
 	    try {
-	        Thread.sleep(10000);
-	        boolean fileExists = (boolean) baseTest.getJse().executeScript("browserstack_executor: {\"action\": \"fileExists\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
+	        boolean fileExists = false;
+	        for (int i = 0; i < 5; i++) {
+	            fileExists = (boolean) baseTest.getJse().executeScript("browserstack_executor: {\"action\": \"fileExists\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
+	            if (fileExists) break;
+	            Thread.sleep(2000);
+	        }
 	        assertTrue("PDF file 'InsuranceCredential.pdf' was not found on BrowserStack.", fileExists);
 	        test.log(Status.PASS, "PDF file 'InsuranceCredential.pdf' exists on BrowserStack.");
 	        String base64EncodedFile = (String) baseTest.getJse().executeScript("browserstack_executor: {\"action\": \"getFileContent\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
@@ -1823,7 +1820,7 @@ public class StepDef extends BaseSteps {
 
 	}
 
-	@Before(value = "@needsInsuranceArtifacts", order = 1)
+	@Before(value = "@needsInsuranceArtifacts", order = 12000)
 	public void prepareInsuranceCredentialArtifactsHook() throws Exception {
 	    try {
 	        synchronized (BaseTest.getInsuranceArtifactsLock()) {
@@ -1834,28 +1831,27 @@ public class StepDef extends BaseSteps {
 
 	            if (pdfFile.exists() && pngFile.exists() && jpgFile.exists() && jpegFile.exists()) {
 	                test.log(Status.PASS, "Insurance credential artifacts are already prepared for this run.");
-	                return;
+	            } else {
+	                openInjiWebInNewTab();
+	                verifyClickOnContinueButton();
+	                user_search_the_issuers_sunbird();
+	                user_click_on_download_StayProtected_Insurance_button();
+	                user_click_on_health_insurance_id_by_e_signet_button();
+	                user_click_on_validity_dropdown_button();
+	                user_click_on_no_limit_button();
+	                user_click_on_proceed_button();
+	                user_enter_the_policy_number();
+	                user_enter_the_full_name();
+	                user_enter_the_date_of_birth();
+	                user_click_on_login_button();
+	                user_verify_download_success_text_displayed();
+	                user_verify_pdf_is_downloaded();
+	                verify_that_user_convert_pdf_into_png();
+	                test.log(Status.PASS, "Prepared shared insurance credential artifacts for this run.");
 	            }
-
-	            openInjiWebInNewTab();
-	            verifyClickOnContinueButton();
-	            user_search_the_issuers_sunbird();
-	            user_click_on_download_StayProtected_Insurance_button();
-	            user_click_on_health_insurance_id_by_e_signet_button();
-	            user_click_on_validity_dropdown_button();
-	            user_click_on_no_limit_button();
-	            user_click_on_proceed_button();
-	            user_enter_the_policy_number();
-	            user_enter_the_full_name();
-	            user_enter_the_date_of_birth();
-	            user_click_on_login_button();
-	            user_verify_download_success_text_displayed();
-	            user_verify_pdf_is_downloaded();
-	            verify_that_user_convert_pdf_into_png();
-	            open_inji_verify_in_new_tab();
-
-	            test.log(Status.PASS, "Prepared shared insurance credential artifacts for this run.");
 	        }
+
+	        open_inji_verify_in_new_tab();
 	    } catch (Exception e) {
 	        logFailure(test, driver, "Failed while preparing insurance credential artifacts", e);
 	        throw e;
@@ -1908,13 +1904,8 @@ public class StepDef extends BaseSteps {
 	@When("User enter the policy number {string}")
 	public void user_enter_the_policy_number(String string) {
 	    try {
-	        Thread.sleep(3000);
 	        homePage.enterPolicyNumer(string);
 	        test.log(Status.PASS, "Successfully entered policy number: " + string);
-	    } catch (InterruptedException e) {
-	        test.log(Status.FAIL, "Interrupted while waiting to enter policy number: " + e.getMessage());
-	        Thread.currentThread().interrupt(); // Restore interrupted state
-	        throw new RuntimeException(e);
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while entering policy number", e);
 	        throw e;
@@ -2806,13 +2797,11 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	@Then("User enter the credential type {string}")
 	public void user_enter_the_credential_type(String credentialType) {
 	    try {
-	        Thread.sleep(3000);
+	        new WebDriverWait(driver, Duration.ofSeconds(10))
+	            .until(ExpectedConditions.elementToBeClickable(
+	                By.xpath("//input[@placeholder='Search VC Type']")));
 	        vpverification.enterCredentialType(credentialType);
 	        test.log(Status.PASS, "Successfully entered credential type: " + credentialType);
-	    } catch (InterruptedException e) {
-	        Thread.currentThread().interrupt(); // Restore interrupt status
-	        logFailure(test, driver, "Thread was interrupted while entering credential type", e);
-	        throw new RuntimeException(e);
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while entering credential type: " + credentialType, e);
 	        throw e;

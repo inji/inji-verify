@@ -8,6 +8,7 @@ import io.cucumber.java.en.When;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.chrome.ChromeDriver;
 import org.testng.Assert;
+import utils.BaseTest;
 
 import java.net.URI;
 import java.util.HashMap;
@@ -210,7 +211,7 @@ public class ScanQrCodeSteps extends BaseSteps {
             assertEquals(scanqrcode.getStatusMessage(), UiConstants.VERIFICATION_SUCCESS_MESSAGE);
             test.log(Status.PASS, "QR code scanned successfully.");
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "QR code scan validation failed: " + e.getMessage());
+            logAssertionFailure(test, driver, "QR code scan validation failed", e);
             throw e;
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while validating QR code scan", e);
@@ -310,8 +311,12 @@ public class ScanQrCodeSteps extends BaseSteps {
     @Then("validate camera permission prompt flow is triggered for scan qr code")
     public void validateCameraPermissionPromptFlowIsTriggeredForScanQrCode() {
         try {
-            assertTrue("Verify if the scan area is visible when scan is initiated for the first time", scanqrcode.isVisibleScanQRCodeArea());
-            assertTrue("Verify if the scan QR code action is available on first access", scanqrcode.isVisibleScanQRCodeButton());
+            assertTrue("Verify if the live scan area is visible when scan is initiated for the first time",
+                    scanqrcode.isVisibleActiveScanVideo());
+            assertTrue("Verify if the scanning line is visible when scan is initiated for the first time",
+                    scanqrcode.isVisibleScanLine());
+            assertTrue("Verify if the back action is available after opening the scan view for the first time",
+                    scanqrcode.isVisibleBackButton());
             test.log(Status.PASS, "First-time scan QR code flow triggered camera permission request path.");
         } catch (AssertionError e) {
             test.log(Status.FAIL, "First-time camera permission flow validation failed: " + e.getMessage());
@@ -340,8 +345,14 @@ public class ScanQrCodeSteps extends BaseSteps {
     @And("turn off internet connection")
     public void turnOffInternetConnection() {
         try {
+            if (BaseTest.isUsingBrowserStack()) {
+                BaseTest.updateBrowserStackNetworkProfile("no-network");
+                test.log(Status.PASS, "Internet connection disabled in BrowserStack using no-network profile.");
+                return;
+            }
+
             if (!(driver instanceof ChromeDriver chromeDriver)) {
-                throw new IllegalStateException("Offline scan is supported only with local ChromeDriver.");
+                throw new IllegalStateException("Offline mode is supported only with local ChromeDriver or BrowserStack remote sessions.");
             }
 
             chromeDriver.executeCdpCommand("Network.enable", new HashMap<>());
@@ -353,9 +364,9 @@ public class ScanQrCodeSteps extends BaseSteps {
             offlineSettings.put("uploadThroughput", 0);
             chromeDriver.executeCdpCommand("Network.emulateNetworkConditions", offlineSettings);
 
-            test.log(Status.PASS, "Internet connection disabled in Chrome for offline scan validation.");
+            test.log(Status.PASS, "Internet connection disabled in local Chrome for offline validation.");
         } catch (Exception e) {
-            logFailure(test, driver, "Unable to disable internet connection for offline scan validation", e);
+            logFailure(test, driver, "Unable to disable internet connection for offline validation", e);
             throw e;
         }
     }
@@ -458,7 +469,7 @@ public class ScanQrCodeSteps extends BaseSteps {
             Assert.assertTrue(visible, failMessage);
             test.log(Status.PASS, passMessage);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, failMessage);
+            logAssertionFailure(test, driver, failMessage, e);
             throw e;
         } catch (Exception e) {
             logFailure(test, driver, failMessage, e);
@@ -488,7 +499,7 @@ public class ScanQrCodeSteps extends BaseSteps {
             assertEquals(actualMessage, UiConstants.HALF_QRCODE_FAILURE_MESSAGE);
             test.log(Status.PASS, successMessage);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, successMessage + " Validation failed: " + e.getMessage());
+            logAssertionFailure(test, driver, successMessage + " Validation failed", e);
             throw e;
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while validating alert message", e);
@@ -508,7 +519,7 @@ public class ScanQrCodeSteps extends BaseSteps {
             assertTrue("Expected scan failure feedback.", failureVisible);
             test.log(Status.PASS, "Scan failure state validated successfully.");
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Generic scan failure validation failed: " + e.getMessage());
+            logAssertionFailure(test, driver, "Generic scan failure validation failed", e);
             throw e;
         } catch (Exception e) {
             logFailure(test, driver, "Unexpected error while validating generic scan failure state", e);
@@ -522,7 +533,7 @@ public class ScanQrCodeSteps extends BaseSteps {
             assertEquals(actualMessage, expectedMessage);
             test.log(Status.PASS, successMessage);
         } catch (AssertionError e) {
-            test.log(Status.FAIL, successMessage + " Validation failed: " + e.getMessage());
+            logAssertionFailure(test, driver, successMessage + " Validation failed", e);
             throw e;
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while validating scan failure", e);

@@ -16,7 +16,7 @@ import api.InjiVerifyConfigManager;
 
 public class ExtentReportManager {
     private static ExtentReports extent;
-    private static ExtentTest test;
+    private static final ThreadLocal<ExtentTest> testHolder = new ThreadLocal<>();
     private static long startTime;
 
     // ── Scenario counters ─────────────────────────────────────────────────────────
@@ -77,10 +77,11 @@ public class ExtentReportManager {
     }
 
     public static void createTest(String testName) {
-        test = extent.createTest(testName);
+        testHolder.set(extent.createTest(testName));
     }
 
     public static void logStep(String message) {
+        ExtentTest test = testHolder.get();
         if (test != null) {
             test.info(message);
         }
@@ -93,7 +94,7 @@ public class ExtentReportManager {
     }
 
     public static ExtentTest getTest() {
-        return test;
+        return testHolder.get();
     }
 
     // ── Counter incrementers ──────────────────────────────────────────────────────
