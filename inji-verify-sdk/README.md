@@ -67,11 +67,12 @@ function MyApp() {
 {
     "verifiableCredential": "...",
         "skipStatusChecks": false,
-        "statusCheckFilters": ["revocation", "suspension"],
+        "statusCheckFilters": ["revocation"],
         "includeClaims": true
 }
 ```
 ### Request Fields Summary
+
 | Property               | Type    | Required | Description                          |
 |------------------------|---------|----------|--------------------------------------|
 | `verifiableCredential` | string  | ✅      | The VC to verify. Its format is determined in the Verify Service and passed to the vc-verifier.|
@@ -104,11 +105,12 @@ If summariseResults=false, then response should be
 }
 ```
 ### Response Fields Summary
+
 | Property                  | Type    | Required | Description                          |
 |---------------------------|---------|-----------|--------------------------------------|
 | `schemaAndSignatureCheck` | object  | ✅       | Validates schema and signature check |
 | `expiryCheck`             | object  | ✅       | If false, the credential is EXPIRED     |
-| `statusCheck`             | array   | ❌       | Contains revocation and other status validations           |
+| `statusChecks`            | array   | ❌       | Contains revocation and other status validations           |
 | `statusCheck.error`       | object  | ❌       | If present, throws an error instead of returning a status        |
 | `statusCheck.purpose`     | object  | ❌       | Identifies purpose (e.g., "revocation")          |
 | `statusCheck.valid`       | boolean | ❌       | If false for revocation → credential is revoked            |
@@ -148,12 +150,13 @@ If summariseResults=false, then response should be
 }  
 ```
 ### Response Fields Summary
+
 | Property                  | Type    | Required | Description                                               |
 |---------------------------|---------|-----------|-----------------------------------------------------------|
 | `holderProofCheck`        | object  | ✅       | Validates if presenter owns the credential                |
 | `schemaAndSignatureCheck` | object  | ✅       | Validates schema and signature check                      |
 | `expiryCheck`             | object  | ✅       | If false, the credential is EXPIRED                       |
-| `statusCheck`             | array   | ❌       | Contains revocation and other status validations          |
+| `statusChecks`            | array   | ❌       | Contains revocation and other status validations          |
 | `statusCheck.error`       | object  | ❌       | If present, throws an error instead of returning a status |
 | `statusCheck.purpose`     | object  | ❌       | Identifies purpose (e.g., "revocation")                   |
 | `statusCheck.valid`       | boolean | ❌       | If false for revocation → credential is revoked           |
