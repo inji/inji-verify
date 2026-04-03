@@ -39,18 +39,24 @@ API documentation is available in the [Inji Verify API documentation 🔗](https
   - Submits the VP along with the request to the backend
 - If an error occurs during VP generation, the wallet sends the error and its description to the backend.
 
-> **Important Implementation Note:**
+> **Important Implementation Note**
+>
 > The submission endpoint may return a redirect_uri depending on the responseCodeValidationRequired configuration:
+>
 > If responseCodeValidationRequired = true
+> 
 > A redirect_uri is returned.
-> It contains a response_code used by the UI to resume the flow, display results, handle errors, or terminate the session.
+> 
+> It contains a response_code used by the UI to resume the flow, display results, handle errors, or terminate the session.terminate the session.
+> 
 > If responseCodeValidationRequired = false
+> 
 > No redirect_uri is returned.
-
+>
 > **Cross-Device Flow Behavior**
+>
 > For cross-device flows, responseCodeValidationRequired is always set to false.
 > Therefore, no redirect_uri is returned in this flow.
-
 
 ### Submission Result:
 - Once the wallet submits the VP, the request status is updated to VP_SUBMITTED.
