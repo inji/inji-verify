@@ -62,6 +62,22 @@ function MyApp() {
   );
 }
 ```
+## Request Body Example 
+```javascript
+{
+    "verifiableCredential": "...",
+        "skipStatusChecks": false,
+        "statusCheckFilters": ["revocation", "suspension"],
+        "includeClaims": true
+}
+```
+### Request Fields Summary
+| Property               | Type    | Required | Description                          |
+|------------------------|---------|----------|--------------------------------------|
+| `verifiableCredential` | string  | ✅      | The VC to verify. Its format is determined in the Verify Service and passed to the vc-verifier.|
+| `skipStatusChecks`     | boolean | ❌       | If true, skips all status checks and ignores statusCheckFilters    |
+| `statusCheckFilters`   | array   | ❌      | array of status checks to perform          |
+| `includeClaims`        | boolean | ❌      |If true, the response includes extracted VC claims in addition to verification and status check results.       |
 
 ## Response Received
 
@@ -82,12 +98,22 @@ If summariseResults=false, then response should be
         "schemaAndSignatureCheck": { "valid": true, "error": null },
     "expiryCheck": { "valid": true },
     "statusChecks": [
-        { "purpose": "revocation", "valid": true, "error": null },
-        { "purpose": "suspension", "valid": true, "error": null }
+        { "purpose": "revocation", "valid": true, "error": null }
     ],
         "claims": {...}
 }
 ```
+### Response Fields Summary
+| Property                  | Type    | Required | Description                          |
+|---------------------------|---------|-----------|--------------------------------------|
+| `schemaAndSignatureCheck` | object  | ✅       | Validates schema and signature check |
+| `expiryCheck`             | object  | ✅       | If false, the credential is EXPIRED     |
+| `statusCheck`             | array   | ❌       | Contains revocation and other status validations           |
+| `statusCheck.error`       | object  | ❌       | If present, throws an error instead of returning a status        |
+| `statusCheck.purpose`     | object  | ❌       | Identifies purpose (e.g., "revocation")          |
+| `statusCheck.valid`       | boolean | ❌       | If false for revocation → credential is revoked            |
+| `allChecksSuccessful`     | boolean | ✅       | Final aggregated validation flag   |
+
 ### OpenID4VPVerification
 If summariseResults=true, then response should be
 ```javascript
@@ -95,10 +121,10 @@ If summariseResults=true, then response should be
         vcResults: [
             {
                 vc: { /* Your verified credential data */ },
-                vcStatus: "SUCCESS" // or  "INVALID", "EXPIRED"
+                vcStatus: "SUCCESS" // or  "INVALID", "EXPIRED","REVOKED"
             }
         ],
-            vpResultStatus: "SUCCESS" // Overall verification status
+            vpResultStatus: "SUCCESS" //  or "INVALID" Overall verification status
     }
 ```
 If summariseResults=false, then response should be
@@ -114,14 +140,25 @@ If summariseResults=false, then response should be
             "schemaAndSignatureCheck": { "valid": true, "error": null },
             "expiryCheck": { "valid": true },
             "statusChecks": [
-                { "purpose": "revocation", "valid": true, "error": null },
-                { "purpose": "suspension", "valid": true, "error": null },
+                { "purpose": "revocation", "valid": true, "error": null }
             ],
             "claims": {..}
         }
     ]
 }  
 ```
+### Response Fields Summary
+| Property                  | Type    | Required | Description                                               |
+|---------------------------|---------|-----------|-----------------------------------------------------------|
+| `holderProofCheck`        | object  | ✅       | Validates if presenter owns the credential                |
+| `schemaAndSignatureCheck` | object  | ✅       | Validates schema and signature check                      |
+| `expiryCheck`             | object  | ✅       | If false, the credential is EXPIRED                       |
+| `statusCheck`             | array   | ❌       | Contains revocation and other status validations          |
+| `statusCheck.error`       | object  | ❌       | If present, throws an error instead of returning a status |
+| `statusCheck.purpose`     | object  | ❌       | Identifies purpose (e.g., "revocation")                   |
+| `statusCheck.valid`       | boolean | ❌       | If false for revocation → credential is revoked           |
+| `allChecksSuccessful`     | boolean | ✅       | Final aggregated validation flag                          |
+
 > **Security Recommendation**
 >
 > Avoid consuming results directly from VPProcessed or VCProcessed.
