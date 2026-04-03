@@ -47,7 +47,7 @@ API documentation is available in the [Inji Verify API documentation 🔗](https
 > 
 > A redirect_uri is returned.
 > 
-> It contains a response_code used by the UI to resume the flow, display results, handle errors, or terminate the session.terminate the session.
+> It contains a response_code used by the UI to resume the flow, display results, handle errors, or terminate the session.
 > 
 > If responseCodeValidationRequired = false
 > 
