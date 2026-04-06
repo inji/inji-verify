@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
     CredentialResult,
     QRCodeVerificationProps,
@@ -503,7 +503,10 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   };
 
   const handleTriggerClick = () => {
-    if (isUploading || isScanning || isLoading || fileDialogOpenRef.current) return;
+    if (isUploading || isScanning || isLoading) return;
+    // File-dialog guard only applies when upload is enabled; otherwise a stale
+    // ref blocks the camera forever after toggling props or closing a picker.
+    if (isEnableUpload && fileDialogOpenRef.current) return;
 
     if (isEnableScan && isEnableUpload) {
       scanSessionCompletedRef.current = false;
@@ -650,15 +653,46 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     !isScanning &&
     !scanSessionCompletedRef.current;
 
-  useEffect(() => {
-    if (scannerActive) {
-      if (startScanning) startVideoStream();
-    } else {
+  const startVideoStreamRef = useRef(startVideoStream);
+  startVideoStreamRef.current = startVideoStream;
+  const stopVideoStreamRef = useRef(stopVideoStream);
+  stopVideoStreamRef.current = stopVideoStream;
+
+  useLayoutEffect(() => {
+    if (!scannerActive) {
       frameProcessingRef.current = false;
       clearTimer();
-      stopVideoStream();
+      stopVideoStreamRef.current();
+      return;
     }
-  }, [scannerActive, startScanning, startVideoStream, stopVideoStream, activeFlow, hasTrigger]);
+    if (!startScanning) {
+      return;
+    }
+
+    let cancelled = false;
+    let rafId = 0;
+    let attempts = 0;
+    const maxAttempts = 60;
+
+    const tryStart = () => {
+      if (cancelled) return;
+      if (videoRef.current) {
+        startVideoStreamRef.current();
+        return;
+      }
+      attempts += 1;
+      if (attempts > maxAttempts) return;
+      rafId = requestAnimationFrame(tryStart);
+    };
+
+    tryStart();
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafId);
+      stopVideoStreamRef.current();
+    };
+  }, [scannerActive, startScanning, activeFlow, hasTrigger]);
 
   useEffect(() => {
     const resize = () => setIsMobile(window.innerWidth < 768);
@@ -722,7 +756,12 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       {hasTrigger && !isUploading && !isScanning && !isLoading && activeFlow === null && (
         <div
           className="cursor-pointer"
-          onClick={handleTriggerClick}
+          onClick={(e) => {
+            // Avoid accidental form submit when triggerElement is a <button>.
+            e.preventDefault();
+            e.stopPropagation();
+            handleTriggerClick();
+          }}
         >
           {triggerElement}
         </div>
@@ -796,8 +835,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
             )}
           </div>
         )}
-        {isEnableUpload &&
-          (!hasTrigger || activeFlow !== null || !isEnableScan) && (
+        {isEnableUpload && !hasTrigger && (
           <div
             className={`upload-container ${
               shouldEnableZoom ? "fixed-enabled" : "default"
@@ -817,6 +855,21 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
               disabled={isUploading}
             />
           </div>
+        )}
+        {isEnableUpload && hasTrigger && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            id={uploadButtonId || "upload-qr"}
+            name={uploadButtonId || "upload-qr"}
+            accept={acceptedFileTypes}
+            className="upload-input-hidden"
+            onChange={handleUpload}
+            onClick={handleFileInputClick}
+            disabled={isUploading}
+            tabIndex={-1}
+            aria-hidden="true"
+          />
         )}
       </div>
     </div>
