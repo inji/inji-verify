@@ -279,7 +279,7 @@ https://your-backend.com
   isEnableZoom={true} // Allow camera zoom
   isVPSubmissionSupported={false} // This attribute indicates whether VP submission is supported in Inji OVP VC sharing flow. By default, it is false which means that VP token will be directly sent in response. If set to true, then VP token will be submitted to the VP_SUBMISSION_ URL.
   acceptVPWithoutHolderProof={false} // This attribute controls whether unsigned Verifiable Presentations (VPs without proof) are allowed in the Inji OVP VC sharing flow. By default, it is set to false, meaning unsigned VP tokens are not supported and an error is thrown if an unsigned VP is received. If set to true, VP tokens without a signature (proof) are allowed and can be verified. For data-share it is set to true by default.
-  vcVerificationV2Request={vcVerificationV2Request}
+  vcVerificationV2Request={vcVerificationV2Request} //control how VCVerification is performed by passing request parameters to the verification API. 
   summariseResults={true} // This attribute will decide the format of the response from SDK
 />
 ```
