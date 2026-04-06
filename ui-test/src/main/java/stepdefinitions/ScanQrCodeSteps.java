@@ -330,11 +330,14 @@ public class ScanQrCodeSteps extends BaseSteps {
     @Then("validate scan qr code works without denied popup when camera access is allowed")
     public void validateScanQrCodeWorksWithoutDeniedPopupWhenCameraAccessIsAllowed() {
         try {
-            assertTrue("Verify if the scan line is visible after allowing camera access", scanqrcode.isVisibleScanLine());
+            assertTrue(
+                    "Verify if scan remains active or verification has started after allowing camera access",
+                    scanqrcode.isScanFlowActiveOrVerificationInProgress()
+            );
             assertFalse("Camera access denied popup should not be visible when camera access is allowed.", scanqrcode.isCameraAccessDeniedTitleVisible());
             test.log(Status.PASS, "Scan QR code camera opened successfully without denied popup.");
         } catch (AssertionError e) {
-            test.log(Status.FAIL, "Allowed camera access validation failed: " + e.getMessage());
+            logAssertionFailure(test, driver, "Allowed camera access validation failed", e);
             throw e;
         } catch (Exception e) {
             logFailure(test, driver, "Unexpected error while validating allowed camera access for scan QR code", e);

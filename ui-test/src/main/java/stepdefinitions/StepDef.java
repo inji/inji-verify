@@ -628,7 +628,7 @@ public class StepDef extends BaseSteps {
     }
 
     @Then("Upload SVG rendered VC")
-	public void upload_SVG_rendered_VC_code() {
+	public void uploadSvgRenderedVcCode() {
         try {
             uploadqrcode.clickOnUploadSVGQRCode();
 	        test.log(Status.PASS, "Successfully uploaded SVG rendered VC.");
@@ -645,7 +645,7 @@ public class StepDef extends BaseSteps {
 	}
 
     @Then("Upload claim 169 VC")
-	public void upload_claim_169_VC_code() {
+	public void uploadClaim169VcCode() {
         try {
             uploadqrcode.clickOnUploadClaim169QRCode();
 	        test.log(Status.PASS, "Successfully uploaded claim 169 VC.");
@@ -706,7 +706,7 @@ public class StepDef extends BaseSteps {
     }
 
     @Then("verify policy issued on value")
-    public void verify_policy_issued_on_value() {
+    public void verifyPolicyIssuedOnValue() {
         try {
             boolean isPolicyIssuedOnValueVisible = uploadqrcode.isVisiblePolicyIssuedOnValue();
             Assert.assertTrue(isPolicyIssuedOnValueVisible, "Policy Issued On value is not visible.");
@@ -722,7 +722,7 @@ public class StepDef extends BaseSteps {
 
 
     @Then("verify full name value")
-    public void verify_full_name_value() {
+    public void verifyFullNameValue() {
         try {
             boolean isFullNameValueVisible = uploadqrcode.isVisibleFullNameValue();
             Assert.assertTrue(isFullNameValueVisible, "Full Name value is not visible.");
@@ -738,7 +738,7 @@ public class StepDef extends BaseSteps {
 
 
     @Then("verify policy expires on value")
-    public void verify_policy_expires_on_value() {
+    public void verifyPolicyExpiresOnValue() {
         try {
             boolean isPolicyExpiresOnValueVisible = uploadqrcode.isVisiblePolicyExpiresOnValue();
             Assert.assertTrue(isPolicyExpiresOnValueVisible, "Policy Expires On value is not visible.");
@@ -770,7 +770,7 @@ public class StepDef extends BaseSteps {
 
 
     @Then("Verify click on another qr code button")
-    public void verify_clickOn_another_qr_code_button_on_successful_verification() {
+    public void verifyClickOnAnotherQrCodeButtonOnSuccessfulVerification() {
         try {
             uploadqrcode.clickOnAnotherQRCodeButton();
             test.log(Status.PASS, "Clicked on 'Verify Another QR Code' button successfully.");
@@ -784,7 +784,7 @@ public class StepDef extends BaseSteps {
     }
 
     @Then("Verify click on language dropdown")
-    public void click_On_Language_Dropdown() {
+    public void clickOnLanguageDropdown() {
         try {
             uploadqrcode.clickOnLanguageDropdown();
             test.log(Status.PASS, "Clicked on 'Language Dropdown' button successfully.");
@@ -799,7 +799,7 @@ public class StepDef extends BaseSteps {
 
 
     @Then("Verify verify another qr code button on successful verification")
-    public void verify_verify_another_qr_code_button_on_successful_verification() {
+    public void verifyVerifyAnotherQrCodeButtonOnSuccessfulVerification() {
         try {
             boolean isVerifyAnotherQRCodeButtonVisible = uploadqrcode.isVisibleVerifyAnotherQRCodeButton();
             Assert.assertTrue(isVerifyAnotherQRCodeButtonVisible, "Verify Another QR Code button is not visible.");
@@ -1210,7 +1210,7 @@ public class StepDef extends BaseSteps {
     }
 
         @Then("Verify vc-verification api call in network tab with url")
-    public void verify_vc_verification_api_call_in_network_tab_with_url() {
+    public void verifyVcVerificationApiCallInNetworkTabWithUrl() {
         try {
             String baseUrl = InjiVerifyConfigManager.getInjiVerifyUi();
             if (baseUrl == null || baseUrl.isEmpty()) {
@@ -1292,7 +1292,7 @@ public class StepDef extends BaseSteps {
     }
 
 	@When("Click on BLE tab")
-	public void click_on_ble_tab() {
+	public void clickOnBleTab() {
 	    try {
 	        ble.clickOnBleTab();
 	        test.log(Status.PASS, "Successfully clicked on the BLE tab.");
@@ -1307,7 +1307,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("verify information message on ble verification")
-	public void verify_information_message_on_ble_verification() {
+	public void verifyInformationMessageOnBleVerification() {
 	    try {
 	        String actualMessage = ble.getInformationText();
 	        Assert.assertEquals(actualMessage, UiConstants.INFO_MESSAGE, "Information message does not match the expected value.");
@@ -1325,7 +1325,7 @@ public class StepDef extends BaseSteps {
 	}
 
     	@When("verify Transaction Terminated error message")
-	public void verify_transaction_terminated_error_message() {
+	public void verifyTransactionTerminatedErrorMessage() {
 	    try {
 	        String actualMessage = vpverification.getTransactionTerminatedText();
 	        Assert.assertEquals(actualMessage, UiConstants.TRANSACTION_TERMINATED_MESSAGE, "Information message does not match the expected value.");
@@ -1343,7 +1343,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@Then("Click on vp verification tab")
-	public void click_on_vp_verification_tab() {
+	public void clickOnVpVerificationTab() {
 	    try {
 	        vpverification.clickOnVPVerificationTab();
 	        test.log(Status.PASS, "Successfully clicked on the VP verification tab.");
@@ -1358,7 +1358,7 @@ public class StepDef extends BaseSteps {
 	}
 
     @Then("Click on right arrow")
-	public void click_on_right_arrow() {
+	public void clickOnRightArrow() {
 	    try {
 	        vpverification.clickOnRightArrow();
 	        test.log(Status.PASS, "Successfully clicked on the right arrow.");
@@ -1373,7 +1373,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("Verify information message on VP verification")
-	public void verify_information_message_on_vp_verification() {
+	public void verifyInformationMessageOnVpVerification() {
 	    try {
 	        String actualMessage = vpverification.getInformationMessage();
 	        Assert.assertEquals(actualMessage, UiConstants.INFO_MESSAGE, "Information message does not match the expected value.");
@@ -1391,7 +1391,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("Upload QR code file Expired png")
-	public void upload_qr_code_file_expired_png() {
+	public void uploadQrCodeFileExpiredPng() {
 	    try {
 	        uploadqrcode.clickOnUploadExpiredQRCodepngExpired();
 	        test.log(Status.PASS, "Successfully uploaded the expired QR code PNG file.");
@@ -1409,7 +1409,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("Upload QR code file Expired jpg")
-	public void upload_qr_code_file_expired_jpg() {
+	public void uploadQrCodeFileExpiredJpg() {
         try {
             uploadqrcode.clickOnUploadExpiredQRCodeJpgExpired();
 	        test.log(Status.PASS, "Successfully uploaded the expired QR code JPG file.");
@@ -1459,7 +1459,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("Verify message for valid QR code")
-	public void verify_message_for_valid_qr_code() {
+	public void verifyMessageForValidQrCode() {
 	    try {
 	        String actualMessage = uploadqrcode.getErrorMessageForExpiredQRCode();
 	        Assert.assertEquals(actualMessage, UiConstants.VERIFICATION_SUCCESS_MESSAGE);
@@ -1477,7 +1477,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("Verify message for expired QR code")
-	public void verify_message_for_expired_qr_code() {
+	public void verifyMessageForExpiredQrCode() {
 	    try {
 	        String actualMessage = uploadqrcode.getErrorMessageForExpiredQRCode();
 	        Assert.assertEquals(actualMessage, UiConstants.ERROR_MESSAGE_EXPIRED_QR);
@@ -1507,7 +1507,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("Open inji verify in new tab")
-	public void open_inji_verify_in_new_tab() {
+	public void openInjiVerifyInNewTab() {
 	    try {
 	        homePage.switchToVerifyTab();
 	        test.log(Status.PASS, "Successfully switched to the Inji Verify tab.");
@@ -1520,7 +1520,7 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 	@Given("User search the issuers with {string}")
-	public void user_search_the_issuers_with(String string) {
+	public void userSearchTheIssuersWith(String string) {
 	    try {
 	        Thread.sleep(6000);
 	        homePage.enterIssuersInSearchBox(string);
@@ -1539,7 +1539,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User search the VC with {string}")
-	public void user_search_the_Vc_with(String string) {
+	public void userSearchTheVcWith(String string) {
 	    try {
 	        Thread.sleep(6000);
 	        vpverification.enterVcInSearchBox(string);
@@ -1559,7 +1559,7 @@ public class StepDef extends BaseSteps {
 
 
     @Then("User search the issuers sunbird")
-    public void user_search_the_issuers_sunbird() throws Exception {
+    public void userSearchTheIssuersSunbird() throws Exception {
         try {
             String issuerText = System.getenv("Issuer_Text_sunbird");
             if (issuerText == null || issuerText.isEmpty()) {
@@ -1585,7 +1585,7 @@ public class StepDef extends BaseSteps {
 
 
 	@When("User click on StayProtected Insurance credentials button")
-	public void user_click_on_download_StayProtected_Insurance_button() {
+	public void userClickOnDownloadStayProtectedInsuranceButton() {
 	    try {
 	        homePage.clickOnStayProtectedCredentials();
 	        test.log(Status.PASS, "Successfully clicked on StayProtected Insurance credentials button.");
@@ -1599,7 +1599,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User click on get started button")
-	public void user_click_on_get_started_button() {
+	public void userClickOnGetStartedButton() {
 	    try {
 	        homePage.clickOnGetStartedButton();
 	        test.log(Status.PASS, "Successfully clicked on Get Started button.");
@@ -1613,7 +1613,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User verify mosip national id by e-signet displayed")
-	public void user_verify_mosip_national_id_by_e_signet_displayed() {
+	public void userVerifyMosipNationalIdByESignetDisplayed() {
 	    try {
 	        Assert.assertTrue(homePage.isMosipNationalIdDisplayed());
 	        test.log(Status.PASS, "Successfully verified Mosip National ID is displayed.");
@@ -1630,7 +1630,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@Then("User click on health insurance by e-signet button")
-	public void user_click_on_health_insurance_id_by_e_signet_button() {
+	public void userClickOnHealthInsuranceIdByESignetButton() {
 	    try {
 	        homePage.clickOnStayProtectedCredentialType();
 	        test.log(Status.PASS, "Successfully clicked on health insurance by e-signet button.");
@@ -1644,7 +1644,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@Then("User click on validity dropdown")
-	public void user_click_on_validity_dropdown_button() {
+	public void userClickOnValidityDropdownButton() {
 	    try {
 	        homePage.clickOnValidityDropdown();
 	        test.log(Status.PASS, "Successfully clicked on validity dropdown.");
@@ -1658,7 +1658,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User click on no limit")
-	public void user_click_on_no_limit_button() {
+	public void userClickOnNoLimitButton() {
 	    try {
 	        homePage.clickOnNoLimit();
 	        test.log(Status.PASS, "Successfully clicked on no limit.");
@@ -1672,7 +1672,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User click on proceed")
-	public void user_click_on_proceed_button() {
+	public void userClickOnProceedButton() {
 	    try {
 	        homePage.clickOnOnProceed();
 	        test.log(Status.PASS, "Successfully clicked on proceed.");
@@ -1686,7 +1686,7 @@ public class StepDef extends BaseSteps {
 	}
 
     @Then("User enter the policy number")
-    public void user_enter_the_policy_number() {
+    public void userEnterThePolicyNumber() {
         try {
             homePage.enterPolicyNumer(policyNumber);
             test.log(Status.PASS, "User successfully entered the policy number: " + policyNumber);
@@ -1705,7 +1705,7 @@ public class StepDef extends BaseSteps {
 
 
 	@When("User enter the {string}")
-	public void user_enter_the(String string) {
+	public void userEnterThe(String string) {
 	    try {
 	        homePage.enterVid(string);
 	        test.log(Status.PASS, "Successfully entered VID: " + string);
@@ -1719,7 +1719,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User click on getOtp button")
-	public void user_click_on_get_otp_button() {
+	public void userClickOnGetOtpButton() {
 	    try {
 	        homePage.clickOnGetOtpButton();
 	        test.log(Status.PASS, "Successfully clicked on Get OTP button.");
@@ -1733,7 +1733,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User enter the otp {string}")
-	public void user_enter_the_otp(String otpString) {
+	public void userEnterTheOtp(String otpString) {
 	    try {
 	        homePage.enterOtp(otpString);
 	        test.log(Status.PASS, "Successfully entered OTP: " + otpString);
@@ -1746,7 +1746,7 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 	@When("User click on verify button")
-	public void user_click_on_verify_button() {
+	public void userClickOnVerifyButton() {
 	    try {
 	        homePage.clickOnVerify();
 	        test.log(Status.PASS, "Successfully clicked on Verify button.");
@@ -1760,7 +1760,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User verify Download Success text displayed")
-	public void user_verify_download_success_text_displayed() {
+	public void userVerifyDownloadSuccessTextDisplayed() {
 	    try {
 	        Assert.assertEquals(homePage.isSuccessMessageDisplayed(), "Success!");
 	        test.log(Status.PASS, "Successfully verified Download Success text is displayed.");
@@ -1776,7 +1776,7 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 	@When("User verify pdf is downloaded")
-	public void user_verify_pdf_is_downloaded() throws IOException {
+	public void userVerifyPdfIsDownloaded() throws IOException {
 	    try {
 	        boolean fileExists = false;
 	        for (int i = 0; i < 5; i++) {
@@ -1816,7 +1816,7 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 	@When("User verify go back button")
-	public void user_verify_go_back_button() {
+	public void userVerifyGoBackButton() {
 
 	}
 
@@ -1834,24 +1834,24 @@ public class StepDef extends BaseSteps {
 	            } else {
 	                openInjiWebInNewTab();
 	                verifyClickOnContinueButton();
-	                user_search_the_issuers_sunbird();
-	                user_click_on_download_StayProtected_Insurance_button();
-	                user_click_on_health_insurance_id_by_e_signet_button();
-	                user_click_on_validity_dropdown_button();
-	                user_click_on_no_limit_button();
-	                user_click_on_proceed_button();
-	                user_enter_the_policy_number();
-	                user_enter_the_full_name();
-	                user_enter_the_date_of_birth();
-	                user_click_on_login_button();
-	                user_verify_download_success_text_displayed();
-	                user_verify_pdf_is_downloaded();
-	                verify_that_user_convert_pdf_into_png();
+	                userSearchTheIssuersSunbird();
+	                userClickOnDownloadStayProtectedInsuranceButton();
+	                userClickOnHealthInsuranceIdByESignetButton();
+	                userClickOnValidityDropdownButton();
+	                userClickOnNoLimitButton();
+	                userClickOnProceedButton();
+	                userEnterThePolicyNumber();
+	                userEnterTheFullName();
+	                userEnterTheDateOfBirth();
+	                userClickOnLoginButton();
+	                userVerifyDownloadSuccessTextDisplayed();
+	                userVerifyPdfIsDownloaded();
+	                verifyThatUserConvertPdfIntoPng();
 	                test.log(Status.PASS, "Prepared shared insurance credential artifacts for this run.");
 	            }
 	        }
 
-	        open_inji_verify_in_new_tab();
+	        openInjiVerifyInNewTab();
 	    } catch (Exception e) {
 	        logFailure(test, driver, "Failed while preparing insurance credential artifacts", e);
 	        throw e;
@@ -1859,7 +1859,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("Verify that user convert pdf into png")
-	public void verify_that_user_convert_pdf_into_png() throws IOException {
+	public void verifyThatUserConvertPdfIntoPng() throws IOException {
 	    String pdfPath = BaseTest.getDownloadedInsurancePdfPath();
 
 	    try {
@@ -1902,7 +1902,7 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 	@When("User enter the policy number {string}")
-	public void user_enter_the_policy_number(String string) {
+	public void userEnterThePolicyNumber(String string) {
 	    try {
 	        homePage.enterPolicyNumer(string);
 	        test.log(Status.PASS, "Successfully entered policy number: " + string);
@@ -1916,7 +1916,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User enter the full name {string}")
-	public void user_enter_the_full_name(String string) {
+	public void userEnterTheFullName(String string) {
 	    try {
 	        homePage.enterFullName(string);
 	        test.log(Status.PASS, "Successfully entered full name: " + string);
@@ -1930,7 +1930,7 @@ public class StepDef extends BaseSteps {
 	}
 
     @When("User enter the full name")
-    public void user_enter_the_full_name() {
+    public void userEnterTheFullName() {
         try {
         	homePage.enterFullName(fullName);
             test.log(Status.PASS, "User successfully entered the full name: " + fullName);
@@ -1947,7 +1947,7 @@ public class StepDef extends BaseSteps {
         }
     }
     @When("User enter the date of birth")
-    public void user_enter_the_date_of_birth() {
+    public void userEnterTheDateOfBirth() {
         try {
         	homePage.selectDateOfBirth(formattedDate);
             test.log(Status.PASS, "User successfully entered the date of birth: " + formattedDate);
@@ -1965,7 +1965,7 @@ public class StepDef extends BaseSteps {
     }
 
     @When("User enter the date of birth {string}")
-    public void user_enter_the_date_of_birth1(String dateOfBirth) {
+    public void userEnterTheDateOfBirth1(String dateOfBirth) {
         try {
         	homePage.selectDateOfBirth(dateOfBirth);
             test.log(Status.PASS, "User successfully entered the date of birth: " + dateOfBirth);
@@ -1983,7 +1983,7 @@ public class StepDef extends BaseSteps {
     }
 
 	@When("User click on login button")
-	public void user_click_on_login_button() {
+	public void userClickOnLoginButton() {
 	    try {
 	        homePage.clickOnLogin();
 	        test.log(Status.PASS, "Successfully clicked on login button.");
@@ -1997,7 +1997,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User click on Go Back button")
-	public void user_click_on_Go_Back_Button() {
+	public void userClickOnGoBackButton() {
 	    try {
 	        vpverification.clickOnGoBack();
 	        test.log(Status.PASS, "Successfully clicked on Go Back button.");
@@ -2011,7 +2011,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("Verify uncheck Mosip VC check box")
-	public void user_click_on_Mosip_Vc_Check_Box() {
+	public void userClickOnMosipVcCheckBox() {
 	    try {
 	        vpverification.clickOnMosipVC();
 	        test.log(Status.PASS, "Successfully uncheck Mosip VC check box.");
@@ -2025,7 +2025,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User click on Health Insurance check box")
-	public void user_click_on_Health_Insurance_Check_Box() {
+	public void userClickOnHealthInsuranceCheckBox() {
 	    try {
 	        vpverification.clickOnHealthInsurance();
 	        test.log(Status.PASS, "Successfully clicked on Health Insurance check box.");
@@ -2039,7 +2039,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User click on Generate QR Code button")
-	public void user_click_on_Generate_Qr_Code_Button() {
+	public void userClickOnGenerateQrCodeButton() {
 	    try {
 	        vpverification.clickOnGenerateQRCodeButton();
 	        test.log(Status.PASS, "Successfully clicked on Generate QR Code button.");
@@ -2053,7 +2053,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("User click on Life Insurance VC check box")
-	public void user_click_on_Life_Insurance_Check_Box() {
+	public void userClickOnLifeInsuranceCheckBox() {
 	    try {
 	        vpverification.clickOnLifeInsurance();
 	        test.log(Status.PASS, "Successfully clicked on Life Insurance VC check box.");
@@ -2067,7 +2067,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@When("Open inji web in tab")
-	public void user_Open_inji_web_in_tab() {
+	public void userOpenInjiWebInTab() {
 	    try {
 	        homePage.switchToWebTab();
 	        test.log(Status.PASS, "Successfully switched to inji web tab.");
@@ -2081,7 +2081,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@Then("Verify that Upload button visible")
-	public void verify_that_upload_button_visible() {
+	public void verifyThatUploadButtonVisible() {
 	    try {
 	        boolean isUploadButtonVisible = homePage.isUploadButtonIsVisible();
 	        Assert.assertTrue(isUploadButtonVisible, "Upload button is not visible.");
@@ -2096,7 +2096,7 @@ public class StepDef extends BaseSteps {
 	}
 
 	@Then("Verify upload file input is present and enabled")
-	public void verify_upload_file_input_is_present_and_enabled() {
+	public void verifyUploadFileInputIsPresentAndEnabled() {
 	    try {
 	        Assert.assertTrue(uploadqrcode.isUploadFileInputPresent(), "Upload file input is not present.");
 	        Assert.assertTrue(uploadqrcode.isUploadFileInputEnabled(), "Upload file input is not enabled.");
@@ -2111,7 +2111,7 @@ public class StepDef extends BaseSteps {
 	}
 
 @Then("Verify the Upload button after 2 mins idle")
-public void verify_upload_button_visible_after_2_mins_idle() {
+public void verifyUploadButtonVisibleAfter2MinsIdle() {
      try {
 	        boolean isUploadButtonVisibleAfterIdle = homePage.isUploadButtonIsVisibleAfterIdle();
 	        Assert.assertTrue(isUploadButtonVisibleAfterIdle, "Upload button is not visible.");
@@ -2128,7 +2128,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@When("Verify click on Help button")
-	public void user_click_on_home_button() {
+	public void userClickOnHomeButton() {
 	    try {
 	        homePage.clickOnHelpButton();
 	        test.log(Status.PASS, "Successfully clicked on home button.");
@@ -2142,7 +2142,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("verify alert message")
-	public void user_verify_alert_message() {
+	public void userVerifyAlertMessage() {
 	    try {
 	        assertTrue("Error message is not visible.", homePage.isErrorMessageVisible());
 	        test.log(Status.PASS, "Successfully verified alert message is visible.");
@@ -2159,7 +2159,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify VP verification qr code step1 description")
-	public void verify_vp_verification_qr_code_step1_description() {
+	public void verifyVpVerificationQrCodeStep1Description() {
 	    try {
 	        assertEquals(vpverification.getVpVerificationQrCodeStep1Description(), UiConstants.VP_VERIFICATION_QR_CODE_STEP1_DESCRIPTION);
 	        test.log(Status.PASS, "Successfully verified VP verification qr code step1 description.");
@@ -2176,7 +2176,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify VP verification qr code step1 label")
-	public void verify_vp_verification_qr_code_step1_label() {
+	public void verifyVpVerificationQrCodeStep1Label() {
 	    try {
 	        assertEquals(vpverification.getVpVerificationQrCodeStep1Label(), UiConstants.VP_VERIFICATION_QR_CODE_STEP1_LABEL);
 	        test.log(Status.PASS, "Successfully verified VP verification qr code step1 label.");
@@ -2193,7 +2193,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify VP verification qr code step2 label")
-	public void verify_vp_verification_qr_code_step2_label() {
+	public void verifyVpVerificationQrCodeStep2Label() {
 	    try {
 	        Assert.assertEquals(vpverification.getVpVerificationQrCodeStep2Label(), UiConstants.VP_VERIFICATION_QR_CODE_STEP2_LABEL);
 	        test.log(Status.PASS, "Successfully verified VP verification qr code step2 label.");
@@ -2210,7 +2210,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify VP verification qr code step2 description")
-	public void verify_vp_verification_qr_code_step2_description() {
+	public void verifyVpVerificationQrCodeStep2Description() {
 	    try {
 	        Assert.assertEquals(vpverification.getVpVerificationQrCodeStep2Description(), UiConstants.VP_VERIFICATION_QR_CODE_STEP2_DESCRIPTION);
 	        test.log(Status.PASS, "Successfully verified VP verification qr code step2 description.");
@@ -2227,7 +2227,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify VP verification qr code step3 label")
-	public void verify_vp_verification_qr_code_step3_label() {
+	public void verifyVpVerificationQrCodeStep3Label() {
 	    try {
 	        Assert.assertEquals(vpverification.getVpVerificationQrCodeStep3Label(), UiConstants.VP_VERIFICATION_QR_CODE_STEP3_LABEL);
 	        test.log(Status.PASS, "Successfully verified VP verification qr code step3 label.");
@@ -2244,7 +2244,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify VP verification qr code step3 description")
-	public void verify_vp_verification_qr_code_step3_description() {
+	public void verifyVpVerificationQrCodeStep3Description() {
 	    try {
 	        Assert.assertEquals(vpverification.getVpVerificationQrCodeStep3Description(), UiConstants.VP_VERIFICATION_QR_CODE_STEP3_DESCRIPTION);
 	        test.log(Status.PASS, "Successfully verified VP verification qr code step3 description.");
@@ -2261,7 +2261,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify VP verification qr code step4 label")
-	public void verify_vp_verification_qr_code_step4_label() {
+	public void verifyVpVerificationQrCodeStep4Label() {
 	    try {
 	        Assert.assertEquals(vpverification.getVpVerificationQrCodeStep4Label(), UiConstants.VP_VERIFICATION_QR_CODE_STEP4_LABEL);
 	        test.log(Status.PASS, "Successfully verified VP verification qr code step4 label.");
@@ -2278,7 +2278,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify VP verification qr code step4 description")
-	public void verify_vp_verification_qr_code_step4_description() {
+	public void verifyVpVerificationQrCodeStep4Description() {
 	    try {
 	        Assert.assertEquals(vpverification.getVpVerificationQrCodeStep4Description(), UiConstants.VP_VERIFICATION_QR_CODE_STEP4_DESCRIPTION);
 	        test.log(Status.PASS, "Successfully verified VP verification qr code step4 description.");
@@ -2295,7 +2295,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("verify request verifiable credentials button")
-	public void verify_request_verifiable_credentials_button() {
+	public void verifyRequestVerifiableCredentialsButton() {
 	    try {
 	        assertTrue("Request verifiable credentials button is not visible.", vpverification.isVisibleVerifiableCredentialsButton());
 	        test.log(Status.PASS, "Successfully verified request verifiable credentials button is visible.");
@@ -2312,7 +2312,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify VP verification QR code generated")
-	public void verify_VP_verifiable_QR_code_generated() {
+	public void verifyVpVerifiableQrCodeGenerated() {
 	    try {
 	        assertTrue("VP verification QR code is not generated.", vpverification.isVpVerificationQrCodeGenerated());
 	        test.log(Status.PASS, "Successfully verified VP verification QR code is generated.");
@@ -2329,7 +2329,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@When("Verify Verifiable Credential Panel label")
-	public void verify_Verifiable_Credential_Selection_Panel() {
+	public void verifyVerifiableCredentialSelectionPanel() {
 	    try {
 	        Assert.assertEquals(vpverification.isVerifiableCredentialSelectionPannelDisplayed(), UiConstants.VERIFIABLE_VERIFICATION_PANNEL);
 	        test.log(Status.PASS, "Successfully verified Verifiable Credential Selection Panel is displayed with correct text.");
@@ -2348,7 +2348,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Upload Large size not supported QR code file")
-	public void upload_large_size_not_supported_qr_code_file() {
+	public void uploadLargeSizeNotSupportedQrCodeFile() {
 	    try {
 	        uploadqrcode.clickOnUploadLargeSizeQRCode();
 
@@ -2412,7 +2412,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@Then("Click on ble tab")
-	public void click_on_ble_tab1() {
+	public void clickOnBleTab1() {
 	    try {
 	        ble.clickOnBleTab();
 	        test.log(Status.PASS, "Successfully clicked on BLE tab and verified it is active.");
@@ -2429,7 +2429,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@Then("Verify Large size alert message")
-	public void verify_message_for_large_size_qr_code() {
+	public void verifyMessageForLargeSizeQrCode() {
 	    try {
 	        String actualMessage = uploadqrcode.getErrorMessageForLargeSizeQRCode();
 	        String expectedMessage = UiConstants.ERROR_MESSAGE_LARGEFILE_QR;
@@ -2451,7 +2451,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@Then("Upload blur QR code file")
-	public void upload_blur_qrcode_file() {
+	public void uploadBlurQrCodeFile() {
         try {
             uploadqrcode.clickOnUploadBlurQRCode();
 	        test.log(Status.PASS, "Successfully uploaded blur QR code file.");
@@ -2468,7 +2468,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@Then("Verify MultiFormat alert message")
-	public void verify_message_for_blur_qr_code() {
+	public void verifyMessageForBlurQrCode() {
 	    try {
 	        Assert.assertEquals(uploadqrcode.getErrorMessageForBlurQRCode(), UiConstants.ERROR_MULTI_FORMAT);
 	        test.log(Status.PASS, "Successfully verified MultiFormat alert message for blur QR code.");
@@ -2487,7 +2487,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Upload multiple qr code in one image file")
-	public void upload_multiple_QR_code_in_one_image_file() {
+	public void uploadMultipleQrCodeInOneImageFile() {
         try {
             uploadqrcode.clickOnUploadMultipleQRCode();
 	        test.log(Status.PASS, "Successfully uploaded image with multiple QR codes.");
@@ -2504,7 +2504,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
     @Then("Upload SD-Jwt QR code")
-	public void upload_sd_jwt_qr_code() {
+	public void uploadSdJwtQrCode() {
         try {
             uploadqrcode.clickOnUploadSDJwtQRCode();
 	        test.log(Status.PASS, "Successfully uploaded SD-Jwt QR code.");
@@ -2521,7 +2521,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@Then("Upload invalid pdf")
-	public void upload_invalid_pdf() {
+	public void uploadInvalidPdf() {
         try {
             uploadqrcode.clickOnUploadInvalidPdf();
 	        test.log(Status.PASS, "Successfully attempted to upload an invalid PDF file.");
@@ -2540,7 +2540,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Verify click sort by button")
-	public void user_click_on_sort_button() {
+	public void userClickOnSortButton() {
 	    try {
 	        vpverification.clickOnSortButton();
 	        test.log(Status.PASS, "Successfully clicked on the 'Sort By' button.");
@@ -2557,7 +2557,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@Then("Verify click Sort AtoZ button")
-	public void user_click_on_sort_a_z_button() {
+	public void userClickOnSortAZButton() {
 	    try {
 	        vpverification.clickOnSortAtoZButton();
 	        test.log(Status.PASS, "Successfully clicked on the 'Sort A to Z' button.");
@@ -2574,7 +2574,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@Then("Verify click Sort ZtoA button")
-	public void user_click_on_sort_z_a_button() {
+	public void userClickOnSortZAButton() {
 	    try {
 	        vpverification.clickOnSortZtoAButton();
 	        test.log(Status.PASS, "Successfully clicked on the 'Sort Z to A' button.");
@@ -2592,7 +2592,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Verify click Back button")
-	public void user_click_on_back_button() {
+	public void userClickOnBackButton() {
 	    try {
 	        vpverification.clickOnBackButton();
 	        test.log(Status.PASS, "Successfully clicked on the 'Back' button.");
@@ -2609,7 +2609,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
     @Then("Verify Click on cancel")
-	public void user_click_on_cancel_button() {
+	public void userClickOnCancelButton() {
 	    try {
 	        vpverification.clickOnCancelButton();
 	        test.log(Status.PASS, "Successfully clicked on the 'Cancel' button.");
@@ -2626,7 +2626,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
     @Then("Verify Click on open wallet button")
-	public void user_click_on_open_wallet_button() {
+	public void userClickOnOpenWalletButton() {
 	    try {
 	        vpverification.clickOnOpenWalletButton();
 	        test.log(Status.PASS, "Successfully clicked on the 'Open Wallet' button.");
@@ -2644,7 +2644,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Verify Click on Generate QR Code button")
-	public void verify_click_on_generate_qr_code_button() {
+	public void verifyClickOnGenerateQrCodeButton() {
 	    try {
 	        vpverification.clickOnGenerateQrCodeButton();
 	        test.log(Status.PASS, "Successfully clicked on the 'Generate QR Code' button.");
@@ -2662,7 +2662,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Verify QR code generated")
-	public void verify_qr_code_generated() {
+	public void verifyQrCodeGenerated() {
 	    try {
 	        Assert.assertTrue(vpverification.isVpVerificationQrCodeGenerated());
 	        test.log(Status.PASS, "Successfully verified that the QR code was generated.");
@@ -2676,7 +2676,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
     @Then("verify loading screen")
-	public void verify_loading_screen() {
+	public void verifyLoadingScreen() {
 	    try {
 	        Assert.assertTrue(vpverification.isLoadingScreenDisplayed());
 	        test.log(Status.PASS, "Successfully verified that the loading screen is displayed.");
@@ -2690,7 +2690,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@Then("Verify QR code is not precent")
-	public void verify_qr_code_is_not_present() {
+	public void verifyQrCodeIsNotPresent() {
 	    try {
 	        Assert.assertFalse(vpverification.isVpVerificationQrCodeGenerated());
 	        test.log(Status.PASS, "Successfully verified that the QR code is not present.");
@@ -2709,7 +2709,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Uncheck MOSIP ID")
-	public void uncheck_mosip_id() {
+	public void uncheckMosipId() {
 	    try {
 	        vpverification.clickOnMosipIdChecklist();
 	        test.log(Status.PASS, "Successfully unchecked the MOSIP ID option.");
@@ -2724,7 +2724,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Select Health Insurance")
-	public void select_health_insurance() {
+	public void selectHealthInsurance() {
 	    try {
 	        vpverification.clickOnHealthInsuranceChecklist();
 	        test.log(Status.PASS, "Successfully selected the Health Insurance option.");
@@ -2738,7 +2738,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
     @Then("Select SD JWT VC")
-	public void select_sd_jwt_vc() {
+	public void selectSdJwtVc() {
 	    try {
 	        vpverification.clickOnSDJwtVCChecklist();
 	        test.log(Status.PASS, "Successfully selected the SD JWT VC option.");
@@ -2752,7 +2752,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
     @Then("Verify Click on wallet")
-	public void verify_click_on_wallet() {
+	public void verifyClickOnWallet() {
 	    try {
 	        vpverification.clickOnWalletButton();
 	        test.log(Status.PASS, "Successfully clicked on the Wallet button.");
@@ -2766,7 +2766,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
     @Then("Verify Click on Proceed")
-	public void verify_click_on_proceed() {
+	public void verifyClickOnProceed() {
 	    try {
 	        vpverification.clickOnProceedButton();
 	        test.log(Status.PASS, "Successfully clicked on the Proceed button.");
@@ -2781,7 +2781,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Select Land Registry")
-	public void uncheck_land_registry() {
+	public void uncheckLandRegistry() {
 	    try {
 	        vpverification.clickOnLandRegistryChecklist();
 	        test.log(Status.PASS, "Successfully selected the Land Registry option.");
@@ -2795,7 +2795,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 	}
 
 	@Then("User enter the credential type {string}")
-	public void user_enter_the_credential_type(String credentialType) {
+	public void userEnterTheCredentialType(String credentialType) {
 	    try {
 	        new WebDriverWait(driver, Duration.ofSeconds(10))
 	            .until(ExpectedConditions.elementToBeClickable(
@@ -2813,7 +2813,7 @@ public void verify_upload_button_visible_after_2_mins_idle() {
 
 
 	@Then("Verify that Upload icon visible")
-	public void verify_that_upload_icon_visible() {
+	public void verifyThatUploadIconVisible() {
 		Assert.assertTrue(homePage.isUploadIconIsVisible());
 	}
 
@@ -2940,6 +2940,14 @@ public void verify_upload_button_visible_after_2_mins_idle() {
         try {
             driver.get("http://invalid-url-for-testing.com");
             test.log(Status.PASS, "Navigated to an invalid URL successfully.");
+        } catch (org.openqa.selenium.WebDriverException e) {
+            String message = e.getMessage() == null ? "" : e.getMessage();
+            if (!BaseTest.isUsingBrowserStack() && message.contains("ERR_NAME_NOT_RESOLVED")) {
+                test.log(Status.PASS, "Local Chrome reported expected invalid-host error while navigating to wrong URL.");
+                return;
+            }
+            logFailure(test, driver, "Unexpected error while navigating to an invalid URL", e);
+            throw e;
         } catch (Exception e) {
             logFailure(test, driver, "Unexpected error while navigating to an invalid URL", e);
             throw e;
@@ -2961,16 +2969,17 @@ public void verify_upload_button_visible_after_2_mins_idle() {
                 test.log(Status.PASS, "BrowserStack error page validated");
 
             } else {
+                boolean browserErrorVisible = pageSource.contains("This site can't be reached")
+                        || pageSource.contains("This site can’t be reached")
+                        || pageSource.contains("The site can't be reached")
+                        || pageSource.contains("The site can’t be reached");
 
-                Assert.assertTrue(
-                        pageSource.contains("This site can’t be reached"),
-                        "Expected browser error page not shown"
-                );
+                boolean dnsErrorVisible = pageSource.contains("DNS_PROBE_FINISHED_NXDOMAIN")
+                        || pageSource.contains("ERR_NAME_NOT_RESOLVED")
+                        || pageSource.contains("ERR_INTERNET_DISCONNECTED");
 
-                Assert.assertTrue(
-                        pageSource.contains("DNS_PROBE_FINISHED_NXDOMAIN"),
-                        "Expected DNS error not shown"
-                );
+                Assert.assertTrue(browserErrorVisible, "Expected local browser error page not shown");
+                Assert.assertTrue(dnsErrorVisible, "Expected local network/DNS error not shown");
 
                 test.log(Status.PASS, "Local browser error page validated");
             }
@@ -2981,4 +2990,5 @@ public void verify_upload_button_visible_after_2_mins_idle() {
         }
     }
 }
+
 

@@ -1,166 +1,381 @@
-# Inji verify UI Automation - web Automation Framework using selenium with cucumber
+# Inji Verify UI Test
+
+UI automation suite for Inji Verify web using Selenium, Cucumber, TestNG, and Extent Reports.
 
 ## Overview
 
-Inji verify UI Automation is a automation framework designed for inji verify web app. It automates both positive and negative scenarios to ensure comprehensive testing of web applications.
+This project supports:
 
-## Pre-requisites
+- Local Chrome execution
+- BrowserStack desktop browser execution
+- IDE execution through `runnerfiles.Runner`
+- JAR execution for Linux/container environments such as Rancher
+- Parallel scenario execution
+- Runtime generation of QR/image/video test data for scan and upload scenarios
 
-Ensure the following software is installed on the machine from where the automation tests will be executed:
-- The project requires JDK 21
-- Maven 3.6.0 or higher
+## Tech Stack
 
-## BrowserStack
-1. Sign up for BrowserStack and retrieve your userName and accessKey from the homepage on BrowserStack.
-2. Update the userName and accessKey from browserstack.yml
-3. Update the device from tag `platforms` from `https://www.browserstack.com/list-of-browsers-and-platforms/automate` (Windows, Mac)
+- Java 21
+- Maven 3.6+
+- Selenium 4
+- Cucumber 7
+- TestNG
+- Extent Reports
+- BrowserStack
 
+## Project Entry Points
 
-## Configurations
+- Main runner: [`runnerfiles.Runner`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\runnerfiles\Runner.java)
+- Base test setup: [`BaseTest.java`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\utils\BaseTest.java)
+- Local/scan media setup: [`BaseTestUtil.java`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\utils\BaseTestUtil.java)
+- Main step definitions: [`StepDef.java`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\stepdefinitions\StepDef.java)
+- Scan steps: [`ScanQrCodeSteps.java`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\stepdefinitions\ScanQrCodeSteps.java)
 
-1. update `src\main\resources\config\injiVerify.properties`
+## Prerequisites
+
+- JDK 21
+- Maven 3.6 or later
+- Google Chrome installed for local execution
+- BrowserStack account for cloud execution
+
+## Configuration
+
+Update the following files before execution.
+
+### 1. Main environment config
+
+File: [`injiVerify.properties`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\resources\config\injiVerify.properties)
+
+Typical properties:
 
 ```properties
-apiEnvUser=<your-api-env-user>
-apiInternalEndPoint=<api-internal-endpoint>
-injiverify=<injiverify-endpoint>
-injiweb=<injiweb-endpoint>
-InsuranceUrl=<insurance-registry-endpoint>
-actuatorMimotoEndpoint=<mimoto-actuator-endpoint>
-eSignetbaseurl=<esignet-base-url>
-stayProtectedIssuer=<stay-protected-issuer-name><default: StayProtected Insurance>
-stayProtectedIssuerCredentialType=<stay-protected-issuer-credential-type><default: Health Insurance>
-browserstack_username=<your-browserstack-username>
-browserstack_accesskey=<your-browserstack-accesskey>
+apiEnvUser=<api env user>
+apiInternalEndPoint=<api internal endpoint>
+injiverify=<inji verify url>
+injiweb=<inji web url>
+InsuranceUrl=<insurance registry url>
+actuatorMimotoEndpoint=<mimoto actuator url>
+eSignetbaseurl=<esignet url>
+stayProtectedIssuer=<issuer display name>
+stayProtectedIssuerCredentialType=<credential type display name>
+browserstack_username=<browserstack username>
+browserstack_accesskey=<browserstack access key>
+runOnBrowserStack=<true|false>
+browserstack_max_sessions=<number>
 ```
 
+### 2. Test data config
 
-Note:- all are config properties has to be updated by replacing the 'dev' with  actual env name/url
+File: [`config.properties`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\test\resources\config.properties)
 
-2. update `src\test\resources\config.properties`
+Typical values:
 
-issuerSearchText=`National Identity Department (Released)
-issuerSearchTextforSunbird=`StayProtected Insurance
+```properties
+issuerSearchText=National Identity Department (Released)
+issuerSearchTextforSunbird=StayProtected Insurance
+```
 
-Note :- update as per the env ex. if it needs to select the for dev use it as 'National Identity Department (dev)'
+Update these according to the target environment labels shown in UI.
 
+### 3. BrowserStack config
 
-## Run with JAR
+File: [`browserstack.yml`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\browserstack.yml)
 
-### **Option A: Run on BrowserStack (Cloud)**
+Update:
 
-1. Sign up for BrowserStack and retrieve your userName and accessKey from the homepage on BrowserStack.
-2. Update the userName and accessKey from browserstack.yml
-3. Update the device from tag `platforms` from `https://www.browserstack.com/list-of-browsers-and-platforms/automate` (Windows, Mac)
-4. Open command prompt and change directory by using command 'cd ../inji-verify'
-5. Hit the command `mvn clean package -DskipTests` to build the jar.
-6. Then use `java -DBROWSERSTACK_USERNAME="username" -DBROWSERSTACK_ACCESS_KEY="accessKey" -Dmodules=ui-test -Denv.user=api-internal.dev -Denv.endpoint=https://api-internal.dev.mosip.net -Denv.testLevel=smokeAndRegression -jar target/uitest-injiverify-*-SNAPSHOT.jar` to run the automation 
+- credentials if required by your setup
+- platform/browser entries
+- build/session metadata if needed
 
-Note:- in above command please replace the userName,accessKey and actual env url.
+## Execution Modes
 
-### **Option B: Run Locally**
+### Local Chrome
 
-1. **Prerequisites for Local Execution:**
-   - Install Chrome/Firefox browser on your local machine
-   - Ensure WebDriver is available (ChromeDriver/GeckoDriver) or use WebDriverManager for automatic driver management
+Use local execution when:
 
-2. **Code Changes Required:**
-   - **Runner File** (`src/test/java/runnerfiles/Runner.java` - Line 33):
-     ```java
-     features = {"classpath:featurefiles"},
-     ```
-   - **BaseTest File** (`src/test/java/basetest/BaseTest.java` - Lines 57-58):
-     ```java
-     String username = "browserstack credential";  // Comment this line for local execution
-     String accessKey = "browserstack password";   // Comment this line for local execution
-     ```
+- testing scan scenarios
+- testing offline/local CDP scenarios
+- debugging from IDE
 
-3. **Build and Run:**
-   - Open command prompt and change directory by using command 'cd ../inji-verify'
-   - Hit the command `mvn clean package -DskipTests` to build the jar.
-   - Then use `java -Dmodules=ui-test -Denv.user=api-internal.dev -Denv.endpoint=https://api-internal.dev.mosip.net -Denv.testLevel=smokeAndRegression -jar target/uitest-injiverify-*-SNAPSHOT.jar` to run the automation locally
+Current behavior:
 
-Note:- Remove the BrowserStack credentials from the command when running locally.
+- scan scenarios run locally
+- BrowserStack is not used for `@scan`
+- scenarios tagged `@withoutBrowserstack` always stay local
 
+### BrowserStack
 
-## Run with IDE
-# Using Eclipse IDE
+Use BrowserStack for upload and normal browser validation scenarios.
 
-To execute the tests using Eclipse IDE, use the following steps:
+Current behavior:
 
-## 1. **Install Eclipse (Latest Version)**
-   - Download and install the latest version of Eclipse IDE from the [Eclipse Downloads](https://www.eclipse.org/downloads/).
+- BrowserStack is used only when `runOnBrowserStack=true`
+- scenarios tagged `@withoutBrowserstack` stay local
+- scan scenarios are forced local by framework logic
 
-## 2. **Import the Maven Project**
+## Running From IDE
 
-   After Eclipse is installed, follow these steps to import the Maven project:
+Use [`runnerfiles.Runner`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\runnerfiles\Runner.java) as the main class.
 
-   - Open Eclipse IDE.
-   - Go to `File` > `Import`.
-   - In the **Import** wizard, select `Maven` > `Existing Maven Projects`, then click **Next**.
-   - Browse to the location where the `ui-test` folder is saved (either from the cloned Git repository or downloaded zip).
-   - Select the folder, and Eclipse will automatically detect the Maven project. Click **Finish** to import the project.
+### IntelliJ / Eclipse setup
 
-## 3. **Build the Project**
+1. Import the project as a Maven project.
+2. Set JDK to 21.
+3. Run `Maven -> Reload Project` or equivalent.
+4. Create a Java run configuration with main class `runnerfiles.Runner`.
 
-   - Right-click on the project in the **Project Explorer** and select `Maven` > `Update Project`.
-   - This will download the required dependencies as defined in the `pom.xml` and ensure everything is correctly set up.
+### Recommended VM options
 
-## 4. **Run the Tests**
+For a normal IDE run:
 
-### **Option A: Run on BrowserStack (Cloud)**
+```text
+-Dmodules=ui-test
+-Denv.user=api-internal.dev
+-Denv.endpoint=https://api-internal.dev.mosip.net
+-Denv.testLevel=smokeAndRegression
+```
 
-   To execute the test automation suite on BrowserStack, you need to configure the run parameters in Eclipse:
+Notes:
 
-   - Go to `Run` > `Run Configurations`.
-   - In the **Run Configurations** window, create a new configuration for your tests:
-     - Right-click on **Java Application** and select **New**.
-     - In the **Main** tab, select the project by browsing the location where the `ui-test` folder is saved, and select the **Main class** as `runnerfiles.Runner`.
-   - In the **Arguments** tab, add the necessary **VM arguments**:
-     - **VM Arguments**:
-       ```
-       -DBROWSERSTACK_USERNAME="username" -DBROWSERSTACK_ACCESS_KEY="accesskey" -Dmodules=ui-test -Denv.user=api-internal.dev -Denv.endpoint=https://api-internal.dev.mosip.net -Denv.testLevel=smokeAndRegression
-       ```
+- Local IDE execution runs Chrome in headed mode.
+- If launched outside IDE, local Chrome runs headless by default.
+- BrowserStack credentials for this repo are read from [`injiVerify.properties`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\resources\config\injiVerify.properties), not from mandatory VM args.
 
-### **Option B: Run Locally**
+## Running With Maven
 
-   To execute the tests on your local machine instead of BrowserStack:
+From:
 
-   #### **Prerequisites for Local Execution:**
-   - Install Chrome/Firefox browser on your local machine
-   - Ensure WebDriver is available (ChromeDriver/GeckoDriver) or use WebDriverManager for automatic driver management
+[`ui-test`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test)
 
-   #### **Code Changes Required:**
+Compile only:
 
-   1. **Update Runner File** (`src/test/java/runnerfiles/Runner.java` - Line 33):
-      ```java
-      features = {"classpath:featurefiles"},
-      ```
+```powershell
+mvn -q -DskipTests compile
+```
 
-   2. **Update BaseTest File** (`src/test/java/basetest/BaseTest.java` - Lines 57-58):
-      ```java
-      String username = "browserstack credential";  // Comment this line for local execution
-      String accessKey = "browserstack password";   // Comment this line for local execution
-      ```
-      
-      Or replace with local driver initialization code.
+Run all tests:
 
-   #### **VM Arguments for Local Execution:**
-   ```
-   -Dmodules=ui-test -Denv.user=api-internal.dev -Denv.endpoint=https://api-internal.dev.mosip.net -Denv.testLevel=smokeAndRegression
-   ```
+```powershell
+mvn test
+```
 
-   **Note**: Remove the `-DBROWSERSTACK_USERNAME` and `-DBROWSERSTACK_ACCESS_KEY` parameters when running locally.
+Run by tag:
 
-## 5. **Run the Configuration**
+```powershell
+mvn test -Dcucumber.filter.tags="@offlineUpload"
+```
 
-   - Once the configuration is set up, click **Run** to execute the test suite.
-   - The tests will run, and the results will be shown in the **Console** tab of Eclipse.
+Examples:
 
-   **Note**: You can also run in **Debug Mode** to troubleshoot issues by setting breakpoints in your code and choosing `Debug` instead of `Run`.
+```powershell
+mvn test -Dcucumber.filter.tags="@offlineUpload and @negative"
+mvn test -Dcucumber.filter.tags="@scan and @camera_8mp"
+mvn test -Dcucumber.filter.tags="@verifyuploadBoundaryMaxSizeqrcode"
+```
 
+Run by scenario name:
 
+```powershell
+mvn test -Dcucumber.filter.name="Verify upload qr code when internet is unavailable"
+```
+
+## Running As JAR
+
+Build:
+
+```powershell
+mvn clean package -DskipTests
+```
+
+The shaded jar uses `runnerfiles.Runner` as main class.
+
+Example:
+
+```powershell
+java -Dmodules=ui-test ^
+     -Denv.user=api-internal.dev ^
+     -Denv.endpoint=https://api-internal.dev.mosip.net ^
+     -Denv.testLevel=smokeAndRegression ^
+     -jar target\\<generated-jar-name>.jar
+```
+
+With BrowserStack:
+
+```powershell
+java -Dmodules=ui-test ^
+     -Denv.user=api-internal.dev ^
+     -Denv.endpoint=https://api-internal.dev.mosip.net ^
+     -Denv.testLevel=smokeAndRegression ^
+     -jar target\\<generated-jar-name>.jar
+```
+
+## Running In Rancher
+
+Rancher typically runs the JAR in a Linux container.
+
+Important current behavior:
+
+- when no explicit feature path is set, the runner sets `cucumber.features` to `/home/inji/featurefiles/` on Linux
+- this is handled in [`Runner.updateFeaturesPath()`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\runnerfiles\Runner.java)
+
+### Recommended Rancher/container requirements
+
+- mount or copy feature files to `/home/inji/featurefiles/` if you rely on external feature path
+- provide all required `-Denv.*` properties
+- provide BrowserStack credentials only if BrowserStack execution is required
+- ensure Chrome dependencies exist only if local browser execution is intended inside container
+
+### Typical Rancher command
+
+```bash
+java \
+  -Dmodules=ui-test \
+  -Denv.user=api-internal.dev \
+  -Denv.endpoint=https://api-internal.dev.mosip.net \
+  -Denv.testLevel=smokeAndRegression \
+  -jar /app/uitest-injiverify.jar
+```
+
+With BrowserStack:
+
+```bash
+java \
+  -Dmodules=ui-test \
+  -Denv.user=api-internal.dev \
+  -Denv.endpoint=https://api-internal.dev.mosip.net \
+  -Denv.testLevel=smokeAndRegression \
+  -jar /app/uitest-injiverify.jar
+```
+
+## Runtime Test Data Generation
+
+This suite now generates several assets during execution instead of depending only on committed files.
+
+### Upload runtime files
+
+Generated under:
+
+[`test-output/runtime-media`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\test-output\runtime-media)
+
+Examples:
+
+- `QRCode_10KB.jpg`
+- `QRCode_5MB.png`
+
+These are generated from insurance credential runtime artifacts.
+
+### Scan runtime files
+
+Generated under:
+
+[`test-output/runtime-media`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\test-output\runtime-media)
+
+Examples:
+
+- `ScanQrCode-runtime.png`
+- `ScanQrCode-runtime-preview.png`
+- `ScanQrCode-runtime-preview_png-8mp-runtime.y4m`
+- `ScanQrCode-runtime-preview_png-15mp-runtime.y4m`
+
+### Shared insurance credential artifacts
+
+Generated once per run under:
+
+[`test-output/runtime-media/shared-insurance-artifacts`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\test-output\runtime-media\shared-insurance-artifacts)
+
+Examples:
+
+- `InsuranceCredential.pdf`
+- `InsuranceCredential0.png`
+- `InsuranceCredential0.jpg`
+- `InsuranceCredential0.jpeg`
+
+These are reused by upload and scan scenarios that depend on insurance QR content.
+
+## Tags And Execution Notes
+
+Examples of important tags:
+
+- `@withoutBrowserstack`: always local
+- `@scan`: scan-mode scenario
+- `@qr_valid`, `@qr_invalid`, `@qr_expired`, `@qr_half`
+- `@camera_2mp`, `@camera_8mp`, `@camera_15mp`, `@camera_low_light`
+- `@offlineUpload`
+
+Important notes:
+
+- BrowserStack desktop sessions do not support offline network simulation on Windows/Mac
+- offline upload/scan scenarios should remain local unless explicitly reworked
+- scan fake-camera input is generated as Y4M at runtime
 
 ## Reports
 
-After test execution, the test reports can be found in the `test-output` directory.
+Primary outputs:
+
+- Extent report: [`test-output`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\test-output)
+- Cucumber HTML/JSON: [`target`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\target)
+- HTML report folder: [`reports`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\reports)
+
+Current report behavior:
+
+- local failed scenarios attach screenshots
+- BrowserStack failed scenarios attach a clickable BrowserStack video/session link
+- known issues from [`Known_Issues.txt`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\resources\config\Known_Issues.txt) are marked as skipped-known-issue
+
+## Known Issues Support
+
+Known issues are loaded from:
+
+[`Known_Issues.txt`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\resources\config\Known_Issues.txt)
+
+Format:
+
+```text
+BUGID------Scenario Name
+```
+
+Example:
+
+```text
+INJI-123------Verify upload qr code when internet is unavailable
+```
+
+## Troubleshooting
+
+### BrowserStack file upload issue
+
+If native file chooser behavior is inconsistent on BrowserStack:
+
+- the framework uploads through the file input directly
+- it does not rely on validating OS-native file chooser windows
+
+### Missing scan runtime media
+
+Check:
+
+- `test-output/runtime-media`
+- shared insurance artifacts were generated
+- the scenario is using the expected scan tag
+
+### No screenshot in report
+
+Current expected behavior:
+
+- local failure -> screenshot should be attached
+- BrowserStack failure -> BrowserStack video/session link should be attached
+
+If not, verify the failure happened after browser/driver initialization.
+
+### Single-scenario debugging
+
+Use:
+
+```powershell
+mvn test -Dcucumber.filter.name="Exact scenario name"
+```
+
+or:
+
+```powershell
+mvn test -Dcucumber.filter.tags="@tagName"
+```

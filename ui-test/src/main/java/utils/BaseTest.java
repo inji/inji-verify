@@ -65,6 +65,7 @@ public class BaseTest extends BaseTestUtil{
 	private static final ThreadLocal<String> scanCameraProfile = new ThreadLocal<>();
 	private static final ThreadLocal<Boolean> autoAllowScanCamera = ThreadLocal.withInitial(() -> Boolean.TRUE);
 	private static final ThreadLocal<String> scenarioRuntimeDir = new ThreadLocal<>();
+	private static final ThreadLocal<java.util.Set<String>> scenarioTags = new ThreadLocal<>();
 	private static final ThreadLocal<Boolean> failedStepScreenshotCaptured = ThreadLocal.withInitial(() -> Boolean.FALSE);
 	private static final Object insuranceArtifactsLock = new Object();
 	private static volatile String downloadedInsurancePdfPath;
@@ -118,6 +119,7 @@ public class BaseTest extends BaseTestUtil{
 		ExtentReportManager.initReport();
 		ExtentReportManager.createTest(scenario.getName());
 		ExtentReportManager.logStep("Scenario Started: " + scenario.getName());
+		scenarioTags.set(new java.util.HashSet<>(scenario.getSourceTagNames()));
 		boolean scanMode = scenario.getSourceTagNames().contains("@scan");
 		if (scanMode) {
 			scanCameraProfile.set(resolveScanCameraProfile(scenario));
@@ -316,6 +318,7 @@ public class BaseTest extends BaseTestUtil{
 			scanCameraProfile.remove();
 			autoAllowScanCamera.remove();
 			scenarioRuntimeDir.remove();
+			scenarioTags.remove();
 			failedStepScreenshotCaptured.remove();
 		}
 	}
@@ -492,6 +495,11 @@ public class BaseTest extends BaseTestUtil{
 
 	public static String getScenarioRuntimeDir() {
 		return scenarioRuntimeDir.get();
+	}
+
+	public static java.util.Set<String> getCurrentScenarioTags() {
+		java.util.Set<String> tags = scenarioTags.get();
+		return tags == null ? java.util.Collections.emptySet() : tags;
 	}
 
 	public static void markFailureScreenshotCaptured() {

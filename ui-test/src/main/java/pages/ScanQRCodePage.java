@@ -169,6 +169,14 @@ public class ScanQRCodePage extends BasePage {
 		return isElementIsVisible(driver, activeScanVideo);
 	}
 
+	public boolean isVerificationInProgressVisible() {
+		return isElementIsVisible(driver, ScanQRCodeStep3Label);
+	}
+
+	public boolean isScanFlowActiveOrVerificationInProgress() {
+		return isVisibleActiveScanVideo() || isVisibleBackButton() || isVisibleScanLine() || isVerificationInProgressVisible();
+	}
+
 	public void clickOnBackButton() {
 		clickOnElement(driver, backButton);
 	}

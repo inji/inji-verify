@@ -102,6 +102,7 @@ public class BaseTestUtil {
     }
 
     private String generateRuntimeY4mFromInsuranceCredential() {
+        refreshRuntimeScanImages();
         File sourceImage = findScanVideoSourceImage();
         String cameraProfile = getScanCameraProfile();
         File outputDir = getRuntimeMediaDirectory();
@@ -119,6 +120,23 @@ public class BaseTestUtil {
             return y4mFile.getAbsolutePath();
         } catch (IOException e) {
             throw new RuntimeException("Failed to generate Y4M file from " + sourceImage.getAbsolutePath(), e);
+        }
+    }
+
+    private void refreshRuntimeScanImages() {
+        File sourceImage = findPrimaryInsuranceCredentialImage();
+        File outputDir = getRuntimeMediaDirectory();
+        File runtimeQrImage = new File(outputDir, "ScanQrCode-runtime.png");
+        File previewQrImage = new File(outputDir, "ScanQrCode-runtime-preview.png");
+
+        try {
+            writeRuntimeScanQrCodeImage(sourceImage, runtimeQrImage);
+            writeRuntimeScanQrCodePreviewImage(sourceImage, previewQrImage);
+            logger.info("Generated fresh runtime scan images: {}, {}",
+                    runtimeQrImage.getAbsolutePath(),
+                    previewQrImage.getAbsolutePath());
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to generate runtime scan images from " + sourceImage.getAbsolutePath(), e);
         }
     }
 
@@ -140,14 +158,56 @@ public class BaseTestUtil {
 
     private File findScanVideoSourceImage() {
         File runtimeFile = new File(getRuntimeMediaDirectory(), "ScanQrCode-runtime.png");
-        if (runtimeFile.exists()) {
-            return runtimeFile;
-        }
         File previewFile = new File(getRuntimeMediaDirectory(), "ScanQrCode-runtime-preview.png");
-        if (previewFile.exists()) {
-            return previewFile;
+        File fallbackFile = findInsuranceCredentialImage();
+        java.util.Set<String> tags = BaseTest.getCurrentScenarioTags();
+
+        if (shouldUseRuntimeScanImage(tags)) {
+            if (isReadableImage(runtimeFile)) {
+                return runtimeFile;
+            }
+            if (isReadableImage(previewFile)) {
+                return previewFile;
+            }
+        } else if (shouldUsePreviewScanImage(tags)) {
+            if (isReadableImage(previewFile)) {
+                return previewFile;
+            }
+            if (isReadableImage(runtimeFile)) {
+                return runtimeFile;
+            }
+        } else {
+            if (isReadableImage(fallbackFile)) {
+                return fallbackFile;
+            }
+            if (isReadableImage(previewFile)) {
+                return previewFile;
+            }
+            if (isReadableImage(runtimeFile)) {
+                return runtimeFile;
+            }
         }
-        return findInsuranceCredentialImage();
+
+        if (isReadableImage(fallbackFile)) {
+            return fallbackFile;
+        }
+        throw new RuntimeException("No readable scan video source image available.");
+    }
+
+    private boolean shouldUseRuntimeScanImage(java.util.Set<String> tags) {
+        return tags.contains("@camera_low_light")
+                || tags.contains("@camera_2mp")
+                || tags.contains("@camera_8mp")
+                || tags.contains("@camera_15mp");
+    }
+
+    private boolean shouldUsePreviewScanImage(java.util.Set<String> tags) {
+        return tags.contains("@camera_denied")
+                || tags.contains("@offlineScan")
+                || tags.contains("@verifyFirstTimeScanQrCodePermissionPrompt")
+                || tags.contains("@verifyScanQrCodeWithAllowedCameraAccess")
+                || tags.contains("@browser_back_navigation")
+                || tags.contains("@qr_valid");
     }
 
     private void writeY4mFile(File sourceImage, File targetY4m, String cameraProfile) throws IOException {
@@ -306,27 +366,16 @@ public class BaseTestUtil {
     }
 
     private String generateRuntimeScanQrCodeFromInsuranceCredential() {
-        File sourceImage = findPrimaryInsuranceCredentialImage();
-        File outputDir = getRuntimeMediaDirectory();
-
-        if (!outputDir.exists() && !outputDir.mkdirs()) {
-            throw new RuntimeException("Unable to create runtime media directory: " + outputDir.getAbsolutePath());
-        }
-
-        File runtimeQrImage = new File(outputDir, "ScanQrCode-runtime.png");
-
-        try {
-            writeRuntimeScanQrCodeImage(sourceImage, runtimeQrImage);
-            logger.info("Generated runtime scan QR code image: {}", runtimeQrImage.getAbsolutePath());
-        } catch (IOException e) {
-            throw new RuntimeException("Failed to generate runtime scan QR code image from " + sourceImage.getAbsolutePath(), e);
-        }
-
+        refreshRuntimeScanImages();
+        File runtimeQrImage = new File(getRuntimeMediaDirectory(), "ScanQrCode-runtime.png");
         return runtimeQrImage.getAbsolutePath();
     }
 
     private File getRuntimeMediaDirectory() {
-        File outputDir = new File(System.getProperty("user.dir") + File.separator + RUNTIME_MEDIA_DIR);
+        String scenarioRuntimeDir = BaseTest.getScenarioRuntimeDir();
+        File outputDir = scenarioRuntimeDir == null || scenarioRuntimeDir.trim().isEmpty()
+                ? new File(System.getProperty("user.dir") + File.separator + RUNTIME_MEDIA_DIR)
+                : new File(scenarioRuntimeDir);
         if (!outputDir.exists() && !outputDir.mkdirs()) {
             throw new RuntimeException("Unable to create runtime media directory: " + outputDir.getAbsolutePath());
         }
@@ -376,11 +425,71 @@ public class BaseTestUtil {
             sourceBufferedImage.flush();
         }
 
+        File tempFile = new File(targetImage.getParentFile(), targetImage.getName() + ".tmp");
         try {
-            ImageIO.write(copiedImage, "png", targetImage);
+            ImageIO.write(copiedImage, "png", tempFile);
+            java.nio.file.Files.move(
+                    tempFile.toPath(),
+                    targetImage.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING,
+                    java.nio.file.StandardCopyOption.ATOMIC_MOVE
+            );
         } finally {
+            if (tempFile.exists()) {
+                tempFile.delete();
+            }
             copiedImage.flush();
         }
+    }
+
+    private void writeRuntimeScanQrCodePreviewImage(File sourceImage, File targetImage) throws IOException {
+        BufferedImage sourceBufferedImage = ImageIO.read(sourceImage);
+        if (sourceBufferedImage == null) {
+            throw new IOException("Unsupported image format: " + sourceImage.getAbsolutePath());
+        }
+
+        int[] qrBounds = detectQrBounds(sourceBufferedImage);
+        BufferedImage previewImage = new BufferedImage(qrBounds[2], qrBounds[3], BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = previewImage.createGraphics();
+        try {
+            graphics.setColor(java.awt.Color.WHITE);
+            graphics.fillRect(0, 0, qrBounds[2], qrBounds[3]);
+            graphics.drawImage(sourceBufferedImage, 0, 0, qrBounds[2], qrBounds[3],
+                    qrBounds[0], qrBounds[1], qrBounds[0] + qrBounds[2], qrBounds[1] + qrBounds[3], null);
+        } finally {
+            graphics.dispose();
+            sourceBufferedImage.flush();
+        }
+
+        File tempFile = new File(targetImage.getParentFile(), targetImage.getName() + ".tmp");
+        try {
+            ImageIO.write(previewImage, "png", tempFile);
+            java.nio.file.Files.move(
+                    tempFile.toPath(),
+                    targetImage.toPath(),
+                    java.nio.file.StandardCopyOption.REPLACE_EXISTING
+            );
+        } finally {
+            if (tempFile.exists()) {
+                tempFile.delete();
+            }
+            previewImage.flush();
+        }
+    }
+
+    private boolean isReadableImage(File file) {
+        if (file == null || !file.exists() || !file.isFile() || file.length() <= 0) {
+            return false;
+        }
+        try {
+            BufferedImage image = ImageIO.read(file);
+            if (image != null) {
+                image.flush();
+                return true;
+            }
+        } catch (IOException ignored) {
+        }
+        return false;
     }
 
     private int[] detectQrBounds(BufferedImage image) {
