@@ -63,9 +63,20 @@ function MyApp() {
 }
 ```
 ## Request Body Example 
+
+### QRCodeVerification
 ```javascript
 {
     "verifiableCredential": "...",
+        "skipStatusChecks": false,
+        "statusCheckFilters": ["revocation"],
+        "includeClaims": true
+}
+```
+### OpenID4VPVerification
+```javascript
+{
+    "response_code": "optional-response-code",
         "skipStatusChecks": false,
         "statusCheckFilters": ["revocation"],
         "includeClaims": true
@@ -76,6 +87,7 @@ function MyApp() {
 | Property               | Type    | Required | Description                          |
 |------------------------|---------|----------|--------------------------------------|
 | `verifiableCredential` | string  | ✅      | The VC to verify. Its format is determined in the Verify Service and passed to the vc-verifier.|
+| `responseCode`         | string  | ❌      | Response code generated during /vp-submission when validation is required|
 | `skipStatusChecks`     | boolean | ❌       | If true, skips all status checks and ignores statusCheckFilters    |
 | `statusCheckFilters`   | array   | ❌      | array of status checks to perform          |
 | `includeClaims`        | boolean | ❌      |If true, the response includes extracted VC claims in addition to verification and status check results.       |
@@ -118,6 +130,7 @@ If summariseResults=false, then response should be
 
 ### OpenID4VPVerification
 If summariseResults=true, then response should be
+
 ```javascript
  {
         vcResults: [
@@ -129,7 +142,9 @@ If summariseResults=true, then response should be
             vpResultStatus: "SUCCESS" //  or "INVALID" Overall verification status
     }
 ```
+
 If summariseResults=false, then response should be
+
 ```javascript
 {
     "transactionId": "txn_11",
@@ -149,6 +164,7 @@ If summariseResults=false, then response should be
     ]
 }  
 ```
+
 ### Response Fields Summary
 
 | Property                  | Type    | Required | Description                                               |
@@ -226,6 +242,7 @@ https://your-backend.com
   isEnableZoom={true} // Allow camera zoom
   isVPSubmissionSupported={false} // This attribute indicates whether VP submission is supported in Inji OVP VC sharing flow. By default, it is false which means that VP token will be directly sent in response. If set to true, then VP token will be submitted to the VP_SUBMISSION_ URL.
   acceptVPWithoutHolderProof={false} // This attribute controls whether unsigned Verifiable Presentations (VPs without proof) are allowed in the Inji OVP VC sharing flow. By default, it is set to false, meaning unsigned VP tokens are not supported and an error is thrown if an unsigned VP is received. If set to true, VP tokens without a signature (proof) are allowed and can be verified. For data-share it is set to true by default.
+  vcVerificationV2Request={vcVerificationV2Request}
   summariseResults={true} // This attribute will decide the format of the response from SDK
 />
 ```
@@ -320,28 +337,30 @@ presentationDefinition={{
 
 ### QRCodeVerification Specific
 
-| Property                  | Type     | Default | Description                  |
-| ------------------------- | -------- | ------- | ---------------------------- |
-| `onVCProcessed`           | function | -       | Get full results immediately |
-| `onVCReceived`            | function | -       | Get transaction ID only      |
-| `isEnableUpload`          | boolean  | true    | Allow file uploads           |
-| `isEnableScan`            | boolean  | true    | Allow camera scanning        |
-| `isEnableZoom`            | boolean  | true    | Allow camera zoom            |
-| `uploadButtonStyle`       | object   | -       | Custom upload button styling |
-| `isVPSubmissionSupported` | Boolean  | false   | Toggle VP submission support |
+| Property                  | Type     | Default | Description                               |
+|---------------------------|----------|---------|-------------------------------------------|
+| `onVCProcessed`           | function | -       | Get full results immediately              |
+| `onVCReceived`            | function | -       | Get transaction ID only                   |
+| `isEnableUpload`          | boolean  | true    | Allow file uploads                        |
+| `isEnableScan`            | boolean  | true    | Allow camera scanning                     |
+| `isEnableZoom`            | boolean  | true    | Allow camera zoom                         |
+| `uploadButtonStyle`       | object   | -       | Custom upload button styling              |
+| `isVPSubmissionSupported` | Boolean  | false   | Toggle VP submission support              |
+| `vcVerificationV2Request` | object   | -       | contains request body for vc verification |
 
 ### OpenID4VPVerification Specific
 
-| Property                   | Type     | Default        | Description                        |
-| -------------------------- | -------- | -------------- | ---------------------------------- |
-| `protocol`                 | string   | "openid4vp://" | Protocol for QR codes (optional)   |
-| `presentationDefinitionId` | string   | -              | Predefined verification template   |
-| `presentationDefinition`   | object   | -              | Custom verification rules          |
-| `onVpProcessed`            | function | -              | Get full results immediately       |
-| `onVpReceived`             | function | -              | Get transaction ID only            |
-| `onQrCodeExpired`          | function | -              | Handle QR code expiration          |
-| `isSameDeviceFlowEnabled`  | boolean  | true           | Enable same-device flow (optional) |
-| `qrCodeStyles`             | object   | -              | Customize QR code appearance       |
+| Property                 | Type     | Default        | Description                               |
+|--------------------------| -------- | -------------- |-------------------------------------------|
+| `protocol`               | string   | "openid4vp://" | Protocol for QR codes (optional)          |
+| `presentationDefinitionId` | string   | -              | Predefined verification template          |
+| `presentationDefinition` | object   | -              | Custom verification rules                 |
+| `onVpProcessed`          | function | -              | Get full results immediately              |
+| `onVpReceived`           | function | -              | Get transaction ID only                   |
+| `onQrCodeExpired`        | function | -              | Handle QR code expiration                 |
+| `isSameDeviceFlowEnabled` | boolean  | true           | Enable same-device flow (optional)        |
+| `qrCodeStyles`           | object   | -              | Customize QR code appearance              |
+| `vpVerificationRequest`  | object   | -       | contains request body for vp verification |
 
 ## ⚠️ Important Limitations
 
