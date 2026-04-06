@@ -123,9 +123,9 @@ If summariseResults=false, then response should be
 | `schemaAndSignatureCheck` | object  | ✅       | Validates schema and signature check |
 | `expiryCheck`             | object  | ✅       | If false, the credential is EXPIRED     |
 | `statusChecks`            | array   | ❌       | Contains revocation and other status validations           |
-| `statusCheck.error`       | object  | ❌       | If present, throws an error instead of returning a status        |
-| `statusCheck.purpose`     | object  | ❌       | Identifies purpose (e.g., "revocation")          |
-| `statusCheck.valid`       | boolean | ❌       | If false for revocation → credential is revoked            |
+| `statusChecks.error`      | object  | ❌       | If present, throws an error instead of returning a status        |
+| `statusChecks.purpose`    | object  | ❌       | Identifies purpose (e.g., "revocation")          |
+| `statusChecks.valid`      | boolean | ❌       | If false for revocation → credential is revoked            |
 | `allChecksSuccessful`     | boolean | ✅       | Final aggregated validation flag   |
 
 ### OpenID4VPVerification
@@ -173,9 +173,9 @@ If summariseResults=false, then response should be
 | `schemaAndSignatureCheck` | object  | ✅       | Validates schema and signature check                      |
 | `expiryCheck`             | object  | ✅       | If false, the credential is EXPIRED                       |
 | `statusChecks`            | array   | ❌       | Contains revocation and other status validations          |
-| `statusCheck.error`       | object  | ❌       | If present, throws an error instead of returning a status |
-| `statusCheck.purpose`     | object  | ❌       | Identifies purpose (e.g., "revocation")                   |
-| `statusCheck.valid`       | boolean | ❌       | If false for revocation → credential is revoked           |
+| `statusChecks.error`      | object  | ❌       | If present, throws an error instead of returning a status |
+| `statusChecks.purpose`    | object  | ❌       | Identifies purpose (e.g., "revocation")                   |
+| `statusChecks.valid`      | boolean | ❌       | If false for revocation → credential is revoked           |
 | `allChecksSuccessful`     | boolean | ✅       | Final aggregated validation flag                          |
 
 > **Security Recommendation**
