@@ -10,18 +10,17 @@ Inji Verify SDK provides ready-to-use **React components** to integrate [OpenID4
 npm i @injistack/react-inji-verify-sdk
 ```
 
-### Step 2: Import and Use
+### Step 2: Choose Your Verification Method
+
+#### Option A: QR Code Verification (Scan & Upload)
+
+### Step 3 : Import & Use
 
 ```javascript
-import {
-  OpenID4VPVerification,
-  QRCodeVerification,
-} from "@injistack/react-inji-verify-sdk";
+import {QRCodeVerification} from "@injistack/react-inji-verify-sdk";
 ```
 
-### Step 3: Choose Your Verification Method
-
-**Option A: QR Code Verification (Scan & Upload)**
+#### QRCodeVerification Component
 
 ```javascript
 function MyApp() {
@@ -41,30 +40,10 @@ function MyApp() {
   );
 }
 ```
+###  Request Body Example
+###### vcVerificationV2Request
 
-**Option B: OpenID4VP Verification**
-
-```javascript
-function MyApp() {
-  return (
-    <OpenID4VPVerification
-      verifyServiceUrl="https://your-backend.com/v1/verify"
-      presentationDefinitionId="your-definition-id"
-      onVpProcessed={(result) => {
-        console.log("Wallet verification complete:", result);
-        // Handle the verification result here
-      }}
-      onQrCodeExpired={() => alert("QR code expired, please try again")}
-      onError={(error) => console.log("Error:", error)}
-      triggerElement={<button>📱 Verify with Digital Wallet</button>}
-      clientId="CLIENT_ID"
-    />
-  );
-}
-```
-## Request Body Example 
-
-### QRCodeVerification
+This prop allows us to control how Verifiable Credential (VC) verification is performed by passing request parameters to the verification API.
 ```javascript
 {
     "verifiableCredential": "...",
@@ -73,16 +52,15 @@ function MyApp() {
         "includeClaims": true
 }
 ```
-### OpenID4VPVerification
+#### Usage 
 ```javascript
-{
-    "response_code": "optional-response-code",
-        "skipStatusChecks": false,
-        "statusCheckFilters": ["revocation"],
-        "includeClaims": true
-}
+
+    <QRCodeVerification
+        vcVerificationV2Request={vcVerificationV2Request}
+    />
 ```
-### Request Fields Summary
+
+#### Request Fields Summary
 
 | Property               | Type    | Required | Description                          |
 |------------------------|---------|----------|--------------------------------------|
@@ -92,11 +70,9 @@ function MyApp() {
 | `statusCheckFilters`   | array   | ❌      | array of status checks to perform          |
 | `includeClaims`        | boolean | ❌      |If true, the response includes extracted VC claims in addition to verification and status check results.       |
 
-## Response Received
+### Response Received
 
 When verification is completed, the response received is based on summariseResults attribute which will decide the format of the response from SDK.
-
-### QRCodeVerification
 
 If summariseResults=true, then response should be
 ```javascript
@@ -116,7 +92,7 @@ If summariseResults=false, then response should be
         "claims": {...}
 }
 ```
-### Response Fields Summary
+#### Response Fields Summary
 
 | Property                  | Type    | Required | Description                          |
 |---------------------------|---------|-----------|--------------------------------------|
@@ -128,7 +104,68 @@ If summariseResults=false, then response should be
 | `statusChecks.valid`      | boolean | ❌       | If false for revocation → credential is revoked            |
 | `allChecksSuccessful`     | boolean | ✅       | Final aggregated validation flag   |
 
-### OpenID4VPVerification
+    
+
+### Option B: OpenID4VP Verification
+
+### Import & Use
+
+```javascript
+import {OpenID4VPVerification} from "@injistack/react-inji-verify-sdk";
+```
+### OpenID4VPVerification Component
+
+```javascript
+function MyApp() {
+  return (
+    <OpenID4VPVerification
+      verifyServiceUrl="https://your-backend.com/v1/verify"
+      presentationDefinitionId="your-definition-id"
+      onVpProcessed={(result) => {
+        console.log("Wallet verification complete:", result);
+        // Handle the verification result here
+      }}
+      onQrCodeExpired={() => alert("QR code expired, please try again")}
+      onError={(error) => console.log("Error:", error)}
+      triggerElement={<button>📱 Verify with Digital Wallet</button>}
+      clientId="CLIENT_ID"
+    />
+  );
+}
+```
+### Request Body Example
+###### vpVerificationRequest
+
+This prop allows us to control how VPVerification is performed by passing request parameters to the verification API.
+```javascript
+{
+    "response_code": "optional-response-code",
+        "skipStatusChecks": false,
+        "statusCheckFilters": ["revocation"],
+        "includeClaims": true
+}
+```
+
+#### Usage 
+```javascript
+
+    <OpenID4VPVerification
+        vpVerificationRequest={vpVerificationRequest}
+    />
+```
+### Request Fields Summary
+
+| Property               | Type    | Required | Description                          |
+|------------------------|---------|----------|--------------------------------------|
+| `responseCode`         | string  | ❌      | Response code generated during /vp-submission when validation is required|
+| `skipStatusChecks`     | boolean | ❌       | If true, skips all status checks and ignores statusCheckFilters    |
+| `statusCheckFilters`   | array   | ❌      | array of status checks to perform          |
+| `includeClaims`        | boolean | ❌      |If true, the response includes extracted VC claims in addition to verification and status check results.       |
+
+### Response Received
+
+When verification is completed, the response received is based on summariseResults attribute which will decide the format of the response from SDK.
+
 If summariseResults=true, then response should be
 
 ```javascript
@@ -165,7 +202,7 @@ If summariseResults=false, then response should be
 }  
 ```
 
-### Response Fields Summary
+#### Response Fields Summary
 
 | Property                  | Type    | Required | Description                                               |
 |---------------------------|---------|-----------|-----------------------------------------------------------|
