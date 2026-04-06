@@ -14,7 +14,7 @@ npm i @injistack/react-inji-verify-sdk
 
 #### Option A: QR Code Verification (Scan & Upload)
 
-### Step 3 : Import & Use
+###  Import & Use
 
 ```javascript
 import {QRCodeVerification} from "@injistack/react-inji-verify-sdk";
@@ -46,10 +46,10 @@ function MyApp() {
 This prop allows us to control how Verifiable Credential (VC) verification is performed by passing request parameters to the verification API.
 ```javascript
 {
-    "verifiableCredential": "...",
-        "skipStatusChecks": false,
-        "statusCheckFilters": ["revocation"],
-        "includeClaims": true
+    "verifiableCredential": "...", 
+    "skipStatusChecks": false,
+    "statusCheckFilters": ["revocation"],
+    "includeClaims": true
 }
 ```
 #### Usage 
@@ -65,7 +65,6 @@ This prop allows us to control how Verifiable Credential (VC) verification is pe
 | Property               | Type    | Required | Description                          |
 |------------------------|---------|----------|--------------------------------------|
 | `verifiableCredential` | string  | ✅      | The VC to verify. Its format is determined in the Verify Service and passed to the vc-verifier.|
-| `responseCode`         | string  | ❌      | Response code generated during /vp-submission when validation is required|
 | `skipStatusChecks`     | boolean | ❌       | If true, skips all status checks and ignores statusCheckFilters    |
 | `statusCheckFilters`   | array   | ❌      | array of status checks to perform          |
 | `includeClaims`        | boolean | ❌      |If true, the response includes extracted VC claims in addition to verification and status check results.       |
@@ -83,13 +82,13 @@ If summariseResults=true, then response should be
 If summariseResults=false, then response should be
 ```javascript
 {
-    "allChecksSuccessful": true,
-        "schemaAndSignatureCheck": { "valid": true, "error": null },
+    "allChecksSuccessful": true, 
+    "schemaAndSignatureCheck": { "valid": true, "error": null },
     "expiryCheck": { "valid": true },
     "statusChecks": [
         { "purpose": "revocation", "valid": true, "error": null }
-    ],
-        "claims": {...}
+    ], 
+    "claims": {...}
 }
 ```
 #### Response Fields Summary
@@ -103,8 +102,6 @@ If summariseResults=false, then response should be
 | `statusChecks.purpose`    | object  | ❌       | Identifies purpose (e.g., "revocation")          |
 | `statusChecks.valid`      | boolean | ❌       | If false for revocation → credential is revoked            |
 | `allChecksSuccessful`     | boolean | ✅       | Final aggregated validation flag   |
-
-    
 
 ### Option B: OpenID4VP Verification
 
@@ -139,10 +136,10 @@ function MyApp() {
 This prop allows us to control how VPVerification is performed by passing request parameters to the verification API.
 ```javascript
 {
-    "response_code": "optional-response-code",
-        "skipStatusChecks": false,
-        "statusCheckFilters": ["revocation"],
-        "includeClaims": true
+    "response_code": "optional-response-code", 
+    "skipStatusChecks": false,
+    "statusCheckFilters": ["revocation"],
+    "includeClaims": true
 }
 ```
 
