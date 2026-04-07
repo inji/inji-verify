@@ -25,11 +25,11 @@ This project supports:
 
 ## Project Entry Points
 
-- Main runner: [`runnerfiles.Runner`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\runnerfiles\Runner.java)
-- Base test setup: [`BaseTest.java`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\utils\BaseTest.java)
-- Local/scan media setup: [`BaseTestUtil.java`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\utils\BaseTestUtil.java)
-- Main step definitions: [`StepDef.java`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\stepdefinitions\StepDef.java)
-- Scan steps: [`ScanQrCodeSteps.java`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\stepdefinitions\ScanQrCodeSteps.java)
+- Main runner: [`runnerfiles.Runner`](src/main/java/runnerfiles/Runner.java)
+- Base test setup: [`BaseTest.java`](src/main/java/utils/BaseTest.java)
+- Local/scan media setup: [`BaseTestUtil.java`](src/main/java/utils/BaseTestUtil.java)
+- Main step definitions: [`StepDef.java`](src/main/java/stepdefinitions/StepDef.java)
+- Scan steps: [`ScanQrCodeSteps.java`](src/main/java/stepdefinitions/ScanQrCodeSteps.java)
 
 ## Prerequisites
 
@@ -44,7 +44,7 @@ Update the following files before execution.
 
 ### 1. Main environment config
 
-File: [`injiVerify.properties`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\resources\config\injiVerify.properties)
+File: [`injiVerify.properties`](src/main/resources/config/injiVerify.properties)
 
 Typical properties:
 
@@ -59,14 +59,14 @@ eSignetbaseurl=<esignet url>
 stayProtectedIssuer=<issuer display name>
 stayProtectedIssuerCredentialType=<credential type display name>
 browserstack_username=<browserstack username>
-browserstack_accesskey=<browserstack access key>
+browserstack_access_key=<browserstack access key>
 runOnBrowserStack=<true|false>
 browserstack_max_sessions=<number>
 ```
 
 ### 2. Test data config
 
-File: [`config.properties`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\test\resources\config.properties)
+File: [`config.properties`](src/test/resources/config.properties)
 
 Typical values:
 
@@ -79,7 +79,7 @@ Update these according to the target environment labels shown in UI.
 
 ### 3. BrowserStack config
 
-File: [`browserstack.yml`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\browserstack.yml)
+File: [`browserstack.yml`](browserstack.yml)
 
 Update:
 
@@ -115,7 +115,7 @@ Current behavior:
 
 ## Running From IDE
 
-Use [`runnerfiles.Runner`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\runnerfiles\Runner.java) as the main class.
+Use [`runnerfiles.Runner`](src/main/java/runnerfiles/Runner.java) as the main class.
 
 ### IntelliJ / Eclipse setup
 
@@ -139,13 +139,11 @@ Notes:
 
 - Local IDE execution runs Chrome in headed mode.
 - If launched outside IDE, local Chrome runs headless by default.
-- BrowserStack credentials for this repo are read from [`injiVerify.properties`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\resources\config\injiVerify.properties), not from mandatory VM args.
+- BrowserStack credentials for this repo are read from [`injiVerify.properties`](src/main/resources/config/injiVerify.properties), not from mandatory VM args.
 
 ## Running With Maven
 
-From:
-
-[`ui-test`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test)
+From the `ui-test` directory:
 
 Compile only:
 
@@ -216,7 +214,7 @@ Rancher typically runs the JAR in a Linux container.
 Important current behavior:
 
 - when no explicit feature path is set, the runner sets `cucumber.features` to `/home/inji/featurefiles/` on Linux
-- this is handled in [`Runner.updateFeaturesPath()`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\java\runnerfiles\Runner.java)
+- this is handled in [`Runner.updateFeaturesPath()`](src/main/java/runnerfiles/Runner.java)
 
 ### Recommended Rancher/container requirements
 
@@ -255,7 +253,7 @@ This suite now generates several assets during execution instead of depending on
 
 Generated under:
 
-[`test-output/runtime-media`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\test-output\runtime-media)
+[`test-output/runtime-media`](test-output/runtime-media)
 
 Examples:
 
@@ -268,7 +266,7 @@ These are generated from insurance credential runtime artifacts.
 
 Generated under:
 
-[`test-output/runtime-media`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\test-output\runtime-media)
+[`test-output/runtime-media`](test-output/runtime-media)
 
 Examples:
 
@@ -281,7 +279,7 @@ Examples:
 
 Generated once per run under:
 
-[`test-output/runtime-media/shared-insurance-artifacts`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\test-output\runtime-media\shared-insurance-artifacts)
+[`test-output/runtime-media/shared-insurance-artifacts`](test-output/runtime-media/shared-insurance-artifacts)
 
 Examples:
 
@@ -312,21 +310,21 @@ Important notes:
 
 Primary outputs:
 
-- Extent report: [`test-output`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\test-output)
-- Cucumber HTML/JSON: [`target`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\target)
-- HTML report folder: [`reports`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\reports)
+- Extent report: [`test-output`](test-output)
+- Cucumber HTML/JSON: [`target`](target)
+- HTML report folder: [`reports`](reports)
 
 Current report behavior:
 
 - local failed scenarios attach screenshots
 - BrowserStack failed scenarios attach a clickable BrowserStack video/session link
-- known issues from [`Known_Issues.txt`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\resources\config\Known_Issues.txt) are marked as skipped-known-issue
+- known issues from [`Known_Issues.txt`](src/main/resources/config/Known_Issues.txt) are marked as skipped-known-issue
 
 ## Known Issues Support
 
 Known issues are loaded from:
 
-[`Known_Issues.txt`](D:\Mohan\Automation_projects\UI_Automation\inji-verify\ui-test\src\main\resources\config\Known_Issues.txt)
+[`Known_Issues.txt`](src/main/resources/config/Known_Issues.txt)
 
 Format:
 

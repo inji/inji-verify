@@ -1817,7 +1817,16 @@ public class StepDef extends BaseSteps {
 	}
 	@When("User verify go back button")
 	public void userVerifyGoBackButton() {
-
+		try {
+			Assert.assertTrue(vpverification.isGoBackButtonVisible(), "Go Back button is not visible.");
+			test.log(Status.PASS, "Go Back button is visible.");
+		} catch (AssertionError e) {
+			logFailure(test, driver, "Go Back button is not visible", e);
+			throw e;
+		} catch (Exception e) {
+			logFailure(test, driver, "Unexpected error while verifying Go Back button visibility", e);
+			throw e;
+		}
 	}
 
 	@Before(value = "@needsInsuranceArtifacts", order = 12000)
@@ -2935,7 +2944,7 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
         }
     }
 
-    @When("User enters wrong URL in the address bar")
+    @Given("User enters wrong URL in the address bar")
     public void userEntersWrongUrlInTheAddressBar() {
         try {
             driver.get("http://invalid-url-for-testing.com");

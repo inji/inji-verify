@@ -145,6 +145,7 @@ public class BaseTest extends BaseTestUtil{
 					}
 				} catch (Exception e) {
 					logger.error("Failed to start BrowserStack Local tunnel", e);
+					throw new RuntimeException("BrowserStack Local tunnel failed to start", e);
 				}
 			}
 		}
@@ -541,6 +542,8 @@ public class BaseTest extends BaseTestUtil{
 		HttpURLConnection connection = null;
 		try {
 			connection = (HttpURLConnection) new URL(endpoint).openConnection();
+			connection.setConnectTimeout(10_000);
+			connection.setReadTimeout(15_000);
 			connection.setRequestMethod("PUT");
 			connection.setRequestProperty("Authorization", "Basic " + Base64.getEncoder()
 					.encodeToString((userName + ":" + accessKey).getBytes(StandardCharsets.UTF_8)));

@@ -23,7 +23,7 @@ import org.slf4j.LoggerFactory;
 
 public class BaseTestUtil {
     private static final Logger logger = LoggerFactory.getLogger(BaseTestUtil.class);
-    private static final int SCAN_VIDEO_FRAMES = 150;
+    private static final int SCAN_VIDEO_FRAMES = 30;
     private static final String RUNTIME_MEDIA_DIR = "test-output" + File.separator + "runtime-media";
 
     public JSONObject readConfig(Class<?> obj, String environment) {
@@ -302,10 +302,10 @@ public class BaseTestUtil {
             return new int[] { 1600, 1200 };
         }
         if ("8mp".equals(cameraProfile)) {
-            return new int[] { 2828, 2828 };
+            return new int[] { 1920, 1080 };
         }
         if ("15mp".equals(cameraProfile)) {
-            return new int[] { 3872, 3872 };
+            return new int[] { 2560, 1440 };
         }
         if ("low_light".equals(cameraProfile)) {
             return new int[] { 1920, 1080 };

@@ -208,6 +208,10 @@ public class VpVerification extends BasePage {
 		clickOnElement(driver, rightArrow);
 	}
 
+	public boolean isGoBackButtonVisible() {
+		return isElementIsVisible(driver, vpGoBack);
+	}
+
 	public void clickOnGoBack() {
 		clickOnElement(driver, vpGoBack);
 	}

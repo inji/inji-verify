@@ -171,6 +171,10 @@ public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger,
         throw new RuntimeException("❌ File not found: " + file.getAbsolutePath());
     }
 
+    if (BaseTest.isUsingBrowserStack() && driver instanceof RemoteWebDriver) {
+        ((RemoteWebDriver) driver).setFileDetector(new LocalFileDetector());
+    }
+
     By inputLocator = By.xpath("//input[@type='file']");
 
     int retries = 3;

@@ -266,6 +266,12 @@ public class Runner extends AbstractTestNGCucumberTests{
 	}
 
 	   public static void updateFeaturesPath() {
+        String existingFeatures = System.getProperty("cucumber.features");
+        if (existingFeatures != null && !existingFeatures.trim().isEmpty()) {
+            LOGGER.info("cucumber.features already set by caller, skipping override: " + existingFeatures);
+            return;
+        }
+
         CucumberOptions cucumberOptions = Runner.class.getAnnotation(CucumberOptions.class);
 
         if (cucumberOptions != null) {

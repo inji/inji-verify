@@ -26,7 +26,7 @@ public class ExtentReportManager {
     private static int knownIssueCount = 0;
     // ─────────────────────────────────────────────────────────────────────────────
 
-    public static void initReport() {
+    public static synchronized void initReport() {
         if (extent == null) {
             startTime = System.currentTimeMillis();
 
@@ -76,7 +76,10 @@ public class ExtentReportManager {
         }
     }
 
-    public static void createTest(String testName) {
+    public static synchronized void createTest(String testName) {
+        if (extent == null) {
+            initReport();
+        }
         testHolder.set(extent.createTest(testName));
     }
 
