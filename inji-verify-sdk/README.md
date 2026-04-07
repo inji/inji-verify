@@ -396,6 +396,13 @@ presentationDefinition={{
 | `qrCodeStyles`           | object   | -              | Customize QR code appearance              |
 | `vpVerificationRequest`  | object   | -       | contains request body for vp verification |
 
+> **Note**
+>
+> - `isSameDeviceFlowEnabled` controls how verification is initiated.
+> - Default: `true` (same-device flow). On mobile, the wallet is opened via deep link.
+> - On desktop, same-device flow requires `webWalletBaseUrl` (web wallet redirect).
+> - Set to `false` for cross-device flow (QR code is shown for scanning from another device).
+
 ## ⚠️ Important Limitations
 
 - **React Only:** Won't work with Angular, Vue, or React Native
