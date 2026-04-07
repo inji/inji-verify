@@ -689,6 +689,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     return () => {
       cancelled = true;
       cancelAnimationFrame(rafId);
+      clearTimer();
       stopVideoStreamRef.current();
     };
   }, [scannerActive, startScanning, activeFlow, hasTrigger]);
@@ -834,7 +835,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
             )}
           </div>
         )}
-        {isEnableUpload && !hasTrigger && (
+        {isEnableUpload && (!hasTrigger || activeFlow === "inline") && (
           <div
             className={`upload-container ${
               shouldEnableZoom ? "fixed-enabled" : "default"
@@ -855,7 +856,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
             />
           </div>
         )}
-        {isEnableUpload && hasTrigger && (
+        {isEnableUpload && hasTrigger && activeFlow !== "inline" && (
           <input
             ref={fileInputRef}
             type="file"
