@@ -520,7 +520,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     }
 
     if (isEnableUpload) {
-      const fileInput = fileInputRef.current || document.getElementById(uploadButtonId || "upload-qr") as HTMLInputElement;
+      const fileInput = fileInputRef.current;
       if (fileInput) {
         fileInput.click();
       }
@@ -854,7 +854,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
               ref={fileInputRef}
               type="file"
               id={uploadButtonId || "upload-qr"}
-              
+
               name={uploadButtonId || "upload-qr"}
               accept={acceptedFileTypes}
               className={`upload-button ${
