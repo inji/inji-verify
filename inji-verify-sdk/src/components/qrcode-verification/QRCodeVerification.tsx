@@ -71,7 +71,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const startingRef = useRef(false);
   const shouldEnableZoom = isEnableZoom && isMobile;
   const hasFetchedVPResultRef = useRef(false);
-  const triggerButtonRef = useRef<HTMLButtonElement>(null);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileDialogOpenRef = useRef(false);
 
