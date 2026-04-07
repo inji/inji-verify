@@ -1,8 +1,11 @@
 package io.inji.verify.utils;
 
 import com.upokecenter.cbor.CBORObject;
+import io.inji.verify.dto.verification.StatusCheckDto;
 import io.inji.verify.exception.InvalidCredentialException;
+import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
+import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import org.junit.jupiter.api.Test;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
@@ -83,23 +86,23 @@ public class UtilsTest {
 
     @Test
     void testExcludeMetaClaimsCoverage() throws Exception {
-            Method method = Utils.class.getDeclaredMethod("excludeMetaClaims", List.class, Map.class);
-            method.setAccessible(true);
+        Method method = Utils.class.getDeclaredMethod("excludeMetaClaims", List.class, Map.class);
+        method.setAccessible(true);
 
-            Map<String, Object> claims = new HashMap<>();
-            claims.put("stay", "safe");
-            claims.put("remove", "meta");
+        Map<String, Object> claims = new HashMap<>();
+        claims.put("stay", "safe");
+        claims.put("remove", "meta");
 
-            assertDoesNotThrow(() -> method.invoke(null, null, claims));
+        assertDoesNotThrow(() -> method.invoke(null, null, claims));
 
-            List<String> metaWithNull = Collections.singletonList(null);
-            assertDoesNotThrow(() -> method.invoke(null, metaWithNull, claims));
+        List<String> metaWithNull = Collections.singletonList(null);
+        assertDoesNotThrow(() -> method.invoke(null, metaWithNull, claims));
 
-            List<String> validMeta = List.of("  remove  ");
-            method.invoke(null, validMeta, claims);
+        List<String> validMeta = List.of("  remove  ");
+        method.invoke(null, validMeta, claims);
 
-            assertFalse(claims.containsKey("remove"), "Claim should be removed");
-            assertEquals(1, claims.size());
+        assertFalse(claims.containsKey("remove"), "Claim should be removed");
+        assertEquals(1, claims.size());
 
     }
 
@@ -165,5 +168,104 @@ public class UtilsTest {
 
         assertNotNull(result);
         assertEquals("123", result.get(CBORObject.FromObject("sub")).AsString());
+    }
+
+    @Test
+    void populateStatusCheckDtoList_shouldReturnEmptyList_whenInputIsNull() {
+        List<StatusCheckDto> result = Utils.populateStatusCheckDtoList(null);
+        assertNotNull(result);
+        assertTrue(result.isEmpty());
+    }
+
+    @Test
+    void populateStatusCheckDtoList_shouldHandleNullCredentialStatusResult() {
+        Map<String, CredentialStatusResult> map = new HashMap<>();
+        map.put("revocation", null);
+
+        List<StatusCheckDto> result = Utils.populateStatusCheckDtoList(map);
+
+        assertEquals(1, result.size());
+
+        StatusCheckDto dto = result.get(0);
+        assertEquals("revocation", dto.getPurpose());
+        assertFalse(dto.isValid());
+        assertNotNull(dto.getError());
+        assertEquals("NULL_STATUS_RESULT", dto.getError().getErrorCode());
+        assertEquals("Credential status result was null.", dto.getError().getErrorMessage());
+    }
+
+    @Test
+    void populateStatusCheckDtoList_shouldHandleValidResult_withoutError() {
+        CredentialStatusResult mockResult = mock(CredentialStatusResult.class);
+        when(mockResult.isValid()).thenReturn(true);
+        when(mockResult.getError()).thenReturn(null);
+
+        Map<String, CredentialStatusResult> map = Map.of("revocation", mockResult);
+
+        List<StatusCheckDto> result = Utils.populateStatusCheckDtoList(map);
+
+        assertEquals(1, result.size());
+
+        StatusCheckDto dto = result.get(0);
+        assertEquals("revocation", dto.getPurpose());
+        assertTrue(dto.isValid());
+        assertNull(dto.getError());
+    }
+
+
+    @Test
+    void extractClaims_shouldCallLdpBranch() {
+        String jsonCredential = "{ \"credentialSubject\": { \"name\": \"John\" } }";
+
+        Map<String, Object> result = Utils.extractClaims(
+                jsonCredential,
+                CredentialFormat.LDP_VC,
+                null,
+                null
+        );
+
+        assertNotNull(result);
+        assertEquals("John", result.get("name"));
+    }
+
+    @Test
+    void extractClaims_shouldCallCwtBranch() {
+        String credential = "dummyCwt";
+        List<String> metaClaims = List.of("meta");
+
+        Map<String, Object> expected = Map.of("id", "123");
+
+        PixelPass pixelPass = mock(PixelPass.class);
+
+        try (var mockedUtils = mockStatic(Utils.class, CALLS_REAL_METHODS)) {
+
+            mockedUtils.when(() ->
+                    Utils.extractCwtClaims(credential, pixelPass, metaClaims)
+            ).thenReturn(expected);
+
+            Map<String, Object> result = Utils.extractClaims(
+                    credential,
+                    CredentialFormat.CWT_VC,
+                    metaClaims,
+                    pixelPass
+            );
+
+            assertEquals(expected, result);
+        }
+    }
+
+    @Test
+    void extractClaims_shouldReturnLdpClaims() {
+        String json = "{ \"credentialSubject\": { \"name\": \"John\" } }";
+
+        Map<String, Object> result = Utils.extractClaims(
+                json,
+                CredentialFormat.LDP_VC,
+                null,
+                null
+        );
+
+        assertNotNull(result);
+        assertEquals("John", result.get("name"));
     }
 }
