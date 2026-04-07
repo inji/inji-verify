@@ -212,6 +212,89 @@ If summariseResults=false, then response should be
 | `statusChecks.valid`      | boolean | ❌       | If false for revocation → credential is revoked           |
 | `allChecksSuccessful`     | boolean | ✅       | Final aggregated validation flag                          |
 
+### OpenID4VPVerification Methods
+> - `isSameDeviceFlowEnabled` controls how verification is initiated.
+> - Default: `true` (same-device flow). On mobile, the wallet is opened via deep link.
+> - On desktop, same-device flow requires `webWalletBaseUrl` (web wallet redirect).
+> - Set to `false` for cross-device flow (QR code is shown for scanning from another device).
+
+#### 1. Same Device Flow (Recommended Default)
+```javascript
+import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
+export default function VerifySameDevice() {
+    return (
+        <OpenID4VPVerification
+            verifyServiceUrl="https://verify.example.com"
+            clientId="my-rp-client-id"
+            presentationDefinitionId="drivers-license-check"
+            isSameDeviceFlowEnabled={true}
+            webWalletBaseUrl="https://wallet.example.com" // required for desktop same-device
+            onVPProcessed={(result) => {
+                console.log("VP processed:", result);
+            }}
+            onQrCodeExpired={() => {
+                console.log("QR expired");
+            }}
+            onError={(error) => {
+                console.error("Verification error:", error);
+            }}
+            triggerElement={<button>Verify with Wallet</button>}
+        />
+    );
+}
+```
+
+#### 2. Cross-device flow (QR scan from another device)
+```javascript
+import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
+export default function VerifyCrossDevice() {
+    return (
+        <OpenID4VPVerification
+            verifyServiceUrl="https://verify.example.com"
+            clientId="my-rp-client-id"
+            presentationDefinitionId="drivers-license-check"
+            isSameDeviceFlowEnabled={false} // QR flow
+            onVPProcessed={(result) => {
+                console.log("VP processed:", result);
+            }}
+            onQrCodeExpired={() => {
+                console.log("QR expired - ask user to retry");
+            }}
+            onError={(error) => {
+                console.error("Verification error:", error);
+            }}
+            triggerElement={<button>Show QR for Wallet Scan</button>}
+        />
+    );
+}
+```
+
+#### 3. Server-to-server callback style (onVPReceived)
+```javascript
+import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
+export default function VerifyServerToServer() {
+    return (
+        <OpenID4VPVerification
+            verifyServiceUrl="https://verify.example.com"
+            clientId="my-rp-client-id"
+            presentationDefinitionId="drivers-license-check"
+            isSameDeviceFlowEnabled={false}
+            onVPReceived={(transactionId) => {
+                // send txnId to your backend, backend fetches /vp-result securely
+                console.log("VP received txnId:", transactionId);
+            }}
+            onQrCodeExpired={() => {
+                console.log("QR expired");
+            }}
+            onError={(error) => {
+                console.error("Verification error:", error);
+            }}
+            triggerElement={<button>Start Verification</button>}
+        />
+    );
+}
+```
+
 > **Security Recommendation**
 >
 > Avoid consuming results directly from VPProcessed or VCProcessed.
@@ -395,13 +478,6 @@ presentationDefinition={{
 | `isSameDeviceFlowEnabled` | boolean  | true           | Enable same-device flow (optional)        |
 | `qrCodeStyles`           | object   | -              | Customize QR code appearance              |
 | `vpVerificationRequest`  | object   | -       | contains request body for vp verification |
-
-> **Note**
->
-> - `isSameDeviceFlowEnabled` controls how verification is initiated.
-> - Default: `true` (same-device flow). On mobile, the wallet is opened via deep link.
-> - On desktop, same-device flow requires `webWalletBaseUrl` (web wallet redirect).
-> - Set to `false` for cross-device flow (QR code is shown for scanning from another device).
 
 ## ⚠️ Important Limitations
 
