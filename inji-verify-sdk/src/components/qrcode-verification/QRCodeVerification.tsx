@@ -319,13 +319,13 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
       fileDialogOpenRef.current = false;
-      clearTimer();
-      stopVideoStream();
       const file = e.target?.files?.[0];
       if (!file || !doFileChecks(file)) {
         e.target.value = "";
         return;
       }
+      clearTimer();
+      stopVideoStream();
       setUploading(true);
       const result: scanResult = await scanFilesForQr(file);
       if (result.error) throw result.error;
@@ -756,11 +756,20 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       {hasTrigger && !isUploading && !isScanning && !isLoading && activeFlow === null && (
         <div
           className="cursor-pointer"
+          role="button"
+          tabIndex={0}
           onClick={(e) => {
             // Avoid accidental form submit when triggerElement is a <button>.
             e.preventDefault();
             e.stopPropagation();
             handleTriggerClick();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              handleTriggerClick();
+            }
           }}
         >
           {triggerElement}
@@ -845,6 +854,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
               ref={fileInputRef}
               type="file"
               id={uploadButtonId || "upload-qr"}
+              
               name={uploadButtonId || "upload-qr"}
               accept={acceptedFileTypes}
               className={`upload-button ${
