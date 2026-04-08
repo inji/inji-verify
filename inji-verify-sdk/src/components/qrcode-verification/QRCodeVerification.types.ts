@@ -18,7 +18,8 @@ type ExclusiveCallbacks =
 export type QRCodeVerificationProps = ExclusiveCallbacks & {
   /**
    * React element that triggers the verification process (e.g., a button).
-   * If not provided, the component may automatically start the process.
+   * When set, the default file upload control is not shown; upload runs via this trigger.
+   * If omitted, the visible file input is shown (when upload is enabled).
    */
   triggerElement?: React.ReactNode;
 
