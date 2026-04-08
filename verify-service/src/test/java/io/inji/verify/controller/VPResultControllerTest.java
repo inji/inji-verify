@@ -110,7 +110,7 @@ public class VPResultControllerTest {
         when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId)).thenThrow(new VPWithoutProofException());
 
         mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
-                        .contentType(MediaType.APPLICATION_JSON))
+                .contentType(MediaType.APPLICATION_JSON))
                 .andExpect(status().isInternalServerError())
                 .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF))));
 
@@ -199,7 +199,7 @@ public class VPResultControllerTest {
     }
 
     @Test
-    void testGetVPResultV2_NotFound_WhenRequestIdsEmpty() throws Exception {
+    void testGetVPResultV2_shouldReturnNotFound_WhenRequestIdsEmpty() throws Exception {
         String transactionId = "txn404";
 
         VerificationRequestDto request = new VerificationRequestDto();
@@ -247,7 +247,7 @@ public class VPResultControllerTest {
     }
 
     @Test
-    void testGetVPSessionResults_MissingCookie() throws Exception {
+    void testGetVPSessionResults_shouldReturnUnauthorized_whenMissingCookie() throws Exception {
 
         mockMvc.perform(post("/vp-session-results")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -256,7 +256,7 @@ public class VPResultControllerTest {
     }
 
     @Test
-    void testGetVPSessionResults_EmptyCookie() throws Exception {
+    void testGetVPSessionResults_shouldReturnUnauthorized_whenEmptyCookie() throws Exception {
 
         mockMvc.perform(post("/vp-session-results")
                         .contentType(MediaType.APPLICATION_JSON)
@@ -266,7 +266,7 @@ public class VPResultControllerTest {
     }
 
     @Test
-    void testGetVPSessionResults_RequestIdsEmpty() throws Exception {
+    void testGetVPSessionResults_shouldReturn_isNotFound_whenRequestIdsEmpty() throws Exception {
         String transactionId = "txn404";
         String encodedCookie = Base64.getEncoder().encodeToString(transactionId.getBytes());
 
@@ -301,7 +301,7 @@ public class VPResultControllerTest {
     }
 
     @Test
-    void testGetVPResult_ResponseCodeException() throws Exception {
+    void testGetVPResult_shouldReturnBadRequest_whenResponseCodeException() throws Exception {
         String transactionId = "tx_resp_code";
         List<String> requestIds = List.of("req123");
 
