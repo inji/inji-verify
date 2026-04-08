@@ -11,7 +11,12 @@ import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPResultStatus;
-import io.inji.verify.exception.*;
+import io.inji.verify.exception.InvalidVpTokenException;
+import io.inji.verify.exception.TokenMatchingFailedException;
+import io.inji.verify.exception.VPSubmissionNotFoundException;
+import io.inji.verify.exception.VPSubmissionWalletError;
+import io.inji.verify.exception.VPWithoutProofException;
+import io.inji.verify.exception.ResponseCodeException;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -26,7 +31,9 @@ import java.util.ArrayList;
 import java.util.List;
 import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.get;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.*;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.cookie;
 
 
 public class VPResultControllerTest {
