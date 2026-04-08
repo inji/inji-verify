@@ -66,6 +66,7 @@
 .scan-container.no-zoom {
   width: 100%;
   max-width: 28rem;
+  min-height: 12rem;
   margin-left: auto;
   margin-right: auto;
   aspect-ratio: 1 / 1;
@@ -196,4 +197,17 @@
 .upload-button-default {
   background-color: #d1d5db;
   color: black;
+}
+
+/* Programmatic upload when triggerElement is set; keeps native file picker working */
+.upload-input-hidden {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  padding: 0;
+  margin: -1px;
+  overflow: hidden;
+  clip: rect(0, 0, 0, 0);
+  white-space: nowrap;
+  border: 0;
 }
