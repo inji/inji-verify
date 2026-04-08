@@ -36,11 +36,12 @@ describe("QRCodeVerification", () => {
         {...baseProps}
         scannerActive={false}
         isEnableScan={false}
+        isEnableUpload={true}
       />
     );
-
+  
     expect(
-      screen.getByRole("button", { name: "Verify VC" })
+      screen.getAllByRole("button", { name: "Verify VC" })[0]
     ).toBeInTheDocument();
   });
 
