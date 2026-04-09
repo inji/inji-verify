@@ -44,6 +44,8 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 public class BaseTest extends BaseTestUtil{
 	private static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
@@ -56,6 +58,8 @@ public class BaseTest extends BaseTestUtil{
 	public static final AtomicInteger passedCount = new AtomicInteger(0);
 	public static final AtomicInteger failedCount = new AtomicInteger(0);
 	public static final AtomicInteger totalCount = new AtomicInteger(0);
+	private static final ConcurrentMap<String, String> scenarioHookStatuses = new ConcurrentHashMap<>();
+	private static final AtomicBoolean reportsPushed = new AtomicBoolean(false);
 
 	// ── Known Issues ──────────────────────────────────────────────────────────────
 	public static final AtomicInteger knownIssueCount = new AtomicInteger(0);
@@ -301,10 +305,12 @@ public class BaseTest extends BaseTestUtil{
 
 		if (scenario.isFailed()) {
 			failedCount.incrementAndGet();
+			recordScenarioHookStatus(scenario.getName(), "FAILED");
 			attachLocalFailureScreenshotIfNeeded();
 			ExtentReportManager.getTest().fail("❌ Scenario Failed: " + scenario.getName());
 		} else {
 			passedCount.incrementAndGet();
+			recordScenarioHookStatus(scenario.getName(), "PASSED");
 			ExtentReportManager.getTest().pass("✅ Scenario Passed: " + scenario.getName());
 		}
 
@@ -500,15 +506,7 @@ public class BaseTest extends BaseTestUtil{
 		} catch (Exception e) {
 			logger.error("Failed to clean shared insurance artifacts at suite end", e);
 		}
-
-		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-			logger.info("Shutdown hook triggered. Uploading report...");
-			if (extent != null) {
-				extent.flush();
-			}
-			pushReportsToS3();
-		}));
-
+		pushReportsOnce();
 	}
 
 	public WebDriver getDriver() {
@@ -672,7 +670,10 @@ public class BaseTest extends BaseTestUtil{
 	public static void pushReportsToS3() {
 
 		String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date());
-		String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-" + timestamp + "-T-" + totalCount.get() + "-P-" + passedCount.get() + "-F-" + failedCount.get() + ".html";
+		int finalTotalCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getTotalCount() : totalCount.get();
+		int finalPassedCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getPassedCount() : passedCount.get();
+		int finalFailedCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getFailedCount() : failedCount.get();
+		String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-" + timestamp + "-T-" + finalTotalCount + "-P-" + finalPassedCount + "-F-" + finalFailedCount + ".html";
 		String newFileName = "InjiVerifyUi-" + name;
 		File originalReportFile = new File(System.getProperty("user.dir") + "/test-output/ExtentReport.html");
 		File newReportFile = new File(System.getProperty("user.dir") + "/test-output/" + newFileName);
@@ -738,6 +739,31 @@ public class BaseTest extends BaseTestUtil{
 		return !scenario.getSourceTagNames().contains("@camera_denied")
 				&& !scenario.getSourceTagNames().contains("@verifyFirstTimeScanQrCodePermissionPrompt")
 				&& !scenario.getSourceTagNames().contains("@verifyScanQrCodeWithAllowedCameraAccess");
+	}
+
+	public static void recordScenarioHookStatus(String scenarioName, String status) {
+		if (scenarioName == null || scenarioName.trim().isEmpty() || status == null || status.trim().isEmpty()) {
+			return;
+		}
+		scenarioHookStatuses.put(scenarioName, status);
+	}
+
+	public static String getScenarioHookStatus(String scenarioName) {
+		if (scenarioName == null || scenarioName.trim().isEmpty()) {
+			return null;
+		}
+		return scenarioHookStatuses.get(scenarioName);
+	}
+
+	public static void clearScenarioHookStatuses() {
+		scenarioHookStatuses.clear();
+	}
+
+	private static void pushReportsOnce() {
+		if (!reportsPushed.compareAndSet(false, true)) {
+			return;
+		}
+		pushReportsToS3();
 	}
 
 }

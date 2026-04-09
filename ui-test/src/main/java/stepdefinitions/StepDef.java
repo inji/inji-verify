@@ -2906,7 +2906,7 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 		Assert.assertTrue(homePage.isUploadIconIsVisible());
 	}
 
-        @When("Verify if name value is present in arabic")
+    @When("Verify if name value is present in arabic")
     public void verifyIfNameValueIsPresentInArabic() {
         try {
             String actualLabel = homePage.getNameValueInArabic();

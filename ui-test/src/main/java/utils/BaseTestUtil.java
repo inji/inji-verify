@@ -9,8 +9,10 @@ import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.net.URI;
 import java.nio.file.Files;
+import java.nio.file.StandardCopyOption;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 import javax.imageio.ImageIO;
 
@@ -34,6 +36,9 @@ public class BaseTestUtil {
     private static final String LOCAL_DOWNLOADS_DIR = RUNTIME_MEDIA_DIR + File.separator + "downloads";
     private static final String RUNTIME_SCAN_IMAGE_NAME = "ScanQrCode-runtime.png";
     private static final String RUNTIME_SCAN_PREVIEW_IMAGE_NAME = "ScanQrCode-runtime-preview.png";
+    private static final String SHARED_SCAN_MEDIA_DIR = RUNTIME_MEDIA_DIR + File.separator + "shared-scan-media";
+    private static final Object sharedScanMediaLock = new Object();
+    private static final Map<String, String> generatedSharedScanVideos = new ConcurrentHashMap<>();
 
     public JSONObject readConfig(Class<?> obj, String environment) {
         try {
@@ -144,21 +149,11 @@ public class BaseTestUtil {
         refreshRuntimeScanImages();
         File sourceImage = findScanVideoSourceImage();
         String cameraProfile = getScanCameraProfile();
-        File outputDir = getRuntimeMediaDirectory();
-
-        if (!outputDir.exists() && !outputDir.mkdirs()) {
-            throw new RuntimeException("Unable to create runtime media directory: " + outputDir.getAbsolutePath());
-        }
-
-        String baseName = sourceImage.getName().replace('.', '_') + "-" + cameraProfile;
-        File y4mFile = new File(outputDir, baseName + "-runtime.y4m");
-
         try {
-            writeY4mFile(sourceImage, y4mFile, cameraProfile);
-            logger.info("Generated Y4M file for scan mode: {}", y4mFile.getAbsolutePath());
+            File y4mFile = resolveSharedScanVideo(sourceImage, cameraProfile);
             return y4mFile.getAbsolutePath();
         } catch (IOException e) {
-            throw new RuntimeException("Failed to generate Y4M file from " + sourceImage.getAbsolutePath(), e);
+            throw new RuntimeException("Failed to prepare Y4M file from " + sourceImage.getAbsolutePath(), e);
         }
     }
 
@@ -399,6 +394,9 @@ public class BaseTestUtil {
     }
 
     protected String resolveScanQrCodeFile(Scenario scenario) {
+        if (scenario.getSourceTagNames().contains("@offlineScan")) {
+            return "src/test/resources/QRCodes/QRCode.png";
+        }
         if (scenario.getSourceTagNames().contains("@qr_valid")) {
             return generateRuntimeScanQrCodeFromInsuranceCredential();
         }
@@ -432,6 +430,48 @@ public class BaseTestUtil {
             throw new RuntimeException("Unable to create runtime media directory: " + outputDir.getAbsolutePath());
         }
         return outputDir;
+    }
+
+    private File resolveSharedScanVideo(File sourceImage, String cameraProfile) throws IOException {
+        File sharedDir = new File(System.getProperty("user.dir"), SHARED_SCAN_MEDIA_DIR);
+        Files.createDirectories(sharedDir.toPath());
+
+        String cacheKey = buildScanVideoCacheKey(sourceImage, cameraProfile);
+        String cachedPath = generatedSharedScanVideos.get(cacheKey);
+        if (cachedPath != null) {
+            File cachedFile = new File(cachedPath);
+            if (cachedFile.exists() && cachedFile.length() > 0) {
+                return cachedFile;
+            }
+            generatedSharedScanVideos.remove(cacheKey);
+        }
+
+        synchronized (sharedScanMediaLock) {
+            cachedPath = generatedSharedScanVideos.get(cacheKey);
+            if (cachedPath != null) {
+                File cachedFile = new File(cachedPath);
+                if (cachedFile.exists() && cachedFile.length() > 0) {
+                    return cachedFile;
+                }
+                generatedSharedScanVideos.remove(cacheKey);
+            }
+
+            String safeBaseName = sourceImage.getName().replace('.', '_') + "-" + cameraProfile + "-" + Integer.toHexString(cacheKey.hashCode());
+            File targetFile = new File(sharedDir, safeBaseName + ".y4m");
+            if (!targetFile.exists() || targetFile.length() == 0) {
+                File tempFile = new File(sharedDir, safeBaseName + ".tmp");
+                writeY4mFile(sourceImage, tempFile, cameraProfile);
+                Files.move(tempFile.toPath(), targetFile.toPath(), StandardCopyOption.REPLACE_EXISTING, StandardCopyOption.ATOMIC_MOVE);
+                logger.info("Generated shared Y4M file for scan mode: {}", targetFile.getAbsolutePath());
+            }
+
+            generatedSharedScanVideos.put(cacheKey, targetFile.getAbsolutePath());
+            return targetFile;
+        }
+    }
+
+    private String buildScanVideoCacheKey(File sourceImage, String cameraProfile) {
+        return sourceImage.getAbsolutePath() + "|" + sourceImage.lastModified() + "|" + sourceImage.length() + "|" + cameraProfile;
     }
 
     private File findPrimaryInsuranceCredentialImage(File outputDir) {

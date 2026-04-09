@@ -3,6 +3,7 @@
 <suite name="Cucumber Test Suite">
     <listeners>
         <listener class-name="utils.ParallelConfigListener"/>
+        <listener class-name="utils.FinalResultListener"/>
     </listeners>
     <test name="Cucumber Tests">
         <classes>

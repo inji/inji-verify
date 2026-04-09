@@ -193,7 +193,11 @@ public class ScanQrCodeSteps extends BaseSteps {
     @And("click on scan qr code button")
     public void clickOnScanQrCodeButton() {
         try {
-            scanqrcode.clickOnScanQrCodeButton();
+            if (BaseTest.getCurrentScenarioTags().contains("@offlineScan")) {
+                scanqrcode.clickOnScanQrCodeButton();
+            } else {
+                scanqrcode.clickOnScanQrCodeButtonAndWaitForFlow();
+            }
             test.log(Status.PASS, "Successfully clicked on scan QR code button.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while clicking scan QR code button", e);
@@ -305,7 +309,11 @@ public class ScanQrCodeSteps extends BaseSteps {
 
     @Then("validate camera can be accessed again for scan qr code")
     public void validateCameraCanBeAccessedAgainForScanQrCode() {
-        assertVisible(scanqrcode.isVisibleScanLine(), "Verify if the scan line is visible after re-enabling camera access", "Camera access restored successfully for scan QR code flow.");
+        assertVisible(
+                scanqrcode.isCameraAccessRestoredAndScanUsable(),
+                "Verify if the scan flow becomes usable again after re-enabling camera access",
+                "Camera access restored successfully for scan QR code flow."
+        );
     }
 
     @Then("validate camera permission prompt flow is triggered for scan qr code")

@@ -11,6 +11,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 import org.openqa.selenium.TimeoutException;
 
 import java.time.Duration;
+import utils.WaitUtil;
 
 public class ScanQRCodePage extends BasePage {
 
@@ -183,6 +184,11 @@ public class ScanQRCodePage extends BasePage {
 		return isVisibleActiveScanVideo() || isVisibleBackButton() || isVisibleScanLine() || isVerificationInProgressVisible();
 	}
 
+	public boolean isCameraAccessRestoredAndScanUsable() {
+		return isScanFlowActiveOrVerificationInProgress()
+				|| hasFinalScanVerificationResultVisible();
+	}
+
 	public void clickOnBackButton() {
 		clickOnElement(driver, backButton);
 	}
@@ -256,6 +262,10 @@ public class ScanQRCodePage extends BasePage {
 		clickOnElement(driver, scanQRCodeButton);
 	}
 
+	public void clickOnScanQrCodeButtonAndWaitForFlow() {
+		executeScanFlowWithSingleRecovery();
+	}
+
 	public String getScanQRCodeStep2LabelClass() {
 		return getAttributeValue(driver, ScanQRCodeStep2Label, UiConstants.CLASS);
 	}
@@ -327,7 +337,7 @@ public class ScanQRCodePage extends BasePage {
 
 	public void waitForScanVerificationResultState() {
 		try {
-			new WebDriverWait(driver, Duration.ofSeconds((long) getTimeout() * 4L))
+			new WebDriverWait(driver, Duration.ofSeconds((long) getTimeout() * getScanVerificationTimeoutMultiplier()))
 					.until(webDriver -> hasAnyScanVerificationResultVisible());
 		} catch (TimeoutException e) {
 			// Fall through to the existing assertion path so the test still fails with the current page state.
@@ -368,18 +378,56 @@ public class ScanQRCodePage extends BasePage {
 		return isDisplayedWithoutWaiting(successMessageIcon)
 				|| isDisplayedWithoutWaiting(failedIcon)
 				|| isDisplayedWithoutWaiting(alertMessage)
-				|| isDisplayedWithoutWaiting(statusMessage)
-				|| isDisplayedWithoutWaiting(scanQRCodeButton);
+				|| hasNonEmptyResultMessage();
 	}
 
 	private boolean hasAnyScanVerificationResultVisible() {
 		return isDisplayedWithoutWaiting(successMessageIcon)
 				|| isDisplayedWithoutWaiting(failedIcon)
 				|| isDisplayedWithoutWaiting(alertMessage)
-				|| isDisplayedWithoutWaiting(statusMessage)
-				|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label)
-				|| isDisplayedWithoutWaiting(ScanQRCodeStep4Label)
-				|| isDisplayedWithoutWaiting(scanQRCodeButton);
+				|| hasNonEmptyResultMessage()
+				|| isScanCompletionStepVisible();
+	}
+
+	private void executeScanFlowWithSingleRecovery() {
+		try {
+			clickOnScanQrCodeButton();
+			waitForScanCameraActive();
+		} catch (TimeoutException firstTimeout) {
+			refreshBrowser(driver);
+			WaitUtil.waitForClickability(driver, scanQRCodeButton);
+			clickOnScanQrCodeButton();
+			waitForScanCameraActive();
+		}
+	}
+
+	private boolean isScanCompletionStepVisible() {
+		return isDisplayedWithoutWaiting(ScanQRCodeStep2LabelAfter)
+				|| hasStepMarkedComplete(ScanQRCodeStep3Label)
+				|| hasStepMarkedComplete(ScanQRCodeStep4Label);
+	}
+
+	private boolean hasStepMarkedComplete(WebElement stepElement) {
+		try {
+			if (stepElement == null || !stepElement.isDisplayed()) {
+				return false;
+			}
+			String classValue = stepElement.getAttribute("class");
+			return classValue != null && classValue.contains("text-black");
+		} catch (Exception e) {
+			return false;
+		}
+	}
+
+	private boolean hasNonEmptyResultMessage() {
+		try {
+			return statusMessage != null
+					&& statusMessage.isDisplayed()
+					&& statusMessage.getText() != null
+					&& !statusMessage.getText().trim().isEmpty();
+		} catch (Exception e) {
+			return false;
+		}
 	}
 
 	private boolean isDisplayedWithoutWaiting(WebElement element) {

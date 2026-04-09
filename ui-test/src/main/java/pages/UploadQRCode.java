@@ -63,7 +63,7 @@ public class UploadQRCode extends BasePage {
 	@FindBy(xpath = "//button[@type='button' and contains(normalize-space(.), 'Français')]")
 	WebElement frenchLanguageButton;
 
-	@FindBy(xpath = "//li[@data-testid='Language-Selector-DropDown-Item-ar']//button[contains(text(),'عربي')]")
+	@FindBy(xpath = "//p[@data-testid='Language-Selector-Selected-DropDown-ar']")
 	WebElement arabicLanguageSelected;
 
 	@FindBy(xpath = "//button[@type='button' and contains(normalize-space(.), 'Français')]")

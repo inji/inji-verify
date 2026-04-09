@@ -78,7 +78,7 @@ Feature: Inji Verify scan qr code camera testing
     And click on scan qr code button
     Then validate that QR code is scanned successfully
 
-  @negative @offlineScan @withoutBrowserstack @scan @qr_valid @needsInsuranceArtifacts
+  @negative @offlineScan @withoutBrowserstack @scan
   Scenario: Verify the scan for valid qr code when internet is unavailable
     And turn off internet connection
     And click on scan qr code button
