@@ -492,10 +492,10 @@ paths:
         ----
         ## Client ID and Nonce Validations
 
-        - The verifier backend validates if the `challenge` and `domain` attributes present in the `proof` section of the `VerifiablePresentation` match the `nonce` and `client_id` in the corresponding **Authorization Request** or not. 
-        - If the `nonce` validation fails, then the endpoint return **400 Bad Request** status with `errorCode` as `invalid_request` and `errorMessage` as **"Nonce validation failed due to invalid nonce"**.
-        - If the `client_id` validation fails, then the endpoint return **400 Bad Request** status with `errorCode` as `invalid_request` and `errorMessage` as **"Client id validation failed due to invalid client id"**.
-        - This validation is done only if `acceptVPWithoutHolderProof` is `false` in in the corresponding **Authorization Request**.
+        - The verifier backend validates whether the `challenge` and `domain` attributes in the `proof` section of the `VerifiablePresentation` match the `nonce` and `client_id` in the corresponding **Authorization Request**.
+        - If the `nonce` validation fails, then the endpoint returns **400 Bad Request** status with `errorCode` as `invalid_request` and `errorMessage` as **"Nonce validation failed due to invalid nonce"**.
+        - If the `client_id` validation fails, then the endpoint returns **400 Bad Request** status with `errorCode` as `invalid_request` and `errorMessage` as **"Client id validation failed due to invalid client id"**.
+        - This validation is done only if `acceptVPWithoutHolderProof` is `false` in the corresponding **Authorization Request**.
         - This validation is done only for LDP_VP.
 
         ---
