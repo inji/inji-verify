@@ -1,0 +1,11 @@
+{
+  "cookie": "{{cookie}}",
+  "skipStatusChecks": {{skipStatusChecks}},
+  "statusCheckFilters": [
+    {{#each statusCheckFilters}}
+      "{{this}}"{{#unless @last}},{{/unless}}
+    {{/each}}
+  ],
+  "includeClaims": {{includeClaims}},
+  "responseCode": "{{responseCode}}"
+}

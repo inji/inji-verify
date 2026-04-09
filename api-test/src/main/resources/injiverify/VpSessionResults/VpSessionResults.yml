@@ -1,0 +1,224 @@
+VpSessionResults:
+  Injiverify_VpSessionResults_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results with valid data
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_01
+      role: userDefinedCookie
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "$RESPONSE_CODE$",
+      "cookie": "$TRANSACTION_COOKIE_TRUE$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+  Injiverify_VpSessionResults_Valid_withoutResponseCode_Smoke:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results without response code optional field
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_02
+      role: userDefinedCookie
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "skipStatusChecks": true,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "cookie": "$TRANSACTION_COOKIE_FALSE$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+  Injiverify_VpSessionResults_Invalid_withoutCookie_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results without cookie
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_03
+      role: userDefinedCookie
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "$RESPONSE_CODE$"
+      }'
+      output: '{
+        "errorCode": "VP_SESSION_INVALID",
+        "errorMessage": "Your VP verification session is invalid. Please restart the process and try again"
+}'
+  Injiverify_VpSessionResults_Invalid_invalidCookie_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results with invalid cookie
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_04
+      role: userDefinedCookie
+      restMethod: post
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "$RESPONSE_CODE$",
+      "cookie": "invalidCookie"
+      }'
+      output: '{
+        "errorCode": "VP_SESSION_INVALID",
+        "errorMessage": "Your VP verification session is invalid. Please restart the process and try again"
+}'
+  Injiverify_VpSessionResults_Invalid_invalidResponseCode_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results with invalid response code
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_05
+      role: userDefinedCookie
+      restMethod: post
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "invalid",
+      "cookie": "$TRANSACTION_COOKIE_TRUE$"
+      }'
+      output: '{
+        "errorCode": "RESPONSE_CODE_NOT_MATCHING",
+        "errorMessage": "Response code is not matching the VP Submission response"
+}'
+  Injiverify_VpSessionResults_Invalid_withoutResponseCode_whenValidationRequired_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results without response code when validation required is true
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_06
+      role: userDefinedCookie
+      restMethod: post
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "cookie": "$TRANSACTION_COOKIE_TRUE$"
+      }'
+      output: '{
+        "errorCode": "RESPONSE_CODE_NOT_MATCHING",
+        "errorMessage": "Response code is not matching the VP Submission response"
+}'
+  Injiverify_VpSessionResults_Invalid_usedResponseCode_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results with used response code
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_07
+      role: userDefinedCookie
+      restMethod: post
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "6e3eb198-3599-490d-b481-f24f7165f5f9",
+      "cookie": "$TRANSACTION_COOKIE_TRUE$"
+      }'
+      output: '{
+        "errorCode": "RESPONSE_CODE_NOT_MATCHING",
+        "errorMessage": "Response code is not matching the VP Submission response"
+}'
+  Injiverify_VpSessionResults_Invalid_expiredResponseCode_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results with expired response code
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_08
+      role: userDefinedCookie
+      restMethod: post
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "003d94ba0c98-e445-4e61-ab8d-dc63d3df3685",
+      "cookie": "$TRANSACTION_COOKIE_TRUE$"
+      }'
+      output: '{
+        "errorCode": "RESPONSE_CODE_NOT_MATCHING",
+        "errorMessage": "Response code is not matching the VP Submission response"
+}'
+  Injiverify_VpSessionResults_Invalid_expiredCookie_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results with expired cookie
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_09
+      role: userDefinedCookie
+      restMethod: post
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "$RESPONSE_CODE$",
+      "cookie": "transaction_id=dHhuX2RkNWNmMDkyLWI0NTAtNGM0Ni1iYjMxLTFkOGFhYmJjYzFlNQ=="
+      }'
+      output: '{
+        "errorCode": "RESPONSE_CODE_NOT_MATCHING",
+        "errorMessage": "Response code is not matching the VP Submission response"
+}'
+  Injiverify_VpSessionResults_Invalid_beforeVpSubmission_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results with cookie before vp submission is done
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_10
+      role: userDefinedCookie
+      restMethod: post
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "30a3d398-8cf2-4c1e-a6c4-33f50a7f8209",
+      "cookie": "$TRANSACTION_COOKIE_TRUE$"
+      }'
+      output: '{
+        "errorCode": "RESPONSE_CODE_NOT_MATCHING",
+        "errorMessage": "Response code is not matching the VP Submission response"
+}'
+  Injiverify_VpSessionResults_Invalid_validResponseCodeOfAnotherSession_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results with valid response code of another session
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_11
+      role: userDefinedCookie
+      restMethod: post
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "$RESPONSE_CODE$"
+      }'
+      output: '{
+        "errorCode": "VP_SESSION_INVALID",
+        "errorMessage": "Your VP verification session is invalid. Please restart the process and try again"
+}'
+  Injiverify_VpSessionResults_Invalid_invalidHttpMethodGet_Neg:
+      endPoint: /v1/verify/vp-session-results
+      description: Verify VP session results with invalid http method get
+      uniqueIdentifier: TC_InjiVerify_VpSessionResults_12
+      role: userDefinedCookie
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSessionResults/VpSessionResults
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "skipStatusChecks": false,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "responseCode": "$RESPONSE_CODE$",
+      "cookie": "$TRANSACTIN_COOKIE$"
+      }'
+      output: '{
+        "responseCode": "401"
+}'

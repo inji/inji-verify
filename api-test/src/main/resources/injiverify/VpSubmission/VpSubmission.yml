@@ -10,7 +10,8 @@ VpSubmission:
       outputTemplate: injiverify/responseCode
       input: '{
       "state":"$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "definition_id":"$PRESENTATIONDEFINITIONID$",
+      "challenge": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_nonce$"
       }'
       output: '{
       "responseCode": "200"
@@ -96,8 +97,9 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmission
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
-      "definition_id":"hbdBYGdy"
+      "state":"$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
+      "definition_id":"$%^$^",
+      "challenge": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_nonce$"
       }'
       output: '{
       "responseCode": "200"
@@ -234,8 +236,57 @@ VpSubmission:
       outputTemplate: injiverify/responseCode
       input: '{
       "state":"$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "definition_id":"$PRESENTATIONDEFINITIONID$",
+      "challenge": "$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_nonce$"
       }'
       output: '{
       "responseCode": "200"
       }'
+  Injiverify_VpSubmissionForSessionRequest_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting the Verifiable Credential (VC) with valid VP Session Request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_13
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$",
+      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+  Injiverify_VpSubmissionForSessionRequest_duplicateRequestID_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting the Verifiable Credential (VC) with duplicate or already used requestID VP Session Request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$",
+      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+  Injiverify_VpSubmissionForSessionRequest_whenResponseCodeValidationIsFalse_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting the Verifiable Credential (VC) with ResponseCodeValidation Is False from VP Session Request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_15
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid_requestId$",
+      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
