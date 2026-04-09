@@ -15,9 +15,6 @@ import utils.BaseTest;
 import utils.ExtentReportManager;
 import utils.ScreenshotUtil;
 
-import java.time.LocalDate;
-import java.time.format.DateTimeFormatter;
-
 abstract class BaseSteps {
     protected String pageTitle;
     protected WebDriver driver;
@@ -32,8 +29,6 @@ abstract class BaseSteps {
     protected static final String policyNumber = SimplePostForAutoGenId.policyNumber;
     protected static final String fullName = SimplePostForAutoGenId.fullName;
     protected static final String dob = SimplePostForAutoGenId.dob;
-    protected static final String formattedDate = dob == null ? null
-            : LocalDate.parse(dob).format(DateTimeFormatter.ofPattern("MM-dd-yyyy"));
     protected static final String screenshotPath = System.getProperty("user.dir") + "/test-output/screenshots";
 
     protected BaseSteps() {

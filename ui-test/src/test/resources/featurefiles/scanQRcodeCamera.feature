@@ -5,20 +5,20 @@ Feature: Inji Verify scan qr code camera testing
     Then Validate the title of the page
     When click on scan qr code tab
 
-  @smoke @verifyScanValidQrCode @withoutBrowserstack @scan @qr_valid
+  @smoke @verifyScanValidQrCode @withoutBrowserstack @scan @qr_valid @needsInsuranceArtifacts
   Scenario: Verify the scan for valid qr code
     And click on scan qr code button
     Then validate that QR code is scanned successfully
     And validate the step 3 after scanning the QR code
     And validate the step 4 after scanning the QR code
 
-  @smoke @verifyFirstTimeScanQrCodePermissionPrompt @withoutBrowserstack @scan @qr_valid
+  @smoke @verifyFirstTimeScanQrCodePermissionPrompt @withoutBrowserstack @scan @qr_valid @needsInsuranceArtifacts
   Scenario: Verify first time scan qr code click triggers camera permission flow
     And reset camera access for scan qr code to prompt
     And click on scan qr code button
     Then validate camera permission prompt flow is triggered for scan qr code
 
-  @smoke @verifyScanQrCodeWithAllowedCameraAccess @withoutBrowserstack @scan @qr_valid
+  @smoke @verifyScanQrCodeWithAllowedCameraAccess @withoutBrowserstack @scan @qr_valid @needsInsuranceArtifacts
   Scenario: Verify scan qr code works without denied popup when camera access is allowed
     And allow camera access for scan qr code
     And click on scan qr code button
@@ -48,7 +48,7 @@ Feature: Inji Verify scan qr code camera testing
     And click on scan qr code button
     Then validate the error message for expired QR code
 
-  @negative @verifyScanQrCodeCameraAccessDeniedAndRecover @withoutBrowserstack @scan @camera_denied @qr_valid
+  @negative @verifyScanQrCodeCameraAccessDeniedAndRecover @withoutBrowserstack @scan @camera_denied @qr_valid @needsInsuranceArtifacts
   Scenario: Verify denied camera access popup and user can access camera again after dismissing it
     And deny camera access for scan qr code
     And click on scan qr code button
@@ -58,35 +58,27 @@ Feature: Inji Verify scan qr code camera testing
     And click on scan qr code button
     Then validate camera can be accessed again for scan qr code
 
-  @smoke @verifyScanValidQrCode8Mp @withoutBrowserstack @scan @qr_valid @camera_8mp
+  @smoke @verifyScanValidQrCode8Mp @withoutBrowserstack @scan @qr_valid @camera_8mp @needsInsuranceArtifacts
   Scenario: Verify the scan feature with camera 8mp
     And click on scan qr code button
     Then validate that QR code is scanned successfully
-    And validate the step 3 after scanning the QR code
-    And validate the step 4 after scanning the QR code
 
-  @smoke @verifyScanValidQrCode15Mp @withoutBrowserstack @scan @qr_valid @camera_15mp
+  @smoke @verifyScanValidQrCode15Mp @withoutBrowserstack @scan @qr_valid @camera_15mp @needsInsuranceArtifacts
   Scenario: Verify the scan feature with camera 15mp
     And click on scan qr code button
     Then validate that QR code is scanned successfully
-    And validate the step 3 after scanning the QR code
-    And validate the step 4 after scanning the QR code
 
-  @smoke @verifyScanValidQrCodeAt2Mp @withoutBrowserstack @scan @qr_valid @camera_2mp
+  @smoke @verifyScanValidQrCodeAt2Mp @withoutBrowserstack @scan @qr_valid @camera_2mp @needsInsuranceArtifacts
   Scenario: Verify the scan feature with camera resolution of 2mp
     And click on scan qr code button
     Then validate that QR code is scanned successfully
-    And validate the step 3 after scanning the QR code
-    And validate the step 4 after scanning the QR code
 
-  @smoke @verifyScanValidQrCodeInLowLight @withoutBrowserstack @scan @qr_valid @camera_low_light
+  @smoke @verifyScanValidQrCodeInLowLight @withoutBrowserstack @scan @qr_valid @camera_low_light @needsInsuranceArtifacts
   Scenario: Verify the scan for valid qr code in low light
     And click on scan qr code button
     Then validate that QR code is scanned successfully
-    And validate the step 3 after scanning the QR code
-    And validate the step 4 after scanning the QR code
 
-  @negative @offlineScan @withoutBrowserstack @scan @qr_valid
+  @negative @offlineScan @withoutBrowserstack @scan @qr_valid @needsInsuranceArtifacts
   Scenario: Verify the scan for valid qr code when internet is unavailable
     And turn off internet connection
     And click on scan qr code button
@@ -95,7 +87,7 @@ Feature: Inji Verify scan qr code camera testing
     When click on try again button
     Then validate the error message for no internet connection
 
-  @smoke @withoutBrowserstack @scan @qr_valid @browser_back_navigation
+  @smoke @withoutBrowserstack @scan @qr_valid @browser_back_navigation @needsInsuranceArtifacts
   Scenario: Verify browser back from scan page returns user to upload screen
     And click on scan qr code button
     When Click browser back button

@@ -3,9 +3,11 @@ package stepdefinitions;
 
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.NoSuchWindowException;
+import org.openqa.selenium.InvalidArgumentException;
 import org.testng.Assert;
 
 import constants.UiConstants;
+import base.BasePage;
 import io.cucumber.java.Before;
 import io.cucumber.java.en.Given;
 import io.cucumber.java.en.Then;
@@ -18,6 +20,10 @@ import java.util.Base64;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
 import java.io.File;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
+import java.time.Instant;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -602,7 +608,7 @@ public class StepDef extends BaseSteps {
     @When("Upload QR code file png")
     public void uploadQRCodeFile() {
         try {
-            uploadqrcode.clickOnUploadQRCodePng();
+            uploadqrcode.uploadPngAndWaitForVerificationResult();
             test.log(Status.PASS, "Successfully uploaded the QR code file (PNG).");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading the QR code file (PNG)", e);
@@ -664,7 +670,7 @@ public class StepDef extends BaseSteps {
     @When("Upload another QR code file png")
     public void uploadAnotherQRCodeFile() {
         try {
-            uploadqrcode.clickOnAnotherUploadQRCodePng();
+            uploadqrcode.uploadAnotherPngAndWaitForVerificationResult();
             test.log(Status.PASS, "Successfully uploaded another QR code file (PNG).");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading another QR code file (PNG)", e);
@@ -886,7 +892,7 @@ public class StepDef extends BaseSteps {
     @When("Upload QR code file PDF")
     public void uploadQRCodeFilePdf() {
         try {
-            uploadqrcode.clickOnUploadQRCodePdf();
+            uploadqrcode.uploadPdfAndWaitForVerificationResult();
             test.log(Status.PASS, "Successfully uploaded the QR code file in PDF format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading the QR code PDF file", e);
@@ -900,7 +906,7 @@ public class StepDef extends BaseSteps {
     @When("Upload another QR code file PDF")
     public void uploadAnotherQRCodeFilePdf() {
         try {
-            uploadqrcode.clickOnAnotherUploadQRCodePdf();
+            uploadqrcode.uploadAnotherPdfAndWaitForVerificationResult();
             test.log(Status.PASS, "Successfully uploaded another QR code file in PDF format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading another QR code PDF file", e);
@@ -915,7 +921,7 @@ public class StepDef extends BaseSteps {
     @When("Upload QR code file JPG")
     public void uploadQRCodeFileJpg() {
         try {
-            uploadqrcode.clickOnUploadQRCodeJpg();
+            uploadqrcode.uploadJpgAndWaitForVerificationResult();
             test.log(Status.PASS, "Successfully uploaded the QR code file in JPG format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading the QR code JPG file", e);
@@ -929,7 +935,7 @@ public class StepDef extends BaseSteps {
     @When("Upload another QR code file JPG")
     public void uploadAnotherQRCodeFileJpg() {
         try {
-            uploadqrcode.clickOnAnotherUploadQRCodeJpg();
+            uploadqrcode.uploadAnotherJpgAndWaitForVerificationResult();
             test.log(Status.PASS, "Successfully uploaded another QR code file in JPG format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading another QR code JPG file", e);
@@ -943,7 +949,7 @@ public class StepDef extends BaseSteps {
     @When("Upload QR code file JPEG")
     public void uploadQRCodeFileJpeg() {
         try {
-            uploadqrcode.clickOnUploadQRCodeJpeg();
+            uploadqrcode.uploadJpegAndWaitForVerificationResult();
             test.log(Status.PASS, "Successfully uploaded the QR code file in JPEG format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading the QR code JPEG file", e);
@@ -957,7 +963,7 @@ public class StepDef extends BaseSteps {
     @When("Upload another QR code file JPEG")
     public void uploadAnotherQRCodeFileJpeg() {
         try {
-            uploadqrcode.clickOnAnotherUploadQRCodeJpeg();
+            uploadqrcode.uploadAnotherJpegAndWaitForVerificationResult();
             test.log(Status.PASS, "Successfully uploaded another QR code file in JPEG format.");
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element not found while uploading another QR code JPEG file", e);
@@ -1219,33 +1225,7 @@ public class StepDef extends BaseSteps {
 
             String normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
             String expectedUrl = normalizedBaseUrl + "/v1/verify/v2/vc-verification";
-
-            boolean isExpectedCallPresent = false;
-
-            // First try: URLs captured via JS interceptors (fetch / XHR) on the page
-            if (driver instanceof JavascriptExecutor) {
-                Object result = ((JavascriptExecutor) driver)
-                        .executeScript("return window.__networkRequests || [];");
-                if (result instanceof java.util.List<?>) {
-                    java.util.List<?> urls = (java.util.List<?>) result;
-                    isExpectedCallPresent = urls.stream().anyMatch(urlObj -> {
-                        String url = String.valueOf(urlObj);
-                        return url.contains("/v2/vc-verification") && url.contains(expectedUrl);
-                    });
-                }
-            }
-
-            // Fallback: check browser performance logs if interceptors didn't find it
-            if (!isExpectedCallPresent) {
-                LogEntries performanceLogs = driver.manage().logs().get(LogType.PERFORMANCE);
-                isExpectedCallPresent = performanceLogs.getAll().stream().anyMatch((LogEntry entry) -> {
-                    String message = entry.getMessage();
-                    return message != null
-                            && message.contains("Network.requestWillBeSent")
-                            && message.contains("/v2/vc-verification")
-                            && message.contains(expectedUrl);
-                });
-            }
+            boolean isExpectedCallPresent = waitForVcVerificationApiCall(expectedUrl);
 
             Assert.assertTrue(isExpectedCallPresent,
                     "Expected vc-verification API call to URL was not found in captured network data: " + expectedUrl);
@@ -1254,10 +1234,59 @@ public class StepDef extends BaseSteps {
         } catch (NoSuchElementException e) {
             logFailure(test, driver, "Element-related error while verifying vc-verification API call in network logs", e);
             throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logFailure(test, driver, "Interrupted while waiting for vc-verification API call in network logs", e);
+            throw new RuntimeException(e);
         } catch (Exception e) {
             logFailure(test, driver, "Unexpected error while verifying vc-verification API call in network logs", e);
             throw e;
         }
+    }
+
+    private boolean waitForVcVerificationApiCall(String expectedUrl) throws InterruptedException {
+        Instant deadline = Instant.now().plusSeconds((long) BasePage.getTimeout() * 4L);
+
+        while (Instant.now().isBefore(deadline)) {
+            if (isExpectedVcVerificationCallCaptured(expectedUrl)) {
+                return true;
+            }
+            Thread.sleep(1000);
+        }
+
+        return isExpectedVcVerificationCallCaptured(expectedUrl);
+    }
+
+    private boolean isExpectedVcVerificationCallCaptured(String expectedUrl) {
+        if (driver instanceof JavascriptExecutor) {
+            Object result = ((JavascriptExecutor) driver).executeScript("return window.__networkRequests || [];");
+            if (result instanceof java.util.List<?>) {
+                java.util.List<?> urls = (java.util.List<?>) result;
+                boolean jsMatch = urls.stream().anyMatch(urlObj -> matchesVcVerificationUrl(String.valueOf(urlObj), expectedUrl));
+                if (jsMatch) {
+                    return true;
+                }
+            }
+        }
+
+        try {
+            LogEntries performanceLogs = driver.manage().logs().get(LogType.PERFORMANCE);
+            return performanceLogs.getAll().stream().anyMatch((LogEntry entry) -> {
+                String message = entry.getMessage();
+                return message != null
+                        && message.contains("Network.requestWillBeSent")
+                        && matchesVcVerificationUrl(message, expectedUrl);
+            });
+        } catch (InvalidArgumentException e) {
+            test.log(Status.INFO, "Performance logs are not available for this session. Skipping performance log fallback.");
+            return false;
+        }
+    }
+
+    private boolean matchesVcVerificationUrl(String candidate, String expectedUrl) {
+        return candidate != null
+                && candidate.contains("/v2/vc-verification")
+                && candidate.contains(expectedUrl);
     }
 
     @When("Verify VP verification step3 label after")
@@ -1429,8 +1458,8 @@ public class StepDef extends BaseSteps {
 
 	@When("Upload QR code file Expired jpeg")
 	public void uploadQrCodeFileExpiredJpeg() {
-        try {
-            uploadqrcode.clickOnUploadExpiredQRCodeJpgExpired();
+	    try {
+	        uploadqrcode.clickOnUploadExpiredQRCodeJpegExpired();
 	        Assert.assertTrue(true, "Expired JPEG QR code uploaded successfully.");
 	        test.log(Status.PASS, "Successfully uploaded expired QR code (JPEG format).");
 	    } catch (NoSuchElementException e) {
@@ -1446,7 +1475,7 @@ public class StepDef extends BaseSteps {
 	@When("Upload QR code file Expired pdf")
 	public void uploadQrCodeFileExpiredPdf() {
 	    try {
-	        uploadqrcode.clickOnUploadExpiredQRCodepngExpired();
+	        uploadqrcode.clickOnUploadExpiredQRCodePdfExpired();
 	        Assert.assertTrue(true, "Expired PDF QR code uploaded successfully.");
 	        test.log(Status.PASS, "Successfully uploaded expired QR code (PDF format).");
 	    } catch (NoSuchElementException e) {
@@ -1762,10 +1791,12 @@ public class StepDef extends BaseSteps {
 	@When("User verify Download Success text displayed")
 	public void userVerifyDownloadSuccessTextDisplayed() {
 	    try {
-	        Assert.assertEquals(homePage.isSuccessMessageDisplayed(), "Success!");
-	        test.log(Status.PASS, "Successfully verified Download Success text is displayed.");
+	        String actualSuccessMessage = homePage.isSuccessMessageDisplayed();
+	        Assert.assertEquals(actualSuccessMessage, "Success!");
+	        test.log(Status.PASS, "Successfully verified Download Success text is displayed: " + actualSuccessMessage);
 	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Verification failed: Download Success text is not 'Success!'. Actual: '" + homePage.isSuccessMessageDisplayed() + "'");
+	        String actualSuccessMessage = homePage.isSuccessMessageDisplayed();
+	        test.log(Status.FAIL, "Verification failed: Download Success text is not 'Success!'. Actual: '" + actualSuccessMessage + "'");
 	        throw e;
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while verifying Download Success text display", e);
@@ -1778,29 +1809,10 @@ public class StepDef extends BaseSteps {
 	@When("User verify pdf is downloaded")
 	public void userVerifyPdfIsDownloaded() throws IOException {
 	    try {
-	        boolean fileExists = false;
-	        for (int i = 0; i < 5; i++) {
-	            fileExists = (boolean) baseTest.getJse().executeScript("browserstack_executor: {\"action\": \"fileExists\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
-	            if (fileExists) break;
-	            Thread.sleep(2000);
-	        }
-	        assertTrue("PDF file 'InsuranceCredential.pdf' was not found on BrowserStack.", fileExists);
-	        test.log(Status.PASS, "PDF file 'InsuranceCredential.pdf' exists on BrowserStack.");
-	        String base64EncodedFile = (String) baseTest.getJse().executeScript("browserstack_executor: {\"action\": \"getFileContent\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
-
-	        byte[] data = Base64.getDecoder().decode(base64EncodedFile);
-	        String filePath = BaseTest.getDownloadedInsurancePdfPath();
-	        OutputStream stream = new FileOutputStream(filePath);
-	        stream.write(data);
-	        stream.close();
-
-	        File pdfFile = new File(filePath);
-	        PDDocument document = PDDocument.load(pdfFile);
-	        PDFTextStripper stripper = new PDFTextStripper();
-	        String text = stripper.getText(document);
-	        document.close();
-
-	        assertFalse("PDF content is empty.", text.trim().isEmpty());
+	        File pdfFile = BaseTest.isUsingBrowserStack()
+	                ? copyInsurancePdfFromBrowserStack()
+	                : copyInsurancePdfFromLocalDownloads();
+	        assertPdfHasText(pdfFile);
 	        test.log(Status.PASS, "PDF file 'InsuranceCredential.pdf' downloaded and contains content.");
 
 	    } catch (InterruptedException e) {
@@ -1815,6 +1827,65 @@ public class StepDef extends BaseSteps {
 	        throw e;
 	    }
 	}
+
+	private File copyInsurancePdfFromBrowserStack() throws IOException, InterruptedException {
+	    boolean fileExists = false;
+	    for (int i = 0; i < 5; i++) {
+	        fileExists = (boolean) baseTest.getJse().executeScript(
+	                "browserstack_executor: {\"action\": \"fileExists\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
+	        if (fileExists) {
+	            break;
+	        }
+	        Thread.sleep(2000);
+	    }
+	    assertTrue("PDF file 'InsuranceCredential.pdf' was not found on BrowserStack.", fileExists);
+	    test.log(Status.PASS, "PDF file 'InsuranceCredential.pdf' exists on BrowserStack.");
+
+	    String base64EncodedFile = (String) baseTest.getJse().executeScript(
+	            "browserstack_executor: {\"action\": \"getFileContent\", \"arguments\": {\"fileName\": \"InsuranceCredential.pdf\"}}");
+
+	    byte[] data = Base64.getDecoder().decode(base64EncodedFile);
+	    File targetFile = new File(BaseTest.getDownloadedInsurancePdfPath());
+	    try (OutputStream stream = new FileOutputStream(targetFile)) {
+	        stream.write(data);
+	    }
+	    return targetFile;
+	}
+
+	private File copyInsurancePdfFromLocalDownloads() throws IOException, InterruptedException {
+	    Path downloadDirectory = Path.of(BaseTest.getLocalDownloadsDirectoryPath());
+	    Path downloadedPdf = waitForLocalInsurancePdf(downloadDirectory);
+	    Path targetPdf = Path.of(BaseTest.getDownloadedInsurancePdfPath());
+
+	    Files.createDirectories(targetPdf.getParent());
+	    Files.copy(downloadedPdf, targetPdf, StandardCopyOption.REPLACE_EXISTING);
+	    test.log(Status.PASS, "PDF file 'InsuranceCredential.pdf' copied from local downloads: " + downloadedPdf);
+	    return targetPdf.toFile();
+	}
+
+	private Path waitForLocalInsurancePdf(Path downloadDirectory) throws IOException, InterruptedException {
+	    Path pdfPath = downloadDirectory.resolve("InsuranceCredential.pdf");
+	    Path partialDownloadPath = downloadDirectory.resolve("InsuranceCredential.pdf.crdownload");
+
+	    for (int i = 0; i < 10; i++) {
+	        if (Files.exists(pdfPath) && !Files.exists(partialDownloadPath) && Files.size(pdfPath) > 0) {
+	            return pdfPath;
+	        }
+	        Thread.sleep(2000);
+	    }
+
+	    throw new IOException("PDF file 'InsuranceCredential.pdf' was not found in local downloads: "
+	            + downloadDirectory.toAbsolutePath());
+	}
+
+	private void assertPdfHasText(File pdfFile) throws IOException {
+	    try (PDDocument document = PDDocument.load(pdfFile)) {
+	        PDFTextStripper stripper = new PDFTextStripper();
+	        String text = stripper.getText(document);
+	        assertFalse("PDF content is empty.", text.trim().isEmpty());
+	    }
+	}
+
 	@When("User verify go back button")
 	public void userVerifyGoBackButton() {
 		try {
@@ -1838,7 +1909,8 @@ public class StepDef extends BaseSteps {
 	            File jpgFile = new File(BaseTest.getInsuranceCredentialJpgPath());
 	            File jpegFile = new File(BaseTest.getInsuranceCredentialJpegPath());
 
-	            if (pdfFile.exists() && pngFile.exists() && jpgFile.exists() && jpegFile.exists()) {
+	            if (BaseTest.isInsuranceArtifactsPreparedForRun()
+	                    && pdfFile.exists() && pngFile.exists() && jpgFile.exists() && jpegFile.exists()) {
 	                test.log(Status.PASS, "Insurance credential artifacts are already prepared for this run.");
 	            } else {
 	                openInjiWebInNewTab();
@@ -1856,7 +1928,14 @@ public class StepDef extends BaseSteps {
 	                userVerifyDownloadSuccessTextDisplayed();
 	                userVerifyPdfIsDownloaded();
 	                verifyThatUserConvertPdfIntoPng();
+	                BaseTest.markInsuranceArtifactsPreparedForRun();
 	                test.log(Status.PASS, "Prepared shared insurance credential artifacts for this run.");
+	            }
+
+	            if (BaseTest.getCurrentScenarioTags().contains("@scan")
+	                    && BaseTest.getCurrentScenarioTags().contains("@qr_valid")) {
+	                baseTest.refreshRuntimeScanMediaForCurrentScenario();
+	                test.log(Status.PASS, "Regenerated runtime scan media from current-run insurance artifacts.");
 	            }
 	        }
 
@@ -1870,33 +1949,34 @@ public class StepDef extends BaseSteps {
 	@When("Verify that user convert pdf into png")
 	public void verifyThatUserConvertPdfIntoPng() throws IOException {
 	    String pdfPath = BaseTest.getDownloadedInsurancePdfPath();
-
+	
 	    try {
 	        PDDocument document = PDDocument.load(new File(pdfPath));
 	        PDFRenderer renderer = new PDFRenderer(document);
-
+	
 	        int numberOfPages = document.getNumberOfPages();
 	        assertTrue("PDF document has no pages.", numberOfPages > 0);
 	        test.log(Status.PASS, "PDF document has " + numberOfPages + " pages.");
-
+	
 	        for (int i = 0; i < numberOfPages; i++) {
 	            PDPage page = document.getPage(i);
-	            BufferedImage image = renderer.renderImage(i);
-
+	            // Render at a higher DPI to preserve QR code fidelity
+	            BufferedImage image = renderer.renderImageWithDPI(i, 300, org.apache.pdfbox.rendering.ImageType.RGB);
+	
 	            String outputFileNamepng = BaseTest.getInsuranceCredentialPngPath();
 	            String outputFileNamejpg = BaseTest.getInsuranceCredentialJpgPath();
 	            String outputFileNamejpeg = BaseTest.getInsuranceCredentialJpegPath();
-
+	
 	            ImageIO.write(image, "png", new File(outputFileNamepng));
 	            ImageIO.write(image, "jpg", new File(outputFileNamejpg));
 	            ImageIO.write(image, "jpeg", new File(outputFileNamejpeg));
-
+	
 	            assertTrue("PNG file " + outputFileNamepng + " was not created.", new File(outputFileNamepng).exists());
 	            assertTrue("JPG file " + outputFileNamejpg + " was not created.", new File(outputFileNamejpg).exists());
 	            assertTrue("JPEG file " + outputFileNamejpeg + " was not created.", new File(outputFileNamejpeg).exists());
-	            test.log(Status.PASS, "Successfully converted page " + (i + 1) + " to PNG, JPG, and JPEG.");
+	            test.log(Status.PASS, "Successfully converted page " + (i + 1) + " to PNG, JPG, and JPEG at 300 DPI.");
 	        }
-
+	
 	        document.close();
 	        test.log(Status.PASS, "PDF to image conversion completed successfully.");
 	    } catch (IOException e) {
@@ -1958,8 +2038,8 @@ public class StepDef extends BaseSteps {
     @When("User enter the date of birth")
     public void userEnterTheDateOfBirth() {
         try {
-        	homePage.selectDateOfBirth(formattedDate);
-            test.log(Status.PASS, "User successfully entered the date of birth: " + formattedDate);
+        	homePage.selectDateOfBirth(dob);
+            test.log(Status.PASS, "User successfully entered the date of birth: " + dob);
         } catch (NoSuchElementException e) {
             test.log(Status.FAIL, "Element not found while entering the date of birth: " + e.getMessage());
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
@@ -2889,7 +2969,7 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
         }
     }
 
-    @When("Verify if gender value is present in French")
+    @When("Verify if gender value is present in french")
     public void verifyIfGenderValueIsPresentInFrench() {
         try {
             String actualLabel = homePage.getGenderValueInFrench();

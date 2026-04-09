@@ -8,6 +8,7 @@ import org.openqa.selenium.support.FindBy;
 import org.openqa.selenium.support.PageFactory;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.openqa.selenium.TimeoutException;
 
 import java.time.Duration;
 
@@ -53,6 +54,9 @@ public class ScanQRCodePage extends BasePage {
 
 	@FindBy(id="scan-button")
 	WebElement scanQRCodeButton;
+
+	@FindBy(xpath="//span[text()='Verify Another QR code']")
+	WebElement verifyAnotherQRCodeButton;
 
 	@FindBy(xpath = "(//div[contains(@class,'bg-default_theme-gradient') and contains(@class,'rounded-full')]/div[text()='3'])")
 	WebElement ScanQRCodeStep2LabelAfter;
@@ -122,6 +126,7 @@ public class ScanQRCodePage extends BasePage {
 	}
 
 	public String getScanQRCodeStep3Label() {
+		waitForScanVerificationResultState();
 		return getText(driver, ScanQRCodeStep3Label);
 
 	}
@@ -132,6 +137,7 @@ public class ScanQRCodePage extends BasePage {
 	}
 
 	public String getScanQRCodeStep4Label() {
+		waitForScanVerificationResultState();
 		return getText(driver, ScanQRCodeStep4Label);
 
 	}
@@ -242,7 +248,7 @@ public class ScanQRCodePage extends BasePage {
 	}
 
 	public boolean isScanAnotherQrCodeOptionVisible() {
-		return isElementIsVisible(driver, scanQRCodeButton);
+		return isElementIsVisible(driver, verifyAnotherQRCodeButton);
 	}
 
 
@@ -255,34 +261,132 @@ public class ScanQRCodePage extends BasePage {
 	}
 
 	public String getStatusMessage() {
+		waitForFinalScanVerificationResult();
 		return getText(driver, statusMessage);
 	}
 
 	public boolean isSuccessIconDisplayed() {
-		return isElementIsVisible(driver, successMessageIcon);
+		waitForScanCameraActive();
+		waitForSuccessIconOrFailureState();
+		// Use isDisplayedWithoutWaiting instead of isElementIsVisible so there is no
+		// additional 30-second timeout window after the dedicated wait above. This
+		// prevents missing the icon due to a brief page transition (low-light race)
+		// or a redirect during verification (2mp redirect case).
+		return isDisplayedWithoutWaiting(successMessageIcon);
 	}
 
 	public boolean isErrorIconDisplayed() {
+		waitForFinalScanVerificationResult();
 		return isElementIsVisible(driver, failedIcon);
 	}
 
 	public boolean isAlertMessageDisplayed() {
+		waitForFinalScanVerificationResult();
 		return isElementIsVisible(driver, alertMessage);
 	}
 
 	public boolean isStatusMessageDisplayed() {
+		waitForFinalScanVerificationResult();
 		return isElementIsVisible(driver, statusMessage);
 	}
 
 	public String getScanQRCodeStep3LabelClass() {
+		waitForFinalScanVerificationResult();
 		return getAttributeValue(driver, ScanQRCodeStep3Label, UiConstants.CLASS);
 	}
 
 	public String getScanQRCodeStep4LabelClass() {
+		waitForFinalScanVerificationResult();
 		return getAttributeValue(driver, ScanQRCodeStep4Label, UiConstants.CLASS);
 	}
 
 	public String getAlertMessage() {
+		waitForFinalScanVerificationResult();
 		return getText(driver, alertMessage);
+	}
+
+	/**
+	 * Waits until the camera stream is active (scan line or video visible) OR the
+	 * result has already appeared (fast scan). This prevents the 180-second
+	 * verification countdown from starting while the scan box is still in its
+	 * camera-loading state, which happens when large Y4M files take time to
+	 * initialise in Chrome under parallel load.
+	 */
+	public void waitForScanCameraActive() {
+		try {
+			new WebDriverWait(driver, Duration.ofSeconds((long) getTimeout() * getScanVerificationTimeoutMultiplier()))
+					.until(webDriver -> isDisplayedWithoutWaiting(ScanLine)
+							|| isDisplayedWithoutWaiting(activeScanVideo)
+							|| isDisplayedWithoutWaiting(backButton)
+							|| hasFinalScanVerificationResultVisible());
+		} catch (TimeoutException e) {
+			// Camera may not have started — fall through so the final-result wait
+			// can report the actual failure state.
+		}
+	}
+
+	public void waitForScanVerificationResultState() {
+		try {
+			new WebDriverWait(driver, Duration.ofSeconds((long) getTimeout() * 4L))
+					.until(webDriver -> hasAnyScanVerificationResultVisible());
+		} catch (TimeoutException e) {
+			// Fall through to the existing assertion path so the test still fails with the current page state.
+		}
+	}
+
+	/**
+	 * Waits specifically for the success icon to appear, or for an unambiguous
+	 * failure indicator (error icon / alert message). Unlike waitForFinalScanVerificationResult,
+	 * this does NOT return early on statusMessage or scanQRCodeButton, which can appear
+	 * before the success icon and cause isSuccessIconDisplayed to miss it.
+	 * Also survives page redirects during VC verification because isDisplayedWithoutWaiting
+	 * re-fetches the PageFactory proxy on every poll.
+	 */
+	private void waitForSuccessIconOrFailureState() {
+		long timeoutSeconds = (long) getTimeout() * getScanVerificationTimeoutMultiplier();
+		try {
+			new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds))
+					.until(webDriver -> isDisplayedWithoutWaiting(successMessageIcon)
+							|| isDisplayedWithoutWaiting(failedIcon)
+							|| isDisplayedWithoutWaiting(alertMessage));
+		} catch (TimeoutException e) {
+			// Fall through — the final isDisplayedWithoutWaiting check will record the state.
+		}
+	}
+
+	public void waitForFinalScanVerificationResult() {
+		long timeoutSeconds = (long) getTimeout() * getScanVerificationTimeoutMultiplier();
+		try {
+			new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds))
+					.until(webDriver -> hasFinalScanVerificationResultVisible());
+		} catch (TimeoutException e) {
+			// Fall through to the existing assertion path so the test still fails with the current page state.
+		}
+	}
+
+	private boolean hasFinalScanVerificationResultVisible() {
+		return isDisplayedWithoutWaiting(successMessageIcon)
+				|| isDisplayedWithoutWaiting(failedIcon)
+				|| isDisplayedWithoutWaiting(alertMessage)
+				|| isDisplayedWithoutWaiting(statusMessage)
+				|| isDisplayedWithoutWaiting(scanQRCodeButton);
+	}
+
+	private boolean hasAnyScanVerificationResultVisible() {
+		return isDisplayedWithoutWaiting(successMessageIcon)
+				|| isDisplayedWithoutWaiting(failedIcon)
+				|| isDisplayedWithoutWaiting(alertMessage)
+				|| isDisplayedWithoutWaiting(statusMessage)
+				|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label)
+				|| isDisplayedWithoutWaiting(ScanQRCodeStep4Label)
+				|| isDisplayedWithoutWaiting(scanQRCodeButton);
+	}
+
+	private boolean isDisplayedWithoutWaiting(WebElement element) {
+		try {
+			return element != null && element.isDisplayed();
+		} catch (Exception e) {
+			return false;
+		}
 	}
 }

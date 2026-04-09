@@ -1,5 +1,7 @@
 package pages;
 
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
 import java.util.List;
 
 import org.openqa.selenium.WebDriver;
@@ -407,14 +409,18 @@ public void enterOtp(String otpString) {
 	}
 
 public String isSuccessMessageDisplayed() {
-
     try {
-        WaitUtil.waitForTextToBePresent(driver, succsessMessage, "Success!");
+        new WebDriverWait(driver, Duration.ofSeconds(getTimeout() * 3L))
+                .until(ExpectedConditions.textToBePresentInElement(succsessMessage, "Success!"));
     } catch (Exception e) {
-        // ignore if not found within timeout
+        // ignore if not found within timeout — proceed to return whatever text is currently present
     }
 
-    return getText(driver, succsessMessage);
+    String successText = getText(driver, succsessMessage);
+    if (successText == null) return null;
+    // Strip invisible Unicode characters that trim() misses (e.g. non-breaking space U+00A0,
+    // zero-width space U+200B, BOM U+FEFF, zero-width joiners U+200C/200D) before comparing.
+    return successText.trim().replaceAll("[\\u00A0\\u200B\\uFEFF\\u200C\\u200D\\u00AD]", "");
 }
 
 
@@ -461,14 +467,126 @@ public String isSuccessMessageDisplayed() {
 
     WebElement fullNameField = driver.findElement(By.id("_form_fullName"));
     WebElement dobField = driver.findElement(By.id("_form_dob"));
+    String formattedDob = formatDateOfBirthForCurrentBrowser(dob, dobField);
 
     WaitUtil.waitForClickability(driver, fullNameField);
     fullNameField.sendKeys(Keys.TAB);
 
     WaitUtil.waitForClickability(driver, dobField);
     dobField.clear();
-    dobField.sendKeys(dob);
+    dobField.sendKeys(formattedDob);
 }
+
+    private String formatDateOfBirthForCurrentBrowser(String rawDate, WebElement dobField) {
+        if (rawDate == null || rawDate.trim().isEmpty()) {
+            return rawDate;
+        }
+
+        String trimmedDate = rawDate.trim();
+        if (!trimmedDate.matches("\\d{4}-\\d{2}-\\d{2}")) {
+            return trimmedDate;
+        }
+
+        LocalDate parsedDate = LocalDate.parse(trimmedDate);
+        String datePattern = resolveDatePatternForCurrentBrowser(dobField);
+        return parsedDate.format(DateTimeFormatter.ofPattern(datePattern));
+    }
+
+    private String resolveDatePatternForCurrentBrowser(WebElement dobField) {
+        String placeholderPattern = sanitizePattern(dobField.getAttribute("placeholder"));
+        if (placeholderPattern != null) {
+            return placeholderPattern;
+        }
+
+        String browserPattern = resolvePatternFromBrowserLocale();
+        if (browserPattern != null) {
+            return browserPattern;
+        }
+
+        return "dd/MM/yyyy";
+    }
+
+    private String resolvePatternFromBrowserLocale() {
+        try {
+            Object result = ((JavascriptExecutor) driver).executeScript(
+                    "const locale = (navigator.languages && navigator.languages.length ? navigator.languages[0] : navigator.language) || 'en-US';"
+                            + "return new Intl.DateTimeFormat(locale).format(new Date(1983, 10, 23));");
+
+            if (!(result instanceof String sampleDate) || sampleDate.trim().isEmpty()) {
+                return null;
+            }
+
+            return derivePatternFromFormattedSample(sampleDate.trim());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private String derivePatternFromFormattedSample(String sampleDate) {
+        String separator = sampleDate.replaceAll(".*?(\\D+).*", "$1");
+        String[] parts = sampleDate.split("\\D+");
+        if (parts.length != 3) {
+            return null;
+        }
+
+        String[] tokens = new String[3];
+        boolean[] used = new boolean[3];
+
+        for (int i = 0; i < parts.length; i++) {
+            String part = parts[i];
+            if ("1983".equals(part)) {
+                tokens[i] = "yyyy";
+                used[i] = true;
+            } else if ("23".equals(part)) {
+                tokens[i] = "dd";
+                used[i] = true;
+            } else if ("11".equals(part)) {
+                tokens[i] = "MM";
+                used[i] = true;
+            }
+        }
+
+        for (int i = 0; i < used.length; i++) {
+            if (!used[i]) {
+                return null;
+            }
+        }
+
+        String normalizedSeparator = separator == null || separator.trim().isEmpty() ? "/" : separator.substring(0, 1);
+        return String.join(normalizedSeparator, tokens);
+    }
+
+    private String sanitizePattern(String candidatePattern) {
+        if (candidatePattern == null || candidatePattern.trim().isEmpty()) {
+            return null;
+        }
+
+        String normalized = candidatePattern.trim()
+                .replaceAll("(?i)day", "dd")
+                .replaceAll("(?i)month", "MM")
+                .replaceAll("(?i)year", "yyyy")
+                .replaceAll("d+", "dd")
+                .replaceAll("M+", "MM")
+                .replaceAll("y+", "yyyy");
+
+        String separator = normalized.replaceAll("[dMy]", "");
+        String normalizedSeparator = separator.isEmpty() ? "/" : separator.substring(0, 1);
+        String compact = normalized.replaceAll("[^dMy]+", normalizedSeparator);
+        String[] parts = compact.split(java.util.regex.Pattern.quote(normalizedSeparator));
+        if (parts.length != 3) {
+            return null;
+        }
+
+        if (isValidDateToken(parts[0]) && isValidDateToken(parts[1]) && isValidDateToken(parts[2])) {
+            return String.join(normalizedSeparator, parts);
+        }
+
+        return null;
+    }
+
+    private boolean isValidDateToken(String token) {
+        return "dd".equals(token) || "MM".equals(token) || "yyyy".equals(token);
+    }
 
 	public void clickOnLogin() {
 		clickOnElement(driver,verifyButton );

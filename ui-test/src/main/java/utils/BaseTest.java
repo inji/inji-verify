@@ -23,6 +23,7 @@ import io.cucumber.plugin.event.TestStep;
 import io.mosip.testrig.apirig.utils.ConfigManager;
 import io.mosip.testrig.apirig.utils.S3Adapter;
 
+import com.aventstack.extentreports.MediaEntityBuilder;
 import com.aventstack.extentreports.Status;
 import java.lang.reflect.Field;
 import java.net.HttpURLConnection;
@@ -35,11 +36,13 @@ import java.util.List;
 import java.io.*;
 import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
+import java.nio.file.Path;
 import java.util.Properties;
 import java.util.Base64;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.Semaphore;
 
 public class BaseTest extends BaseTestUtil{
@@ -68,6 +71,8 @@ public class BaseTest extends BaseTestUtil{
 	private static final ThreadLocal<java.util.Set<String>> scenarioTags = new ThreadLocal<>();
 	private static final ThreadLocal<Boolean> failedStepScreenshotCaptured = ThreadLocal.withInitial(() -> Boolean.FALSE);
 	private static final Object insuranceArtifactsLock = new Object();
+	private static final AtomicBoolean insuranceArtifactsPreparedForRun = new AtomicBoolean(false);
+	private static final AtomicBoolean insuranceArtifactsRunInitialised = new AtomicBoolean(false);
 	private static volatile String downloadedInsurancePdfPath;
 	private static volatile String insuranceCredentialPngPath;
 	private static volatile String insuranceCredentialJpgPath;
@@ -115,6 +120,7 @@ public class BaseTest extends BaseTestUtil{
 		boolean browserStackEnabled = Boolean.parseBoolean(InjiVerifyConfigManager.getproperty("runOnBrowserStack").trim());
 		initialiseScenarioRuntimeArtifacts(scenario);
 		initialiseSharedInsuranceArtifactPaths();
+		initialiseInsuranceArtifactsForRun();
 		totalCount.incrementAndGet();
 		ExtentReportManager.initReport();
 		ExtentReportManager.createTest(scenario.getName());
@@ -170,6 +176,7 @@ public class BaseTest extends BaseTestUtil{
 
 			capabilities.setCapability("browserName", "Chrome");
 			capabilities.setCapability("browserVersion", "latest");
+			capabilities.setCapability("goog:loggingPrefs", getChromeLoggingPreferences());
 			browserstackOptions.put("os", "Windows");
 			browserstackOptions.put("osVersion", "10");
 			browserstackOptions.put("local", "true");
@@ -237,6 +244,21 @@ public class BaseTest extends BaseTestUtil{
 		}
 	}
 
+	private void initialiseInsuranceArtifactsForRun() {
+		if (!insuranceArtifactsRunInitialised.compareAndSet(false, true)) {
+			return;
+		}
+
+		synchronized (insuranceArtifactsLock) {
+			try {
+				deleteSharedInsuranceArtifacts();
+				insuranceArtifactsPreparedForRun.set(false);
+			} catch (IOException e) {
+				throw new RuntimeException("Unable to reset shared insurance artifacts at suite start.", e);
+			}
+		}
+	}
+
 	@BeforeStep
 	public void beforeStep(Scenario scenario) {
 		String stepName = getStepName(scenario);
@@ -249,8 +271,10 @@ public class BaseTest extends BaseTestUtil{
 
 		if (scenario.isFailed()) {
 			ExtentCucumberAdapter.getCurrentStep().log(Status.FAIL, "Step Failed: " + stepName);
-			captureScreenshot();
-			failedStepScreenshotCaptured.set(Boolean.TRUE);
+			if (!Boolean.TRUE.equals(failedStepScreenshotCaptured.get())) {
+				captureScreenshot();
+				failedStepScreenshotCaptured.set(Boolean.TRUE);
+			}
 		} else {
 			ExtentCucumberAdapter.getCurrentStep().log(Status.PASS, "Step Passed: " + stepName);
 		}
@@ -347,13 +371,14 @@ public class BaseTest extends BaseTestUtil{
 	}
 
 	private void attachBrowserStackVideoLinkIfFailed(Scenario scenario) {
-		if (!scenario.isFailed() || !isUsingBrowserStack() || driverHolder.get() == null || ExtentReportManager.getTest() == null) {
+		WebDriver currentDriver = driverHolder.get();
+		if (!scenario.isFailed() || !isUsingBrowserStack() || currentDriver == null || ExtentReportManager.getTest() == null) {
 			return;
 		}
 
 		try {
-			String sessionDetailsJson = (String) ((JavascriptExecutor) driverHolder.get())
-					.executeScript("browserstack_executor: {\"action\": \"getSessionDetails\"}");
+			String script = "browserstack_executor: {\"action\": \"getSessionDetails\"}";
+			String sessionDetailsJson = (String) ((JavascriptExecutor) currentDriver).executeScript(script);
 			if (sessionDetailsJson == null || sessionDetailsJson.trim().isEmpty()) {
 				return;
 			}
@@ -386,7 +411,7 @@ public class BaseTest extends BaseTestUtil{
 	}
 
 	private void attachLocalFailureScreenshotIfNeeded() {
-		if (isUsingBrowserStack() || ExtentReportManager.getTest() == null
+		if (ExtentReportManager.getTest() == null
 				|| Boolean.TRUE.equals(failedStepScreenshotCaptured.get())) {
 			return;
 		}
@@ -449,17 +474,33 @@ public class BaseTest extends BaseTestUtil{
 	private void captureScreenshot() {
 		WebDriver currentDriver = driverHolder.get();
 		if (currentDriver != null) {
-			byte[] screenshot = ((TakesScreenshot) currentDriver).getScreenshotAs(OutputType.BYTES);
-			ExtentCucumberAdapter.getCurrentStep().addScreenCaptureFromBase64String(
-					java.util.Base64.getEncoder().encodeToString(screenshot),
-					"Failure Screenshot"
-			);
-			failedStepScreenshotCaptured.set(Boolean.TRUE);
+			try {
+				byte[] screenshot = ((TakesScreenshot) currentDriver).getScreenshotAs(OutputType.BYTES);
+				String base64Screenshot = java.util.Base64.getEncoder().encodeToString(screenshot);
+				ExtentCucumberAdapter.getCurrentStep().addScreenCaptureFromBase64String(
+						base64Screenshot,
+						"Failure Screenshot"
+				);
+
+				if (ExtentReportManager.getTest() != null) {
+					ExtentReportManager.getTest().info("Failure Screenshot",
+							MediaEntityBuilder.createScreenCaptureFromBase64String(base64Screenshot).build());
+				}
+				failedStepScreenshotCaptured.set(Boolean.TRUE);
+			} catch (Exception e) {
+				logger.error("Failed to capture screenshot: {}", e.getMessage());
+			}
 		}
 	}
 
 	@AfterAll
 	public static void afterAll() {
+		try {
+			cleanupSharedInsuranceArtifactsForSuite();
+		} catch (Exception e) {
+			logger.error("Failed to clean shared insurance artifacts at suite end", e);
+		}
+
 		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
 			logger.info("Shutdown hook triggered. Uploading report...");
 			if (extent != null) {
@@ -525,6 +566,40 @@ public class BaseTest extends BaseTestUtil{
 
 	public static Object getInsuranceArtifactsLock() {
 		return insuranceArtifactsLock;
+	}
+
+	public static boolean isInsuranceArtifactsPreparedForRun() {
+		return insuranceArtifactsPreparedForRun.get();
+	}
+
+	public static void markInsuranceArtifactsPreparedForRun() {
+		insuranceArtifactsPreparedForRun.set(true);
+	}
+
+	public static void cleanupSharedInsuranceArtifactsForSuite() throws IOException {
+		synchronized (insuranceArtifactsLock) {
+			deleteSharedInsuranceArtifacts();
+			insuranceArtifactsPreparedForRun.set(false);
+			insuranceArtifactsRunInitialised.set(false);
+		}
+	}
+
+	public static String getLocalDownloadsDirectoryPath() {
+		return getLocalDownloadsDirectory().getAbsolutePath();
+	}
+
+	private static void deleteSharedInsuranceArtifacts() throws IOException {
+		deleteIfExists(downloadedInsurancePdfPath);
+		deleteIfExists(insuranceCredentialPngPath);
+		deleteIfExists(insuranceCredentialJpgPath);
+		deleteIfExists(insuranceCredentialJpegPath);
+	}
+
+	private static void deleteIfExists(String path) throws IOException {
+		if (path == null || path.trim().isEmpty()) {
+			return;
+		}
+		Files.deleteIfExists(Path.of(path));
 	}
 
 	public static void updateBrowserStackNetworkProfile(String networkProfile) {

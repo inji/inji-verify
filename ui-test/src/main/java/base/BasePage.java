@@ -613,5 +613,17 @@ public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger,
             logger.error("Invalid explicitWaitTimeout value from properties. Using default 30 seconds.");
             return 30;
 		}
-}
+	}
+
+	public static int getScanVerificationTimeoutMultiplier() {
+		try {
+			String multiplier = InjiVerifyConfigManager.getproperty("scanVerificationTimeoutMultiplier");
+			if (multiplier != null && !multiplier.trim().isEmpty()) {
+				return Integer.parseInt(multiplier.trim());
+			}
+		} catch (NumberFormatException e) {
+			logger.error("Invalid scanVerificationTimeoutMultiplier value from properties. Using default 6.");
+		}
+		return 6;
+	}
 }

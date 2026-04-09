@@ -8,7 +8,9 @@ import java.io.OutputStream;
 import java.awt.Graphics2D;
 import java.awt.image.BufferedImage;
 import java.net.URI;
+import java.nio.file.Files;
 import java.util.HashMap;
+import java.util.Map;
 
 import javax.imageio.ImageIO;
 
@@ -23,8 +25,15 @@ import org.slf4j.LoggerFactory;
 
 public class BaseTestUtil {
     private static final Logger logger = LoggerFactory.getLogger(BaseTestUtil.class);
-    private static final int SCAN_VIDEO_FRAMES = 30;
+    // Chrome loops Y4M files, so only a small number of frames is needed for the QR scanner
+    // to detect the code on the first or second loop. Fewer frames = smaller file = faster
+    // Chrome camera initialisation under parallel load.
+    private static final int SCAN_VIDEO_FRAMES_HIGH_RES = 5;  // 15mp (~111MB) / 8mp (~62MB)
+    private static final int SCAN_VIDEO_FRAMES_DEFAULT   = 10; // 2mp / low_light / default (~15-31MB)
     private static final String RUNTIME_MEDIA_DIR = "test-output" + File.separator + "runtime-media";
+    private static final String LOCAL_DOWNLOADS_DIR = RUNTIME_MEDIA_DIR + File.separator + "downloads";
+    private static final String RUNTIME_SCAN_IMAGE_NAME = "ScanQrCode-runtime.png";
+    private static final String RUNTIME_SCAN_PREVIEW_IMAGE_NAME = "ScanQrCode-runtime-preview.png";
 
     public JSONObject readConfig(Class<?> obj, String environment) {
         try {
@@ -73,6 +82,8 @@ public class BaseTestUtil {
         chromeOptions.addArguments("--disable-infobars");
         chromeOptions.addArguments("--no-sandbox");
         chromeOptions.addArguments("--disable-dev-shm-usage");
+        chromeOptions.setExperimentalOption("prefs", getLocalChromePreferences());
+        chromeOptions.setCapability("goog:loggingPrefs", getChromeLoggingPreferences());
 
         if (isRunningFromIde()) {
             logger.info("Running local ChromeDriver in headed mode from IDE.");
@@ -101,6 +112,34 @@ public class BaseTestUtil {
         return chromeOptions;
     }
 
+    protected Map<String, Object> getChromeLoggingPreferences() {
+        HashMap<String, Object> loggingPrefs = new HashMap<>();
+        loggingPrefs.put("performance", "ALL");
+        loggingPrefs.put("browser", "ALL");
+        return loggingPrefs;
+    }
+
+    private Map<String, Object> getLocalChromePreferences() {
+        File downloadDir = getLocalDownloadsDirectory();
+        try {
+            Files.createDirectories(downloadDir.toPath());
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to create local download directory: " + downloadDir.getAbsolutePath(), e);
+        }
+
+        HashMap<String, Object> prefs = new HashMap<>();
+        prefs.put("download.default_directory", downloadDir.getAbsolutePath());
+        prefs.put("download.prompt_for_download", false);
+        prefs.put("download.directory_upgrade", true);
+        prefs.put("plugins.always_open_pdf_externally", true);
+        prefs.put("safebrowsing.enabled", true);
+        return prefs;
+    }
+
+    protected static File getLocalDownloadsDirectory() {
+        return new File(System.getProperty("user.dir"), LOCAL_DOWNLOADS_DIR);
+    }
+
     private String generateRuntimeY4mFromInsuranceCredential() {
         refreshRuntimeScanImages();
         File sourceImage = findScanVideoSourceImage();
@@ -123,11 +162,16 @@ public class BaseTestUtil {
         }
     }
 
+    public void refreshRuntimeScanMediaForCurrentScenario() {
+        refreshRuntimeScanImages();
+        generateRuntimeY4mFromInsuranceCredential();
+    }
+
     private void refreshRuntimeScanImages() {
-        File sourceImage = findPrimaryInsuranceCredentialImage();
         File outputDir = getRuntimeMediaDirectory();
-        File runtimeQrImage = new File(outputDir, "ScanQrCode-runtime.png");
-        File previewQrImage = new File(outputDir, "ScanQrCode-runtime-preview.png");
+        File sourceImage = findPrimaryInsuranceCredentialImage(outputDir);
+        File runtimeQrImage = new File(outputDir, RUNTIME_SCAN_IMAGE_NAME);
+        File previewQrImage = new File(outputDir, RUNTIME_SCAN_PREVIEW_IMAGE_NAME);
 
         try {
             writeRuntimeScanQrCodeImage(sourceImage, runtimeQrImage);
@@ -157,8 +201,8 @@ public class BaseTestUtil {
     }
 
     private File findScanVideoSourceImage() {
-        File runtimeFile = new File(getRuntimeMediaDirectory(), "ScanQrCode-runtime.png");
-        File previewFile = new File(getRuntimeMediaDirectory(), "ScanQrCode-runtime-preview.png");
+        File runtimeFile = new File(getRuntimeMediaDirectory(), RUNTIME_SCAN_IMAGE_NAME);
+        File previewFile = new File(getRuntimeMediaDirectory(), RUNTIME_SCAN_PREVIEW_IMAGE_NAME);
         File fallbackFile = findInsuranceCredentialImage();
         java.util.Set<String> tags = BaseTest.getCurrentScenarioTags();
 
@@ -261,8 +305,9 @@ public class BaseTestUtil {
                 }
             }
 
+            int frameCount = getScanVideoFrameCount(cameraProfile);
             byte[] frameHeader = "FRAME\n".getBytes("US-ASCII");
-            for (int frame = 0; frame < SCAN_VIDEO_FRAMES; frame++) {
+            for (int frame = 0; frame < frameCount; frame++) {
                 outputStream.write(frameHeader);
                 outputStream.write(yPlane);
                 outputStream.write(uPlane);
@@ -278,10 +323,10 @@ public class BaseTestUtil {
             graphics.setColor(java.awt.Color.WHITE);
             graphics.fillRect(0, 0, videoWidth, videoHeight);
 
-            double scale = Math.min(
+            double scale = Math.min(1.0d, Math.min(
                     (double) videoWidth / sourceImage.getWidth(),
                     (double) videoHeight / sourceImage.getHeight()
-            );
+            ));
             int scaledWidth = Math.max(2, ((int) Math.round(sourceImage.getWidth() * scale)) & ~1);
             int scaledHeight = Math.max(2, ((int) Math.round(sourceImage.getHeight() * scale)) & ~1);
             int x = (videoWidth - scaledWidth) / 2;
@@ -299,18 +344,25 @@ public class BaseTestUtil {
 
     private int[] getScanVideoSize(String cameraProfile) {
         if ("2mp".equals(cameraProfile)) {
-            return new int[] { 1600, 1200 };
-        }
-        if ("8mp".equals(cameraProfile)) {
             return new int[] { 1920, 1080 };
         }
+        if ("8mp".equals(cameraProfile)) {
+            return new int[] { 3840, 2160 };
+        }
         if ("15mp".equals(cameraProfile)) {
-            return new int[] { 2560, 1440 };
+            return new int[] { 5120, 2880 };
         }
         if ("low_light".equals(cameraProfile)) {
             return new int[] { 1920, 1080 };
         }
         return new int[] { 1920, 1080 };
+    }
+
+    private int getScanVideoFrameCount(String cameraProfile) {
+        if ("15mp".equals(cameraProfile) || "8mp".equals(cameraProfile)) {
+            return SCAN_VIDEO_FRAMES_HIGH_RES;
+        }
+        return SCAN_VIDEO_FRAMES_DEFAULT;
     }
 
     private String getScanCameraProfile() {
@@ -367,7 +419,7 @@ public class BaseTestUtil {
 
     private String generateRuntimeScanQrCodeFromInsuranceCredential() {
         refreshRuntimeScanImages();
-        File runtimeQrImage = new File(getRuntimeMediaDirectory(), "ScanQrCode-runtime.png");
+        File runtimeQrImage = new File(getRuntimeMediaDirectory(), RUNTIME_SCAN_IMAGE_NAME);
         return runtimeQrImage.getAbsolutePath();
     }
 
@@ -382,14 +434,11 @@ public class BaseTestUtil {
         return outputDir;
     }
 
-    private File findPrimaryInsuranceCredentialImage() {
+    private File findPrimaryInsuranceCredentialImage(File outputDir) {
         String[] candidates = new String[] {
                 BaseTest.getInsuranceCredentialPngPath(),
                 BaseTest.getInsuranceCredentialJpgPath(),
-                BaseTest.getInsuranceCredentialJpegPath(),
-                System.getProperty("user.dir") + File.separator + "InsuranceCredential0.png",
-                System.getProperty("user.dir") + File.separator + "InsuranceCredential0.jpg",
-                System.getProperty("user.dir") + File.separator + "InsuranceCredential0.jpeg"
+                BaseTest.getInsuranceCredentialJpegPath()
         };
 
         for (String candidate : candidates) {
@@ -402,7 +451,31 @@ public class BaseTestUtil {
             }
         }
 
-        throw new RuntimeException("Unable to find InsuranceCredential0 source image for runtime scan QR generation.");
+        return createPlaceholderScanSourceImage(outputDir);
+    }
+
+    private File createPlaceholderScanSourceImage(File outputDir) {
+        File placeholderFile = new File(outputDir, RUNTIME_SCAN_IMAGE_NAME);
+        BufferedImage placeholderImage = new BufferedImage(1080, 1080, BufferedImage.TYPE_INT_RGB);
+        Graphics2D graphics = placeholderImage.createGraphics();
+        try {
+            graphics.setColor(java.awt.Color.WHITE);
+            graphics.fillRect(0, 0, placeholderImage.getWidth(), placeholderImage.getHeight());
+        } finally {
+            graphics.dispose();
+        }
+
+        try {
+            ImageIO.write(placeholderImage, "png", placeholderFile);
+            logger.info("Created placeholder scan source image until insurance artifacts are prepared: {}",
+                    placeholderFile.getAbsolutePath());
+            return placeholderFile;
+        } catch (IOException e) {
+            throw new RuntimeException("Unable to create placeholder scan source image: "
+                    + placeholderFile.getAbsolutePath(), e);
+        } finally {
+            placeholderImage.flush();
+        }
     }
 
     private void writeRuntimeScanQrCodeImage(File sourceImage, File targetImage) throws IOException {
