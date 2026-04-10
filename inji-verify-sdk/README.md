@@ -122,7 +122,7 @@ function MyApp() {
   return (
   <QRCodeVerification
       scannerActive={scannerActive}
-      verifyServiceUrl="https://your-backend.com/verify"
+      verifyServiceUrl="https://your-backend.com/v1/verify"
       isEnableUpload={false}
       onClose={onClose} // invoked when scanner is closed 
       onVCReceived={(transactionId) => {
@@ -175,9 +175,9 @@ If summariseResults=false, then response will be
 | `expiryCheck`             | object  | ✅        | If false, the credential is EXPIRED     |
 | `statusChecks`            | array   | ❌        | Contains revocation and other status validations           |
 | `statusChecks.error`      | object  | ❌        | If present, throws an error instead of returning a status        |
-| `statusChecks.purpose`    | object  | ❌        | Identifies purpose (e.g., "revocation")          |
+| `statusChecks.purpose`    | string  | ❌        | Identifies purpose (e.g., "revocation")          |
 | `statusChecks.valid`      | boolean | ❌        | If false for revocation → credential is revoked            |
-| `claims`                  | array   | ❌        |  Include all claims from credentialSubject   |
+| `claims`                  | object  | ❌        |  Include all claims from credentialSubject   |
 
 ### Option B: OpenID4VP Verification
 OpenID4VPVerification Component verifies Verifiable Presentations securely using OpenID4VP standards for both cross-device and same-device scenarios.
@@ -345,9 +345,9 @@ If summariseResults=false, then response will be
 | `expiryCheck`             | object  | ✅        | If false, the credential is EXPIRED                       |
 | `statusChecks`            | array   | ❌        | Contains revocation and other status validations          |
 | `statusChecks.error`      | object  | ❌        | If present, throws an error instead of returning a status |
-| `statusChecks.purpose`    | object  | ❌        | Identifies purpose (e.g., "revocation")                   |
+| `statusChecks.purpose`    | string  | ❌        | Identifies purpose (e.g., "revocation")                   |
 | `statusChecks.valid`      | boolean | ❌        | If false for revocation → credential is revoked           |
-| `claims`                  | array   | ❌        | Include all claims from credentialSubject                 |
+| `claims`                  | object  | ❌        | Include all claims from credentialSubject                 |
 
 > **Security Recommendation**
 >
@@ -425,7 +425,7 @@ presentationDefinition={{
 | `isEnableScan`            | boolean  | true    | Allow camera scanning                      |
 | `isEnableZoom`            | boolean  | true    | Allow camera zoom (for mobile and tablets) |
 | `uploadButtonStyle`       | string   | -       | Custom upload button styling               |
-| `isVPSubmissionSupported` | Boolean  | false   | Toggle VP submission support               |
+| `isVPSubmissionSupported` | boolean  | false   | Toggle VP submission support               |
 | `vcVerificationV2Request` | object   | -       | contains request body for vc verification  |
 
 ### OpenID4VPVerification Specific
