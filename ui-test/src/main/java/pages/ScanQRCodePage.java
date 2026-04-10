@@ -181,13 +181,18 @@ public class ScanQRCodePage extends BasePage {
 	}
 
 	public boolean isScanFlowActiveOrVerificationInProgress() {
-		return isVisibleActiveScanVideo() || isVisibleBackButton() || isVisibleScanLine() || isVerificationInProgressVisible();
+		return isVisibleActiveScanVideo()
+				|| isVisibleBackButton()
+				|| isVisibleScanLine()
+				|| isVisibleImageAreaElement()
+				|| isVerificationInProgressVisible();
 	}
 
 	public boolean isScanFlowActiveOrVerificationInProgressWithoutWait() {
 		return isDisplayedWithoutWaiting(activeScanVideo)
 				|| isDisplayedWithoutWaiting(backButton)
 				|| isDisplayedWithoutWaiting(ScanLine)
+				|| isDisplayedWithoutWaiting(ImageAreaElement)
 				|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label);
 	}
 
@@ -345,6 +350,7 @@ public class ScanQRCodePage extends BasePage {
 					.until(webDriver -> isDisplayedWithoutWaiting(ScanLine)
 							|| isDisplayedWithoutWaiting(activeScanVideo)
 							|| isDisplayedWithoutWaiting(backButton)
+							|| isDisplayedWithoutWaiting(ImageAreaElement)
 							|| hasFinalScanVerificationResultVisible());
 		} catch (TimeoutException e) {
 			// Camera may not have started — fall through so the final-result wait

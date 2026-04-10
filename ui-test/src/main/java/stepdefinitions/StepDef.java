@@ -2348,10 +2348,12 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	@When("Verify VP verification qr code step3 description")
 	public void verifyVpVerificationQrCodeStep3Description() {
 	    try {
-	        Assert.assertEquals(vpverification.getVpVerificationQrCodeStep3Description(), UiConstants.VP_VERIFICATION_QR_CODE_STEP3_DESCRIPTION);
+	        String actualDescription = vpverification.getVpVerificationQrCodeStep3Description();
+	        String expectedDescription = vpverification.normalizeVisibleText(UiConstants.VP_VERIFICATION_QR_CODE_STEP3_DESCRIPTION);
+	        Assert.assertEquals(actualDescription, expectedDescription);
 	        test.log(Status.PASS, "Successfully verified VP verification qr code step3 description.");
 	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Verification failed: VP verification qr code step3 description mismatch. Expected: '" + UiConstants.VP_VERIFICATION_QR_CODE_STEP3_DESCRIPTION + "', Actual: '" + vpverification.getVpVerificationQrCodeStep3Description() + "'");
+	        test.log(Status.FAIL, "Verification failed: VP verification qr code step3 description mismatch. Expected: '" + vpverification.normalizeVisibleText(UiConstants.VP_VERIFICATION_QR_CODE_STEP3_DESCRIPTION) + "', Actual: '" + vpverification.getVpVerificationQrCodeStep3Description() + "'");
 	        throw e;
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while verifying VP verification qr code step3 description", e);

@@ -147,7 +147,7 @@ public class VpVerification extends BasePage {
 	}
 
 	public String getVpVerificationQrCodeStep3Description() {
-		return getText(driver, vpVerificationQrCodeStep3Description);
+		return normalizeVisibleText(getText(driver, vpVerificationQrCodeStep3Description));
 	}
 
 	public String getVpVerificationQrCodeStep4Label() {

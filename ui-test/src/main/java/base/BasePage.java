@@ -117,6 +117,13 @@ public boolean isElementIsVisibleAfterIdle(WebDriver driver, WebElement element)
         return element.getText();
     }
 
+    public String normalizeVisibleText(String text) {
+        if (text == null) {
+            return null;
+        }
+        return text.replace('\u00A0', ' ').replaceAll("\\s+", " ").trim();
+    }
+
     public String getAttributeValue(WebDriver driver, WebElement element, String attributeName) {
         waitForElementVisible(driver, element);
         return element.getAttribute(attributeName);
