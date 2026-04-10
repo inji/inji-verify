@@ -719,12 +719,20 @@ public class BaseTestUtil {
         return new int[] { cropX, cropY, cropSize, cropSize };
     }
     public static String getEnvName() {
-        String baseUrl = InjiVerifyConfigManager.getproperty("injiverify");
-        String host = URI.create(baseUrl).getHost();
-        String[] parts = host.split("\\.");
+        String configuredBaseUrl = InjiVerifyConfigManager.getproperty("injiverify");
+        String endpointOverride = System.getProperty("env.endpoint");
+        String effectiveBaseUrl = (endpointOverride != null && !endpointOverride.trim().isEmpty())
+                ? endpointOverride.trim()
+                : configuredBaseUrl;
+
+        if (endpointOverride != null && !endpointOverride.trim().isEmpty()) {
+            BaseTestCase.ApplnURI = endpointOverride.trim();
+        }
 
         logger.info("--- ApplnURI --- {}", BaseTestCase.ApplnURI);
-        BaseTestCase.ApplnURI = System.getProperty("env.endpoint");
+
+        String host = URI.create(effectiveBaseUrl).getHost();
+        String[] parts = host.split("\\.");
 
         String envName = "";
         if (parts.length >= 3) {

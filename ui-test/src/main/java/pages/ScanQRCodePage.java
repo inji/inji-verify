@@ -181,30 +181,25 @@ public class ScanQRCodePage extends BasePage {
 	}
 
 	public boolean isScanFlowActiveOrVerificationInProgress() {
-		return isVisibleActiveScanVideo()
-				|| isVisibleBackButton()
-				|| isVisibleScanLine()
-				|| isVisibleImageAreaElement()
+		return isCameraUiActiveWithoutWait()
 				|| isVerificationInProgressVisible();
 	}
 
 	public boolean isScanFlowActiveOrVerificationInProgressWithoutWait() {
-		return isDisplayedWithoutWaiting(activeScanVideo)
-				|| isDisplayedWithoutWaiting(backButton)
-				|| isDisplayedWithoutWaiting(ScanLine)
-				|| isDisplayedWithoutWaiting(ImageAreaElement)
+		return isCameraUiActiveWithoutWait()
 				|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label);
 	}
 
 	public boolean isCameraAccessRestoredAndScanUsable() {
-		return isScanFlowActiveOrVerificationInProgressWithoutWait()
+		return isCameraUiActiveWithoutWait()
 				|| hasFinalScanVerificationResultVisible();
 	}
 
 	public boolean isScanFlowUsableAfterCameraPermission() {
 		waitForCameraPermissionOutcome();
+		waitForStableCameraUsableState();
 		return !isCameraAccessDeniedTitleVisibleWithoutWait()
-				&& (isScanFlowActiveOrVerificationInProgressWithoutWait() || hasFinalScanVerificationResultVisible());
+				&& (isCameraUiActiveWithoutWait() || hasFinalScanVerificationResultVisible());
 	}
 
 	public void clickOnBackButton() {
@@ -213,6 +208,8 @@ public class ScanQRCodePage extends BasePage {
 
 	public void clickOnOkayButton() {
 		clickOnElement(driver, okayButton);
+		waitForCameraAccessDeniedPopupToClose();
+		WaitUtil.waitForClickability(driver, scanQRCodeButton);
 	}
 
 	public boolean isCameraAccessDeniedTitleVisible() {
@@ -344,7 +341,7 @@ public class ScanQRCodePage extends BasePage {
 	 * camera-loading state, which happens when large Y4M files take time to
 	 * initialise in Chrome under parallel load.
 	 */
-	public void waitForScanCameraActive() {
+	public boolean waitForScanCameraActive() {
 		try {
 			new WebDriverWait(driver, Duration.ofSeconds((long) getTimeout() * getScanVerificationTimeoutMultiplier()))
 					.until(webDriver -> isDisplayedWithoutWaiting(ScanLine)
@@ -352,9 +349,9 @@ public class ScanQRCodePage extends BasePage {
 							|| isDisplayedWithoutWaiting(backButton)
 							|| isDisplayedWithoutWaiting(ImageAreaElement)
 							|| hasFinalScanVerificationResultVisible());
+			return true;
 		} catch (TimeoutException e) {
-			// Camera may not have started — fall through so the final-result wait
-			// can report the actual failure state.
+			return false;
 		}
 	}
 
@@ -417,7 +414,20 @@ public class ScanQRCodePage extends BasePage {
 		try {
 			new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds))
 					.until(webDriver -> isDisplayedWithoutWaiting(cameraAccessDeniedTitle)
-							|| isScanFlowActiveOrVerificationInProgressWithoutWait()
+							|| isCameraUiActiveWithoutWait()
+							|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label)
+							|| hasFinalScanVerificationResultVisible());
+		} catch (TimeoutException e) {
+			// Fall through to the final assertion path so the step still reports the page state.
+		}
+	}
+
+	private void waitForStableCameraUsableState() {
+		long timeoutSeconds = (long) getTimeout() * getScanVerificationTimeoutMultiplier();
+		try {
+			new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds))
+					.until(webDriver -> isDisplayedWithoutWaiting(cameraAccessDeniedTitle)
+							|| isCameraUiActiveWithoutWait()
 							|| hasFinalScanVerificationResultVisible());
 		} catch (TimeoutException e) {
 			// Fall through to the final assertion path so the step still reports the page state.
@@ -425,15 +435,34 @@ public class ScanQRCodePage extends BasePage {
 	}
 
 	private void executeScanFlowWithSingleRecovery() {
-		try {
-			clickOnScanQrCodeButton();
-			waitForScanCameraActive();
-		} catch (TimeoutException firstTimeout) {
-			refreshBrowser(driver);
-			WaitUtil.waitForClickability(driver, scanQRCodeButton);
-			clickOnScanQrCodeButton();
-			waitForScanCameraActive();
+		clickOnScanQrCodeButton();
+		if (waitForScanStartOutcome()) {
+			return;
 		}
+		refreshBrowser(driver);
+		WaitUtil.waitForClickability(driver, scanQRCodeButton);
+		clickOnScanQrCodeButton();
+		waitForScanStartOutcome();
+	}
+
+	private boolean waitForScanStartOutcome() {
+		long timeoutSeconds = (long) getTimeout() * getScanVerificationTimeoutMultiplier();
+		try {
+			return new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds))
+					.until(webDriver -> isDisplayedWithoutWaiting(cameraAccessDeniedTitle)
+							|| isCameraUiActiveWithoutWait()
+							|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label)
+							|| hasFinalScanVerificationResultVisible());
+		} catch (TimeoutException e) {
+			return false;
+		}
+	}
+
+	private boolean isCameraUiActiveWithoutWait() {
+		return isDisplayedWithoutWaiting(activeScanVideo)
+				|| isDisplayedWithoutWaiting(backButton)
+				|| isDisplayedWithoutWaiting(ScanLine)
+				|| isDisplayedWithoutWaiting(ImageAreaElement);
 	}
 
 	private boolean isScanCompletionStepVisible() {
@@ -470,6 +499,15 @@ public class ScanQRCodePage extends BasePage {
 			return element != null && element.isDisplayed();
 		} catch (Exception e) {
 			return false;
+		}
+	}
+
+	private void waitForCameraAccessDeniedPopupToClose() {
+		try {
+			new WebDriverWait(driver, Duration.ofSeconds(getTimeout()))
+					.until(webDriver -> !isDisplayedWithoutWaiting(cameraAccessDeniedTitle));
+		} catch (TimeoutException e) {
+			// Fall through so the existing assertion path reports the remaining popup state.
 		}
 	}
 }

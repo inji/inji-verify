@@ -239,7 +239,11 @@ public class ScanQrCodeSteps extends BaseSteps {
     @Then("validate the error message for half QR code")
     public void validateTheErrorMessageForHalfQRCode() {
         verifyGenericScanFailure("Half QR code should not be scanned successfully.");
-        verifyAlertMessage(scanqrcode.getAlertMessage(), "Half QR code scan failure validated successfully.");
+        verifyAlertMessage(
+                scanqrcode.getAlertMessage(),
+                UiConstants.HALF_QRCODE_FAILURE_MESSAGE,
+                "Half QR code scan failure validated successfully."
+        );
     }
 
     @Then("validate the error message for invalid QR code")
@@ -401,7 +405,11 @@ public class ScanQrCodeSteps extends BaseSteps {
     @Then("validate scan does not work for visually modified qr code")
     public void validateScanDoesNotWorkForVisuallyModifiedQrCode() {
         verifyGenericScanFailure("Visually modified QR code should not be scanned successfully.");
-        verifyAlertMessage(scanqrcode.getAlertMessage(), "Visual-effect QR code scan failure validated successfully.");
+        verifyAlertMessage(
+                scanqrcode.getAlertMessage(),
+                UiConstants.HALF_QRCODE_FAILURE_MESSAGE,
+                "Visual-effect QR code scan failure validated successfully."
+        );
     }
 
     @And("validate that try again button is visible")
@@ -506,9 +514,9 @@ public class ScanQrCodeSteps extends BaseSteps {
         }
     }
 
-    private void verifyAlertMessage(String actualMessage, String successMessage) {
+    private void verifyAlertMessage(String actualMessage, String expectedMessage, String successMessage) {
         try {
-            assertEquals(actualMessage, UiConstants.HALF_QRCODE_FAILURE_MESSAGE);
+            assertEquals(actualMessage, expectedMessage);
             test.log(Status.PASS, successMessage);
         } catch (AssertionError e) {
             logAssertionFailure(test, driver, successMessage + " Validation failed", e);

@@ -72,6 +72,7 @@ public class BaseTest extends BaseTestUtil{
 	private static final ThreadLocal<String> scanQrCodeFile = new ThreadLocal<>();
 	private static final ThreadLocal<String> scanCameraProfile = new ThreadLocal<>();
 	private static final ThreadLocal<Boolean> autoAllowScanCamera = ThreadLocal.withInitial(() -> Boolean.TRUE);
+	private static final ThreadLocal<Boolean> browserStackSessionSlotAcquired = ThreadLocal.withInitial(() -> Boolean.FALSE);
 	private static final ThreadLocal<String> scenarioRuntimeDir = new ThreadLocal<>();
 	private static final ThreadLocal<java.util.Set<String>> scenarioTags = new ThreadLocal<>();
 	private static final ThreadLocal<Boolean> failedStepScreenshotCaptured = ThreadLocal.withInitial(() -> Boolean.FALSE);
@@ -164,6 +165,7 @@ public class BaseTest extends BaseTestUtil{
 		if (useBrowserStack) {
 			try {
 				bsSessionSlots.acquire();
+				browserStackSessionSlotAcquired.set(Boolean.TRUE);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				throw new RuntimeException("Interrupted waiting for a BrowserStack session slot", e);
@@ -341,12 +343,14 @@ public class BaseTest extends BaseTestUtil{
 			if (currentDriver != null) {
 				currentDriver.quit();
 			}
-			if (isUsingBrowserStack()) {
+			if (Boolean.TRUE.equals(browserStackSessionSlotAcquired.get())) {
 				bsSessionSlots.release();
 			}
 			driverHolder.remove();
 			jseHolder.remove();
 			browserStackSession.remove();
+			browserStackSessionSlotAcquired.remove();
+			ExtentReportManager.removeTest();
 			scanQrCodeFile.remove();
 			scanCameraProfile.remove();
 			autoAllowScanCamera.remove();

@@ -43,7 +43,6 @@ import com.aventstack.extentreports.Status;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import static org.testng.Assert.assertEquals;
-import static org.testng.Assert.assertTrue;
 
 import java.awt.image.BufferedImage;
 import javax.imageio.ImageIO;

@@ -241,7 +241,10 @@ public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger,
     }
 
     private File getRuntimeMediaDirectory() {
-        File runtimeDir = new File(System.getProperty("user.dir") + File.separator + RUNTIME_MEDIA_DIR);
+        String scenarioRuntimeDir = BaseTest.getScenarioRuntimeDir();
+        File runtimeDir = scenarioRuntimeDir == null || scenarioRuntimeDir.trim().isEmpty()
+                ? new File(System.getProperty("user.dir") + File.separator + RUNTIME_MEDIA_DIR)
+                : new File(scenarioRuntimeDir);
         if (!runtimeDir.exists() && !runtimeDir.mkdirs()) {
             throw new RuntimeException("Unable to create runtime media directory: " + runtimeDir.getAbsolutePath());
         }

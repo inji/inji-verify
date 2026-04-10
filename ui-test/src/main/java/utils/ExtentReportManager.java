@@ -100,6 +100,10 @@ public class ExtentReportManager {
         return testHolder.get();
     }
 
+    public static void removeTest() {
+        testHolder.remove();
+    }
+
     // ── Counter incrementers ──────────────────────────────────────────────────────
     public static synchronized void incrementPassed() {
         passedCount++;
