@@ -1716,8 +1716,8 @@ public class StepDef extends BaseSteps {
     @Then("User enter the policy number")
     public void userEnterThePolicyNumber() {
         try {
-            homePage.enterPolicyNumer(policyNumber);
-            test.log(Status.PASS, "User successfully entered the policy number: " + policyNumber);
+            homePage.enterPolicyNumer(policyNumber());
+            test.log(Status.PASS, "User successfully entered the policy number: " + policyNumber());
         } catch (NoSuchElementException e) {
             test.log(Status.FAIL, "Element not found while entering the policy number: " + e.getMessage());
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
@@ -2021,8 +2021,8 @@ public class StepDef extends BaseSteps {
     @When("User enter the full name")
     public void userEnterTheFullName() {
         try {
-        	homePage.enterFullName(fullName);
-            test.log(Status.PASS, "User successfully entered the full name: " + fullName);
+        	homePage.enterFullName(fullName());
+            test.log(Status.PASS, "User successfully entered the full name: " + fullName());
         } catch (NoSuchElementException e) {
             test.log(Status.FAIL, "Element not found while entering the full name: " + e.getMessage());
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));
@@ -2038,8 +2038,8 @@ public class StepDef extends BaseSteps {
     @When("User enter the date of birth")
     public void userEnterTheDateOfBirth() {
         try {
-        	homePage.selectDateOfBirth(dob);
-            test.log(Status.PASS, "User successfully entered the date of birth: " + dob);
+        	homePage.selectDateOfBirth(dob());
+            test.log(Status.PASS, "User successfully entered the date of birth: " + dob());
         } catch (NoSuchElementException e) {
             test.log(Status.FAIL, "Element not found while entering the date of birth: " + e.getMessage());
             test.log(Status.FAIL, ExceptionUtils.getStackTrace(e));

@@ -27,9 +27,9 @@ abstract class BaseSteps {
     protected UploadQRCode uploadqrcode;
     protected ExtentTest test;
 
-    protected static final String policyNumber = SimplePostForAutoGenId.policyNumber;
-    protected static final String fullName = SimplePostForAutoGenId.fullName;
-    protected static final String dob = SimplePostForAutoGenId.dob;
+    protected String policyNumber() { return SimplePostForAutoGenId.policyNumber; }
+    protected String fullName() { return SimplePostForAutoGenId.fullName; }
+    protected String dob() { return SimplePostForAutoGenId.dob; }
     protected static final String screenshotPath = System.getProperty("user.dir") + "/test-output/screenshots";
 
     protected BaseSteps() {

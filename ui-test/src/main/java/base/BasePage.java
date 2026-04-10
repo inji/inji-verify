@@ -584,6 +584,8 @@ public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger,
                 try {
                     URL linkUrl = new URL(url);
                     httpConn = (HttpURLConnection) linkUrl.openConnection();
+                    httpConn.setConnectTimeout(10000);
+                    httpConn.setReadTimeout(10000);
                     httpConn.setRequestMethod("HEAD");
                     httpConn.connect();
                     int responseCode = httpConn.getResponseCode();
