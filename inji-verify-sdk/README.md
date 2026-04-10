@@ -401,7 +401,7 @@ presentationDefinition={{
 | `isEnableUpload`          | boolean  | true    | Allow file uploads                        |
 | `isEnableScan`            | boolean  | true    | Allow camera scanning                     |
 | `isEnableZoom`            | boolean  | true    | Allow camera zoom                         |
-| `uploadButtonStyle`       | object   | -       | Custom upload button styling              |
+| `uploadButtonStyle`       | string   | -       | Custom upload button styling              |
 | `isVPSubmissionSupported` | Boolean  | false   | Toggle VP submission support              |
 | `vcVerificationV2Request` | object   | -       | contains request body for vc verification |
 
@@ -412,8 +412,8 @@ presentationDefinition={{
 | `protocol`                 | string   | "openid4vp://" | Protocol for QR codes (optional)          |
 | `presentationDefinitionId` | string   | -              | Predefined verification template          |
 | `presentationDefinition`   | object   | -              | Custom verification rules                 |
-| `onVpProcessed`            | function | -              | Get full results immediately              |
-| `onVpReceived`             | function | -              | Get transaction ID only                   |
+| `onVPProcessed`            | function | -              | Get full results immediately              |
+| `onVPReceived`             | function | -              | Get transaction ID only                   |
 | `onQrCodeExpired`          | function | -              | Handle QR code expiration                 |
 | `isSameDeviceFlowEnabled`  | boolean  | true           | Enable same-device flow (optional)        |
 | `qrCodeStyles`             | object   | -              | Customize QR code appearance              |
