@@ -184,9 +184,22 @@ public class ScanQRCodePage extends BasePage {
 		return isVisibleActiveScanVideo() || isVisibleBackButton() || isVisibleScanLine() || isVerificationInProgressVisible();
 	}
 
+	public boolean isScanFlowActiveOrVerificationInProgressWithoutWait() {
+		return isDisplayedWithoutWaiting(activeScanVideo)
+				|| isDisplayedWithoutWaiting(backButton)
+				|| isDisplayedWithoutWaiting(ScanLine)
+				|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label);
+	}
+
 	public boolean isCameraAccessRestoredAndScanUsable() {
-		return isScanFlowActiveOrVerificationInProgress()
+		return isScanFlowActiveOrVerificationInProgressWithoutWait()
 				|| hasFinalScanVerificationResultVisible();
+	}
+
+	public boolean isScanFlowUsableAfterCameraPermission() {
+		waitForCameraPermissionOutcome();
+		return !isCameraAccessDeniedTitleVisibleWithoutWait()
+				&& (isScanFlowActiveOrVerificationInProgressWithoutWait() || hasFinalScanVerificationResultVisible());
 	}
 
 	public void clickOnBackButton() {
@@ -199,6 +212,10 @@ public class ScanQRCodePage extends BasePage {
 
 	public boolean isCameraAccessDeniedTitleVisible() {
 		return isElementIsVisible(driver, cameraAccessDeniedTitle);
+	}
+
+	public boolean isCameraAccessDeniedTitleVisibleWithoutWait() {
+		return isDisplayedWithoutWaiting(cameraAccessDeniedTitle);
 	}
 
 	public String getCameraAccessDeniedTitle() {
@@ -387,6 +404,18 @@ public class ScanQRCodePage extends BasePage {
 				|| isDisplayedWithoutWaiting(alertMessage)
 				|| hasNonEmptyResultMessage()
 				|| isScanCompletionStepVisible();
+	}
+
+	private void waitForCameraPermissionOutcome() {
+		long timeoutSeconds = (long) getTimeout() * getScanVerificationTimeoutMultiplier();
+		try {
+			new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds))
+					.until(webDriver -> isDisplayedWithoutWaiting(cameraAccessDeniedTitle)
+							|| isScanFlowActiveOrVerificationInProgressWithoutWait()
+							|| hasFinalScanVerificationResultVisible());
+		} catch (TimeoutException e) {
+			// Fall through to the final assertion path so the step still reports the page state.
+		}
 	}
 
 	private void executeScanFlowWithSingleRecovery() {

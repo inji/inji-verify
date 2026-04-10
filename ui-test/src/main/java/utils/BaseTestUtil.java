@@ -242,10 +242,8 @@ public class BaseTestUtil {
 
     private boolean shouldUsePreviewScanImage(java.util.Set<String> tags) {
         return tags.contains("@camera_denied")
-                || tags.contains("@offlineScan")
                 || tags.contains("@verifyFirstTimeScanQrCodePermissionPrompt")
                 || tags.contains("@verifyScanQrCodeWithAllowedCameraAccess")
-                || tags.contains("@browser_back_navigation")
                 || tags.contains("@qr_valid");
     }
 
@@ -397,6 +395,9 @@ public class BaseTestUtil {
         if (scenario.getSourceTagNames().contains("@offlineScan")) {
             return "src/test/resources/QRCodes/QRCode.png";
         }
+        if (scenario.getSourceTagNames().contains("@browser_back_navigation")) {
+            return createNavigationOnlyScanSourceImage().getAbsolutePath();
+        }
         if (scenario.getSourceTagNames().contains("@qr_valid")) {
             return generateRuntimeScanQrCodeFromInsuranceCredential();
         }
@@ -496,6 +497,18 @@ public class BaseTestUtil {
 
     private File createPlaceholderScanSourceImage(File outputDir) {
         File placeholderFile = new File(outputDir, RUNTIME_SCAN_IMAGE_NAME);
+        return createBlankScanSourceImage(placeholderFile,
+                "Created placeholder scan source image until insurance artifacts are prepared: {}");
+    }
+
+    private File createNavigationOnlyScanSourceImage() {
+        File outputDir = getRuntimeMediaDirectory();
+        File blankFile = new File(outputDir, "ScanQrCode-navigation-only.png");
+        return createBlankScanSourceImage(blankFile,
+                "Created blank scan source image for browser-back navigation scenario: {}");
+    }
+
+    private File createBlankScanSourceImage(File outputFile, String logMessage) {
         BufferedImage placeholderImage = new BufferedImage(1080, 1080, BufferedImage.TYPE_INT_RGB);
         Graphics2D graphics = placeholderImage.createGraphics();
         try {
@@ -506,13 +519,12 @@ public class BaseTestUtil {
         }
 
         try {
-            ImageIO.write(placeholderImage, "png", placeholderFile);
-            logger.info("Created placeholder scan source image until insurance artifacts are prepared: {}",
-                    placeholderFile.getAbsolutePath());
-            return placeholderFile;
+            ImageIO.write(placeholderImage, "png", outputFile);
+            logger.info(logMessage, outputFile.getAbsolutePath());
+            return outputFile;
         } catch (IOException e) {
-            throw new RuntimeException("Unable to create placeholder scan source image: "
-                    + placeholderFile.getAbsolutePath(), e);
+            throw new RuntimeException("Unable to create blank scan source image: "
+                    + outputFile.getAbsolutePath(), e);
         } finally {
             placeholderImage.flush();
         }
@@ -723,4 +735,3 @@ public class BaseTestUtil {
     }
 
 }
-

@@ -87,7 +87,7 @@ Feature: Inji Verify scan qr code camera testing
     When click on try again button
     Then validate the error message for no internet connection
 
-  @smoke @withoutBrowserstack @scan @qr_valid @browser_back_navigation @needsInsuranceArtifacts
+  @smoke @withoutBrowserstack @scan @browser_back_navigation
   Scenario: Verify browser back from scan page returns user to upload screen
     And click on scan qr code button
     When Click browser back button

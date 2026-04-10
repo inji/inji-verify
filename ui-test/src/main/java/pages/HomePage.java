@@ -2,6 +2,9 @@ package pages;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.ArrayList;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import org.openqa.selenium.WebDriver;
@@ -467,7 +470,7 @@ public String isSuccessMessageDisplayed() {
 
     WebElement fullNameField = driver.findElement(By.id("_form_fullName"));
     WebElement dobField = driver.findElement(By.id("_form_dob"));
-    String formattedDob = formatDateOfBirthForCurrentBrowser(dob, dobField);
+    String formattedDob = resolveAcceptedDateOfBirthFormat(dob, dobField);
 
     WaitUtil.waitForClickability(driver, fullNameField);
     fullNameField.sendKeys(Keys.TAB);
@@ -475,9 +478,10 @@ public String isSuccessMessageDisplayed() {
     WaitUtil.waitForClickability(driver, dobField);
     dobField.clear();
     dobField.sendKeys(formattedDob);
+    dobField.sendKeys(Keys.TAB);
 }
 
-    private String formatDateOfBirthForCurrentBrowser(String rawDate, WebElement dobField) {
+    private String resolveAcceptedDateOfBirthFormat(String rawDate, WebElement dobField) {
         if (rawDate == null || rawDate.trim().isEmpty()) {
             return rawDate;
         }
@@ -488,22 +492,37 @@ public String isSuccessMessageDisplayed() {
         }
 
         LocalDate parsedDate = LocalDate.parse(trimmedDate);
-        String datePattern = resolveDatePatternForCurrentBrowser(dobField);
-        return parsedDate.format(DateTimeFormatter.ofPattern(datePattern));
+        for (String datePattern : resolveCandidateDatePatterns(dobField)) {
+            String formattedDob = parsedDate.format(DateTimeFormatter.ofPattern(datePattern));
+            if (tryDateCandidate(dobField, formattedDob, parsedDate)) {
+                return formattedDob;
+            }
+        }
+
+        return parsedDate.format(DateTimeFormatter.ofPattern("dd-MM-yyyy"));
     }
 
-    private String resolveDatePatternForCurrentBrowser(WebElement dobField) {
+    private List<String> resolveCandidateDatePatterns(WebElement dobField) {
+        LinkedHashSet<String> candidatePatterns = new LinkedHashSet<>();
         String placeholderPattern = sanitizePattern(dobField.getAttribute("placeholder"));
         if (placeholderPattern != null) {
-            return placeholderPattern;
+            candidatePatterns.add(placeholderPattern);
+            candidatePatterns.addAll(withAlternateSeparators(placeholderPattern));
         }
 
         String browserPattern = resolvePatternFromBrowserLocale();
         if (browserPattern != null) {
-            return browserPattern;
+            candidatePatterns.add(browserPattern);
+            candidatePatterns.addAll(withAlternateSeparators(browserPattern));
         }
 
-        return "dd/MM/yyyy";
+        candidatePatterns.add("dd-MM-yyyy");
+        candidatePatterns.add("MM-dd-yyyy");
+        candidatePatterns.add("dd/MM/yyyy");
+        candidatePatterns.add("MM/dd/yyyy");
+        candidatePatterns.add("yyyy-MM-dd");
+
+        return new ArrayList<>(candidatePatterns);
     }
 
     private String resolvePatternFromBrowserLocale() {
@@ -586,6 +605,61 @@ public String isSuccessMessageDisplayed() {
 
     private boolean isValidDateToken(String token) {
         return "dd".equals(token) || "MM".equals(token) || "yyyy".equals(token);
+    }
+
+    private List<String> withAlternateSeparators(String pattern) {
+        List<String> variants = new ArrayList<>();
+        if (pattern == null || pattern.trim().isEmpty()) {
+            return variants;
+        }
+
+        String tokenizedPattern = pattern.replace('/', '|').replace('-', '|').replace('.', '|');
+        variants.add(tokenizedPattern.replace('|', '-'));
+        variants.add(tokenizedPattern.replace('|', '/'));
+        variants.add(tokenizedPattern.replace('|', '.'));
+        return variants;
+    }
+
+    private boolean tryDateCandidate(WebElement dobField, String candidateValue, LocalDate expectedDate) {
+        try {
+            WaitUtil.waitForClickability(driver, dobField);
+            dobField.clear();
+            dobField.sendKeys(candidateValue);
+            dobField.sendKeys(Keys.TAB);
+
+            String actualValue = dobField.getAttribute("value");
+            if (actualValue == null || actualValue.trim().isEmpty()) {
+                return false;
+            }
+
+            String normalizedActual = normalizeDateValue(actualValue);
+            String normalizedCandidate = normalizeDateValue(candidateValue);
+            if (normalizedActual.equals(normalizedCandidate)) {
+                return true;
+            }
+
+            return doesFieldValueMatchExpectedDate(actualValue, expectedDate);
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    private boolean doesFieldValueMatchExpectedDate(String actualValue, LocalDate expectedDate) {
+        String[] candidatePatterns = {"dd-MM-yyyy", "MM-dd-yyyy", "dd/MM/yyyy", "MM/dd/yyyy", "yyyy-MM-dd", "dd.MM.yyyy", "MM.dd.yyyy"};
+        for (String pattern : candidatePatterns) {
+            try {
+                LocalDate parsedActual = LocalDate.parse(actualValue.trim(), DateTimeFormatter.ofPattern(pattern));
+                if (expectedDate.equals(parsedActual)) {
+                    return true;
+                }
+            } catch (DateTimeParseException ignored) {
+            }
+        }
+        return false;
+    }
+
+    private String normalizeDateValue(String dateValue) {
+        return dateValue == null ? "" : dateValue.replaceAll("\\D", "");
     }
 
 	public void clickOnLogin() {
