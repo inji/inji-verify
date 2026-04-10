@@ -3,6 +3,7 @@ package stepdefinitions;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.Status;
 import io.cucumber.java.Before;
+import io.cucumber.java.BeforeStep;
 import io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId;
 import org.apache.commons.lang3.exception.ExceptionUtils;
 import org.openqa.selenium.WebDriver;
@@ -43,17 +44,38 @@ abstract class BaseSteps {
      */
     @Before(order = 11000)
     public void initStepDependencies() {
+        ensureStepDependenciesInitialized();
+    }
+
+    @BeforeStep(order = 11000)
+    public void initStepDependenciesBeforeEachStep() {
+        ensureStepDependenciesInitialized();
+    }
+
+    protected void ensureStepDependenciesInitialized() {
         this.baseTest = new BaseTest();
         this.driver = baseTest.getDriver();
         if (driver == null) {
             throw new RuntimeException("WebDriver is null in BaseSteps! Check if BaseTest.beforeAll() ran correctly.");
         }
-        this.test = ExtentReportManager.getTest();
-        this.homePage = new HomePage(driver);
-        this.ble = new BLE(driver);
-        this.vpverification = new VpVerification(driver);
-        this.scanqrcode = new ScanQRCodePage(driver);
-        this.uploadqrcode = new UploadQRCode(driver);
+        if (this.test == null) {
+            this.test = ExtentReportManager.getTest();
+        }
+        if (this.homePage == null) {
+            this.homePage = new HomePage(driver);
+        }
+        if (this.ble == null) {
+            this.ble = new BLE(driver);
+        }
+        if (this.vpverification == null) {
+            this.vpverification = new VpVerification(driver);
+        }
+        if (this.scanqrcode == null) {
+            this.scanqrcode = new ScanQRCodePage(driver);
+        }
+        if (this.uploadqrcode == null) {
+            this.uploadqrcode = new UploadQRCode(driver);
+        }
     }
 
     public static void logFailure(ExtentTest test, WebDriver driver, String message, Exception e) {

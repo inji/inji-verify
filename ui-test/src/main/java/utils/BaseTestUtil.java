@@ -90,8 +90,8 @@ public class BaseTestUtil {
         chromeOptions.setExperimentalOption("prefs", getLocalChromePreferences());
         chromeOptions.setCapability("goog:loggingPrefs", getChromeLoggingPreferences());
 
-        if (isRunningFromIde()) {
-            logger.info("Running local ChromeDriver in headed mode from IDE.");
+        if (shouldRunLocalChromeHeaded()) {
+            logger.info("Running local ChromeDriver in headed mode.");
             chromeOptions.addArguments("--start-maximized");
         } else {
             logger.info("Running local ChromeDriver in headless mode.");
@@ -380,15 +380,11 @@ public class BaseTestUtil {
         }
     }
 
-    private boolean isRunningFromIde() {
-        String classPath = System.getProperty("java.class.path", "").toLowerCase();
-        String command = System.getProperty("sun.java.command", "").toLowerCase();
-
-        return classPath.contains("idea_rt.jar")
-                || classPath.contains("eclipse")
-                || classPath.contains("junit")
-                || command.contains("com.intellij")
-                || command.contains("org.eclipse");
+    private boolean shouldRunLocalChromeHeaded() {
+        String configuredValue = InjiVerifyConfigManager.getproperty("headless");
+        boolean headless = configuredValue != null && Boolean.parseBoolean(configuredValue.trim());
+        logger.info("Local Chrome mode from injiverify.properties headless={}", headless);
+        return !headless;
     }
 
     protected String resolveScanQrCodeFile(Scenario scenario) {
