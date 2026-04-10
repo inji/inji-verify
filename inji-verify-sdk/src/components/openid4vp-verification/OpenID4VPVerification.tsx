@@ -47,7 +47,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   isSameDeviceFlowEnabled = true,
   acceptVPWithoutHolderProof = false,
   webWalletBaseUrl,
-  vpVerificationV2Request,
+  vpVerificationRequest,
   summariseResults = true
 }) => {
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
@@ -185,7 +185,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         const response = await vpSessionResults(
           verifyServiceUrl,
           responseCode,
-          vpVerificationV2Request,
+          vpVerificationRequest,
         );
 
         if (!response) {
@@ -205,7 +205,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         clearUrl(["response_code"]);
       }
     },
-    [verifyServiceUrl, onVPProcessed, onVPReceived, onError, vpVerificationV2Request]
+    [verifyServiceUrl, onVPProcessed, onVPReceived, onError, vpVerificationRequest]
   );
 
   const fetchVPStatus = useCallback(

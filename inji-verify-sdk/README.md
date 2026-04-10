@@ -20,7 +20,7 @@ Your backend must support the OpenID4VP protocol. You can either:
 **Important:** Your backend URL should look like:
 
 ```
-https://your-backend.com
+https://your-backend.com/v1/verify
 ```
 
 ## Usage Guide
@@ -37,7 +37,7 @@ npm i @injistack/react-inji-verify-sdk
 
 The QRCodeVerification component enables end-to-end Verifiable Credential (VC) verification using QR codes in Inji-Verify. It supports both camera-based scanning and file upload for QR code verification.
 
-**Perfect for:** Scanning QR codes from documents or uploading QR codes (PNG, JPEG, JPG, PDF).
+**Perfect for:** Scanning QR codes from documents, or uploading QR codes (PNG, JPEG, JPG, PDF) within the supported size range of 10 KB to 5 MB.
 
 Steps to integrate:
 
@@ -46,11 +46,6 @@ Steps to integrate:
 ```javascript
 import {QRCodeVerification} from "@injistack/react-inji-verify-sdk";
 ```
-> **QRCodeVerification Methods**
->
->- onVCProcessed returns the verification result directly to the client.
->- onVCReceived returns only a transactionId, allowing the backend to securely fetch verification results.
->- Only one of these callbacks should be used at a time.
 
 #### 1. Uploading a Verifiable Credential (VC) for verification
 
@@ -61,7 +56,7 @@ function MyApp() {
   return (
   <QRCodeVerification 
       triggerElement={triggerElement}
-      verifyServiceUrl="https://your-backend.com/verify"
+      verifyServiceUrl="https://your-backend.com/v1/verify"
       isEnableScan={false}
       onVCProcessed={(result) => {
         console.log("Verification complete:", result);
@@ -70,7 +65,7 @@ function MyApp() {
       onError={(error) => {
         console.log("Something went wrong:", error);
       }}
-      clientId="CLIENT_ID"
+      clientId="did"
     />
   );
 }
@@ -81,16 +76,16 @@ function MyApp() {
   return (
   <QRCodeVerification 
       triggerElement={triggerElement}
-      verifyServiceUrl="https://your-backend.com/verify"
+      verifyServiceUrl="https://your-backend.com/v1/verify"
       isEnableScan={false}
       onVCReceived={(transactionId) => {
-          // Send txnId to backend and fetch VC result securely
+          //using the transactionId, one can securely fetch the result from service
           console.log("VC received txnId:", transactionId);
       }}
       onError={(error) => {
         console.log("Something went wrong:", error);
       }}
-      clientId="CLIENT_ID"
+      clientId="pre_registered"
     />
   );
 }
@@ -105,9 +100,9 @@ function MyApp() {
   return (
   <QRCodeVerification
       scannerActive={scannerActive}
-      verifyServiceUrl="https://your-backend.com/verify"
+      verifyServiceUrl="https://your-backend.com/v1/verify"
       isEnableUpload={false}
-      onClose={onClose}
+      onClose={onClose} // invoked when scanner is closed 
       onVCProcessed={(result) => {
         console.log("Verification complete:", result);
         // Handle the verification result here
@@ -115,7 +110,7 @@ function MyApp() {
       onError={(error) => {
         console.log("Something went wrong:", error);
       }}
-      clientId="CLIENT_ID"
+      clientId="did"
     />
   );
 }
@@ -129,19 +124,25 @@ function MyApp() {
       scannerActive={scannerActive}
       verifyServiceUrl="https://your-backend.com/verify"
       isEnableUpload={false}
-      onClose={onClose}
+      onClose={onClose} // invoked when scanner is closed 
       onVCReceived={(transactionId) => {
-          // Send txnId to backend and fetch VC result securely
+          //using the transactionId, one can securely fetch the result from service
           console.log("VC received txnId:", transactionId);
       }}
       onError={(error) => {
         console.log("Something went wrong:", error);
       }}
-      clientId="CLIENT_ID"
+      clientId="pre_registered"
     />
   );
 }
 ```
+
+> **NOTE: QRCodeVerification Methods**
+>
+>- onVCProcessed returns the verification result directly to the client.
+>- onVCReceived returns only a transactionId, allowing the backend to securely fetch verification results.
+>- Only one of these callbacks should be used at a time.
 
 ### Verification Response
 
@@ -167,15 +168,16 @@ If summariseResults=false, then response will be
 ```
 #### Response Fields Summary
 
-| Property                  | Type    | Required | Description                          |
-|---------------------------|---------|-----------|--------------------------------------|
-| `schemaAndSignatureCheck` | object  | ✅       | Validates schema and signature check |
-| `expiryCheck`             | object  | ✅       | If false, the credential is EXPIRED     |
-| `statusChecks`            | array   | ❌       | Contains revocation and other status validations           |
-| `statusChecks.error`      | object  | ❌       | If present, throws an error instead of returning a status        |
-| `statusChecks.purpose`    | object  | ❌       | Identifies purpose (e.g., "revocation")          |
-| `statusChecks.valid`      | boolean | ❌       | If false for revocation → credential is revoked            |
-| `allChecksSuccessful`     | boolean | ✅       | Final aggregated validation flag   |
+| Property                  | Type    | Optional | Description                          |
+|---------------------------|---------|----------|--------------------------------------|
+| `allChecksSuccessful`     | boolean | ✅        | Final aggregated validation flag   |
+| `schemaAndSignatureCheck` | object  | ✅        | Validates schema and signature check |
+| `expiryCheck`             | object  | ✅        | If false, the credential is EXPIRED     |
+| `statusChecks`            | array   | ❌        | Contains revocation and other status validations           |
+| `statusChecks.error`      | object  | ❌        | If present, throws an error instead of returning a status        |
+| `statusChecks.purpose`    | object  | ❌        | Identifies purpose (e.g., "revocation")          |
+| `statusChecks.valid`      | boolean | ❌        | If false for revocation → credential is revoked            |
+| `claims`                  | array   | ❌        |  Include all claims from credentialSubject   |
 
 ### Option B: OpenID4VP Verification
 OpenID4VPVerification Component verifies Verifiable Presentations securely using OpenID4VP standards for both cross-device and same-device scenarios.
@@ -194,47 +196,48 @@ import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 export default function VerifySameDevice() {
     return (
         <OpenID4VPVerification
-            verifyServiceUrl="https://verify.example.com"
-            clientId="my-rp-client-id"
+            triggerElement={<button>Verify with Wallet</button>}
+            verifyServiceUrl="https://verify.example.com/v1/verify"
+            clientId="did"
             presentationDefinitionId="drivers-license-check"
-            isSameDeviceFlowEnabled={true}
-            webWalletBaseUrl="https://wallet.example.com" // required for desktop same-device
+            isSameDeviceFlowEnabled={true} //default value
+            webWalletBaseUrl="https://wallet.example.com" // required to support web-wallets 
             onVPProcessed={(result) => {
                 console.log("VP processed:", result);
             }}
             onError={(error) => {
                 console.error("Verification error:", error);
             }}
-            triggerElement={<button>Verify with Wallet</button>}
         />
     );
 }
 ```
 > **NOTE**
 >
-> When webWalletBaseUrl is configured, it is prioritized for initiating the verification flow.
->In the absence of webWalletBaseUrl, the SDK falls back to a deep link mechanism to launch the native wallet application.
+> When webWalletBaseUrl is configured, we use web-wallets to support verification flow.
+>In the absence of webWalletBaseUrl, the SDK falls back to a deep link mechanism to launch the native wallet application if any supported mobile wallet is installed.
 
-#### 2. Cross-device flow (QR scan from another device)
+#### 2. Cross-device flow (QR code scan from another device)
 ```javascript
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 export default function VerifyCrossDevice() {
     return (
         <OpenID4VPVerification
-            verifyServiceUrl="https://verify.example.com"
-            clientId="my-rp-client-id"
+            triggerElement={<button>Show QR for Wallet Scan</button>}
+            verifyServiceUrl="https://verify.example.com/v1/verify"
+            clientId="did"
             presentationDefinitionId="drivers-license-check"
-            isSameDeviceFlowEnabled={false} // QR flow
+            isSameDeviceFlowEnabled={false} // QR code flow
             onVPProcessed={(result) => {
                 console.log("VP processed:", result);
             }}
             onQrCodeExpired={() => {
-                console.log("QR expired - ask user to retry");
+                console.log(" QR code expired - ask user to retry");
             }}
             onError={(error) => {
                 console.error("Verification error:", error);
             }}
-            triggerElement={<button>Show QR for Wallet Scan</button>}
+           
         />
     );
 }
@@ -247,21 +250,45 @@ import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 export default function VerifyServerToServer() {
     return (
         <OpenID4VPVerification
-            verifyServiceUrl="https://verify.example.com"
-            clientId="my-rp-client-id"
-            presentationDefinitionId="drivers-license-check"
+            triggerElement={<button>Start Verification</button>}
+            verifyServiceUrl="https://verify.example.com/v1/verify"
+            clientId="pre_registered"
+            presentationDefinition={{
+            id: "custom-verification",
+            purpose: "We need to verify your identity",
+            format: {
+                ldp_vc: {
+                    proof_type: ["Ed25519Signature2020"],
+                },
+            },
+            input_descriptors: [
+                {
+                    id: "id-card-check",
+                    constraints: {
+                        fields: [
+                            {
+                                path: ["$.type"],
+                                filter: {
+                                    type: "object",
+                                    pattern: "DriverLicenseCredential",
+                                },
+                            },
+                        ],
+                    },
+                },
+            ],
+        }}
             isSameDeviceFlowEnabled={false}
             onVPReceived={(transactionId) => {
-                // send txnId to your backend, backend fetches /vp-result securely
+                //using the transactionId one can securely fetch the result from service
                 console.log("VP received txnId:", transactionId);
             }}
             onQrCodeExpired={() => {
-                console.log("QR expired");
+                console.log("QR code expired");
             }}
             onError={(error) => {
                 console.error("Verification error:", error);
             }}
-            triggerElement={<button>Start Verification</button>}
         />
     );
 }
@@ -277,7 +304,7 @@ If summariseResults=true, then response will be
  {
         vcResults: [
             {
-                vc: { /* Your verified credential data */ },
+                vc: { /* verified credential data */ },
                 vcStatus: "SUCCESS" // or  "INVALID", "EXPIRED","REVOKED"
             }
         ],
@@ -309,36 +336,26 @@ If summariseResults=false, then response will be
 
 #### Response Fields Summary
 
-| Property                  | Type    | Required | Description                                               |
-|---------------------------|---------|-----------|-----------------------------------------------------------|
-| `holderProofCheck`        | object  | ✅       | Validates if presenter owns the credential                |
-| `schemaAndSignatureCheck` | object  | ✅       | Validates schema and signature check                      |
-| `expiryCheck`             | object  | ✅       | If false, the credential is EXPIRED                       |
-| `statusChecks`            | array   | ❌       | Contains revocation and other status validations          |
-| `statusChecks.error`      | object  | ❌       | If present, throws an error instead of returning a status |
-| `statusChecks.purpose`    | object  | ❌       | Identifies purpose (e.g., "revocation")                   |
-| `statusChecks.valid`      | boolean | ❌       | If false for revocation → credential is revoked           |
-| `allChecksSuccessful`     | boolean | ✅       | Final aggregated validation flag                          |
+| Property                  | Type    | Optional | Description                                               |
+|---------------------------|---------|----------|-----------------------------------------------------------|
+| `allChecksSuccessful`     | boolean | ✅        | Final aggregated validation flag                          |
+| `verifiableCredential`    | string  | ✅        | The VC which needs to be verified                         |
+| `holderProofCheck`        | object  | ✅        | Validates if presenter owns the credential                |
+| `schemaAndSignatureCheck` | object  | ✅        | Validates schema and signature check                      |
+| `expiryCheck`             | object  | ✅        | If false, the credential is EXPIRED                       |
+| `statusChecks`            | array   | ❌        | Contains revocation and other status validations          |
+| `statusChecks.error`      | object  | ❌        | If present, throws an error instead of returning a status |
+| `statusChecks.purpose`    | object  | ❌        | Identifies purpose (e.g., "revocation")                   |
+| `statusChecks.valid`      | boolean | ❌        | If false for revocation → credential is revoked           |
+| `claims`                  | array   | ❌        | Include all claims from credentialSubject                 |
 
 > **Security Recommendation**
 >
 > Avoid consuming results directly from VPProcessed or VCProcessed.
-> Instead, use VPReceived or VCReceived events to capture the txnId, then retrieve the verification results securely from your backend's verification service endpoint.
+> Instead, use VPReceived or VCReceived events to capture the transactionId, then retrieve the verification results securely from verification service.
 > This ensures data integrity and prevents reliance on client-side verification data for final decisions.
 
 ### Presentation Definition:
-
-```javascript
-<OpenID4VPVerification
-  verifyServiceUrl="https://your-backend.com"
-  presentationDefinition={"Refer Option 2 below"}
-  onVpProcessed={(result) => console.log(result)}
-  onQrCodeExpired={() => alert("QR expired")}
-  onError={(error) => console.error(error)}
-  triggerElement={<button>🔐 Verify Credentials</button>}
-  clientId="CLIENT_ID"
-/>
-```
 
 #### Define What to Verify:
 
@@ -377,6 +394,12 @@ presentationDefinition={{
   ],
 }}
 ```
+> **NOTE**
+>
+> Only one of presentationDefinitionId or presentationDefinition should be provided at a time.
+> It is recommended to use:
+>- presentationDefinitionId when leveraging predefined templates.
+>- presentationDefinition when custom verification requirements are needed.
 
 ## 🎛️ Component Options Reference
 
@@ -394,30 +417,30 @@ presentationDefinition={{
 
 ### QRCodeVerification Specific
 
-| Property                  | Type     | Default | Description                               |
-|---------------------------|----------|---------|-------------------------------------------|
-| `onVCProcessed`           | function | -       | Get full results immediately              |
-| `onVCReceived`            | function | -       | Get transaction ID only                   |
-| `isEnableUpload`          | boolean  | true    | Allow file uploads                        |
-| `isEnableScan`            | boolean  | true    | Allow camera scanning                     |
-| `isEnableZoom`            | boolean  | true    | Allow camera zoom                         |
-| `uploadButtonStyle`       | string   | -       | Custom upload button styling              |
-| `isVPSubmissionSupported` | Boolean  | false   | Toggle VP submission support              |
-| `vcVerificationV2Request` | object   | -       | contains request body for vc verification |
+| Property                  | Type     | Default | Description                                |
+|---------------------------|----------|---------|--------------------------------------------|
+| `onVCProcessed`           | function | -       | Get full results immediately               |
+| `onVCReceived`            | function | -       | Get transaction ID only                    |
+| `isEnableUpload`          | boolean  | true    | Allow file uploads                         |
+| `isEnableScan`            | boolean  | true    | Allow camera scanning                      |
+| `isEnableZoom`            | boolean  | true    | Allow camera zoom (for mobile and tablets) |
+| `uploadButtonStyle`       | string   | -       | Custom upload button styling               |
+| `isVPSubmissionSupported` | Boolean  | false   | Toggle VP submission support               |
+| `vcVerificationV2Request` | object   | -       | contains request body for vc verification  |
 
 ### OpenID4VPVerification Specific
 
-| Property                   | Type     | Default        | Description                               |
-|----------------------------| -------- |----------------|-------------------------------------------|
-| `protocol`                 | string   | "openid4vp://" | Protocol for QR codes (optional)          |
+| Property                 | Type     | Default        | Description                               |
+|--------------------------| -------- |----------------|-------------------------------------------|
+| `protocol`               | string   | "openid4vp://" | Protocol for QR codes (optional)          |
 | `presentationDefinitionId` | string   | -              | Predefined verification template          |
-| `presentationDefinition`   | object   | -              | Custom verification rules                 |
-| `onVPProcessed`            | function | -              | Get full results immediately              |
-| `onVPReceived`             | function | -              | Get transaction ID only                   |
-| `onQrCodeExpired`          | function | -              | Handle QR code expiration                 |
-| `isSameDeviceFlowEnabled`  | boolean  | true           | Enable same-device flow (optional)        |
-| `qrCodeStyles`             | object   | -              | Customize QR code appearance              |
-| `vpVerificationV2Request`  | object   | -              | contains request body for vp verification |
+| `presentationDefinition` | object   | -              | Custom verification rules                 |
+| `onVPProcessed`          | function | -              | Get full results immediately              |
+| `onVPReceived`           | function | -              | Get transaction ID only                   |
+| `onQrCodeExpired`        | function | -              | Handle QR code expiration                 |
+| `isSameDeviceFlowEnabled` | boolean  | true           | Enable same-device flow (optional)        |
+| `qrCodeStyles`           | object   | -              | Customize QR code appearance              |
+| `vpVerificationRequest`  | object   | -              | contains request body for vp verification |
 
 ## ⚠️ Important Limitations
 
