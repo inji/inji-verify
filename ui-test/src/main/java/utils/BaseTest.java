@@ -37,6 +37,7 @@ import java.io.*;
 import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
+import java.util.Comparator;
 import java.util.Properties;
 import java.util.Base64;
 import com.fasterxml.jackson.databind.JsonNode;
@@ -335,6 +336,7 @@ public class BaseTest extends BaseTestUtil{
 		} catch (Exception e) {
 			logger.error("Error in afterScenario", e);
 		} finally {
+			cleanupScenarioRuntimeArtifacts();
 			WebDriver currentDriver = driverHolder.get();
 			if (currentDriver != null) {
 				currentDriver.quit();
@@ -598,6 +600,31 @@ public class BaseTest extends BaseTestUtil{
 			return;
 		}
 		Files.deleteIfExists(Path.of(path));
+	}
+
+	private void cleanupScenarioRuntimeArtifacts() {
+		String runtimeDirPath = scenarioRuntimeDir.get();
+		if (runtimeDirPath == null || runtimeDirPath.trim().isEmpty()) {
+			return;
+		}
+
+		Path runtimeDir = Path.of(runtimeDirPath);
+		if (!Files.exists(runtimeDir)) {
+			return;
+		}
+
+		try (java.util.stream.Stream<Path> pathStream = Files.walk(runtimeDir)) {
+			pathStream.sorted(Comparator.reverseOrder())
+					.forEach(path -> {
+						try {
+							Files.deleteIfExists(path);
+						} catch (IOException e) {
+							logger.warn("Unable to delete scenario runtime artifact path: {}", path, e);
+						}
+					});
+		} catch (IOException e) {
+			logger.warn("Unable to clean scenario runtime directory: {}", runtimeDirPath, e);
+		}
 	}
 
 	public static void updateBrowserStackNetworkProfile(String networkProfile) {

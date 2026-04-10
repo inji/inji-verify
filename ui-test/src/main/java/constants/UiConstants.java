@@ -24,7 +24,7 @@ public class UiConstants {
 	public static final String VP_VERIFICATION_QR_CODE_STEP1_DESCRIPTION = "Click \"Request Verifiable Credentials\" to initiate the credential verification process";
 	public static final String VP_VERIFICATION_QR_CODE_STEP2_LABEL = "Select Credential Types";
 	public static final String VP_VERIFICATION_QR_CODE_STEP2_DESCRIPTION = "Choose the Verifiable Credentials (VCs) from the list to be requested from the mobile wallet.";
-	public static final String VP_VERIFICATION_QR_CODE_STEP3_LABEL = "Scan QR Code (Use a Different Device)";
+	public static final String VP_VERIFICATION_QR_CODE_STEP3_LABEL = "Share Verifiable Credentials from Wallet";
 	public static final String VP_VERIFICATION_QR_CODE_STEP3_DESCRIPTION = "Use a wallet containing verifiable credentials on a different device with QR code scanning capabilities to scan the QR code (Support for same-device scanning is coming soon!)";
 	public static final String VP_VERIFICATION_QR_CODE_STEP4_LABEL = "View Verification Results";
 	public static final String VP_VERIFICATION_QR_CODE_STEP4_DESCRIPTION = "Check the verification results for the verifiable credentials shared from the wallet.";

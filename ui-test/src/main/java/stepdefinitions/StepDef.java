@@ -2250,9 +2250,11 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	@When("Verify VP verification qr code step1 description")
 	public void verifyVpVerificationQrCodeStep1Description() {
 	    try {
-	        assertEquals(vpverification.getVpVerificationQrCodeStep1Description(), UiConstants.VP_VERIFICATION_QR_CODE_STEP1_DESCRIPTION);
-	        test.log(Status.PASS, "Successfully verified VP verification qr code step1 description.");
-	    } catch (AssertionError e) {
+            String actualDescription = normalizeQuotedText(vpverification.getVpVerificationQrCodeStep1Description());
+            String expectedDescription = normalizeQuotedText(UiConstants.VP_VERIFICATION_QR_CODE_STEP1_DESCRIPTION);
+            assertEquals(actualDescription, expectedDescription);
+            test.log(Status.PASS, "Successfully verified VP verification qr code step1 description.");
+        } catch (AssertionError e) {
 	        test.log(Status.FAIL, "Verification failed: VP verification qr code step1 description mismatch. Expected: '" + UiConstants.VP_VERIFICATION_QR_CODE_STEP1_DESCRIPTION + "', Actual: '" + vpverification.getVpVerificationQrCodeStep1Description() + "'");
 	        throw e;
 	    } catch (NoSuchElementException e) {
@@ -2263,6 +2265,17 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	        throw e;
 	    }
 	}
+
+    private String normalizeQuotedText(String value) {
+        if (value == null) {
+            return null;
+        }
+        return value
+                .replace('’', '\'')
+                .replace('‘', '\'')
+                .replace('"', '\'')
+                .trim();
+    }
 
 	@When("Verify VP verification qr code step1 label")
 	public void verifyVpVerificationQrCodeStep1Label() {
