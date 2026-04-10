@@ -61,7 +61,6 @@ public class InjiVerifyUtil extends AdminTestUtil {
 	}
 
 	public static String getTransactionCookie() {
-		System.out.println("transactionCookie="+transactionCookie);
 		return transactionCookie;
 	}
 

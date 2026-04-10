@@ -41,6 +41,7 @@ VpSessionResults:
       description: Verify VP session results without cookie
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_03
       role: userDefinedCookie
+      restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
       outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
       input: '{
