@@ -1,0 +1,39 @@
+{
+  "clientId": "{{clientId}}",
+  "nonce": "{{nonce}}",
+  "acceptVPWithoutHolderProof": {{acceptVPWithoutHolderProof}},
+  "responseCodeValidationRequired": {{responseCodeValidationRequired}},
+  "presentationDefinition": {
+    "id": "{{presentationDefinition.id}}",
+    "purpose": "{{presentationDefinition.purpose}}",
+    "input_descriptors": [
+      {
+        "id": "{{inputDescriptor.id}}",
+        "format": {
+          "ldp_vc": {
+            "proof_type": [
+              {{#each inputDescriptor.format.ldp_vc.proof_type}}
+              "{{this}}"{{#unless @last}},{{/unless}}
+              {{/each}}
+            ]
+          }
+        },
+        "constraints": {
+          "fields": [
+            {
+              "path": [
+                {{#each inputDescriptor.constraints.fields.[0].path}}
+                "{{this}}"{{#unless @last}},{{/unless}}
+                {{/each}}
+              ],
+              "filter": {
+                "type": "{{inputDescriptor.constraints.fields.[0].filter.type}}",
+                "pattern": "{{inputDescriptor.constraints.fields.[0].filter.pattern}}"
+              }
+            }
+          ]
+        }
+      }
+    ]
+  }
+}

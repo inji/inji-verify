@@ -8,12 +8,12 @@ CreateNewVerificationRequest:
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
       outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
       input: '{
-      "clientId":"client123",
+      "clientId":"injiverify.mosip.net",
       "id":"$PRESENTATIONDEFINITIONID$"
       }'
       output: '{
     "responseType": "vp_token",
-    "clientId": "client123",
+    "clientId": "injiverify.mosip.net",
     "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
     "id": "$PRESENTATIONDEFINITIONID$"
 }'

@@ -88,13 +88,44 @@ public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
 		String inputJson = getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate());
 		String outputJson = getJsonFromTemplate(testCaseDTO.getOutput(), testCaseDTO.getOutputTemplate());
 
+
+		if (inputJson != null && inputJson.contains("$RESPONSE_CODE$")) {
+			String responseCode = getResponseCode(); // must be implemented or already available
+			if (responseCode == null || responseCode.isEmpty()) {
+				throw new AdminTestException("RESPONSE_CODE is null or empty. Cannot proceed.");
+			}
+			inputJson = inputJson.replace("$RESPONSE_CODE$", responseCode);
+			logger.info("Resolved RESPONSE_CODE: " + responseCode);
+		}
+
+		logger.info("Final Input JSON: " + inputJson);
+
 		if (testCaseDTO.getTemplateFields() != null && templateFields.length > 0) {
 			ArrayList<JSONObject> inputtestCases = AdminTestUtil.getInputTestCase(testCaseDTO);
 			ArrayList<JSONObject> outputtestcase = AdminTestUtil.getOutputTestCase(testCaseDTO);
 			for (int i = 0; i < languageList.size(); i++) {
-				response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(),
-						getJsonFromTemplate(inputtestCases.get(i).toString(), testCaseDTO.getInputTemplate()),
-						COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
+
+				String finalInput = getJsonFromTemplate(inputtestCases.get(i).toString(),
+						testCaseDTO.getInputTemplate());
+
+				if (finalInput != null && finalInput.contains("$RESPONSE_CODE$")) {
+					String responseCode = getResponseCode();
+					if (responseCode == null || responseCode.isEmpty()) {
+						throw new AdminTestException("RESPONSE_CODE is null or empty. Cannot proceed.");
+					}
+					finalInput = finalInput.replace("$RESPONSE_CODE$", responseCode);
+					logger.info("Resolved RESPONSE_CODE (loop): " + responseCode);
+				}
+
+				logger.info("Final Input JSON (loop): " + finalInput);
+
+				response = postWithPathParamsBodyAndCookie(
+						injiVerifyBaseUrl + testCaseDTO.getEndPoint(),
+						finalInput,
+						COOKIENAME,
+						testCaseDTO.getRole(),
+						testCaseDTO.getTestCaseName(),
+						pathParams);
 
 				Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil.doJsonOutputValidation(
 						response.asString(),
@@ -105,11 +136,15 @@ public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
 				if (!OutputValidationUtil.publishOutputResult(ouputValid))
 					throw new AdminTestException("Failed at output validation");
 			}
-		}
+		} else {
 
-		else {
-			response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(), inputJson,
-					COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
+			response = postWithPathParamsBodyAndCookie(
+					injiVerifyBaseUrl + testCaseDTO.getEndPoint(),
+					inputJson,
+					COOKIENAME,
+					testCaseDTO.getRole(),
+					testCaseDTO.getTestCaseName(),
+					pathParams);
 
 			Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil
 					.doJsonOutputValidation(response.asString(), outputJson, testCaseDTO, response.getStatusCode());

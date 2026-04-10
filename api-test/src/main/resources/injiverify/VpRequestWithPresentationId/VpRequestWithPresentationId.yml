@@ -8,12 +8,12 @@ VpRequestWithPresentationId:
       inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
       outputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdResult
       input: '{
-      "clientId":"client123",
+      "clientId":"injiverify.mosip.net",
       "presentationDefinitionId":"200"
       }'
       output: '{
     "responseType": "vp_token",
-    "clientId": "client123",
+    "clientId": "injiverify.mosip.net",
     "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
     "id": "200"
 }'
@@ -33,4 +33,144 @@ VpRequestWithPresentationId:
       output: '{
     "errorCode": "NO_PRESENTATION_DEFINITION",
     "errorMessage": "No Presentation Definition found for given Presentation Definition ID."
+}'
+
+  Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_All_Valid_Smoke_Sid:
+    endPoint: /v1/verify/vp-request
+    description: Performing VP verification with presentation definition expects SUCCESS
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_03
+    role: noauth
+    restMethod: post
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
+    outputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionResult
+    input: '{
+      "clientId": "injiverify.mosip.net",
+      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+      "acceptVPWithoutHolderProof": true,
+      "responseCodeValidationRequired": true,
+      "presentationDefinition": {
+        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
+        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+        "input_descriptors": [
+          {
+            "id": "id card credential",
+            "format": {
+              "ldp_vc": {
+                "proof_type": [
+                  "Ed25519Signature2020"
+                ]
+              }
+            },
+            "constraints": {
+              "fields": [
+                {
+                  "path": [
+                    "$.type"
+                  ],
+                  "filter": {
+                    "type": "object",
+                    "pattern": "LifeInsuranceCredential"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }'
+    output: '{
+      "responseCodeValidationRequired": "true",
+      "responseType": "vp_token"
+}'
+
+  Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_withoutResponseCodeValidationRequired_Neg:
+    endPoint: /v1/verify/vp-request
+    description: Performing VP verification without Response Code Validation Required
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_04
+    role: noauth
+    restMethod: post
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
+    outputTemplate: injiverify/status
+    input: '{
+      "clientId": "injiverify.mosip.net",
+      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+      "acceptVPWithoutHolderProof": true,
+      "presentationDefinition": {
+        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
+        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+        "input_descriptors": [
+          {
+            "id": "id card credential",
+            "format": {
+              "ldp_vc": {
+                "proof_type": [
+                  "Ed25519Signature2020"
+                ]
+              }
+            },
+            "constraints": {
+              "fields": [
+                {
+                  "path": [
+                    "$.type"
+                  ],
+                  "filter": {
+                    "type": "object",
+                    "pattern": "LifeInsuranceCredential"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }'
+    output: '{
+      "status": "400"
+}'
+  Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_invalidResponseCodeValidationRequired_Neg:
+    endPoint: /v1/verify/vp-request
+    description: Performing VP verification invalid Response Code Validation Required
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_05
+    role: noauth
+    restMethod: post
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
+    outputTemplate: injiverify/status
+    input: '{
+      "clientId": "injiverify.mosip.net",
+      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+      "acceptVPWithoutHolderProof": true,
+      "responseCodeValidationRequired": invalidValue,
+      "presentationDefinition": {
+        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
+        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+        "input_descriptors": [
+          {
+            "id": "id card credential",
+            "format": {
+              "ldp_vc": {
+                "proof_type": [
+                  "Ed25519Signature2020"
+                ]
+              }
+            },
+            "constraints": {
+              "fields": [
+                {
+                  "path": [
+                    "$.type"
+                  ],
+                  "filter": {
+                    "type": "object",
+                    "pattern": "LifeInsuranceCredential"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }'
+    output: '{
+      "status": "400"
 }'
