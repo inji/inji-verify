@@ -205,7 +205,7 @@ public class BaseTest extends BaseTestUtil{
 
 		jseHolder.set((JavascriptExecutor) driverHolder.get());
 
-		if (!mobileView) {
+		if (!mobileView && (useBrowserStack || shouldRunLocalChromeHeaded())) {
 			driverHolder.get().manage().window().maximize();
 		}
 

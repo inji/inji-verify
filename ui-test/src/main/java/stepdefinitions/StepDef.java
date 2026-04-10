@@ -1901,6 +1901,7 @@ public class StepDef extends BaseSteps {
 
 	@Before(value = "@needsInsuranceArtifacts", order = 12000)
 	public void prepareInsuranceCredentialArtifactsHook() throws Exception {
+	    ensureStepDependenciesInitialized();
 	    try {
 	        synchronized (BaseTest.getInsuranceArtifactsLock()) {
 	            File pdfFile = new File(BaseTest.getDownloadedInsurancePdfPath());

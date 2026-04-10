@@ -49,14 +49,21 @@ abstract class BaseSteps {
 
     @BeforeStep(order = 11000)
     public void initStepDependenciesBeforeEachStep() {
-        ensureStepDependenciesInitialized();
+        ensureStepDependenciesInitialized(false);
     }
 
     protected void ensureStepDependenciesInitialized() {
+        ensureStepDependenciesInitialized(true);
+    }
+
+    protected void ensureStepDependenciesInitialized(boolean throwIfDriverNull) {
         this.baseTest = new BaseTest();
         this.driver = baseTest.getDriver();
         if (driver == null) {
-            throw new RuntimeException("WebDriver is null in BaseSteps! Check if BaseTest.beforeAll() ran correctly.");
+            if (throwIfDriverNull) {
+                throw new RuntimeException("WebDriver is null in BaseSteps! Check if BaseTest.beforeAll() ran correctly.");
+            }
+            return;
         }
         if (this.test == null) {
             this.test = ExtentReportManager.getTest();

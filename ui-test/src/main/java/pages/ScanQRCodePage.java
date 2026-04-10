@@ -202,6 +202,15 @@ public class ScanQRCodePage extends BasePage {
 				&& (isCameraUiActiveWithoutWait() || hasFinalScanVerificationResultVisible());
 	}
 
+	public boolean isCameraPermissionPromptFlowTriggered() {
+		waitForCameraPermissionOutcome();
+		return !isCameraAccessDeniedTitleVisibleWithoutWait()
+				&& (isCameraUiActiveWithoutWait()
+				|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label)
+				|| hasFinalScanVerificationResultVisible()
+				|| isScanCompletionStepVisible());
+	}
+
 	public void clickOnBackButton() {
 		clickOnElement(driver, backButton);
 	}

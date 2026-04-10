@@ -380,7 +380,7 @@ public class BaseTestUtil {
         }
     }
 
-    private boolean shouldRunLocalChromeHeaded() {
+    protected boolean shouldRunLocalChromeHeaded() {
         String configuredValue = InjiVerifyConfigManager.getproperty("headless");
         boolean headless = configuredValue != null && Boolean.parseBoolean(configuredValue.trim());
         logger.info("Local Chrome mode from injiverify.properties headless={}", headless);
