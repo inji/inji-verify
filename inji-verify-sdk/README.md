@@ -55,7 +55,7 @@ a. Client-side handling (onVCProcessed)
 function MyApp() {
   return (
   <QRCodeVerification 
-      triggerElement={triggerElement}
+      triggerElement={triggerElement} //UI element used to start verification.
       verifyServiceUrl="https://your-backend.com/v1/verify"
       isEnableScan={false}
       onVCProcessed={(result) => {
@@ -65,7 +65,7 @@ function MyApp() {
       onError={(error) => {
         console.log("Something went wrong:", error);
       }}
-      clientId="did"
+      clientId="did:example:123456789" // DID example
     />
   );
 }
@@ -85,7 +85,7 @@ function MyApp() {
       onError={(error) => {
         console.log("Something went wrong:", error);
       }}
-      clientId="pre_registered"
+      clientId="client-12345" // non-DID example
     />
   );
 }
@@ -110,7 +110,7 @@ function MyApp() {
       onError={(error) => {
         console.log("Something went wrong:", error);
       }}
-      clientId="did"
+      clientId="did:example:123456789" // DID example
     />
   );
 }
@@ -132,7 +132,7 @@ function MyApp() {
       onError={(error) => {
         console.log("Something went wrong:", error);
       }}
-      clientId="pre_registered"
+      clientId="did:example:123456789" // DID example
     />
   );
 }
@@ -190,7 +190,9 @@ Steps to integrate:
 ```javascript
 import {OpenID4VPVerification} from "@injistack/react-inji-verify-sdk";
 ```
-#### 1. Same Device Flow (Recommended Default)
+#### 1. Same Device Flow with Web Wallet (Recommended Default)
+Used when verification happens in a web-based wallet on the same device.
+
 ```javascript
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 export default function VerifySameDevice() {
@@ -198,8 +200,32 @@ export default function VerifySameDevice() {
         <OpenID4VPVerification
             triggerElement={<button>Verify with Wallet</button>}
             verifyServiceUrl="https://verify.example.com/v1/verify"
-            clientId="did"
-            presentationDefinitionId="drivers-license-check"
+            clientId="did:example:123456789" // DID example
+            presentationDefinition={{
+                id: "custom-verification",
+                purpose: "We need to verify your identity",
+                format: {
+                    ldp_vc: {
+                        proof_type: ["Ed25519Signature2020"],
+                    },
+                },
+                input_descriptors: [
+                    {
+                        id: "id-card-check",
+                        constraints: {
+                            fields: [
+                                {
+                                    path: ["$.type"],
+                                    filter: {
+                                        type: "object",
+                                        pattern: "DriverLicenseCredential",
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            }}
             isSameDeviceFlowEnabled={true} //default value
             webWalletBaseUrl="https://wallet.example.com" // required to support web-wallets 
             onVPProcessed={(result) => {
@@ -212,12 +238,129 @@ export default function VerifySameDevice() {
     );
 }
 ```
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UserBrowser as User Browser
+    participant VerifierBackend as Verifier Backend
+    participant WebWallet as Web Wallet
+
+    UserBrowser->>VerifierBackend: Start verification\n(/vp-session-request,\nresponse_code_validation_required=true)
+
+    VerifierBackend->>VerifierBackend: Generate transaction_id\nand request_id
+    VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (txn_id)
+    VerifierBackend-->>UserBrowser: Return OpenID4VP authorization request
+
+    UserBrowser->>WebWallet: Open Web Wallet
+
+    WebWallet->>VerifierBackend: Submit vp_token + presentation_submission
+    VerifierBackend-->>WebWallet: Return response_code
+
+    WebWallet-->>UserBrowser: Redirect to redirect_uri
+
+    UserBrowser->>UserBrowser: Extract response_code
+
+    UserBrowser->>VerifierBackend: GET /vp-session-results?response_code=xyz\n(Cookie txn_id automatically sent)
+
+    VerifierBackend->>VerifierBackend: Validate response_code + txn_id
+    VerifierBackend->>VerifierBackend: Fetch transaction state
+
+    VerifierBackend-->>UserBrowser: Verification result
+    VerifierBackend-->>UserBrowser: Clear cookie (txn_id)
+```
+
+#### 2. Same Device Flow with Mobile Wallet
+Used when a native mobile wallet app is triggered via deep link.
+
+```javascript
+import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
+export default function VerifySameDevice() {
+    return (
+        <OpenID4VPVerification
+            triggerElement={<button>Verify with Wallet</button>}
+            verifyServiceUrl="https://verify.example.com/v1/verify"
+            clientId="client-12345" // non-DID example
+            presentationDefinition={{
+                id: "custom-verification",
+                purpose: "We need to verify your identity",
+                format: {
+                    ldp_vc: {
+                        proof_type: ["Ed25519Signature2020"],
+                    },
+                },
+                input_descriptors: [
+                    {
+                        id: "id-card-check",
+                        constraints: {
+                            fields: [
+                                {
+                                    path: ["$.type"],
+                                    filter: {
+                                        type: "object",
+                                        pattern: "DriverLicenseCredential",
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            }}
+            isSameDeviceFlowEnabled={true} //default value
+            // No webWalletBaseUrl → triggers mobile wallet via deep link
+            onVPProcessed={(result) => {
+                console.log("VP processed:", result);
+            }}
+            onError={(error) => {
+                console.error("Verification error:", error);
+            }}
+        />
+    );
+}
+```
+
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UserBrowser as User Browser (Verifier App)
+    participant VerifierBackend as Verifier Backend
+    participant MobileWallet as Mobile Wallet App
+
+    UserBrowser->>VerifierBackend: Start verification(/vp-session-request,response_code_validation_required=false)
+
+    VerifierBackend->>VerifierBackend: Generate transaction_id and request_id
+    VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (txn_id)
+    VerifierBackend-->>UserBrowser: Return OpenID4VP authorization request
+
+    UserBrowser->>MobileWallet: Open mobile wallet via deep link
+
+    MobileWallet->>VerifierBackend: Submit vp_token + presentation_submission
+
+    Note right of MobileWallet: User manually switches back to browser
+
+    loop Long Polling
+        UserBrowser->>VerifierBackend: GET /vp-request/{requestId}/status
+        VerifierBackend-->>UserBrowser: Pending
+    end
+
+    VerifierBackend-->>UserBrowser: Completed
+
+    UserBrowser->>VerifierBackend: GET /vp-session-results (Cookie txn_id automatically sent)
+
+    VerifierBackend->>VerifierBackend: Resolve txn_id from cookie
+    VerifierBackend->>VerifierBackend: Fetch transaction state
+
+    VerifierBackend-->>UserBrowser: Verification result
+    VerifierBackend-->>UserBrowser: Clear cookie (txn_id)
+```
+
+
 > **NOTE**
 >
 > When webWalletBaseUrl is configured, we use web-wallets to support verification flow.
 >In the absence of webWalletBaseUrl, the SDK falls back to a deep link mechanism to launch the native wallet application if any supported mobile wallet is installed.
 
-#### 2. Cross-device flow (QR code scan from another device)
+#### 3. Cross-device flow (QR code scan from another device)
 ```javascript
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 export default function VerifyCrossDevice() {
@@ -225,8 +368,32 @@ export default function VerifyCrossDevice() {
         <OpenID4VPVerification
             triggerElement={<button>Show QR for Wallet Scan</button>}
             verifyServiceUrl="https://verify.example.com/v1/verify"
-            clientId="did"
-            presentationDefinitionId="drivers-license-check"
+            clientId="did:example:123456789" // DID example
+            presentationDefinition={{
+                id: "custom-verification",
+                purpose: "We need to verify your identity",
+                format: {
+                    ldp_vc: {
+                        proof_type: ["Ed25519Signature2020"],
+                    },
+                },
+                input_descriptors: [
+                    {
+                        id: "id-card-check",
+                        constraints: {
+                            fields: [
+                                {
+                                    path: ["$.type"],
+                                    filter: {
+                                        type: "object",
+                                        pattern: "DriverLicenseCredential",
+                                    },
+                                },
+                            ],
+                        },
+                    },
+                ],
+            }}
             isSameDeviceFlowEnabled={false} // QR code flow
             onVPProcessed={(result) => {
                 console.log("VP processed:", result);
@@ -242,8 +409,39 @@ export default function VerifyCrossDevice() {
     );
 }
 ```
+```mermaid
+sequenceDiagram
+    autonumber
+    participant UserBrowser as User Browser
+    participant VerifierBackend as Verifier Backend
+    participant MobileWallet as Wallet (Mobile)
 
-#### 3. Server-to-server callback (onVPReceived)
+    UserBrowser->>VerifierBackend: Start verification(/vp-session-request,response_code_validation_required=false)
+
+    VerifierBackend->>VerifierBackend: Generate transaction_id and request_id
+    VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (txn_id)
+    VerifierBackend-->>UserBrowser: Return OpenID4VP request + QR code
+
+    UserBrowser->>MobileWallet: User scans QR code
+
+    MobileWallet->>VerifierBackend: Submit vp_token + presentation_submission
+
+    loop Long Polling
+        UserBrowser->>VerifierBackend: GET /vp-request/{requestId}/status
+        VerifierBackend-->>UserBrowser: Pending
+    end
+
+    VerifierBackend-->>UserBrowser: Completed
+
+    UserBrowser->>VerifierBackend: GET /vp-session-results (Cookie txn_id automatically sent)
+
+    VerifierBackend->>VerifierBackend: Resolve txn_id from cookie
+    VerifierBackend->>VerifierBackend: Fetch transaction state
+
+    VerifierBackend-->>UserBrowser: Verification result
+```
+
+#### 4. Server-to-server callback (onVPReceived)
 ```javascript
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 
@@ -252,7 +450,7 @@ export default function VerifyServerToServer() {
         <OpenID4VPVerification
             triggerElement={<button>Start Verification</button>}
             verifyServiceUrl="https://verify.example.com/v1/verify"
-            clientId="pre_registered"
+            clientId="did:example:123456789" // DID example
             presentationDefinition={{
             id: "custom-verification",
             purpose: "We need to verify your identity",
@@ -277,7 +475,7 @@ export default function VerifyServerToServer() {
                     },
                 },
             ],
-        }}
+        }}            
             isSameDeviceFlowEnabled={false}
             onVPReceived={(transactionId) => {
                 //using the transactionId one can securely fetch the result from service
@@ -293,6 +491,16 @@ export default function VerifyServerToServer() {
     );
 }
 ```
+> 🔁 **Verification Handling Modes**
+>
+> **Client-side Handling (`onVCProcessed` / `onVPProcessed`)**
+> - SDK returns verification result directly to frontend
+> - Faster and simple
+>
+> **Server-to-server Handling (`onVCReceived` / `onVPReceived`)**
+> - SDK returns only `transactionId`
+> - Backend fetches result securely
+
 
 ### Verification Response
 
@@ -349,6 +557,18 @@ If summariseResults=false, then response will be
 | `statusChecks.valid`      | boolean | ❌        | If false for revocation → credential is revoked           |
 | `claims`                  | object  | ❌        | Include all claims from credentialSubject                 |
 
+> 🔁 **Verification Handling Modes**
+>
+> **Client-side Handling (`onVCProcessed` / `onVPProcessed`)**
+> - SDK returns verification result directly to frontend
+> - Faster and simple
+>
+> **Server-to-server Handling (`onVCReceived` / `onVPReceived`)**
+> - SDK returns only `transactionId`
+> - Backend fetches result securely
+>
+> ⚠️ **Note:** Use only one handling mode at a time.
+> 
 > **Security Recommendation**
 >
 > Avoid consuming results directly from VPProcessed or VCProcessed.
@@ -411,7 +631,7 @@ presentationDefinition={{
 | `onError`                    | function      | ✅     | Callback invoked when an error occurs       |
 | `triggerElement`             | React element | ❌     | Custom button/element to start verification |
 | `transactionId`              | string        | ❌     | Optional client-side tracking ID            |
-| `clientId`                   | string        | ✅     | Client identifier                           |
+| `clientId`                   | string        | ✅     | Client identifier  (DID or Non-DID)         |
 | `acceptVPWithoutHolderProof` | boolean       | ❌     | Allow unsigned Verifiable Presentations     |
 | `summariseResults`           | boolean       | ❌     | Decides format of SDK Response              |
 
