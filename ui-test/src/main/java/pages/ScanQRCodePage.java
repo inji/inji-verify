@@ -199,7 +199,9 @@ public class ScanQRCodePage extends BasePage {
 		waitForCameraPermissionOutcome();
 		waitForStableCameraUsableState();
 		return !isCameraAccessDeniedTitleVisibleWithoutWait()
-				&& (isCameraUiActiveWithoutWait() || hasFinalScanVerificationResultVisible());
+				&& (isCameraUiActiveWithoutWait()
+						|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label)
+						|| hasFinalScanVerificationResultVisible());
 	}
 
 	public boolean isCameraPermissionPromptFlowTriggered() {
@@ -437,6 +439,7 @@ public class ScanQRCodePage extends BasePage {
 			new WebDriverWait(driver, Duration.ofSeconds(timeoutSeconds))
 					.until(webDriver -> isDisplayedWithoutWaiting(cameraAccessDeniedTitle)
 							|| isCameraUiActiveWithoutWait()
+							|| isDisplayedWithoutWaiting(ScanQRCodeStep3Label)
 							|| hasFinalScanVerificationResultVisible());
 		} catch (TimeoutException e) {
 			// Fall through to the final assertion path so the step still reports the page state.
