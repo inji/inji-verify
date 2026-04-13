@@ -288,7 +288,7 @@ export const vcVerificationV2Request = {
     statusCheckFilters: ["revocation"],
     includeClaims: true
 };
-export const vpVerificationV2Request = {
+export const vpVerificationRequest = {
     skipStatusChecks: false,
     statusCheckFilters: ["revocation"],
     includeClaims: true
