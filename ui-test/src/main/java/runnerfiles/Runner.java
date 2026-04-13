@@ -1,20 +1,17 @@
 package runnerfiles;
 
 import api.InjiVerifyConfigManager;
-import io.cucumber.testng.FeatureWrapper;
-import io.cucumber.testng.PickleWrapper;
-import io.mosip.testrig.apirig.dataprovider.BiometricDataProvider;
-import io.mosip.testrig.apirig.testrunner.BaseTestCase;
-import io.mosip.testrig.apirig.testrunner.ExtractResource;
-import io.mosip.testrig.apirig.testrunner.HealthChecker;
-import io.mosip.testrig.apirig.utils.*;
-import org.junit.runner.RunWith;
-
 import io.cucumber.junit.Cucumber;
-import io.cucumber.testng.CucumberOptions.SnippetType;
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
+import io.cucumber.testng.CucumberOptions.SnippetType;
+import io.cucumber.testng.FeatureWrapper;
+import io.cucumber.testng.PickleWrapper;
+import io.mosip.testrig.apirig.testrunner.BaseTestCase;
+import io.mosip.testrig.apirig.testrunner.ExtractResource;
+import io.mosip.testrig.apirig.utils.*;
 import org.apache.log4j.Logger;
+import org.junit.runner.RunWith;
 import org.testng.ITestResult;
 import org.testng.TestNG;
 import org.testng.annotations.BeforeMethod;
@@ -23,12 +20,9 @@ import org.testng.annotations.Test;
 
 import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.nio.charset.StandardCharsets;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -47,7 +41,7 @@ import java.util.concurrent.ConcurrentHashMap;
 				"summary","com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter:"}
 )
 
-public class Runner extends AbstractTestNGCucumberTests {
+public class Runner extends AbstractTestNGCucumberTests{
 
 	private static final Logger LOGGER = Logger.getLogger(Runner.class);
 	private static String cachedPath = null;
@@ -83,10 +77,10 @@ public class Runner extends AbstractTestNGCucumberTests {
 			suiteSetup(getRunType());
 			setLogLevels();
 
-			KeycloakUserManager.removeUser();
-			KeycloakUserManager.createUsers();
-			KeycloakUserManager.closeKeycloakInstance();
-			AdminTestUtil.getRequiredField();
+			 KeycloakUserManager.removeUser();
+			 KeycloakUserManager.createUsers();
+			 KeycloakUserManager.closeKeycloakInstance();
+			 AdminTestUtil.getRequiredField();
 
 			startTestRunner();
 		} catch (Exception e) {
@@ -105,7 +99,7 @@ public class Runner extends AbstractTestNGCucumberTests {
 
 		BaseTestCase.currentModule = "injiverify";
 		BaseTestCase.certsForModule = "injiverify";
-		AdminTestUtil.copymoduleSpecificAndConfigFile("injiverify");
+		BaseTestCase.copymoduleSpecificAndConfigFile("injiverify");
 	}
 
 	public static void startTestRunner() {
@@ -147,7 +141,7 @@ public class Runner extends AbstractTestNGCucumberTests {
 	}
 
 	@Override
-	@DataProvider(parallel = false)
+	@DataProvider(parallel = true)
 	public Object[][] scenarios() {
 		Object[][] scenarios = super.scenarios();
 		System.out.println("Number of scenarios provided: " + scenarios.length);
@@ -181,10 +175,10 @@ public class Runner extends AbstractTestNGCucumberTests {
 	 * knownIssueCount is kept in BaseTest alongside the other counters.
 	 */
 	public static void resetCounters() {
-		utils.BaseTest.passedCount = 0;
-		utils.BaseTest.failedCount = 0;
-		utils.BaseTest.totalCount = 0;
-		utils.BaseTest.knownIssueCount = 0;
+		utils.BaseTest.passedCount.set(0);
+		utils.BaseTest.failedCount.set(0);
+		utils.BaseTest.totalCount.set(0);
+		utils.BaseTest.knownIssueCount.set(0);
 	}
 
 	/**
@@ -272,24 +266,33 @@ public class Runner extends AbstractTestNGCucumberTests {
 	}
 
 	   public static void updateFeaturesPath() {
-	        String existingFeatures = System.getProperty("cucumber.features");
+        String existingFeatures = System.getProperty("cucumber.features");
+        if (existingFeatures != null && !existingFeatures.trim().isEmpty()) {
+            LOGGER.info("cucumber.features already set by caller, skipping override: " + existingFeatures);
+            return;
+        }
 
-	        // If the caller already specified a path (specific feature/tag), respect it
-	        if (existingFeatures != null && !existingFeatures.trim().isEmpty()) {
-	            LOGGER.info("cucumber.features already set by caller, skipping override: " + existingFeatures);
-	            return;
-	        }
+        CucumberOptions cucumberOptions = Runner.class.getAnnotation(CucumberOptions.class);
 
-	        String os = System.getProperty("os.name").toLowerCase();
-	        String featuresPath;
+        if (cucumberOptions != null) {
+            String[] annotatedFeatures = cucumberOptions.features();
+            if (annotatedFeatures != null) {
+                for (String feature : annotatedFeatures) {
+                    if (feature != null && !feature.trim().isEmpty()) {
+                        LOGGER.info("Using @CucumberOptions feature path: " + feature.trim());
+                        return;
+                    }
+                }
+            }
+        }
 
-	        if (os.contains("windows")) {
-	            featuresPath = "src\\test\\resources\\featurefiles\\";
-	        } else {
-	            featuresPath = "/home/inji/featurefiles/";
-	        }
+        String os = System.getProperty("os.name").toLowerCase();
+        String featuresPath = os.contains("windows")
+                ? "src\\test\\resources\\featurefiles\\"
+                : "/home/inji/featurefiles/";
 
-	        System.setProperty("cucumber.features", featuresPath);
-	        LOGGER.info("cucumber.features set to: " + featuresPath);
-	    }
+        System.setProperty("cucumber.features", featuresPath);
+        LOGGER.info("No feature path in @CucumberOptions. cucumber.features set to: " + featuresPath);
+    }
 }
+

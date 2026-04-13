@@ -1,6 +1,10 @@
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
 
 <suite name="Cucumber Test Suite">
+    <listeners>
+        <listener class-name="utils.ParallelConfigListener"/>
+        <listener class-name="utils.FinalResultListener"/>
+    </listeners>
     <test name="Cucumber Tests">
         <classes>
             <class name="runnerfiles.Runner"/>
