@@ -38,7 +38,6 @@ import java.nio.file.Files;
 import java.nio.charset.StandardCharsets;
 import java.nio.file.Path;
 import java.util.Comparator;
-import java.util.Properties;
 import java.util.Base64;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -735,18 +734,8 @@ public class BaseTest extends BaseTestUtil{
 	}
 
 	public static String[] fetchIssuerTexts() {
-		String issuerSearchText = null;
-		String issuerSearchTextforSunbird = null;
-		String propertyFilePath = System.getProperty("user.dir") + "/src/test/resources/config.properties";
-		Properties properties = new Properties();
-
-		try (FileInputStream fileInputStream = new FileInputStream(propertyFilePath)) {
-			properties.load(fileInputStream);
-			issuerSearchText = properties.getProperty("issuerSearchText");
-			issuerSearchTextforSunbird = properties.getProperty("issuerSearchTextforSunbird");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
+		String issuerSearchText = InjiVerifyConfigManager.getIssuerSearchText();
+		String issuerSearchTextforSunbird = InjiVerifyConfigManager.getIssuerSearchTextForSunbird();
 		return new String[] { issuerSearchText, issuerSearchTextforSunbird };
 	}
 

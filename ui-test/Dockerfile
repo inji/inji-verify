@@ -50,7 +50,6 @@ COPY --chown=${container_user}:${container_user} ./application.properties ${work
 COPY --chown=${container_user}:${container_user} ./target ${work_dir}/target
 COPY --chown=${container_user}:${container_user} ./src/test/resources/featurefiles/ /home/${container_user}/featurefiles/
 COPY --chown=${container_user}:${container_user} ./src/main/resources/ /home/${container_user}/src/test/resources/
-COPY --chown=${container_user}:${container_user} ./src/test/resources/config.properties /home/${container_user}/src/test/resources/config.properties
 COPY --chown=${container_user}:${container_user} ./src/main/java/utils/ /home/${container_user}/src/main/java/utils/
 COPY --chown=${container_user}:${container_user} ./screenshots/ /home/${container_user}/screenshots/
 COPY --chown=${container_user}:${container_user} ./resource/ /home/${container_user}/resource/

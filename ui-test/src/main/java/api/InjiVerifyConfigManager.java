@@ -36,6 +36,10 @@ public class InjiVerifyConfigManager extends ConfigManager{
 
 	public static String getapiEndUser() { return getproperty("apiEnvUser"); }
 
+	public static String getIssuerSearchText() { return getproperty("issuerSearchText"); }
+
+	public static String getIssuerSearchTextForSunbird() { return getproperty("issuerSearchTextforSunbird"); }
+
 	public static String getInjiVerifyUiBaseUrl() {
 		String url = getproperty("injiverify");
 		String  temp =url.replaceFirst("https?://", "");
