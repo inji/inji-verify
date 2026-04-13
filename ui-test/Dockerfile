@@ -1,4 +1,4 @@
-FROM eclipse-temurin:21-jdk
+FROM eclipse-temurin:21-jdk-jammy
 
 USER root
 RUN apt-get update && apt-get install -y git wget gnupg ca-certificates \
