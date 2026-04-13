@@ -345,7 +345,7 @@ describe("OpenID4VPVerification UI Tests", () => {
                 onQrCodeExpired={jest.fn()}
                 onError={jest.fn()}
                 triggerElement={<button>Verify</button>}
-                vpVerificationV2Request={{}}
+                vpVerificationRequest={{}}
                 summariseResults={true}
             />
         );

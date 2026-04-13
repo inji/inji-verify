@@ -1,7 +1,7 @@
 import {
     AppError,
     PresentationDefinition,
-    VPRequestBody, VPVerificationV2Request,
+    VPRequestBody, VPVerificationRequest,
 } from "../components/openid4vp-verification/OpenID4VPVerification.types";
 import { vcSubmissionBody, VCVerificationV2Request, VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
 import { QrData } from "../types/OVPSchemeQrData";
@@ -200,7 +200,7 @@ export const vpSessionRequest = async (
 export const vpSessionResults = async (
   url: string,
   responseCode?: string | null,
-  config?: VPVerificationV2Request,
+  config?: VPVerificationRequest,
 ) => {
   const requestBody = {
     responseCode: responseCode ?? undefined,
