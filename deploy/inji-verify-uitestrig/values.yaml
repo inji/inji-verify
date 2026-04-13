@@ -27,8 +27,8 @@ modules:
     enabled: true
     image:
       registry: docker.io
-      repository: injistackdev/uitest-verify
-      tag: develop
+      repository: injistackqa/uitest-verify
+      tag: 0.18.x
 
 crontime: "0 3 * * *"    ## run cronjob every day at 3 AM (time hr: 0-23 )
 
