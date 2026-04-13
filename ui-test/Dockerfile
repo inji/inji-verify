@@ -1,7 +1,14 @@
 FROM eclipse-temurin:21-jdk
 
 USER root
-RUN apt-get update && apt-get install -y git
+RUN apt-get update && apt-get install -y git wget gnupg ca-certificates \
+    && wget -q -O - https://dl-ssl.google.com/linux/linux_signing_key.pub \
+       | gpg --dearmor -o /usr/share/keyrings/google-chrome.gpg \
+    && echo "deb [arch=amd64 signed-by=/usr/share/keyrings/google-chrome.gpg] \
+       http://dl.google.com/linux/chrome/deb/ stable main" \
+       > /etc/apt/sources.list.d/google-chrome.list \
+    && apt-get update && apt-get install -y google-chrome-stable \
+    && rm -rf /var/lib/apt/lists/*
 # Define build-time arguments
 ARG SOURCE
 ARG COMMIT_HASH
@@ -55,7 +62,7 @@ COPY --chown=${container_user}:${container_user} ./screenshots/ /home/${containe
 COPY --chown=${container_user}:${container_user} ./resource/ /home/${container_user}/resource/
 COPY --chown=${container_user}:${container_user} ./testNgXmlFiles/ /home/${container_user}/testNgXmlFiles/
 COPY --chown=${container_user}:${container_user} ./InsuranceCredential.pdf /home/${container_user}/InsuranceCredential.pdf
-COPY --chown=${container_user}:${container_user} ./src/test/resources/QRCodes/ /home/${container_user}/QRCodes/
+COPY --chown=${container_user}:${container_user} ./src/test/resources/QRCodes/ /home/${container_user}/src/test/resources/QRCodes/
 
 COPY --chown=${container_user_uid}:${container_user} ./browserstack.yml /home/${container_user}/
 COPY --chown=${container_user_uid}:${container_user} ./target/*.jar ${work_dir}

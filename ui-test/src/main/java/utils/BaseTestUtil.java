@@ -93,10 +93,18 @@ public class BaseTestUtil {
         if (shouldRunLocalChromeHeaded()) {
             logger.info("Running local ChromeDriver in headed mode.");
             chromeOptions.addArguments("--start-maximized");
+        } else if (scanMode) {
+            // --headless=new has known incompatibilities with --use-file-for-fake-video-capture;
+            // use legacy headless for scan scenarios running in containers.
+            logger.info("Running local ChromeDriver in legacy headless mode (scan).");
+            chromeOptions.addArguments("--headless");
+            chromeOptions.addArguments("--window-size=1920,1080");
+            chromeOptions.addArguments("--disable-gpu");
         } else {
             logger.info("Running local ChromeDriver in headless mode.");
             chromeOptions.addArguments("--headless=new");
             chromeOptions.addArguments("--window-size=1920,1080");
+            chromeOptions.addArguments("--disable-gpu");
         }
 
         if (scanMode) {
