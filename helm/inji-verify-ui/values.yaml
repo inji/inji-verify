@@ -51,8 +51,8 @@ service:
 
 image:
   registry: docker.io
-  repository: injistackdev/inji-verify-ui
-  tag: develop
+  repository: injistackqa/inji-verify-ui
+  tag: 0.18.x
 
   ## Specify a imagePullPolicy
   ## Defaults to 'Always' if image tag is 'latest', else set to 'IfNotPresent'

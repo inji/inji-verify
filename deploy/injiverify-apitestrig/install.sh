@@ -7,7 +7,7 @@ if [ $# -ge 1 ] ; then
 fi
 
 NS=injiverify
-CHART_VERSION=1.3.4
+CHART_VERSION=1.4.1
 
 echo Create $NS namespace
 kubectl create ns $NS
