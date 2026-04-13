@@ -22,6 +22,12 @@ Your backend must support the OpenID4VP protocol. You can either:
 ```
 https://your-backend.com/v1/verify
 ```
+
+> **Note**
+>
+> - The SDK uses a session-based verification flow internally.
+> - Session handling, redirects, and result fetching are managed by the SDK.
+> - No manual handling of `transactionId` or browser storage is required.
 ## Usage Guide
 
 ### Step 1: Install the Package
@@ -90,7 +96,7 @@ function MyApp() {
 
 ## Verification Response
 
-Once verification is complete, the response depends on the `summariseResults` attribute.
+Once verification is complete, the response depends on the `summariseResults` attribute (default = true)
 
 If `summariseResults = true`, the response will be:
 
@@ -242,7 +248,7 @@ function MyApp() {
 
 ### Verification Response
 
-Once VC Verification is complete, the response depends on the `summariseResults` attribute.
+Once VC Verification is complete, the response depends on the `summariseResults` attribute (default = true)
 
 If `summariseResults = true`, the response will be:
 
@@ -596,7 +602,7 @@ export default function VerifyServerToServer() {
 
 ### Verification Response
 
-Once VP Verification is complete, the response depends on the `summariseResults` attribute.
+Once VP Verification is complete, the response depends on the `summariseResults` attribute (default = true)
 
 If `summariseResults = true`, the response will be: 
 
