@@ -21,7 +21,7 @@ public class UiConstants {
 	public static final String SCAN_QR_CODE_STEP3_DESCRIPTION = "The QR code verification is in progress.";
 	public static final String SCAN_QR_CODE_STEP4_LABEL = "View result";
 	public static final String VP_VERIFICATION_QR_CODE_STEP1_LABEL = "Initiate VP Request Process";
-	public static final String VP_VERIFICATION_QR_CODE_STEP1_DESCRIPTION = "Click \"Request Verifiable Credentials\" to initiate the credential verification process";
+	public static final String VP_VERIFICATION_QR_CODE_STEP1_DESCRIPTION = "Click 'Request Verifiable Credentials' to initiate the credential verification process";
 	public static final String VP_VERIFICATION_QR_CODE_STEP2_LABEL = "Select Credential Types";
 	public static final String VP_VERIFICATION_QR_CODE_STEP2_DESCRIPTION = "Choose the Verifiable Credentials (VCs) from the list to be requested from the mobile wallet.";
 	public static final String VP_VERIFICATION_QR_CODE_STEP3_LABEL = "Share Verifiable Credentials from Wallet";
