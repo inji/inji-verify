@@ -167,7 +167,7 @@ export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
      * - Expiry validation
      * - Status checks (e.g., revocation)
      */
-    vpVerificationV2Request?: VPVerificationV2Request;
+    vpVerificationRequest?: VPVerificationRequest;
 
     /*This attribute will decide the format of the response from SDK*/
 
@@ -183,7 +183,7 @@ export type AppError = {
   errorCode?: string;
   transactionId?: string | null;
 };
-export interface VPVerificationV2Request {
+export interface VPVerificationRequest {
     skipStatusChecks?: boolean;
     statusCheckFilters?: string[];
     includeClaims?: boolean;

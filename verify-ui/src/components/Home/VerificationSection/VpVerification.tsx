@@ -19,7 +19,7 @@ import { Button } from "./commons/Button";
 import { useTranslation } from "react-i18next";
 import {VerificationResults} from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
 import {decodeSdJwtToken} from "../../../utils/decodeSdJwt";
-import {vpVerificationV2Request} from "../../../utils/commonUtils";
+import {vpVerificationRequest} from "../../../utils/commonUtils";
 
 const DisplayActiveStep = () => {
   const { t } = useTranslation("Verify");
@@ -188,7 +188,7 @@ const DisplayActiveStep = () => {
                   qrCodeStyles={{ size: qrSize }}
                   clientId={getClientId()}
                   isSameDeviceFlowEnabled={false}
-                  vpVerificationV2Request={vpVerificationV2Request}
+                  vpVerificationRequest={vpVerificationRequest}
                 />
               </div>
               <Button	
@@ -225,7 +225,7 @@ const DisplayActiveStep = () => {
                   onError={handleOnError}
                   clientId={getClientId()}
                   webWalletBaseUrl={selectedWalletBaseUrl}
-                  vpVerificationV2Request={vpVerificationV2Request}
+                  vpVerificationRequest={vpVerificationRequest}
                 />
               </div>
             </div>
