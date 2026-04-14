@@ -2,105 +2,185 @@
 
 ## Same Device Flow
 ### Description of the Flow
-The Same Device Flow in the OpenID for Verifiable Presentations enables the interaction between a verifier and a wallet where both the applications are on the same device, Unlike Scanning the QR code from the wallet application manually as we do in cross_device flow
+The Same Device Flow in OpenID for Verifiable Presentations (OpenID4VP) enables interaction between a verifier and a wallet application running on the same device.
 
-The flow here utilizes the simple redirection to pass the Authorization request and Authorization response between the verifier and the wallet
+Unlike the cross-device flow (which relies on QR code scanning), this flow uses application redirection mechanisms to exchange the authorization request and response between the verifier and the wallet.
 
 ### Key Steps in the Flow
-1. **Initiation**: The flow begins when the user in the Verifier application selects an option to verify their credentials or when the user wishes to present the credentials as Verifiable Credentials from their wallet to the application they are using
+1. **Initiation**: The flow begins when a user initiates a verification request from the verifier application.
+- This may occur when:
+    - The user chooses to verify credentials, or
+    - The application requests credential presentation
 
-2. **Authorization Request**: The Verifier App constructs an authorization request that contains several parameters like
-   * **response_type**: Specifies the type of response expected from the authorization server(wallet) for example in our case response_type = vp_token
-   * **Client_id**: The unique identifier for the client (Verifier) application making the request
-   * **redirect_uri**: This is the URI where the authorization server (Wallet) will send the authorization response and redirect the user back to the verifier(client) application
-   * **request_uri**: This is a URL where the verifier application directs the Wallet to retrieve the actual Authorization Request, used when the request object is too large to be transmitted directly, helping to keep the Request Object size smaller.
-   * **response_mode**: This parameter tells the wallet that how it should send the vp_token to the verifier application
+2. **Authorization Request**: The verifier constructs an authorization request containing the following parameters:
+    * **response_type**: Specifies the type of response expected from the authorization server(wallet) for example in our case response_type = vp_token
+    * **Client_id**: The unique identifier for the client (Verifier) application making the request
+    * **request_uri**: This is a URL where the verifier application directs the Wallet to retrieve the actual Authorization Request, used when the request object is too large to be transmitted directly, helping to keep the Request Object size smaller.
+    * **response_mode**: This parameter tells the wallet that how it should send the vp_token to the verifier application
 
-     | Response Mode         | Description|
-     | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-     | Direct Post (Default) | * Response will be sent to verifier using HTTP post request and response body will be encoded by specifying the content type as “application/x-www-form-urlencoded" <br/> * Here response will be sent to a specific resource (response_uri) which will be controlled by the verifier and verifier will fetch the response (vp_token) from this resource by using transaction-id which is unique to this vp flow. <br/>* Verifier will provide the uri of the resource to wallet by sending response_uri in Authorization request. |
-     | Fragment              | Response will be encoded in the Fragment added to the redirect_uri and will be sent to the verifier when redirecting the end-user back to the verifier
-   * **response_uri**- if verifier send the response mode as Direct post, then verifier is expecting the response to be sent to some resource which will be under the control of the verifier and verifier will get the response from this response-uri.
-   * **presentation_definition** (Required)- It is an JSON object which contains the info about the credentials that are being requested by the verifier.
-   * **presentation_definition_uri** - to reduce the size of the request or QR code sometimes the verifier stores the presentation_definition Json object at some resource endpoint and sends that resource uri to wallet and wallet call this endpoint and gets the presentation definition object.
-   * **client_id_scheme** - this value used by the Verifier to tell wallet about how it needs to interpret the client identifier provided by the verifier based on the scheme selected.
-   * **client_metadata** - Json object which contains the verifier metadata
-   * **state** - It contains request-id, and it is a random value generated by verifier cryptographically, and it is used for binding the Authorization request and response.
-   * **nonce**- It is a random value generated by verifier cryptographically and used for preventing the replay attacks. Here this random value will be bound to the authorization response so that even if attacker intercepts the VP response, they cannot replay the VP response again.
-   * **presentationFlow**- It determines the flow type (same_device or cross_device).
-   If same_device flow: Respond with a JSON object containing a redirect_uri.
-   Content-Type: application/json
-   If cross_device flow: Respond with a plain 200 OK (no body).
+      | Response Mode         | Description|
+           | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+      | Direct Post (Default) | * Response will be sent to verifier using HTTP post request and response body will be encoded by specifying the content type as “application/x-www-form-urlencoded" <br/> * Here response will be sent to a specific resource (response_uri) which will be controlled by the verifier and verifier will fetch the response (vp_token) from this resource by using transaction-id which is unique to this vp flow. <br/>* Verifier will provide the uri of the resource to wallet by sending response_uri in Authorization request. |
+      | Fragment              | Response will be encoded in the Fragment added to the redirect_uri and will be sent to the verifier when redirecting the end-user back to the verifier
+    * **response_uri**- if verifier send the response mode as Direct post, then verifier is expecting the response to be sent to some resource which will be under the control of the verifier and verifier will get the response from this response-uri.
+    * **presentation_definition** (Required)- It is an JSON object which contains the info about the credentials that are being requested by the verifier.
+    * **presentation_definition_uri** - to reduce the size of the request or QR code sometimes the verifier stores the presentation_definition Json object at some resource endpoint and sends that resource uri to wallet and wallet call this endpoint and gets the presentation definition object.
+    * **client_id_scheme** - this value used by the Verifier to tell wallet about how it needs to interpret the client identifier provided by the verifier based on the scheme selected.
+    * **client_metadata** - Json object which contains the verifier metadata
+    * **state** - It contains request-id, and it is a random value generated by verifier cryptographically, and it is used for binding the Authorization request and response.
+    * **nonce** - It is a random value generated by verifier cryptographically and used for preventing the replay attacks. Here this random value will be bound to the authorization response so that even if attacker intercepts the VP response, they cannot replay the VP response again.
+    * **responseCodeValidationRequired** - Boolean flag indicating whether response_code validation is required.
+
+**Session Handling**
+
+- A transactionId may be optionally included in the authorization request. If it is not provided, the backend automatically generates one.
+- The generated transactionId is base64-encoded and returned as an HTTP-only secure cookie in the response header. This cookie is used by the verifier to retrieve and correlate the corresponding VP result for the session.
 
 3. **Request Transmission**: The constructed authorization request is sent directly to the wallet application on the same device. This transmission can occur via a custom URL scheme or domain-bound links, depending on the implementation.
    The Authorization Request can be of by value or by reference
    Then the Wallet app is invoked, and the authorization Request is passed to it
 
-4. **User Consent**: Upon receiving the request, the wallet displays a consent page to the user which has the options to accept or decline the request. 
-   
+4. **User Consent**: Upon receiving the request, the wallet displays a consent page to the user which has the options to accept or decline the request.
+
    Once the user accepts to share the credentials to the verifier application wallet proceeds to create a verifiable presentation, if the user declines the request, then the wallet prompts a reason or simply cancel request
 
 5. **Authorization Response**: After the user accepts the request then wallet checks for the credentials which matches as per the presentation definition (which the verifier requested for) and if there are any wallet shows the list to the user allowing them to select, and then it constructs a VP response and signs using its private key.
 
-   * **Response Parameters**:
-   The response Parameters may have
-     * **vp_token** - JSON string or object which contains either a single VP or array of VPs. Each VC in every VP can be either encoded using base64url or sent as JSON object.
-     * **presentation_submission** - It contains mappings between the requested Verifiable Credentials and where to find them within the returned VP Token.
+    * **Response Parameters**:
+      The response Parameters may have
+        * **vp_token** - JSON string or object which contains either a single VP or array of VPs. Each VC in every VP can be either encoded using base64url or sent as JSON object.
+        * **presentation_submission** - It contains mappings between the requested Verifiable Credentials and where to find them within the returned VP Token.
 
       Or
-     * **error** - String to allow the wallet to report errors.
-     * **errorDescription** - String which contains human readable description about the error reported by wallet.
+        * **error** - String to allow the wallet to report errors.
+        * **errorDescription** - String which contains human readable description about the error reported by wallet.
 
       And
-     * **other parameters include** - state(**request-id**), code, id_token
+        * **other parameters include** - state(**request-id**), code, id_token
 
-6. **Transmission of Authorization Response**: Once the Wallet prepares the VP, Wallet sends it back to verifier application (using redirect URI) based on the response_mode and the response_type specified by the verifier application in the Authorization Request
+6. **Transmission of Authorization Response**: Once the Wallet prepares the VP, Wallet sends it back to verifier application (using redirect URI) based on the response_mode and the response_type specified by the verifier application in the Authorization Request.
 
-   > **Important Implementation Note:**
-   > The endpoint can return a **_redirect_uri_** based on the **_INJI_VERIFY_REDIRECT_URI_** configuration and presentationFlow `same_device`.
-   >
-   > If **_INJI_VERIFY_REDIRECT_URI_** is blank or PresentationFlow is `cross_device`, no **_redirect_uri_** is returned.
-   >
-   > The `redirect_uri` now also contains cryptographic random value as `response_code` as a query parameter. This response_code is used to ensure only the receiver of the redirect can fetch and process the Authorization Response.
+   Upon receiving the VP, the verifier validates the nonce and client_id against the original authorization request to ensure integrity and prevent replay attacks. After successful validation, the VP is persisted in the backend for further processing.
 
-7. **Validation of the Authorization Response**: Upon receiving the Authorization Response from the Wallet, the verifier validates the signature of the Verifiable Presentation (VP) using the wallet’s public key. It also verifies each Verifiable Credential (VC) by checking the issuer’s proof details.
-The Verifier UI uses this response_code along with transaction_id to fetch the results.
+> **Important Implementation Note**
+>
+> The submission endpoint may return a **_redirect_uri_** depending on the **_responseCodeValidationRequired_** configuration:
+>
+> If **_responseCodeValidationRequired_** = true
+>
+> A redirect_uri is returned.
+>
+> It contains a response_code used by the UI to resume the flow, display results, handle errors, or terminate the session.
+>
+> If **_responseCodeValidationRequired_** = false
+>
+> No redirect_uri is returned.
+>
+> **Same-Device Flow Behavior**
+>
+> For same-device flows, responseCodeValidationRequired is always set to true.
 
-   The final result returned to the Verify UI contains:
-   - The overall submission status: SUCCESS or FAILED
-   - A list of VCs with their individual verification statuses: SUCCESS, INVALID, EXPIRED, or REVOKED.
+7. **Validation of the Authorization Response**: Upon receiving the Authorization Response from the wallet, the verifier validates the signature of the Verifiable Presentation (VP) using the wallet’s public key. It then verifies each Verifiable Credential (VC) by validating the issuer’s proof details.After successful proof validation, the verifier performs a holder binding check to ensure that the VP is presented by the legitimate holder of the credentials.The Verifier UI uses the response_code along with the transactionId (retrieved from the HTTP-only cookie) to securely fetch the verification results.
 
-   During the revocation check, if the vc_verifier encounters any error, it returns an exception with a descriptive error message, which the Verify UI displays to the user.
+- The final result returned to the Verify UI contains:
+    - The overall submission status: SUCCESS or FAILED
+    - A list of VCs with their individual verification statuses: SUCCESS, INVALID, EXPIRED, or REVOKED.   
+      During the revocation check, if the vc_verifier encounters any error, it returns an exception with a descriptive error message, which the Verify UI displays to the user.
 
+- Result Format Configuration
+
+  A new attribute summariseResults has been introduced.
+
+  This attribute determines the format of the response returned by the SDK.
+
+    - When summariseResults = true
+
+      The SDK returns a simplified, high-level response:
+
+      ```json
+      {
+        "vcResults": [
+          {
+            "vc": { /* Verified Credential data */ },
+            "vcStatus": "SUCCESS" // or "INVALID", "EXPIRED"
+          }
+        ],
+        "vpResultStatus": "SUCCESS" // Overall verification status
+      }
+      ```
+
+    - When summariseResults = false
+
+      The SDK returns a detailed response with full verification breakdown:
+
+      ```json
+      {
+        "transactionId": "txn_11",
+        "allChecksSuccessful": true,
+        "credentialResults": [
+          {
+            "verifiableCredential": "{...}",
+            "allChecksSuccessful": true,
+            "holderProofCheck": { "valid": true, "error": null },
+            "schemaAndSignatureCheck": { "valid": true, "error": null },
+            "expiryCheck": { "valid": true },
+            "statusChecks": [
+              { "purpose": "revocation", "valid": true, "error": null },
+              { "purpose": "suspension", "valid": true, "error": null }
+            ],
+            "claims": { /* Extracted claims */ }
+          }
+        ]
+      }
+      ```
 
 Flow Chart:
 ```mermaid
 flowchart TD
 A[User Initiates Verification] --> B[Verifier Creates Authorization Request]
-B --> C[Wallet Invocation happens]
-C --> D[Wallet Fetches the Authorization Request]
-D --> E[Biometric / Passcode Authentication]
-E --> F{Are Credentials Available in wallet that matches against Presentation Definition?}
-F -- Available --> G[List All Available Credentials]
-G --> H[Wallet Displays Consent Page]
-H --> I{User Makes a Decision}
-I -- Accept --> J[User Selects Credentials from the List]
-I -- Decline --> K[Prompt for Reason]
-J --> L[User Accepts Consent to Share the selected VC with Verifier]
-L --> M[Construct VP Response and Sign with Private Key]
-M --> N[Send VP to Verifier]
-K --> N1[Send Error Response to Verifier]
-N --> O[Verifier Receives VP Response or Error Response 
-        returns redirect_uri if configured]
-N1 --> O
-O --> P[Verifier Validates VP]
-P --> Q[Verify VP Signature]
-Q --> R{Validation Result}
-R -- Valid --> S[Grant Access]
-R -- Invalid --> T[Notify Failure]
-S --> U[End]
-T --> U
-F -- Not Available --> K[Prompt for Reason]
+
+B --> B1[Backend generates transactionId and sets HttpOnly Cookie]
+B --> C[Wallet Invocation]
+
+C --> D[Wallet Processes Authorization Request]
+D --> E[User Authentication - Biometric or Passcode]
+
+E --> F{Matching Credentials Available}
+
+F -->|Yes| G[List Available Credentials]
+G --> H[Display Consent Screen]
+
+H --> I{User Decision}
+
+I -->|Accept| J[Select Credentials]
+J --> K[User accepts consent to share VC]
+K --> L[Construct VP and Sign with Private Key]
+L --> M[Send VP to Verifier]
+
+I -->|Decline| N[Send Error Response]
+F -->|No| N
+
+M --> O[Verifier Receives VP Response]
+N --> O
+
+O --> P[Validate nonce and client_id]
+P --> Q[Persist VP in Backend]
+
+Q --> R[Return redirect_uri with response_code]
+R --> S[UI uses response_code and transactionId to fetch result]
+
+S --> T[Validate VP Signature]
+T --> U[Validate VC Proofs]
+U --> V[Perform Holder Binding Check]
+
+V --> W{Validation Result}
+
+W -->|Valid| X[Return SUCCESS with VC Results]
+W -->|Invalid| Y[Return FAILED with Error Details]
+
+X --> Z[Render Results in UI]
+Y --> Z
+Z --> AA[End]
 ```
 
 ### Brief on Wallet Invocation
@@ -114,7 +194,7 @@ In the Case of the Cross Device flow the wallet Invocation happens manually that
 
 #### Wallet Invocation through Custom URL Scheme
 * **Description**: The Verifier can invoke the Inji Wallet app directly using a **custom URL scheme (openid4vp://)**. This mechanism allows the Wallet to be triggered without requiring domain-bound universal links.
-The Wallet is configured to recognize the scheme openid4vp:// with the host authorize. When the Verifier sends an authorization request, it redirects the user to a URL using this scheme, triggering the Wallet to open and handle the request.
+  The Wallet is configured to recognize the scheme openid4vp:// with the host authorize. When the Verifier sends an authorization request, it redirects the user to a URL using this scheme, triggering the Wallet to open and handle the request.
 
 * **How it works**: The Verifier generates a URL with the custom scheme, which, when clicked, will open the Wallet app on the same device. If the Wallet app is installed, the app will handle the request; otherwise, an error or fallback action is triggered.
 
