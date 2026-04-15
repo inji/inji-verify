@@ -32,44 +32,24 @@ import io.restassured.response.Response;
 public class InjiVerifyUtil extends AdminTestUtil {
 
 	private static final Logger logger = Logger.getLogger(InjiVerifyUtil.class);
+	private static final String RESPONSE_CODE_PLACEHOLDER = "$RESPONSE_CODE$";
+
+	private static String responseCode = null;
+	private static String transactionCookieTrue = null;
+	private static String transactionCookieFalse = null;
+
+	private static final String TRANSACTION_COOKIE_TRUE_PLACEHOLDER = "$TRANSACTION_COOKIE_TRUE$";
+	private static final String TRANSACTION_COOKIE_FALSE_PLACEHOLDER = "$TRANSACTION_COOKIE_FALSE$";
+
+	public static final String TC_VP_SESSION_REQUEST_ALL_VALID_SMOKE_SID =
+			"CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid";
+
+	public static final String TC_VP_SESSION_REQUEST_RESPONSE_CODE_VALIDATION_FALSE_SID =
+			"CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid";
+
 	public static final String injiVerifyBaseUrl = InjiVerifyConfigManager
 			.getproperty(InjiVerifyConstants.INJI_VERIFY_BASE_URL);
 	public static List<String> testCasesInRunScope = new ArrayList<>();
-
-	private static String responseCode;
-	private static String transactionCookie;
-
-	private static String transactionCookieTrue;
-	private static String transactionCookieFalse;
-
-	public static String getTransactionCookieTrue() {
-		return transactionCookieTrue;
-	}
-
-	public static String getTransactionCookieFalse() {
-		return transactionCookieFalse;
-	}
-
-	public static void setTransactionCookieByFlag(String cookie, boolean responseCodeValidationRequired) {
-		if (responseCodeValidationRequired) {
-			transactionCookieTrue = cookie;
-			logger.info("Saved as TRANSACTION_COOKIE_TRUE: " + cookie);
-		} else {
-			transactionCookieFalse = cookie;
-			logger.info("Saved as TRANSACTION_COOKIE_FALSE: " + cookie);
-		}
-	}
-
-	public static String getTransactionCookie() {
-		return transactionCookie;
-	}
-
-	public static void setTransactionCookie(String cookie) {
-		transactionCookie = cookie;
-	}
-	public static String getResponseCode() {
-		return responseCode;
-	}
 
 	public static String isTestCaseValidForExecution(TestCaseDTO testCaseDTO) {
 		String testCaseName = testCaseDTO.getTestCaseName();
@@ -114,30 +94,160 @@ public class InjiVerifyUtil extends AdminTestUtil {
 					InjiVerifyConfigManager.getproperty(InjiVerifyConstants.INJI_VERIFY_BASE_URL));
 		}
 
-		if (jsonString.contains("$RESPONSE_CODE$")) {
-			jsonString = replaceKeywordValue(jsonString, "$RESPONSE_CODE$", getResponseCode());
-		}
-		if (jsonString.contains("$TRANSACTION_COOKIE$")) {
-			jsonString = replaceKeywordValue(jsonString, "$TRANSACTION_COOKIE$", getTransactionCookie());
-		}
-
-		if (jsonString.contains("$TRANSACTION_COOKIE_TRUE$")) {
-			jsonString = replaceKeywordValue(jsonString, "$TRANSACTION_COOKIE_TRUE$", getTransactionCookieTrue());
-		}
-		if (jsonString.contains("$TRANSACTION_COOKIE_FALSE$")) {
-			jsonString = replaceKeywordValue(jsonString, "$TRANSACTION_COOKIE_FALSE$", getTransactionCookieFalse());
-		}
 		return jsonString;
-
 	}
 
-	public static String replaceKeywordValue(String jsonString, String keyword, String value) {
-		if (value != null && !value.isEmpty())
-			return jsonString.replace(keyword, value);
-		else
-			throw new SkipException("Marking testcase as skipped as required field is empty " + keyword);
+	public static String getResponseCode() {
+		return responseCode;
 	}
 
+	public static void setResponseCode(String code) {
+		responseCode = code;
+	}
+
+	public static String getTransactionCookieTrue() {
+		return transactionCookieTrue;
+	}
+
+	public static String getTransactionCookieFalse() {
+		return transactionCookieFalse;
+	}
+
+	public static void setTransactionCookieByFlag(String cookie, boolean flag) {
+		if (flag) {
+			transactionCookieTrue = cookie;
+			logger.info("Saved as TRANSACTION_COOKIE_TRUE: " + cookie);
+		} else {
+			transactionCookieFalse = cookie;
+			logger.info("Saved as TRANSACTION_COOKIE_FALSE: " + cookie);
+		}
+	}
+
+	public static String replaceResponseCodePlaceholder(String jsonInput) {
+		if (jsonInput == null || !jsonInput.contains(RESPONSE_CODE_PLACEHOLDER)) {
+			return jsonInput;
+		}
+
+		String code = getResponseCode();
+		if (code == null || code.isEmpty()) {
+			throw new SkipException("RESPONSE_CODE is null or empty. Cannot proceed.");
+		}
+
+		return jsonInput.replace(RESPONSE_CODE_PLACEHOLDER, code);
+	}
+
+	public static String replaceTransactionCookiePlaceholders(String jsonInput) {
+		if (jsonInput == null) {
+			return null;
+		}
+		String out = jsonInput;
+		if (out.contains(TRANSACTION_COOKIE_TRUE_PLACEHOLDER)) {
+			String c = getTransactionCookieTrue();
+			if (c != null && !c.isEmpty()) {
+				out = out.replace(TRANSACTION_COOKIE_TRUE_PLACEHOLDER, c);
+			} else {
+				logger.warn(TRANSACTION_COOKIE_TRUE_PLACEHOLDER + " present but value is null or empty");
+			}
+		}
+		if (out.contains(TRANSACTION_COOKIE_FALSE_PLACEHOLDER)) {
+			String c = getTransactionCookieFalse();
+			if (c != null && !c.isEmpty()) {
+				out = out.replace(TRANSACTION_COOKIE_FALSE_PLACEHOLDER, c);
+			} else {
+				logger.warn(TRANSACTION_COOKIE_FALSE_PLACEHOLDER + " present but value is null or empty");
+			}
+		}
+		return out;
+	}
+
+	public static String replaceVpSessionInputPlaceholders(String jsonInput) {
+		String step = replaceResponseCodePlaceholder(jsonInput);
+		return replaceTransactionCookiePlaceholders(step);
+	}
+
+	public static String extractResponseCodeFromRedirectUri(String redirectUri) {
+		if (redirectUri == null || redirectUri.isEmpty() || !redirectUri.contains("response_code=")) {
+			return null;
+		}
+		String remainder = redirectUri.split("response_code=", 2)[1];
+		remainder = remainder.replace("\\u003d", "=");
+		int amp = remainder.indexOf('&');
+		if (amp >= 0) {
+			remainder = remainder.substring(0, amp);
+		}
+		int hash = remainder.indexOf('#');
+		if (hash >= 0) {
+			remainder = remainder.substring(0, hash);
+		}
+		String code = remainder.trim();
+		return code.isEmpty() ? null : code;
+	}
+
+	public static void captureResponseCodeFromVpSubmissionResponse(Response response, String requestUrl) {
+		if (response == null || requestUrl == null || !requestUrl.contains("vp-submission")) {
+			return;
+		}
+		String redirectUri = null;
+		try {
+			String body = response.asString();
+			if (body != null && !body.isEmpty() && body.trim().startsWith("{")) {
+				try {
+					org.json.JSONObject json = new org.json.JSONObject(body);
+					if (json.has("redirect_uri")) {
+						redirectUri = json.optString("redirect_uri", null);
+					}
+				} catch (Exception ignored) {
+				}
+			}
+		} catch (Exception e) {
+			logger.error("Failed reading redirect_uri from VP submission body", e);
+		}
+		if (redirectUri == null || redirectUri.isEmpty()) {
+			try {
+				redirectUri = response.getHeader("Location");
+			} catch (Exception ignored) {
+			}
+		}
+		if (redirectUri == null || redirectUri.isEmpty()) {
+			return;
+		}
+		String code = extractResponseCodeFromRedirectUri(redirectUri);
+		if (code != null && !code.isEmpty()) {
+			setResponseCode(code);
+		}
+	}
+
+	public static void captureTransactionCookieFromVpSessionRequestResponse(String endPoint, String testCaseName,
+			Response response, String requestBodyJson) {
+		if (endPoint == null || !endPoint.contains("vp-session-request") || response == null) {
+			return;
+		}
+		String setCookieHeader = response.getHeader("Set-Cookie");
+		if (setCookieHeader == null || !setCookieHeader.contains("transaction_id=")) {
+			return;
+		}
+		String value = setCookieHeader.split(";", 2)[0];
+
+		if (testCaseName != null) {
+			if (testCaseName.contains(TC_VP_SESSION_REQUEST_RESPONSE_CODE_VALIDATION_FALSE_SID)) {
+				setTransactionCookieByFlag(value, false);
+				return;
+			}
+			if (testCaseName.contains(TC_VP_SESSION_REQUEST_ALL_VALID_SMOKE_SID)) {
+				setTransactionCookieByFlag(value, true);
+				return;
+			}
+		}
+		try {
+			org.json.JSONObject requestJson = new org.json.JSONObject(requestBodyJson);
+			if (requestJson.has("responseCodeValidationRequired")) {
+				boolean flag = requestJson.getBoolean("responseCodeValidationRequired");
+				setTransactionCookieByFlag(value, flag);
+			}
+		} catch (Exception e) {
+			logger.error("Failed saving transaction cookie by responseCodeValidationRequired", e);
+		}
+	}
 	// Remove below two methods once after releasing the apitest-commons-1.3.3
 	protected Response postWithBodyAndCookieForAutoGeneratedIdForUrlEncoded(String url, String jsonInput,
 			String testCaseName, String idKeyName) {
@@ -153,36 +263,7 @@ public class InjiVerifyUtil extends AdminTestUtil {
 			response = postRequestWithFormDataBody(url, map);
 			GlobalMethods.reportResponse(response.getHeaders().asList().toString(), url, response);
 
-			try {
-				String redirectUri = null;
-
-				try {
-					redirectUri = response.jsonPath().getString("redirect_uri");
-				} catch (Exception ignored) {}
-
-				if (redirectUri == null || redirectUri.isEmpty()) {
-					redirectUri = response.getHeader("Location");
-				}
-
-				if (redirectUri != null && redirectUri.contains("response_code=")) {
-
-					String value = redirectUri.split("response_code=")[1];
-
-					if (value.contains("&")) {
-						value = value.split("&")[0];
-					}
-
-					value = value.replace("\\u003d", "=");
-
-					logger.info("Extracted response_code: " + value);
-
-					responseCode = value;
-
-				}
-
-			} catch (Exception e) {
-				logger.error("Failed extracting response_code", e);
-			}
+			captureResponseCodeFromVpSubmissionResponse(response, url);
 
 			if (testCaseName.toLowerCase().contains("_sid")) {
 				writeAutoGeneratedId(response, idKeyName, testCaseName);
@@ -224,36 +305,35 @@ public class InjiVerifyUtil extends AdminTestUtil {
 		return postResponse;
 	}
 
-
 	public static String decodeBase64Url(String encoded) {
-        return new String(Base64.getUrlDecoder().decode(encoded));
+		return new String(Base64.getUrlDecoder().decode(encoded));
 	}
 
 	public static String decodeAndCombineJwt(String jwtString) {
-	    try {
-	        DecodedJWT jwt = JWT.decode(jwtString);
+		try {
+			DecodedJWT jwt = JWT.decode(jwtString);
 
-	        // Base64 decode header & payload
-	        String headerJson = decodeBase64Url(jwt.getHeader());
-	        String payloadJson = decodeBase64Url(jwt.getPayload());
+			// Base64 decode header & payload
+			String headerJson = decodeBase64Url(jwt.getHeader());
+			String payloadJson = decodeBase64Url(jwt.getPayload());
 
-	        // Use Jackson to combine into single JSON object
-	        ObjectMapper mapper = new ObjectMapper();
-	        ObjectNode combinedJson = mapper.createObjectNode();
+			// Use Jackson to combine into single JSON object
+			ObjectMapper mapper = new ObjectMapper();
+			ObjectNode combinedJson = mapper.createObjectNode();
 
-	        combinedJson.set("header", mapper.readTree(headerJson));
-	        combinedJson.set("payload", mapper.readTree(payloadJson));
+			combinedJson.set("header", mapper.readTree(headerJson));
+			combinedJson.set("payload", mapper.readTree(payloadJson));
 
-	        // Pretty print final JSON
-	        return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(combinedJson);
+			// Pretty print final JSON
+			return mapper.writerWithDefaultPrettyPrinter().writeValueAsString(combinedJson);
 
-	    } catch (Exception e) {
-	        logger.error("Error decoding JWT: " + e.getMessage(), e);
-	        return null;
-	    }
+		} catch (Exception e) {
+			logger.error("Error decoding JWT: " + e.getMessage(), e);
+			return null;
+		}
 	}
 
-		public void updateCacheFromRow(Map<String, Object> row, String idKeyName, String testCaseName) {
+	public void updateCacheFromRow(Map<String, Object> row, String idKeyName, String testCaseName) {
 		if (row == null || row.isEmpty() || idKeyName == null || idKeyName.trim().isEmpty()) {
 			return;
 		}
@@ -276,13 +356,11 @@ public class InjiVerifyUtil extends AdminTestUtil {
 		}
 	}
 
-		public static void verifyDBCleanup() {
-
+	public static void verifyDBCleanup() {
 		DBManager.executeDBQueries(InjiVerifyConfigManager.getInjiVerifyDBURL(),
 				InjiVerifyConfigManager.getproperty("db-su-user"),
 				InjiVerifyConfigManager.getproperty("postgres-password"),
 				InjiVerifyConfigManager.getproperty("inji_verify_schema"),
 				getGlobalResourcePath() + "/" + "config/DB_delete_script.txt");
-
 	}
 }

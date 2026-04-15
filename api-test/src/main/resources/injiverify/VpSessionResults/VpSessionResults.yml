@@ -43,7 +43,7 @@ VpSessionResults:
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
@@ -61,7 +61,7 @@ VpSessionResults:
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
@@ -80,7 +80,7 @@ VpSessionResults:
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
@@ -99,7 +99,7 @@ VpSessionResults:
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
@@ -117,7 +117,7 @@ VpSessionResults:
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
@@ -136,7 +136,7 @@ VpSessionResults:
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
@@ -155,7 +155,7 @@ VpSessionResults:
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
@@ -174,7 +174,7 @@ VpSessionResults:
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
@@ -193,7 +193,7 @@ VpSessionResults:
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/VpSessionResults/VpSessionResultsResult
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],

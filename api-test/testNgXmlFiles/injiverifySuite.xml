@@ -143,6 +143,14 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
 		</classes>
 	</test>
+	<test name="VcVerificationDid">
+		<parameter name="ymlFile"
+			value="injiverify/VcVerificationDid/VcVerificationDid.yml" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
+		</classes>
+	</test>
 	<test name="VcRevocationStatus">
 		<parameter name="ymlFile"
 			value="injiverify/VcRevocationStatus/VcRevocationStatus.yml" />

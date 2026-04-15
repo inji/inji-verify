@@ -1,0 +1,204 @@
+VcVerificationDid:
+  Injiverify_VcVerificationDid_Positive_DidKeyPath_Smoke:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with JSON-LD DID credential and expects all checks successful
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2
+      input: '{
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "allChecksSuccessful": true
+}'
+
+  Injiverify_VcVerificationDid_Positive_DidJwk_Smoke:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with did:jwk credential and expects all checks successful
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_02
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2
+      input: '{
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "allChecksSuccessful": true
+}'
+
+  Injiverify_VcVerificationDid_MismatchedDidJwkSubject_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with mismatched did:jwk credential subject and expects signature verification error
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_03
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
+      input: '{
+        "credentialSubject_id": "did:jwk:eyJrdHkiOiJFQyIsIngiOiJ4eXoiLCJ5IjoieHl6IiwiY3J2Ijoic2VjcDI1NmsxIn0=",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+      "errorMessage": "Verification Failed"
+}'
+
+  Injiverify_VcVerificationDid_DidJwkSubjectMismatchVariant_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with alternate did:jwk subject mismatch and expects signature verification error
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_04
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
+      input: '{
+        "credentialSubject_id": "did:jwk:eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsInVzZSI6InNpZyIsImtpZCI6ImNjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjY2NjIn0=",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+      "errorMessage": "Verification Failed"
+}'
+
+  Injiverify_VcVerificationDid_DidWebSubjectMismatch_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with did:web subject mismatch and expects signature verification error
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_05
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
+      input: '{
+        "credentialSubject_id": "did:web:example.github.io:user:alice",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+      "errorMessage": "Verification Failed"
+}'
+
+  Injiverify_VcVerificationDid_MalformedVerifiableCredential_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with malformed raw verifiableCredential payload
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_06
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
+      input: '{
+        "rawVerifiableCredential": "{not-valid-json",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "errorCode": "ERR_GENERIC",
+      "errorMessage": "$IGNORE$"
+}'
+
+  Injiverify_VcVerificationDid_ExpiredCredential_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with expired credential and expects verification failure
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_07
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2
+      input: '{
+        "expirationDate": "2020-11-17T06:06:36.456Z",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "allChecksSuccessful": false
+}'
+
+  Injiverify_VcVerificationDid_TamperedProofJws_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with tampered proof JWS and expects signature verification error
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_08
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
+      input: '{
+        "jws": "eyJ4NXQjUzI1NiI6IlRjX1B6cUVUeUpYSDllbWpVOXVEY2JlZUU5U1BYVlVBeldwNnF0V1pEVnciLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJraWQiOiJRaXpobFl1NXBjVmE4bF9mbUVsWXplTHVrS1BTaG1rZDB2SWZGMVk3T2NvIiwiYWxnIjoiUlMyNTYifQ..B8DPrx7ieT3lkLJUwvppRwk63vOpIOk6Y7UuV-KYBexFn4BNPe7rvnDn15pLCPG6tHa1FV-MX9yRZztKQMpXrdt42Sg6vqLMATfBXrWiiGCneePGXhXSvyYGiJ1zP9-hdZkikcT8G2Ho3LM3uWpk1O39a8qnQRM09leh0cuw3s16ODPnsFBFesd_ZDDJSzKemWvlvGdvCFJTE6Y78b4gRM-NErAba27KVyfXRvRpZz--kcaMWQHVcXQekAv0b-C8cX3NtPAXAflq4-pnrOXwwGc5RWqmq1pyIh5ZM1vZo1vnh-L0yjct2FGbTDNVAK3BTAINVALIDJWSXXXX",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+      "errorMessage": "Verification Failed"
+}'
+
+  Injiverify_VcVerificationDid_DidKeySubjectMismatch_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with did:key subject mismatch and expects signature verification error
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_09
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
+      input: '{
+        "credentialSubject_id": "did:key:z6Mkhb4rD4u1G9nD8kL3mN5pQ7rS9tU1vW3xY5zA7bC9dE",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+      "errorMessage": "Verification Failed"
+}'
+
+  Injiverify_VcVerificationDid_DidMosipSubjectMismatch_Edge:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with did:mosip subject mismatch and expects signature verification error
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_10
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
+      input: '{
+        "credentialSubject_id": "did:mosip:resident:0000000000000000",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+      "errorMessage": "Verification Failed"
+}'
+
+  Injiverify_VcVerificationDid_MalformedDidJwkInvalidBase64_Edge:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with did:jwk subject containing invalid Base64 and expects signature verification error
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_11
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
+      input: '{
+        "credentialSubject_id": "did:jwk:NotValidBase64!!!",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
+      "errorMessage": "Verification Failed"
+}'
