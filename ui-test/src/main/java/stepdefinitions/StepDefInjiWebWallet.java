@@ -4,6 +4,7 @@ import static org.testng.Assert.assertEquals;
 import static org.testng.Assert.assertTrue;
 
 import org.apache.commons.lang.exception.ExceptionUtils;
+import org.checkerframework.checker.units.qual.g;
 import org.openqa.selenium.By;
 import org.openqa.selenium.NoSuchElementException;
 import org.openqa.selenium.WebDriver;
@@ -162,7 +163,7 @@ public void user_performs_token_based_login_to_inji_web_wallet() throws Exceptio
 	@Then("User clicks on Proceed button")
 	public void user_clicks_on_proceed_button() {
 		try {
-g			   vpVerification.proccedButton();
+			   vpVerification.clickOnProceedButton();
             test.log(Status.PASS, "Selected proceed button.");
         } catch (NoSuchElementException e) {
             logFailure("Failed to select the proceed button", e);
