@@ -6,6 +6,7 @@ import java.util.Map;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
+import org.json.JSONObject;
 import org.testng.ITest;
 import org.testng.ITestContext;
 import org.testng.ITestResult;
@@ -33,6 +34,12 @@ import io.restassured.response.Response;
 
 public class SimplePostForAutoGenId extends InjiVerifyUtil implements ITest {
 	private static final Logger logger = Logger.getLogger(SimplePostForAutoGenId.class);
+
+	private static final String JSON_KEY_COOKIE = "cookie";
+	private static final String HEADER_CONTENT_TYPE = "Content-Type";
+	private static final String HEADER_ACCEPT = "Accept";
+	private static final String HEADER_COOKIE = "Cookie";
+
 	protected String testCaseName = "";
 	public String idKeyName = null;
 	public Response response = null;
@@ -98,15 +105,15 @@ public class SimplePostForAutoGenId extends InjiVerifyUtil implements ITest {
 
 		if (inputJson != null) {
 			try {
-				org.json.JSONObject requestJson = new org.json.JSONObject(inputJson);
+				JSONObject requestJson = new JSONObject(inputJson);
 
-				if (requestJson.has("cookie")) {
-					cookieValue = requestJson.optString("cookie");
+				if (requestJson.has(JSON_KEY_COOKIE)) {
+					cookieValue = requestJson.optString(JSON_KEY_COOKIE);
 
 					if (cookieValue != null && !cookieValue.isEmpty()) {
 						logger.info("Sending cookie via HEADER: " + cookieValue);
 
-						requestJson.remove("cookie");
+						requestJson.remove(JSON_KEY_COOKIE);
 						inputJson = requestJson.toString();
 						sendCookieAsHeader = true;
 					}
@@ -122,9 +129,9 @@ public class SimplePostForAutoGenId extends InjiVerifyUtil implements ITest {
 		if (sendCookieAsHeader) {
 			response = RestAssured
 					.given()
-					.header("Content-Type", "application/json")
-					.header("Accept", "application/json")
-					.header("Cookie", cookieValue)
+					.header(HEADER_CONTENT_TYPE, "application/json")
+					.header(HEADER_ACCEPT, "application/json")
+					.header(HEADER_COOKIE, cookieValue)
 					.body(inputJson)
 					.post(injiVerifyBaseUrl + testCaseDTO.getEndPoint());
 

@@ -33,6 +33,7 @@ public class InjiVerifyUtil extends AdminTestUtil {
 
 	private static final Logger logger = Logger.getLogger(InjiVerifyUtil.class);
 	private static final String RESPONSE_CODE_PLACEHOLDER = "$RESPONSE_CODE$";
+	private static final String RESPONSE_CODE_QUERY_PREFIX = "response_code=";
 
 	private static String responseCode = null;
 	private static String transactionCookieTrue = null;
@@ -166,10 +167,10 @@ public class InjiVerifyUtil extends AdminTestUtil {
 	}
 
 	public static String extractResponseCodeFromRedirectUri(String redirectUri) {
-		if (redirectUri == null || redirectUri.isEmpty() || !redirectUri.contains("response_code=")) {
+		if (redirectUri == null || redirectUri.isEmpty() || !redirectUri.contains(RESPONSE_CODE_QUERY_PREFIX)) {
 			return null;
 		}
-		String remainder = redirectUri.split("response_code=", 2)[1];
+		String remainder = redirectUri.split(RESPONSE_CODE_QUERY_PREFIX, 2)[1];
 		remainder = remainder.replace("\\u003d", "=");
 		int amp = remainder.indexOf('&');
 		if (amp >= 0) {

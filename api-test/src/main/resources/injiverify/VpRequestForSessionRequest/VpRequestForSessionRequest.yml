@@ -1,7 +1,7 @@
 VpRequestForSessionRequest:
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid:
     endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request with a valid data for session request.
+    description: Creates a VP request with a valid data for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_01
     role: noauth
     restMethod: post
@@ -48,7 +48,7 @@ VpRequestForSessionRequest:
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withoutClientID_Neg:
     endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request without clientID for session request.
+    description: Creates a VP request without clientId for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_02
     role: noauth
     restMethod: post
@@ -93,7 +93,7 @@ VpRequestForSessionRequest:
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withoutResponseCodeValidationRequired_Neg:
     endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request without ResponseCodeValidationRequired for session request.
+    description: Creates a VP request without responseCodeValidationRequired for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_03
     role: noauth
     restMethod: post
@@ -138,7 +138,7 @@ VpRequestForSessionRequest:
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withMalformedJSONRequest_Neg:
     endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request with Malformed JSON Request for session request.
+    description: Creates a VP request with Malformed JSON Request for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_04
     role: noauth
     restMethod: post
@@ -184,7 +184,7 @@ VpRequestForSessionRequest:
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid:
     endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request with a valid data for session request.
+    description: Creates a VP request with valid data and responseCodeValidationRequired is false for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_05
     role: noauth
     restMethod: post
