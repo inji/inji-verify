@@ -87,9 +87,9 @@ GetVpTokenForRequest:
       inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
       outputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequestResult
       input: '{
-      "transactionId":"$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId":"$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-    "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_transactionId$",
+    "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$",
     "vpResultStatus": "SUCCESS"
 }'

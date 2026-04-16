@@ -48,8 +48,7 @@ VcVerificationDid:
         "includeClaims": true
       }'
       output: '{
-      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
-      "errorMessage": "Verification Failed"
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
 }'
 
   Injiverify_VcVerificationDid_DidJwkSubjectMismatchVariant_Neg:
@@ -67,8 +66,7 @@ VcVerificationDid:
         "includeClaims": true
       }'
       output: '{
-      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
-      "errorMessage": "Verification Failed"
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
 }'
 
   Injiverify_VcVerificationDid_DidWebSubjectMismatch_Neg:
@@ -86,8 +84,7 @@ VcVerificationDid:
         "includeClaims": true
       }'
       output: '{
-      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
-      "errorMessage": "Verification Failed"
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
 }'
 
   Injiverify_VcVerificationDid_MalformedVerifiableCredential_Neg:
@@ -142,8 +139,7 @@ VcVerificationDid:
         "includeClaims": true
       }'
       output: '{
-      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
-      "errorMessage": "Verification Failed"
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
 }'
 
   Injiverify_VcVerificationDid_DidKeySubjectMismatch_Neg:
@@ -161,11 +157,10 @@ VcVerificationDid:
         "includeClaims": true
       }'
       output: '{
-      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
-      "errorMessage": "Verification Failed"
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
 }'
 
-  Injiverify_VcVerificationDid_DidMosipSubjectMismatch_Edge:
+  Injiverify_VcVerificationDid_DidMosipSubjectMismatch_Neg:
       endPoint: /v1/verify/v2/vc-verification
       description: Performing VC verification with did:mosip subject mismatch and expects signature verification error
       uniqueIdentifier: TC_InjiVerify_VcVerificationDid_10
@@ -180,11 +175,10 @@ VcVerificationDid:
         "includeClaims": true
       }'
       output: '{
-      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
-      "errorMessage": "Verification Failed"
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
 }'
 
-  Injiverify_VcVerificationDid_MalformedDidJwkInvalidBase64_Edge:
+  Injiverify_VcVerificationDid_MalformedDidJwkInvalidBase64_Neg:
       endPoint: /v1/verify/v2/vc-verification
       description: Performing VC verification with did:jwk subject containing invalid Base64 and expects signature verification error
       uniqueIdentifier: TC_InjiVerify_VcVerificationDid_11
@@ -199,6 +193,5 @@ VcVerificationDid:
         "includeClaims": true
       }'
       output: '{
-      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED",
-      "errorMessage": "Verification Failed"
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
 }'

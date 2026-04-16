@@ -185,6 +185,7 @@ VpRequestForSessionRequest:
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid:
     endPoint: /v1/verify/vp-session-request
     description: Creates a VP request with valid data and responseCodeValidationRequired is false for VP Session result API
+    description: Creates a VP request with valid data and responseCodeValidationRequired is false for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_05
     role: noauth
     restMethod: post

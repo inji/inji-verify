@@ -10,8 +10,7 @@ VpSubmission:
       outputTemplate: injiverify/responseCode
       input: '{
       "state": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
-      "definition_id": "$PRESENTATIONDEFINITIONID$",
-      "challenge": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_nonce$"
+      "definition_id": "$PRESENTATIONDEFINITIONID$"
       }'
       output: '{
       "responseCode": "200"
@@ -98,8 +97,7 @@ VpSubmission:
       outputTemplate: injiverify/responseCode
       input: '{
       "state":"$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$%^$^",
-      "challenge": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_nonce$"
+      "definition_id":"$%^$^"
       }'
       output: '{
       "responseCode": "200"
@@ -237,7 +235,7 @@ VpSubmission:
       input: '{
       "state":"$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_requestId$",
       "definition_id":"$PRESENTATIONDEFINITIONID$",
-      "challenge": "$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_nonce$"
+      "challenge": "MTc2Mzk1NTY5NDI5NQ=="
       }'
       output: '{
       "responseCode": "200"

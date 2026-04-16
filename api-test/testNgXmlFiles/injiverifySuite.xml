@@ -1,6 +1,5 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-
 <suite name="Inji-Verify API Test">
 	<!-- Passing Group as parmeter unsing "testType" Possible Groups are: smoke 
 		regression smokeAndRegression -->
@@ -84,6 +83,25 @@
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="VpSubmissionECC">
+		<parameter name="ymlFile"
+			value="injiverify/VpSubmissionECC/VpSubmissionECC.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="GetVpRequestStatusV2">
+		<parameter name="ymlFile"
+			value="injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
 		</classes>
 	</test>
 	<test name="VpSessionResults">
@@ -191,15 +209,6 @@
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
-		</classes>
-	</test>
-	<test name="GetVpRequestStatusV2">
-		<parameter name="ymlFile"
-			value="injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2.yml" />
-		<parameter name="pathParams" value="requestId" />
-		<classes>
-			<class
-				name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
 		</classes>
 	</test>
 </suite>
