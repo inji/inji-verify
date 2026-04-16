@@ -43,11 +43,11 @@ It accepts INTERNET_CONNECTIVITY_CHECK_ENDPOINT and INTERNET_CONNECTIVITY_CHECK_
 
 # Developer Setup:
 
-Once the repo is cloned, move into the inji-verify repository folder and run the following command to check out to the develop branch:
+Once the repo is cloned, move into the inji-verify repository folder and run the following command to check out to the release-0.18.x branch:
 
 ```shell
 cd inji-verify # move into the repository folder
-git checkout develop
+git checkout release-0.18.x
 cd verify-ui # contains source code and Dockerfile
 ```
 
@@ -117,6 +117,7 @@ active branches:
 
 - master
 - develop
+- release-0.18.x
 
 ```shell
 cd ./inji-verify # repository folder

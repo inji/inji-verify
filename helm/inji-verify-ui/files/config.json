@@ -12,7 +12,8 @@
           "ldp_vc": {
             "proof_type": [
               "RsaSignature2018",
-              "Ed25519Signature2020"]
+              "Ed25519Signature2020"
+            ]
           }
         },
         "input_descriptors": [
@@ -20,7 +21,8 @@
             "id": "id card credential",
             "format": {
               "ldp_vc": {
-                "proof_type": [
+                "proof_type":
+                [
                   "RsaSignature2018",
                   "Ed25519Signature2020"
                 ]
