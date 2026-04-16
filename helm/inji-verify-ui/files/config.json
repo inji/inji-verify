@@ -262,7 +262,7 @@
       "id": "inji-wallet",
       "name": "Inji Wallet",
       "iconUrl": "/assets/inji-web-wallet-icon.svg",
-      "walletBaseUrl": "https://your-inji-web-wallet-host"
+      "walletBaseUrl": "https://from-install.sh"
     }
   ]
 }
