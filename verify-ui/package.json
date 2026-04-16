@@ -20,7 +20,7 @@
     "@types/react-dom": "^18.2.23",
     "@types/react-redux": "^7.1.33",
     "cbor-x": "^1.6.0",
-    "dompurify": "^3.3.1",
+    "dompurify": "^3.4.0",
     "i18next": "^23.11.2",
     "iso-639-3": "^3.0.1",
     "mustache": "^4.2.0",
