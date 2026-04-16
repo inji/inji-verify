@@ -9,14 +9,28 @@ metadata:
     {{- end }}
   {{- if .Values.commonAnnotations }}
   annotations: {{- include "common.tplvalues.render" ( dict "value" .Values.commonAnnotations "context" $ ) | nindent 4 }}
-        checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
   {{- end }}
+
 data:
   {{- range $path, $_ := .Files.Glob "files/*.json" }}
-  {{- if ne (base $path) "config.json" }}
-  {{ base $path }}: {{ $.Files.Get $path | quote }}
-  {{- end }}
-  {{- end }}
-  {{- $config := .Files.Get "files/config.json" | fromJson }}
-  {{- $_ := set $config "WebWallets" .Values.webWallets }}
-  config.json: {{ $config | toJson | quote }}
+    {{- if ne (base $path) "config.json" }}
+    {{ base $path }}: {{ $.Files.Get $path | quote }}
+    {{- end }}
+    {{- end }}
+
+    {{- $config := .Files.Get "files/config.json" | fromJson }}
+    {{- $walletBaseUrl := .Values.walletBaseUrl }}
+
+    {{- $updatedWallets := list }}
+
+    {{- range $wallet := $config.WebWallets }}
+    {{- if eq $wallet.id "inji-wallet" }}
+    {{- $_ := set $wallet "walletBaseUrl" $walletBaseUrl }}
+    {{- end }}
+    {{- $updatedWallets = append $updatedWallets $wallet }}
+    {{- end }}
+
+    {{- $_ := set $config "WebWallets" $updatedWallets }}
+
+    config.json: {{ $config | toJson | quote }}

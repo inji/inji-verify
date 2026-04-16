@@ -19,13 +19,30 @@ else
     if [ -z "INJIVERIFY_HOST" ]; then
     echo "INJIVERIFY Host not provided; EXITING;"
     exit 0;
-    fi    
-fi   
+    fi
+fi
 
 CHK_INJIVERIFY_HOST=$( nslookup "$INJIVERIFY_HOST" )
 if [ $? -gt 0 ]; then
     echo "InjiVERIFY Host does not exists; EXITING;"
     exit 0;
+fi
+
+read -p "Please provide Inji Web host (optional (eg:injiweb.sandbox.xyz.net), press Enter to skip): " INJIWEB_HOST
+
+WALLET_BASE_URL=""
+
+if [ -n "$INJIWEB_HOST" ]; then
+  nslookup "$INJIWEB_HOST" >/dev/null 2>&1
+  if [ $? -gt 0 ]; then
+    echo "Inji Web host does not exist; EXITING;"
+    exit 1
+  fi
+
+  WALLET_BASE_URL="https://$INJIWEB_HOST"
+  echo "Using walletBaseUrl: $WALLET_BASE_URL"
+else
+  echo "Skipping Inji Web host configuration"
 fi
 
 echo "INJIVERIFY_HOST is not present in configmap/inji-stack-config of configserver"
@@ -68,6 +85,7 @@ function installing_inji-verify-ui() {
   --set inji_verify_service.host="inji-verify-service.$NS" \
   --set extraEnvVars[0].name=VP_SUBMISSION_SUPPORTED \
   --set-string extraEnvVars[0].value="${VP_SUBMISSION_SUPPORTED}" \
+  --set-string walletBaseUrl="$WALLET_BASE_URL" \
   --version $CHART_VERSION
 
   kubectl -n $NS  get deploy -o name |  xargs -n1 -t  kubectl -n $NS rollout status
