@@ -26,11 +26,11 @@ const decodeBase64Url = (encoded: string): string => {
 
 export const normalizeVp = (vp: any): Record<string, unknown> => {
     if (typeof vp === "string") {
-        if (isSdJwt(vp)) return { raw: vp };
+        if (isSdJwt(vp)) vp ;
         try {
             return JSON.parse(vp);
         } catch {
-            return { raw: vp };
+           {vp};
         }
     }
     return vp;
