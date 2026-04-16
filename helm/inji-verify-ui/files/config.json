@@ -21,7 +21,11 @@
             "id": "id card credential",
             "format": {
               "ldp_vc": {
-                "proof_type": ["RsaSignature2018"]
+                "proof_type":
+                [
+                  "RsaSignature2018",
+                  "Ed25519Signature2020"
+                ]
               }
             },
             "constraints": {
