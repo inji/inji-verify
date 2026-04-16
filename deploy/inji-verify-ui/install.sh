@@ -28,20 +28,22 @@ if [ $? -gt 0 ]; then
     exit 0;
 fi
 
-read -p "Please provide Inji Web host (eg: injiweb.sandbox.xyz.net): " INJIWEB_HOST
+read -p "Please provide Inji Web host (optional (eg:injiweb.sandbox.xyz.net), press Enter to skip): " INJIWEB_HOST
 
-if [ -z "$INJIWEB_HOST" ]; then
-echo "Inji Web host not provided; EXITING;"
-exit 1
+WALLET_BASE_URL=""
+
+if [ -n "$INJIWEB_HOST" ]; then
+  nslookup "$INJIWEB_HOST" >/dev/null 2>&1
+  if [ $? -gt 0 ]; then
+    echo "Inji Web host does not exist; EXITING;"
+    exit 1
+  fi
+
+  WALLET_BASE_URL="https://$INJIWEB_HOST"
+  echo "Using walletBaseUrl: $WALLET_BASE_URL"
+else
+  echo "Skipping Inji Web host configuration"
 fi
-
-nslookup "$INJIWEB_HOST" >/dev/null 2>&1
-if [ $? -gt 0 ]; then
-echo "Inji Web host does not exist; EXITING;"
-exit 1
-fi
-
-WALLET_BASE_URL="https://$INJIWEB_HOST"
 
 echo "INJIVERIFY_HOST is not present in configmap/inji-stack-config of configserver"
     # Add injiverify host to inji-stack-config
