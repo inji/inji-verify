@@ -30,7 +30,7 @@ export const normalizeVp = (vp: any): Record<string, unknown> => {
         try {
             return JSON.parse(vp);
         } catch {
-           vp;
+           {vp};
         }
     }
     return vp;
