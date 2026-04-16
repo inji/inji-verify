@@ -12,15 +12,21 @@ import java.util.Date;
 import java.net.URI;
 import java.net.URISyntaxException;
 
-// ✅ Import your config manager
 import api.InjiVerifyConfigManager;
 
 public class ExtentReportManager {
     private static ExtentReports extent;
-    private static ExtentTest test;
+    private static final ThreadLocal<ExtentTest> testHolder = new ThreadLocal<>();
     private static long startTime;
 
-    public static void initReport() {
+    // ── Scenario counters ─────────────────────────────────────────────────────────
+    private static int passedCount     = 0;
+    private static int failedCount     = 0;
+    private static int skippedCount    = 0;
+    private static int knownIssueCount = 0;
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    public static synchronized void initReport() {
         if (extent == null) {
             startTime = System.currentTimeMillis();
 
@@ -28,7 +34,6 @@ public class ExtentReportManager {
             htmlReporter.config().setTheme(Theme.DARK);
             htmlReporter.config().setDocumentTitle("Automation Report");
 
-            // ✅ Set the Report Name as Test URL without https://
             try {
                 String testUrl = BaseTest.url;
                 String host = getHostFromUrl(testUrl);
@@ -46,21 +51,19 @@ public class ExtentReportManager {
     }
 
     private static void addSystemInfo() {
-        String branch = getGitBranch();
+        String branch   = getGitBranch();
         String commitId = getGitCommitId();
 
         if (extent != null) {
-            if (branch != null) extent.setSystemInfo("Git Branch", branch);
+            if (branch != null)   extent.setSystemInfo("Git Branch",    branch);
             if (commitId != null) extent.setSystemInfo("Git Commit ID", commitId);
 
-            // ✅ Add the Test URL from BaseTest
             try {
                 extent.setSystemInfo("Test URL", BaseTest.url);
             } catch (Exception e) {
                 System.err.println("Could not fetch Test URL: " + e.getMessage());
             }
 
-            // ✅ Add Dependent URL from InjiVerifyConfigManager
             try {
                 String dependentUrl = InjiVerifyConfigManager.getInjiWebUi();
                 extent.setSystemInfo("Dependent URL", dependentUrl);
@@ -68,17 +71,20 @@ public class ExtentReportManager {
                 System.err.println("Could not fetch Dependent URL: " + e.getMessage());
             }
 
-            // ✅ Add Execution Start Time
             String startTimeStr = new SimpleDateFormat("yyyy-MM-dd HH:mm:ss").format(new Date(startTime));
             extent.setSystemInfo("Execution Start Time", startTimeStr);
         }
     }
 
-    public static void createTest(String testName) {
-        test = extent.createTest(testName);
+    public static synchronized void createTest(String testName) {
+        if (extent == null) {
+            initReport();
+        }
+        testHolder.set(extent.createTest(testName));
     }
 
     public static void logStep(String message) {
+        ExtentTest test = testHolder.get();
         if (test != null) {
             test.info(message);
         }
@@ -91,8 +97,52 @@ public class ExtentReportManager {
     }
 
     public static ExtentTest getTest() {
-        return test;
+        return testHolder.get();
     }
+
+    public static void removeTest() {
+        testHolder.remove();
+    }
+
+    // ── Counter incrementers ──────────────────────────────────────────────────────
+    public static synchronized void incrementPassed() {
+        passedCount++;
+    }
+
+    public static synchronized void incrementFailed() {
+        failedCount++;
+    }
+
+    public static synchronized void incrementSkipped() {
+        skippedCount++;
+    }
+
+    public static synchronized void incrementKnownIssue() {
+        knownIssueCount++;
+    }
+    // ─────────────────────────────────────────────────────────────────────────────
+
+    // ── Counter getters ───────────────────────────────────────────────────────────
+    public static int getPassedCount() {
+        return passedCount;
+    }
+
+    public static int getFailedCount() {
+        return failedCount;
+    }
+
+    public static int getSkippedCount() {
+        return skippedCount;
+    }
+
+    public static int getKnownIssueCount() {
+        return knownIssueCount;
+    }
+
+    public static int getTotalCount() {
+        return passedCount + failedCount + skippedCount + knownIssueCount;
+    }
+    // ─────────────────────────────────────────────────────────────────────────────
 
     private static String getGitBranch() {
         try {
@@ -116,14 +166,13 @@ public class ExtentReportManager {
         }
     }
 
-    // ✅ Extract host from URL (remove https://)
     private static String getHostFromUrl(String url) {
         try {
             URI uri = new URI(url);
             return uri.getHost();
         } catch (URISyntaxException e) {
             System.err.println("Invalid URL: " + url);
-            return url; // fallback to full URL if parsing fails
+            return url;
         }
     }
 }

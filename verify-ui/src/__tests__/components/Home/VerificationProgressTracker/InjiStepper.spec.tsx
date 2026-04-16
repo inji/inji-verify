@@ -1,3 +1,8 @@
+jest.mock("iso-639-3", () => ({
+    iso6393: [],
+    Language: {},
+}));
+
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import DesktopStepper from "../../../../components/Home/VerificationProgressTracker/DesktopStepper";

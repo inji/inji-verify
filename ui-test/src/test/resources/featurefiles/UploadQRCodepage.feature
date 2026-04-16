@@ -1,34 +1,22 @@
 Feature: Inji Verify upload qr code testing
 
-  @smoke @verifyuploadqrcode
+  @smoke @verifyUploadFileControl
+  Scenario: Verify upload file control is available
+    And Verify that Upload button visible
+    And Verify upload file input is present and enabled
+
+  @smoke @verifyuploadqrcode @needsInsuranceArtifacts
   Scenario Outline: Verify upload qr code with png
-    When Open inji web in new tab
-    Then User click on continue 
-    Then User search the issuers sunbird
-    When User click on StayProtected Insurance credentials button
-    And User click on health insurance by e-signet button
-    And User click on validity dropdown
-    And User click on no limit
-    And User click on proceed
-    And User enter the policy number
-    And User enter the full name
-    And User enter the date of birth
-    And User click on login button
-    Then User verify Download Success text displayed
-    And User verify pdf is downloaded
-    And User verify go back button
-    And Open inji verify in new tab
     Given User gets the title of the page
     Then Validate the title of the page
     And Verify that upload QR Code tab is visible
     And Verify upload QR code step2 label
     And Verify upload QR code step3 label
     And Verify that Upload button visible
-    And Verify that user convert pdf into png
     And Upload QR code file png
     And verify upload QR code step2 description after
     And verify upload QR code step3 description after
-    And verify policy issued on value 
+    And verify policy issued on value
     And verify policy expires on value
     And verify full name value
     And verify tick icon is visible on successful verification
@@ -51,31 +39,14 @@ Feature: Inji Verify upload qr code testing
       | policy number | full name | date of birth |
       | 9991    | hello     | 01-01-2025   |
 
-  @smoke @verifyuploadqrcode
+  @smoke @verifyuploadqrcode @needsInsuranceArtifacts
   Scenario Outline: Verify upload qr code with PDF
-    And Open inji web in new tab
-    Then User click on continue 
-    Then User search the issuers sunbird
-    When User click on StayProtected Insurance credentials button
-    When User click on health insurance by e-signet button
-    And User click on validity dropdown
-    And User click on no limit
-    And User click on proceed
-    And User enter the policy number
-    And User enter the full name
-    And User enter the date of birth
-    And User click on login button
-    Then User verify Download Success text displayed
-    And User verify pdf is downloaded
-    And User verify go back button
-    And Open inji verify in new tab
     Given User gets the title of the page
     Then Validate the title of the page
     And Verify that upload QR Code tab is visible
     And Verify upload QR code step2 label
     And Verify upload QR code step3 label
     And Verify that Upload button visible
-    And Verify that user convert pdf into png
     And Upload QR code file PDF
     And verify upload QR code step2 description after
     And verify upload QR code step3 description after
@@ -99,31 +70,14 @@ Feature: Inji Verify upload qr code testing
       | policy number | full name | date of birth |
       | 9991    | hello     | 01-01-2025   |
 
-  @smoke @verifyuploadqrcode
+  @smoke @verifyuploadqrcode @needsInsuranceArtifacts
   Scenario Outline: Verify upload qr code with jpg
-    And Open inji web in new tab
-    Then User click on continue 
-    Then User search the issuers sunbird
-    When User click on StayProtected Insurance credentials button
-    When User click on health insurance by e-signet button
-    And User click on validity dropdown
-    And User click on no limit
-    And User click on proceed
-    And User enter the policy number
-    And User enter the full name
-    And User enter the date of birth
-    And User click on login button
-    Then User verify Download Success text displayed
-    And User verify pdf is downloaded
-    And User verify go back button
-    And Open inji verify in new tab
     Given User gets the title of the page
     Then Validate the title of the page
     And Verify that upload QR Code tab is visible
     And Verify upload QR code step2 label
     And Verify upload QR code step3 label
     And Verify that Upload button visible
-    And Verify that user convert pdf into png
     And Upload QR code file JPG
     And verify upload QR code step2 description after
     And verify upload QR code step3 description after
@@ -148,31 +102,14 @@ Feature: Inji Verify upload qr code testing
       | 9991    | hello     | 01-01-2025   |
 
 
-  @smoke @verifyuploadqrcode
+  @smoke @verifyuploadqrcode @needsInsuranceArtifacts
   Scenario Outline: Verify upload qr code with jpeg
-    And Open inji web in new tab
-    Then User click on continue 
-    Then User search the issuers sunbird
-    When User click on StayProtected Insurance credentials button
-    When User click on health insurance by e-signet button
-    And User click on validity dropdown
-    And User click on no limit
-    And User click on proceed
-    And User enter the policy number
-    And User enter the full name
-    And User enter the date of birth
-    And User click on login button
-    Then User verify Download Success text displayed
-    And User verify pdf is downloaded
-    And User verify go back button
-    And Open inji verify in new tab
     Given User gets the title of the page
     Then Validate the title of the page
     And Verify that upload QR Code tab is visible
     And Verify upload QR code step2 label
     And Verify upload QR code step3 label
     And Verify that Upload button visible
-    And Verify that user convert pdf into png
     And Upload QR code file JPEG
     And verify upload QR code step2 description after
     And verify upload QR code step3 description after
@@ -202,8 +139,6 @@ Feature: Inji Verify upload qr code testing
     And Verify upload QR code step2 label
     And Verify upload QR code step3 label
     And Verify that Upload button visible
-    And Upload QR code file PDF
-    And Verify click on another qr code button
     And Upload QR code file Expired png
     And Verify message for expired QR code
     And Verify verify another qr code button on successful verification
@@ -233,31 +168,14 @@ Feature: Inji Verify upload qr code testing
     And Verify vc-verification api call in network tab with url
     And Verify message for valid QR code
 
-  @smoke @verifyuploadValidqrcodeDownloadedByMobileApp
+  @smoke @verifyuploadValidqrcodeDownloadedByMobileApp @needsInsuranceArtifacts
   Scenario: Verify upload qr code for Valid
-    And Open inji web in new tab
-    Then User click on continue 
-    Then User search the issuers sunbird
-    When User click on StayProtected Insurance credentials button
-    When User click on health insurance by e-signet button
-    And User click on validity dropdown
-    And User click on no limit
-    And User click on proceed
-    And User enter the policy number
-    And User enter the full name
-    And User enter the date of birth
-    And User click on login button
-    Then User verify Download Success text displayed
-    And User verify pdf is downloaded
-    And User verify go back button
-    And Open inji verify in new tab
     Given User gets the title of the page
     Then Validate the title of the page
     And Verify that upload QR Code tab is visible
     And Verify upload QR code step2 label
     And Verify upload QR code step3 label
     And Verify that Upload button visible
-    And Verify that user convert pdf into png
     And Upload QR code file JPEG
     And Verify message for valid QR code
 
@@ -269,6 +187,36 @@ Feature: Inji Verify upload qr code testing
     And Verify that Upload button visible
     And Upload Large size not supported QR code file
     And Verify Large size alert message
+
+  @smoke @verifyuploadSmallSizeqrcode
+  Scenario: Verify upload small size QR code
+    And Verify that Upload button visible
+    And Upload small size not supported QR code file
+    And Verify Large size alert message
+
+  @smoke @verifyuploadBoundaryMinSizeqrcode @needsInsuranceArtifacts
+  Scenario: Verify upload qr code having size 10KB
+    And Verify that Upload button visible
+    And Upload 10KB QR code file
+    And verify tick icon is visible on successful verification
+    And verify congratulations message on successful verification
+
+  @smoke @verifyuploadBoundaryMaxSizeqrcode @needsInsuranceArtifacts
+  Scenario: Verify upload qr code having size 5MB
+    And Verify that Upload button visible
+    And Upload 5MB QR code file
+    And verify tick icon is visible on successful verification
+    And verify congratulations message on successful verification
+
+  @negative @offlineUpload @withoutBrowserstack @needsInsuranceArtifacts
+  Scenario: Verify upload qr code when internet is unavailable
+    And Verify that Upload button visible
+    And turn off internet connection
+    And Upload QR code file JPEG
+    Then Validate offline upload error message with please try again button
+    And Verify click on please try again button
+    And Verify QR code file invalid
+    Then Validate offline upload error message with please try again button
 
    @smoke @verifyuploadblurqrcode
   Scenario: Verify upload blur QR code
@@ -303,7 +251,7 @@ Feature: Inji Verify upload qr code testing
     And Verify upload QR code step2 label
     And Verify upload QR code step3 label
     And Verify that Upload button visible
-    And Upload SD-Jwt QR code 
+    And Upload SD-Jwt QR code
     And Verify message for valid QR code
 
   @smoke @verifyuploadValidSvgqrcode
@@ -324,34 +272,17 @@ Feature: Inji Verify upload qr code testing
     And Upload claim 169 VC
     And Verify message for valid QR code
 
-  @smoke @verifyVcVerificationStatusExpiry
+  @smoke @verifyVcVerificationStatusExpiry @needsInsuranceArtifacts
   Scenario: Verify valid vc verification status expire after countdown
-    And Open inji web in new tab
-    Then User click on continue 
-    Then User search the issuers sunbird
-    When User click on StayProtected Insurance credentials button
-    When User click on health insurance by e-signet button
-    And User click on validity dropdown
-    And User click on no limit
-    And User click on proceed
-    And User enter the policy number
-    And User enter the full name
-    And User enter the date of birth
-    And User click on login button
-    Then User verify Download Success text displayed
-    And User verify pdf is downloaded
-    And User verify go back button
-    And Open inji verify in new tab
     Given User gets the title of the page
     Then Validate the title of the page
     And Verify that upload QR Code tab is visible
     And Verify upload QR code step2 label
     And Verify upload QR code step3 label
     And Verify that Upload button visible
-    And Verify that user convert pdf into png
     And Upload QR code file JPEG
     And Verify message for valid QR code
-    And Verify the Upload button after 2 mins idle 
+    And Verify the Upload button after 2 mins idle
 
   @smoke @verifyInvalidVcVerificationStatusExpiry
   Scenario: Verify invalid vc verification status expire after countdown
@@ -361,4 +292,4 @@ Feature: Inji Verify upload qr code testing
     And Verify that Upload button visible
     And Upload invalid pdf
     And Verify MultiFormat alert message
-    And Verify the Upload button after 2 mins idle 
+    And Verify the Upload button after 2 mins idle

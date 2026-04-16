@@ -7,7 +7,8 @@ import vpVerificationReducer, {
     resetVpRequest
 } from "../../../../redux/features/verify/vpVerificationState";
 import { VCShareType } from "../../../../types/data-types";
-import { VerificationSteps } from "../../../../utils/config";
+import {getVerifiableClaims, VerificationSteps} from "../../../../utils/config";
+import {calculateUnverifiedClaims, calculateVerifiedClaims, getCredentialType} from "../../../../utils/commonUtils";
 
 jest.mock("../../../../utils/config", () => ({
     ...jest.requireActual("../../../../utils/config"),
@@ -20,35 +21,86 @@ jest.mock("../../../../utils/config", () => ({
 jest.mock("../../../../utils/commonUtils", () => ({
     calculateUnverifiedClaims: jest.fn(() => []),
     calculateVerifiedClaims: jest.fn(() => []),
-    getCredentialType: jest.fn((vc) => vc?.type || "unknown")
+    getCredentialType: jest.fn((vc) =>
+        Array.isArray(vc?.type) ? vc.type[0] : vc?.type || "unknown"
+    ),
 }));
 
 describe("vpVerification slice", () => {
-    test("should handle setSelectCredential", () => {
-        const state = vpVerificationReducer(undefined, setSelectCredential());
-        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectCredential);
-        expect(state.SelectionPanel).toBe(true);
-        expect(state.SelectWalletPanel).toBe(false);
-        expect(state.selectedCredentials).toHaveLength(1); // essential only
+    test("should handle setSelectedCredentials", () => {
+        const selectedCredentials = [
+            {
+                id: "2",
+                type: "Type2",
+                essential: false,
+                definition: {
+                    input_descriptors: [{ id: "desc2" }],
+                },
+            },
+        ] as any;
+
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            selectedCredentials: [],
+            originalSelectedCredentials: [],
+            unVerifiedCredentials: [],
+            presentationDefinition: {
+                id: "test",
+                input_descriptors: [{ id: "desc1" }, { id: "desc2" }],
+            },
+        } as any;
+
+        const state = vpVerificationReducer(
+            initialState,
+            setSelectedCredentials({ selectedCredentials })
+        );
+
+        expect(state.selectedCredentials).toHaveLength(1);
+        expect(state.sharingType).toBe(VCShareType.SINGLE);
     });
 
     test("should handle setSelectCredential with SelectWalletPanel open", () => {
-        const initialState = {
-            SelectWalletPanel: true,
-            SelectionPanel: false,
+        (getVerifiableClaims as jest.Mock).mockReturnValue([
+            {
+                id: "1",
+                type: "Type1",
+                essential: true,
+                definition: {
+                    input_descriptors: [{ id: "desc1" }],
+                },
+            },
+            {
+                id: "2",
+                type: "Type2",
+                essential: true,
+                definition: {
+                    input_descriptors: [{ id: "desc2" }],
+                },
+            },
+        ]);
+
+        const baseState = vpVerificationReducer(undefined, { type: "@@INIT" });
+        const walletState = vpVerificationReducer(baseState, setFlowType());
+
+        const preparedState = {
+            ...walletState,
             method: "VERIFY",
-            presentationDefinition: { id: "test", input_descriptors: [] }
+            selectedCredentials: [],
+            originalSelectedCredentials: [],
+            verificationSubmissionResult: [],
+            unVerifiedCredentials: [],
+            presentationDefinition: {
+                id: "test",
+                input_descriptors: [{ id: "desc1" }, { id: "desc2" }],
+            },
         } as any;
-        const state = vpVerificationReducer(initialState, setSelectCredential());
+
+        const state = vpVerificationReducer(preparedState, setSelectCredential());
+
         expect(state.SelectionPanel).toBe(true);
         expect(state.SelectWalletPanel).toBe(false);
-    });
-
-    test("should handle setSelectedCredentials", () => {
-        const selectedCredentials = [{ id: "2", type: "Type2", definition: { input_descriptors: [] } }] as any;
-        const state = vpVerificationReducer(undefined, setSelectedCredentials({ selectedCredentials }));
-        expect(state.selectedCredentials).toHaveLength(1);
-        expect(state.sharingType).toBe(VCShareType.SINGLE);
+        expect(state.flowType).toBe("sameDevice");
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectCredential);
     });
 
     test("should handle setFlowType", () => {
@@ -72,29 +124,112 @@ describe("vpVerification slice", () => {
     });
 
     test("should handle getVpRequest", () => {
-        const selectedCredentials = [{ id: "1", type: "Type1", definition: { input_descriptors: [] } }] as any;
-        const state = vpVerificationReducer(undefined, getVpRequest({ selectedCredentials }));
+        const selectedCredentials = [
+            {
+                id: "1",
+                type: "Type1",
+                essential: true,
+                definition: { input_descriptors: [{ id: "desc1" }] },
+            },
+        ] as any;
+
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            presentationDefinition: {
+                id: "test",
+                input_descriptors: [{ id: "desc1" }],
+            },
+        } as any;
+
+        const state = vpVerificationReducer(
+            initialState,
+            getVpRequest({ selectedCredentials })
+        );
+
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.ScanQrCode);
         expect(state.selectedCredentials).toHaveLength(1);
-        // flowType is unchanged by getVpRequest; "crossDevice" here distinguishes this
-        // ScanQrCode state from the SelectWallet state produced by setFlowType, since
-        // both steps share the numeric value 3.
         expect(state.flowType).toBe("crossDevice");
     });
 
     test("should handle verificationSubmissionComplete (full success)", () => {
+        (calculateVerifiedClaims as jest.Mock).mockReturnValue([
+            {
+                credentialId: "1",
+                credentialType: "Type1",
+                vc: {
+                    id: "1",
+                    type: ["VerifiableCredential", "Type1"],
+                },
+                vcStatus: "SUCCESS",
+            },
+        ]);
+
+        (calculateUnverifiedClaims as jest.Mock).mockReturnValue([]);
+
+        (getCredentialType as jest.Mock).mockImplementation((vc: any) => {
+            return vc?.type?.[1] || vc?.type || "";
+        });
+
         const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
             method: "VERIFY",
-            selectedCredentials: [{ id: "1", type: "Type1", definition: { input_descriptors: [] } }],
-            originalSelectedCredentials: [{ id: "1", type: "Type1", definition: { input_descriptors: [] } }],
+            selectedCredentials: [
+                {
+                    id: "1",
+                    type: "Type1",
+                    essential: true,
+                    definition: { input_descriptors: [{ id: "desc1" }] },
+                },
+            ],
+            originalSelectedCredentials: [
+                {
+                    id: "1",
+                    type: "Type1",
+                    essential: true,
+                    definition: { input_descriptors: [{ id: "desc1" }] },
+                },
+            ],
             verificationSubmissionResult: [],
+            unVerifiedCredentials: [],
             isPartiallyShared: false,
-            flowType: "crossDevice"
+            flowType: "crossDevice",
+            presentationDefinition: {
+                id: "test",
+                input_descriptors: [{ id: "desc1" }],
+            },
         } as any;
-        const action = verificationSubmissionComplete({ verificationResult: [] });
+
+        const action = verificationSubmissionComplete({
+            verificationResult: [
+                {
+                    credentialId: "1",
+                    credentialType: "Type1",
+                    vc: {
+                        id: "1",
+                        type: ["VerifiableCredential", "Type1"],
+                    },
+                    vcStatus: "SUCCESS",
+                },
+            ],
+        } as any);
+
         const state = vpVerificationReducer(initialState, action);
+
         expect(state.isShowResult).toBe(true);
+        expect(state.isPartiallyShared).toBe(false);
+        expect(state.unVerifiedCredentials).toEqual([]);
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.DisplayResult);
+        expect(state.verificationSubmissionResult).toEqual([
+            {
+                credentialId: "1",
+                credentialType: "Type1",
+                vc: {
+                    id: "1",
+                    type: ["VerifiableCredential", "Type1"],
+                },
+                vcStatus: "SUCCESS",
+            },
+        ]);
     });
 
     test("should handle resetVpRequest", () => {

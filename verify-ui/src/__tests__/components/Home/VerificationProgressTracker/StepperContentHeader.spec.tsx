@@ -5,6 +5,10 @@ import configureMockStore from "redux-mock-store";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 
+jest.mock("iso-639-3", () => ({
+    iso6393: [],
+}));
+
 const mockStore = configureMockStore();
 const store = mockStore({
   verification: { method: "UPLOAD", activeScreen: 1 },

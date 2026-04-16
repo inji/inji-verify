@@ -1,5 +1,5 @@
 export type VerificationStatus = "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
-
+export type OverallVPStatus = "SUCCESS" | "INVALID";
 export interface VerificationResult {
     /**
 
@@ -11,19 +11,17 @@ export interface VerificationResult {
 
      Full verification result, including per-check outcomes and optional claims.
      */
-    verificationResponse: CredentialResult;
+    verificationResponse: CredentialResult | VpSummarisedVerificationResponse;
 }
 
 export type VerificationResults = VerificationResult[];
 
-export interface VPVerificationSummaryVcResult {
-  vc: Record<string, unknown>;
-  vcStatus: VerificationStatus;
-}
-
-export interface VPVerificationSummaryResponse {
-  vcResults: VPVerificationSummaryVcResult[];
-  vpResultStatus: VerificationStatus;
+export interface VpSummarisedVerificationResponse {
+    vcResults: {
+        vc: Record<string, unknown>;
+        vcStatus: VerificationStatus;
+    }[];
+    vpResultStatus: OverallVPStatus;
 }
 
 export interface VPRequestBody {
@@ -169,7 +167,11 @@ export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
      * - Expiry validation
      * - Status checks (e.g., revocation)
      */
-    vpVerificationV2Request?: VPVerificationV2Request;
+    vpVerificationRequest?: VPVerificationRequest;
+
+    /*This attribute will decide the format of the response from SDK*/
+
+    summariseResults?: boolean;
 };
 
 export interface SessionState {
@@ -181,7 +183,7 @@ export type AppError = {
   errorCode?: string;
   transactionId?: string | null;
 };
-export interface VPVerificationV2Request {
+export interface VPVerificationRequest {
     skipStatusChecks?: boolean;
     statusCheckFilters?: string[];
     includeClaims?: boolean;

@@ -1,4 +1,4 @@
-import React, { useCallback, useEffect, useRef, useState } from "react";
+import React, { useCallback, useEffect, useLayoutEffect, useRef, useState } from "react";
 import {
     CredentialResult,
     QRCodeVerificationProps,
@@ -19,11 +19,10 @@ import {
   THROTTLE_FRAMES_PER_SEC,
   ZOOM_STEP,
 } from "../../utils/constants";
-import {vpRequest,
+import {vpSessionRequest,
     vcSubmission,
     vcVerificationV2,
-    vpRequestStatus,
-    vpResult
+    vpSessionResults
 } from "../../utils/api";
 import {
     decodeQrData,
@@ -33,7 +32,7 @@ import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
-import {clearUrl, normalizeVp} from "../../utils/utils";
+import {clearUrl, summariseVPResult, summariseVCResult, normalizeVp} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
 
@@ -54,12 +53,15 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   clientId,
   vcVerificationV2Request,
   isVPSubmissionSupported = false,
+  summariseResults = true
 }) => {
   const [isScanning, setScanning] = useState(false);
   const [isUploading, setUploading] = useState(false);
   const [isLoading, setLoading] = useState(false);
   const [zoomLevel, setZoomLevel] = useState(INITIAL_ZOOM_LEVEL);
   const [isMobile, setIsMobile] = useState(false);
+  const [activeFlow, setActiveFlow] = useState<"scan" | "inline" | null>(null);
+  const hasTrigger = Boolean(triggerElement);
   const canvasRef = useRef<HTMLCanvasElement>(document.createElement("canvas"));
   const videoRef = useRef<HTMLVideoElement>(null);
   const streamingRef = useRef(false);
@@ -69,6 +71,9 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const startingRef = useRef(false);
   const shouldEnableZoom = isEnableZoom && isMobile;
   const hasFetchedVPResultRef = useRef(false);
+  const fileInputRef = useRef<HTMLInputElement>(null);
+  const fileDialogOpenRef = useRef(false);
+
   const clearTimer = () => {
     if (timerRef.current) {
       clearTimeout(timerRef.current);
@@ -313,10 +318,14 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
   const handleUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     try {
+      fileDialogOpenRef.current = false;
+      const file = e.target?.files?.[0];
+      if (!file || !doFileChecks(file)) {
+        e.target.value = "";
+        return;
+      }
       clearTimer();
       stopVideoStream();
-      const file = e.target?.files?.[0];
-      if (!file || !doFileChecks(file)) return (e.target.value = "");
       setUploading(true);
       const result: scanResult = await scanFilesForQr(file);
       if (result.error) throw result.error;
@@ -328,6 +337,32 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       handleError(error);
     }
   };
+
+  const handleFileInputClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    // Prevent opening if dialog is already open
+    if (fileDialogOpenRef.current) {
+      e.preventDefault();
+      e.stopPropagation();
+      return;
+    }
+    fileDialogOpenRef.current = true;
+  };
+
+  // Detect when file dialog closes
+  useEffect(() => {
+    const handleFocus = () => {
+      if (fileDialogOpenRef.current) {
+        setTimeout(() => {
+          if (!isUploading) {
+            fileDialogOpenRef.current = false;
+          }
+        }, 100);
+      }
+    };
+
+    window.addEventListener('focus', handleFocus);
+    return () => window.removeEventListener('focus', handleFocus);
+  }, [isUploading]);
 
   const processScanResult = async (data: any) => {
     setLoading(true);
@@ -345,24 +380,18 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     }
   };
 
-  const storeStates = (data: QrData) => {
-    sessionStorage.setItem("transactionId", data.transactionId);
-    sessionStorage.setItem("requestId", data.requestId);
-  };
-
   const createVPRequest = async (presentationDefinition: any) => {
     try {
       let presentationDefinitionId;
-      const data: QrData = await vpRequest(
+      const data: QrData = await vpSessionRequest(
         verifyServiceUrl,
         clientId,
         transactionId ?? undefined,
         presentationDefinitionId,
         presentationDefinition,
-        true // acceptVPWithoutHolderProof is set to true for DataShare VCs
+        true, // acceptVPWithoutHolderProof is set to true for DataShare VCs
+        true // responseCodeValidationRequired is set to true for DataShare VCs
       );
-
-      storeStates(data);
 
       return data;
     } catch (error) {
@@ -386,18 +415,16 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     }
   };
 
-  const buildRedirectUrl = (
+  const buildOnlineSharingUrl = (
     baseRedirectUrl: string,
     state: string,
     responseUri: string,
     nonce: string
   ) => {
-    const redirectUri = `${window.location.origin}/`;
 
     const url = new URL(baseRedirectUrl);
     url.hash = "";
     url.searchParams.set("client_id", clientId);
-    url.searchParams.set("redirect_uri", redirectUri);
     url.searchParams.set("state", state);
     url.searchParams.set("response_mode", "direct_post");
     url.searchParams.set("response_uri", responseUri);
@@ -443,7 +470,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
         if (!responseUri || !nonce) throw new Error("Unable to access the shared VC, due to missing responseUri or nonce in authorization details");
         //call the redirectUrl
-        window.location.href = buildRedirectUrl(parsedUrl.toString(), state, responseUri, nonce);
+        window.location.href = buildOnlineSharingUrl(parsedUrl.toString(), state, responseUri, nonce);
         return;
       }
 
@@ -462,16 +489,42 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   };
 
   const resetState = () => {
-    sessionStorage.removeItem("transactionId");
-    sessionStorage.removeItem("requestId");
     hasFetchedVPResultRef.current = false;
     scanSessionCompletedRef.current = true;
     frameProcessingRef.current = false;
+    fileDialogOpenRef.current = false;
     clearTimer();
     stopVideoStream();
     setScanning(false);
     setUploading(false);
     setLoading(false);
+    setActiveFlow(null);
+  };
+
+  const handleTriggerClick = () => {
+    if (isUploading || isScanning || isLoading) return;
+    // File-dialog guard only applies when upload is enabled; otherwise a stale
+    // ref blocks the camera forever after toggling props or closing a picker.
+    if (isEnableUpload && fileDialogOpenRef.current) return;
+
+    if (isEnableScan && isEnableUpload) {
+      scanSessionCompletedRef.current = false;
+      setActiveFlow("inline");
+      return;
+    }
+
+    if (isEnableScan) {
+      scanSessionCompletedRef.current = false;
+      setActiveFlow("scan");
+      return;
+    }
+
+    if (isEnableUpload) {
+      const fileInput = fileInputRef.current;
+      if (fileInput) {
+        fileInput.click();
+      }
+    }
   };
 
     const triggerCallbacks = async (vc: any) => {
@@ -488,10 +541,16 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                     vcVerificationV2Request
                 );
 
+                const verificationResponse = summariseResults
+                    ? {
+                        verificationStatus: summariseVCResult(response)
+                    }
+                    : response;
+
                 onVCProcessed([
                     {
                         vc,
-                        verificationResponse: response
+                        verificationResponse
                     }
                 ]);
             }
@@ -526,75 +585,114 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     return atob(base64);
   }
 
-  const fetchVPResult = async (transactionId: string, responseCode?: string | null) => {
+    const fetchVPResult = async (responseCode: string | null) => {
       if (hasFetchedVPResultRef.current) return;
       hasFetchedVPResultRef.current = true;
-      try {
-            if (!transactionId) {
-                throw new Error("Transaction ID is required to fetch VP result");
+        try {
+            if (!responseCode) {
+                throw new Error("Invalid redirect_uri. The response code is missing.");
             }
 
-            const response = await vpResult(verifyServiceUrl, transactionId, responseCode, vcVerificationV2Request);
+            const response = await vpSessionResults(verifyServiceUrl, responseCode, vcVerificationV2Request);
 
-            const VPResult: VerificationResults =
-                (response?.credentialResults ?? []).map((cred: CredentialResult) => {
-                    const vc = normalizeVp(cred.verifiableCredential);
+            const credentialResults = response?.credentialResults ?? [];
 
-                    return {
-                        vc,
-                        verificationResponse: cred,
-                    };
-                });
-
-            if (!VPResult.length) {
-                throw new Error(
-                    "An unexpected error occurred while processing the shared VC. No credentialResults found."
+            if (!credentialResults.length) {
+                throw new Error("An unexpected error occurred while processing the shared VC. No credentialResults found."
                 );
             }
             if (onVCProcessed) {
-                onVCProcessed(VPResult);
+                if (summariseResults) {
+                    const vcResults = credentialResults.map((cred: CredentialResult) => {
+                        const vc = normalizeVp(cred.verifiableCredential);
+                        const vcStatus = summariseVPResult(cred);
+
+                        return {
+                            vc,
+                            vcStatus,
+                        };
+                    });
+
+                    const vpResultStatus = credentialResults.length > 0 &&
+                        credentialResults.every((c: CredentialResult) => c.allChecksSuccessful)
+                            ? "SUCCESS"
+                            : "INVALID";
+
+                    const result: VerificationResults = [
+                        {
+                            vc: vcResults[0]?.vc || {},
+                            verificationResponse: {
+                                vcResults,
+                                vpResultStatus,
+                            },
+                        },
+                    ];
+
+                    onVCProcessed(result);
+
+                }
             } else if (onVCReceived) {
-                onVCReceived(transactionId);
+                const txnId = response.transactionId ?? transactionId;
+                onVCReceived(txnId);
             }
             resetState();
         } catch (error) {
             handleError(error);
             resetState();
+        } finally {
+            clearUrl(["response_code"]);
         }
     };
-
-  const fetchVPStatus = async (transactionId: string, requestId: string) => {
-    try {
-      const response = await vpRequestStatus(verifyServiceUrl, requestId, true);
-      const hasRequiredKeys = sessionStorage.getItem("transactionId") && sessionStorage.getItem("requestId");
-      if (response.status === "VP_SUBMITTED" && hasRequiredKeys) {
-        await fetchVPResult(transactionId);
-      } else {
-        resetState();
-        throw new Error("An unexpected error occurred while processing the shared VC. VC not submitted or missing session data.");
-      }
-    } catch (error) {
-      handleError(error);
-      resetState();
-    }
-  };
 
   const startScanning =
     Boolean(scannerActive) &&
     isEnableScan &&
+    (hasTrigger ? activeFlow === "scan" || activeFlow === "inline" : true) &&
     !isUploading &&
     !isScanning &&
     !scanSessionCompletedRef.current;
 
-  useEffect(() => {
-    if (scannerActive) {
-      if (startScanning) startVideoStream();
-    } else {
+  const startVideoStreamRef = useRef(startVideoStream);
+  startVideoStreamRef.current = startVideoStream;
+  const stopVideoStreamRef = useRef(stopVideoStream);
+  stopVideoStreamRef.current = stopVideoStream;
+
+  useLayoutEffect(() => {
+    if (!scannerActive) {
       frameProcessingRef.current = false;
       clearTimer();
-      stopVideoStream();
+      stopVideoStreamRef.current();
+      return;
     }
-  }, [scannerActive, startScanning, startVideoStream, stopVideoStream]);
+    if (!startScanning) {
+      return;
+    }
+
+    let cancelled = false;
+    let rafId = 0;
+    let attempts = 0;
+    const maxAttempts = 60;
+
+    const tryStart = () => {
+      if (cancelled) return;
+      if (videoRef.current) {
+        startVideoStreamRef.current();
+        return;
+      }
+      attempts += 1;
+      if (attempts > maxAttempts) return;
+      rafId = requestAnimationFrame(tryStart);
+    };
+
+    tryStart();
+
+    return () => {
+      cancelled = true;
+      cancelAnimationFrame(rafId);
+      clearTimer();
+      stopVideoStreamRef.current();
+    };
+  }, [scannerActive, startScanning, activeFlow, hasTrigger]);
 
   useEffect(() => {
     const resize = () => setIsMobile(window.innerWidth < 768);
@@ -610,6 +708,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       const hash = window.location.hash; // "#vp_token=abc123&state=xyz"
       const params = new URLSearchParams(hash.substring(1));
       const vpTokenParam = params.get("vp_token");
+      const responseCode = params.get("response_code");
       const decoded = vpTokenParam && base64UrlDecode(vpTokenParam);
       const parseVpToken = decoded && JSON.parse(decoded);
       vpToken = vpTokenParam ? parseVpToken : null;
@@ -625,17 +724,13 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         clearUrl(["error", "error_description"]);
       }
 
-      if (vpToken && presentationSubmission) {
+      if (!isVPSubmissionSupported && vpToken && presentationSubmission) {
         processScanResult({ vpToken, presentationSubmission });
         clearUrl(["vp_token", "presentation_submission"]);
-      } else {
-        const requestId = sessionStorage.getItem("requestId");
-        const transactionId = sessionStorage.getItem("transactionId");
-
-        if (requestId && transactionId && !vpToken && !error) {
-          setLoading(true);
-          fetchVPStatus(transactionId, requestId);
-        }
+      }
+      else if (isVPSubmissionSupported && responseCode && !error) {
+        setLoading(true);
+        fetchVPResult(responseCode);
       }
     } catch (error) {
       console.error(
@@ -658,8 +753,27 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
   return (
     <div className="qrcode-container">
-      {triggerElement && !isUploading && !isScanning && !isLoading && (
-        <div className="cursor-pointer">{triggerElement}</div>
+      {hasTrigger && !isUploading && !isScanning && !isLoading && activeFlow === null && (
+        <div
+          className="cursor-pointer"
+          role="button"
+          tabIndex={0}
+          onClick={(e) => {
+            // Avoid accidental form submit when triggerElement is a <button>.
+            e.preventDefault();
+            e.stopPropagation();
+            handleTriggerClick();
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter" || e.key === " ") {
+              e.preventDefault();
+              e.stopPropagation();
+              handleTriggerClick();
+            }
+          }}
+        >
+          {triggerElement}
+        </div>
       )}
       {(isUploading || isScanning || isLoading) && (
         <div className="loader"></div>
@@ -675,6 +789,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
               <button
                 onClick={() => {
                   stopVideoStream();
+                  setActiveFlow(null);
                   onClose?.();
                 }}
                 className="qr-close-button"
@@ -729,24 +844,42 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
             )}
           </div>
         )}
-        {isEnableUpload && (
+        {isEnableUpload && (!hasTrigger || activeFlow === "inline") && (
           <div
             className={`upload-container ${
               shouldEnableZoom ? "fixed-enabled" : "default"
             }`}
           >
             <input
+              ref={fileInputRef}
               type="file"
               id={uploadButtonId || "upload-qr"}
+
               name={uploadButtonId || "upload-qr"}
               accept={acceptedFileTypes}
               className={`upload-button ${
                 uploadButtonStyle || "upload-button-default"
               }`}
               onChange={handleUpload}
+              onClick={handleFileInputClick}
               disabled={isUploading}
             />
           </div>
+        )}
+        {isEnableUpload && hasTrigger && activeFlow !== "inline" && (
+          <input
+            ref={fileInputRef}
+            type="file"
+            id={uploadButtonId || "upload-qr"}
+            name={uploadButtonId || "upload-qr"}
+            accept={acceptedFileTypes}
+            className="upload-input-hidden"
+            onChange={handleUpload}
+            onClick={handleFileInputClick}
+            disabled={isUploading}
+            tabIndex={-1}
+            aria-hidden="true"
+          />
         )}
       </div>
     </div>

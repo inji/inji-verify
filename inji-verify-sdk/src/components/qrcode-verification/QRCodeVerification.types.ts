@@ -1,3 +1,5 @@
+import {OverallVPStatus, VerificationStatus} from "../openid4vp-verification/OpenID4VPVerification.types";
+
 type ExclusiveCallbacks =
   /**
    * Callback triggered when the verification presentation (VP) is received.
@@ -16,7 +18,8 @@ type ExclusiveCallbacks =
 export type QRCodeVerificationProps = ExclusiveCallbacks & {
   /**
    * React element that triggers the verification process (e.g., a button).
-   * If not provided, the component may automatically start the process.
+   * When set, the default file upload control is not shown; upload runs via this trigger.
+   * If omitted, the visible file input is shown (when upload is enabled).
    */
   triggerElement?: React.ReactNode;
 
@@ -101,6 +104,10 @@ export type QRCodeVerificationProps = ExclusiveCallbacks & {
      * - Status checks (e.g., revocation)
      */
     vcVerificationV2Request?: VCVerificationV2Request;
+
+    /*This attribute will decide the format of the response from SDK*/
+
+    summariseResults?: boolean;
 };
 
 export type VcStatus = "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
@@ -129,10 +136,25 @@ export interface VCVerificationV2Response {
     claims?: Record<string, any>;
 }
 
+export interface VCSummarisedVerificationResponse {
+    verificationStatus: "SUCCESS" | "INVALID" | "EXPIRED" | "REVOKED";
+}
+
 export type VerificationResults = {
     vc: any;
-    verificationResponse: VCVerificationV2Response;
+    verificationResponse:
+        | VCVerificationV2Response
+        | VCSummarisedVerificationResponse
+        | VpSummarisedVerificationResponse;
 }[];
+
+export interface VpSummarisedVerificationResponse {
+    vcResults: {
+        vc: Record<string, unknown>;
+        vcStatus: VerificationStatus;
+    }[];
+    vpResultStatus: OverallVPStatus;
+}
 
 export interface vcSubmissionBody {
   vc: any;

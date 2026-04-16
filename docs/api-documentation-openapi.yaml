@@ -28,44 +28,102 @@ info:
 paths:
   /vp-request:
     post:
-      summary: Create a new VP request
-      description: |
-        This endpoint is used to initiate a Verifiable Presentation (VP) request. It represents the first step a verifier takes to request credentials from a wallet.
+      summary: Initiate a  new VP Request
+      description: |-
+        ## Description
+        This endpoint initiates a **Verifiable Presentation (VP) request**. It represents the first step a verifier takes to request credentials from a wallet.
 
-        **Request**
+        ---
 
-        1. The request body must include a `clientId` and either:
-            - A `presentationDefinitionId` referencing a pre-existing presentation definition, or
-            - A full `presentationDefinition` object.
-        2. Regarding `trasactionId`: 
-            - Request body can include a `trasactionId`. Ensure that it is unique UUID.
-            - If `trasactionId` is not sent in request, then this endpoint will generate a labelled UUID with a prefix of `txn_`.
-        3. Regarding `requestId`:
-            - For a `trasactionId`, this endpoint will generate a `requestId`, which will be a labelled UUID with a prefix of `req_`.
-            - This`requestId` is used in creating Authorization Request in OpenID4VP flow.
+        ## Request
 
-        **Response**
+        The request body **must include**:
 
-        - The `response` from this endpoint is used by the UI application to generate a QR code for the wallet to consume.
-        - Note: As of latest release`0.17.x`, the response will include a mix of camelCase and snake_case attributes. *It is the responsibility of the UI application to convert any snake_case attributes before generating the QR code.*
-        - The response provides the Authorization Request in one of two ways: 
-        1. By value — the full request object is returned.
-        2. By reference — a `request_uri` is returned, pointing to the request.
+        - `clientId`
+        - **One of the following**:
+          - `presentationDefinitionId` — Reference to an existing presentation definition  
+          - `presentationDefinition` — Full presentation definition object  
 
-        **Version-specific behavior:**
+        ### transactionId
 
-        Till `0.13.x`, 
-        - the Authorization Request was always returned by value, and the `clientId` could simply be the client’s name.
+        - Optional field  
+        - Must be a **unique UUID** if provided  
+        - If not provided, the system generates a value with prefix:  `txn_<uuid>`
 
-        From `0.14.x` onwards, 
-        - Authorization Requests can be returned by reference (`request_uri`) as well. 
-        - In this case, the `clientId` must be a valid DID URL representing the verifier.
-        - For getting Authorization Requests by value, `clientId` can be simply be the client’s name.
 
-        From `0.17.x` onwards,
-        - Added a new attribute `acceptVPWithoutHolderProof` in the request. Default value is `false`.
-        - If this is `true`, then Verifiable Presentation submitted by the wallet can be unsigned (without proof).
-        - If this is `false`, then the Verifiable Presentation submitted by the wallet cannot be unsigned (without proof). If the wallet submits a Verifiable Presentation without proof, then the `/vp-results` endpoint will throw an error. 
+        ### requestId
+
+        - Automatically generated for each `transactionId`  
+        - Format:  `req_<uuid>`
+
+        - Used to create the **Authorization Request** in the OpenID4VP flow  
+
+        ---
+
+        ## Response
+
+        The response is used by the UI application to generate a **QR code / Deep Link** for wallet consumption.
+
+        ### Notes
+
+        - As of latest version `0.18.x`, the response contains a mix of:
+          - `camelCase`
+          - `snake_case`
+        - The UI application **must normalize attribute formats** before generating the QR code or share Auth Request via Deep Link.
+
+        ---
+
+        ## Authorization Request Delivery Modes
+
+        ### 1. By Value
+
+        - Full request object is returned  
+        - `clientId` can be a simple string (e.g., client name)  
+
+        ### 2. By Reference
+
+        - A `request_uri` is returned pointing to the request  
+        - `clientId` **must be a valid DID URL** representing the verifier  
+
+        ---
+
+        ## Version-Specific Behavior
+
+        ### From `0.17.x`
+
+        - Added `acceptVPWithoutHolderProof` *(default: `false`)*  
+
+        | Value | Behavior |
+        |------|----------|
+        | `true` | Wallet can submit an **unsigned Verifiable Presentation** (no proof required) |
+        | `false` | Verifiable Presentation **must include proof**; otherwise `/vp-results` returns an error |
+
+        ---
+
+        ### From `0.18.x`
+
+        - Added `responseCodeValidationRequired` *(default: `false`)*  
+
+        #### Behavior
+
+        - If `true`:
+          - `/vp-submission` returns:
+            - `redirect_uri`
+            - `response_code`
+        - If `false`:
+          - `/vp-submission` returns **HTTP `200 OK` only**
+
+        ---
+
+        ## Recommended Values by Flow
+
+        | Flow Type                         | response Code Validation Required | COMMENTS |
+        |----------------------------------|--------------------------------|--------------|
+        | Cross Device Flow                | false                          | Verify UI and Wallets run on separate devices.             | 
+        | Same Device Flow – Web Wallet    | true                           | Web wallets redirects user to redirect_uri, after VP submission             |
+        | Same Device Flow – Mobile Wallet | false                          | User manually switches from Mobile Wallet to Verify UI, after VP submission             |
+
+        ---
       operationId: createVPRequest
       tags:
         - VP Request
@@ -132,10 +190,171 @@ paths:
           description: The request failed due to an invalid or missing field in the request body.
         '404':
           description: The specified `presentationDefinitionId` was not found on the server.
+  /vp-session-request:
+    post:
+      summary: Initiate VP Session Request
+      description: |
+        ## Description
+        This endpoint initiates a **Verifiable Presentation (VP) session request**. It is similar to `/vp-request`, but additionally establishes a session using cookies.
+
+        **The request body is the same as `/vp-request`**, along with the addition of the new attribute:
+        `responseCodeValidationRequired`.
+
+        ---
+
+        ## Request
+
+        The request body **must include**:
+        - `clientId`
+        - One of:
+          - `presentationDefinitionId`, or
+          - `presentationDefinition`
+
+        ### responseCodeValidationRequired
+
+        - Boolean flag controlling response behavior in subsequent `/vp-submission` flow
+        - Default: `false`
+
+        ### transaction_id
+
+        - Optional field  
+        - Must be a **unique UUID** if provided  
+        - If not provided, the system generates: `txn_<uuid>`
+         
+
+        ### request_id
+
+        - Automatically generated for each `transaction_id`  
+        - Format: `req_<uuid>`
+        ---
+
+        ## Endpoint Behavior
+
+        Upon receiving the request, the server:
+
+        - Generates:
+          - `transaction_id`
+          - `request_id`
+        - Creates the **Authorization Request**
+        - Returns the Authorization Request payload in the response
+
+        ---
+
+        ## Response
+
+        The response contains:
+        - Authorization Request payload (used by UI to generate QR code or redirect)
+        - base64Encoded `transaction_id` set as a cookie
+
+        ### Cookie Behavior
+
+        The `transaction_id` is base64Encoded and is set as an **HttpOnly cookie**:
+
+        #### Response Header
+
+        `Set-Cookie: transaction_id=<base64EncodedUuid>; HttpOnly; Secure
+        `
+
+        #### Cookie Configuration
+
+        **Production:**
+        - `HttpOnly = true`
+        - `Secure = true`
+        - `SameSite = None`
+        - `Path = /`
+        - `Max-Age = 15`
+
+        **Local Environment:**
+        - `HttpOnly = true`
+        - `Secure = false`
+        - `SameSite = Lax`
+        - `Path = /`
+        - `Max-Age = 15`
+
+        **These values are configurable and environment-dependent.**
+
+        ---
+
+        > Important Notes:
+        > - The `transaction_id` is base64Encoded and set as an HttpOnly cookie is **only set by this endpoint** (`/vp-session-request`)
+        > - It is **not set** in the `/vp-request` endpoint
+        > - This endpoint is intended for **session-based flows**
+      operationId: createVPSessionRequest
+      tags:
+        - VP Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VPRequestCreate'
+            example:
+              clientId: client123
+              presentationDefinitionId: age_verification
+      responses:
+        '201':
+          description: |-
+            The Verifiable Presentation (VP) request was created successfully. The response includes a `transactionId` and a `requestId`, along with either:
+
+            - The full `authorizationDetails` object, or
+
+            - A `requestUri` pointing to the authorization request.
+
+            This information can be used by the client application to generate a QR code or otherwise initiate the VP flow with the wallet.
+          headers:
+            Set-Cookie:
+              description: HttpOnly cookie containing base64Encoded transaction_id
+              schema:
+                type: string
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/VPRequestResponse'
+                  - $ref: '#/components/schemas/VPRequestResponseByReference'
+              examples:
+                by_value:
+                  summary: 'In this flow the wallet can receive the entire request payload directly.  All necessary authorization details, including the presentation definition, nonce, and responseUri, are provided in a single API response, eliminating the need for the wallet to make a separate call to fetch the request.'
+                  value:
+                    transactionId: txn_f82f281e-8d96-419b-b413-5a0459739a7b
+                    requestId: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
+                    authorizationDetails:
+                      responseUri: 'https://injiverify.collab.mosip.net/v1/verify/vp-submission/direct-post'
+                      responseType: vp_token
+                      responseMode: direct_post
+                      clientId: client123
+                      nonce: aShdFjAhdSFJlKasdF
+                      presentationDefinition:
+                        id: age_verification
+                        input_descriptors:
+                          - id: age_credential
+                            format:
+                              jwt_vc: {}
+                            constraints:
+                              fields:
+                                - path:
+                                    - $.vc.credentialSubject.age
+                                  filter:
+                                    type: number
+                                    minimum: 18
+                      iat: 1752838929
+                    expiresAt: 1752838929
+                by_reference:
+                  summary: 'Instead of the full payload, the response provides a `requestUri` which the wallet must resolve to retrieve the authorization details. This keeps the QR code payload small and enables more complex or larger presentation definitions. This feature is available only from Inji Verify 0.14.0'
+                  value:
+                    transactionId: 'urn:uuid:f82f281e-8d96-419b-b413-5a0459739a7b'
+                    requestId: 'urn:uuid:6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+                    requestUri: 'https://example.com/vp-requests/6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+                    expiresAt: 1752838929
+        '400':
+          description: The request failed due to an invalid or missing field in the request body.
+        '404':
+          description: The specified `presentationDefinitionId` was not found on the server.
   '/vp-request/{requestId}':
     get:
       summary: Get VP Request JWT
       description: |-
+        ## Description
         This endpoint allows a client to retrieve a Verifiable Presentation (VP) request in its JSON Web Token (JWT) format. This is especially useful for cross-device flows, where a wallet fetches the request details from a URI rather than receiving it directly.
 
         This feature was introduced in version `0.14.x` to support Authorization Requests by reference (`request_uri`).
@@ -164,7 +383,9 @@ paths:
   '/vp-request/{requestId}/status':
     get:
       summary: Get the VP Request status
-      description: 'This endpoint is used to check the current status of a specific VP request transaction. This allows the verifier to monitor whether the request has been fulfilled, is still active, or has expired.'
+      description: |-
+        ## Description
+        This endpoint is used to check the current status of a specific VP request transaction. This allows the verifier to monitor whether the request has been fulfilled, is still active, or has expired.
       operationId: getVPRequestStatus
       tags:
         - VP Request
@@ -201,32 +422,83 @@ paths:
   /vp-submission/direct-post:
     post:
       summary: Submit Authorization Response as a VP Token
-      description: |-
-        This endpoint is used by a wallet to submit a Verifiable Presentation (VP) via the vp_token and a presentation_submission object, typically when the response_mode is direct_post. Upon receiving the submission, the server processes the VP, stores it in the database, and updates the transaction status.
+      description: |
+        ## Description
+        This endpoint is used by a wallet to submit a **Verifiable Presentation (VP)** using `vp_token` and a `presentation_submission` object, typically when the `response_mode` is `direct_post`.
 
-        **Changes in Release `0.15.0`**
+        Upon receiving the submission, the server:
+        - Processes the Verifiable Presentation  
+        - Stores it in the database  
+        - Updates the transaction status  
 
-        The following updates were introduced:
+        ---
 
-        New request attributes `error` and `error_description` were added to allow the wallet to report errors.
+        ## Error Handling (OpenID4VP Support)
 
-        `vp_token` can be null if `error` is provided.
+        The following request attributes are supported for error reporting:
 
-        `presentation_submission` can be null if `error` is provided.
+        - `error`
+        - `error_description`
 
-        If `vp_token` is not null, then `presentation_submission` must also be provided.
+        ### Validation Rules
 
-        If `error` is not null, both `vp_token` and `presentation_submission` must be null.
+        - **Success case (no error):**
+          - `vp_token` and `presentation_submission` are **both required**
 
-        If `error` is provided, `error_description` is optional and can be null.
+        - **Error case:**
+          - `error` must be provided  
+          - `vp_token` and `presentation_submission` must be **null**  
+          - `error_description` is **optional**  
 
-        **Changes in Release `0.16.0`**
+        ---
 
-        The endpoint can return a `redirect_uri` based on the `INJI_VERIFY_REDIRECT_URI` configuration.
+        ## Changes in Release `0.18.0`
 
-        If `INJI_VERIFY_REDIRECT_URI` is blank, no `redirect_uri` is returned.
+        ### Behavior
 
-        This minimal feature implementation is intended to support integration with specific modules (e.g., wallets and verifier applications). Full implementation, including response_code support, is planned for future releases to ensure complete compliance with the OpenID4VP specification.
+        - If `responseCodeValidationRequired = true` (from corresponding Authorization Request):
+          - The endpoint returns a `redirect_uri`  
+        - If `responseCodeValidationRequired = false`:
+          - No `redirect_uri` is returned  
+
+        ---
+
+        ## response_code
+
+        The verifier backend **includes** a fresh, cryptographically random value in the `redirect_uri`, known as `response_code`.
+
+        ### Purpose
+
+        The `response_code` ensures that only the intended receiver of the redirect can fetch and process the Authorization Response.
+
+        ---
+
+        ### Characteristics
+
+        - **Linked** to the corresponding Authorization Response  
+        - **Single-use** — invalidated immediately after redemption  
+        - **Short-lived** — typically expires within **5 minutes** (configurable)  
+
+        ---
+
+        ## redirect_uri Format
+
+        The verifier backend includes the `response_code` as a **hash parameter** in the `redirect_uri`.
+
+        #### Example
+
+        `{"redirect_uri": "<redirect_uri>#response_code=<response_code>"}`
+
+        ----
+        ## Client ID and Nonce Validations
+
+        - The verifier backend validates whether the `challenge` and `domain` attributes in the `proof` section of the `VerifiablePresentation` match the `nonce` and `client_id` in the corresponding **Authorization Request**.
+        - If the `nonce` validation fails, then the endpoint returns **400 Bad Request** status with `errorCode` as `invalid_request` and `errorMessage` as **"Nonce validation failed due to invalid nonce"**.
+        - If the `client_id` validation fails, then the endpoint returns **400 Bad Request** status with `errorCode` as `invalid_request` and `errorMessage` as **"Client id validation failed due to invalid client id"**.
+        - This validation is done only if `acceptVPWithoutHolderProof` is `false` in the corresponding **Authorization Request**.
+        - This validation is done only for LDP_VP.
+
+        ---
       operationId: submitResponse
       tags:
         - VP Submission
@@ -258,17 +530,26 @@ paths:
                     type: string
                     nullable: true
                     description: |
-                      Optional redirect URL returned only if the verifier has been configured with `INJI_VERIFY_REDIRECT_URI`.
+                      Optional `redirect_uri` returned, if `responseCodeValidationRequired = true` in the corresponding Authorization Request.
               example:
-                redirect_uri: 'https://example.com/'
+                redirect_uri: 'https://example.com/#response_code=731c81d6-9fad-455f-9c66-681e45d59527'
         '400':
-          description: The submission failed due to an invalid request format or missing required fields.
+          description: |
+            The submission failed due to an `invalid_request` format or missing required fields.
+            Example:
+            ```json
+            {
+                "errorCode": "invalid_request",
+                "errorMessage": "Client id validation failed due to invalid client id"
+            }
+            ```
         '404':
           description: The transaction associated with the provided Request ID was not found.
   /vc-submission:
     post:
       summary: Submit a Verifiable Credential (VC)
       description: |-
+        ## Description
         This API allows a user or system to submit a Verifiable Credential (VC) to the server. If a `transactionId` is not provided in the request, the server can generate one automatically.
 
         Note that this endpoint is specifically for submitting individual credentials and is distinct from a Verifiable Presentation (VP) submission.
@@ -321,6 +602,7 @@ paths:
     get:
       summary: Get the VP results for a  given Transaction Id
       description: |-
+        ## Description
         This endpoint returns the final result of a Verifiable Presentation (VP) submission. After a wallet submits a VP, this endpoint can be used to retrieve the verification status of each credential.
 
         **Version-specific behavior:**
@@ -336,8 +618,8 @@ paths:
         From `0.17.x` onwards,
 
         - Added a new attribute `acceptVPWithoutHolderProof` in the `/vp-request` request body.
-        - If this is `true`, then Verifiable Presentation submitted by the wallet can be unsigned (without proof).
-        - If this is `false`, then the Verifiable Presentation submitted by the wallet cannot be unsigned (without proof). If the wallet submits a Verifiable Presentation without proof, then the `/vp-results` endpoint will throw an error.
+        - If this is `true`, then Verifiable Presentation submmited by the wallet can be unsigned (without proof).
+        - If this is `false`, then the Verifiable Presentation submmited by the wallet cannot be unsigned (without proof). And if wallet submits Verifiable Presentation without proof, the the `/vp-results` endpoint will throw an error.
         - V2 Version of `/vp-results` endpoint has been added which verifies a Verifiable Presentation (VP) identified by the provided `transactionId` and returns a detailed, structured verification result for the Verifiable Presentation and for each Verifiable Credential (VC) contained within it.
       tags:
         - VP Results
@@ -412,10 +694,12 @@ paths:
                     type: string
                     description: Error details message
       operationId: get-vp-result-requestId-presentations
+      x-internal: true
   '/v2/vp-results/{transactionId}':
     post:
       summary: Get the VP results for a  given Transaction Id (V2)
       description: |-
+        ## Description
         This endpoint was introduced in `0.17.0` version. 
 
         This endpoint verifies a Verifiable Presentation (VP) identified by the provided `transactionId` and returns a detailed, structured
@@ -501,7 +785,7 @@ paths:
         content:
           application/json:
             schema:
-              $ref: '#/components/schemas/VpVerificationRequest'
+              $ref: '#/components/schemas/V2VpVerificationRequest'
       responses:
         '200':
           description: Detailed VP verification result
@@ -534,6 +818,60 @@ paths:
           description: Internal server error
       x-stoplight:
         id: mtwcvmeae79qe
+      x-internal: true
+  /vp-session-results:
+    post:
+      summary: Get the VP session results for a  given Transaction Id (Cookie) and response_code
+      description: "## Description\n\nRetrieves detailed verification results for a Verifiable Presentation (VP) session.\n\n**The request & response body is the similar to `/v2/vp-results/{transaction_id}`.**\n\nThis is the primary endpoint now used by` @injistack/react-inji-verify-sdk`\nfor all flows (same-device and cross-device), replacing `/vp-result/{transactionId}`\n\nThe session is identified using a **`base64Encoded_transaction_id` cookie** (required).  \nIf the cookie is missing or invalid, the API returns **401 Unauthorized**.\n\nIf the corresponding Auth Request has`responseCodeValidationRequired=true`, a **`response_code`** must be provided and must be:\n- Valid  \n- Not expired  \n- Not previously used  \n\nAfter processing, the session cookie is cleared to prevent reuse.\n\n---\n\n## \U0001F9FE Request Body\n\nOptional parameters to control processing:\n\n- **response_code**: Required only if validation is enabled  \n- **skipStatusChecks**: Skip all credential status checks  \n- **statusCheckFilters**: Run only selected checks (`revocation`, `suspension`)  \n- **includeClaims**: Include credential claims in response  \n\n---\n\n## \U0001F501 Processing Logic\n\n1. Extract `transaction_id` from cookie  \n2. Check if `response_code` validation is required  \n\n- If **not required** → process request directly  \n- If **required**:\n  - With `response_code` → validate and process  \n  - Without `response_code` → return error  \n\n---\n\n## \U0001F36A Session Handling\n\n- `transaction_id` cookie is mandatory  \n- Issued during VP request flow  \n- Cleared after response to prevent reuse  \n\n---\n\n## \U0001F4E6 Response\n\nReturns verification results including:\n- Overall success status  \n- Per-credential validation details  \n- Optional claims  \n\n---\n"
+      operationId: getVpSessionResults
+      tags:
+        - VP Results
+      parameters:
+        - name: transaction_id
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: Base64Encoded Transaction ID from VP request
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VpVerificationSessionRequest'
+      responses:
+        '200':
+          description: Detailed VP verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VpVerificationResponse'
+        '401':
+          description: |
+            The endpoint returns 401 Unauthorized with error code `VP_SESSION_INVALID` when the cookie is missing or empty.
+        '404':
+          description: |-
+            This response indicates that an `error` occurred during the Verifiable Presentation (VP) request processing in the wallet, which is sent to the Verifier.
+            Clients can use this information to display the outcome or status of the VP request to the end user.
+          content:
+            application/json:
+              schema:
+                type: object
+                x-examples:
+                  Example 1:
+                    error: string
+                    errorDescription: string
+                required:
+                  - error
+                properties:
+                  error:
+                    type: string
+                    description: The error code sent by the wallet during VP submission
+                  errorDescription:
+                    type: string
+                    description: The optional error message
+        '500':
+          description: Internal server error
   '/vp-definition/{id}':
     parameters:
       - schema:
@@ -544,7 +882,9 @@ paths:
         required: true
     get:
       summary: Get the Presentation Definition
-      description: 'This API allows a user to fetch a previously stored or referenced presentation definition. A presentation definition outlines the specific data requirements for a VP, such as the required credential types and their constraints.'
+      description: |-
+        ## Description
+        This API allows a user to fetch a previously stored or referenced presentation definition. A presentation definition outlines the specific data requirements for a VP, such as the required credential types and their constraints.
       tags:
         - Presentation Definition Management
       responses:
@@ -574,6 +914,7 @@ paths:
     post:
       summary: Verify a Verifiable Credential
       description: |-
+        ## Description
         This API performs server-side verification of a Verifiable Credential (VC) to validate its integrity and authenticity. It executes checks such as cryptographic signature validation and ensures that the credential has not been altered or tampered with.
         The verification status returned can be `SUCCESS, INVALID, or EXPIRED`.
 
@@ -705,6 +1046,7 @@ paths:
     post:
       summary: Verify a Verifiable Credential (V2)
       description: |
+        ## Description
         This endpoint was introduced in `0.17.0` version. 
 
         Verifies a single Verifiable Credential (VC) and returns a detailed
@@ -772,7 +1114,9 @@ paths:
   /well-known/did.json:
     post:
       summary: Get the DID document
-      description: 'This endpoint is part of a standard DID discovery mechanism, following the .well-known pattern. It is used to retrieve a DID (Decentralized Identifier) document for a given DID. A DID document contains crucial information for interacting with a DID, including public keys for authentication and service endpoints. This is introduced in version *0.14.x*.'
+      description: |-
+        ## Description
+        This endpoint is part of a standard DID discovery mechanism, following the .well-known pattern. It is used to retrieve a DID (Decentralized Identifier) document for a given DID. A DID document contains crucial information for interacting with a DID, including public keys for authentication and service endpoints. This is introduced in version *0.14.x*.
       tags:
         - VP Request
       responses:
@@ -928,6 +1272,10 @@ components:
           type: boolean
           description: 'If this is `true`, then Verifiable Presentation Token submmited by the wallet can be unsigned (without proof).Default value is false.'
           example: false
+        responseCodeValidationRequired:
+          type: boolean
+          description: 'If true, `/vp-submission` returns `redirect_uri` with `response_code`. If false, `/vp-submission` returns **HTTP `200 OK` only**'
+          example: false
         presentationDefinitionId:
           type: string
           description: Either presentationDefinitionId or presentationDefinition should be passed. A predefined presentation definition Id so that the user does not need to pass the presentation definition.
@@ -1018,29 +1366,31 @@ components:
     AuthorizationResponse:
       type: object
       required:
-        - vp_token
-        - presentation_submission
         - state
       properties:
         vp_token:
           type: string
-          description: 'vp_token - REQUIRED. JSON String or JSON object that MUST contain a single Verifiable Presentation or an array of JSON Strings and JSON objects each of them containing a Verifiable Presentations. This is the core payload submitted by the wallet. With release 0.15.0, this should/must be null when there is error'
+          nullable: true
+          description: 'The `vp_token` should be null, when there in an `error`. JSON String or JSON object that MUST contain a single Verifiable Presentation or an array of JSON Strings and JSON objects each of them containing a Verifiable Presentations. This is the core payload submitted by the wallet.'
           example: eyJhbGciOiJFUzI1NiIsInR5cCI6IkpXVCJ9.eyJ2cCI6eyJAY29udGV4dCI6WyJodHRwczovL3d3dy53My5vcmcvMjAxOC9jcmVkZW50aWFscy92MSJdLCJ0eXBlIjpbIlZlcmlmaWFibGVQcmVzZW50YXRpb24iXSwidmVyaWZpYWJsZUNyZWRlbnRpYWwiOlsiZXlKaGJHY2lPaUpGVXpJMU5pSXNJblI1Y0NJNklrcFhWQ0o5LmV5SmhkV1FpT2lKb2RIUndjem92TDNabGNtbG1lUzVrWlhZeExtMXZjMmx3TG01bGRDOXlaWE53YjI1elpYTWlMQ0pqYkdGcGJYTWlPbnNpWVdkbElqb3hPSDBzSW1semN5STZJbWgwZEhCek9pOHZkbVZ5YVdaNUxtUmxkakV1Ylc5emFYQXVibVYwTDJselozSmhiblJsY25NaUxDSnVZbVlpT2pFMk9ESTVOekF3TURBc0ltVjRjQ0k2TVRjd05qazNNREF3TUgwLnNpZ25hdHVyZSJdfSwibm9uY2UiOiJub25jZV8xMjM0NSIsImF1ZCI6ImNsaWVudDEyMyJ9.signature
         state:
           type: string
-          description: The requestId created for the transaction. It is used to link the authorization response back to the original request.
+          description: The `requestId` created for the transaction. It is used to link the authorization response back to the original request.
           example: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
         error:
           type: string
-          description: The error code for the transaction sent by the wallet. It can be null when there is no error.
+          nullable: true
+          description: 'The `error` should be null, when there is no error. It has the the error code for the transaction sent by the wallet. '
           example: invalid_scope
         error_description:
           type: string
-          description: Optional error message for the transaction sent by the wallet. It can be null when there is no error.
+          nullable: true
+          description: Optional error message for the transaction sent by the wallet. It can be null when there is no `error`.
           example: Something went wrong with the request configuration.
         presentation_submission:
           type: object
-          description: 'With release 0.15.0, this should/must be null when there is error'
+          nullable: true
+          description: 'The `presentation_submission` should be null, when there in an `error`.'
           required:
             - id
             - definition_id
@@ -1474,19 +1824,48 @@ components:
           type: boolean
           default: false
           description: Include extracted plain claims in the response
-    VpVerificationRequest:
+    V2VpVerificationRequest:
       type: object
+      x-stoplight:
+        id: 2662e7940e63a
       properties:
         skipStatusChecks:
           type: boolean
           default: false
+          description: Skip all credential status checks when true
         statusCheckFilters:
           type: array
+          description: |
+            List of credential status check purposes to perform.
+            Unsupported purposes are ignored.
           items:
             type: string
         includeClaims:
           type: boolean
           default: false
+          description: Include extracted plain claims in the response
+    VpVerificationSessionRequest:
+      type: object
+      properties:
+        responseCode:
+          type: string
+          nullable: true
+          description: 'The `response_code` from `redirect_uri`, for which VP results are to be retrieved. It can be null, if corresponding Auth Request was created with `responseCodeValidationRequired=false`'
+        skipStatusChecks:
+          type: boolean
+          default: false
+          description: Skip all credential status checks when true
+        statusCheckFilters:
+          type: array
+          description: |
+            List of credential status check purposes to perform.
+            Unsupported purposes are ignored.
+          items:
+            type: string
+        includeClaims:
+          type: boolean
+          default: false
+          description: Include extracted plain claims in the response
     VcVerificationResponse:
       type: object
       properties:
@@ -1513,6 +1892,8 @@ components:
           type: string
         allChecksSuccessful:
           type: boolean
+          description: |
+            True only if `allChecksSuccessful` is true, for all the credentials.
         credentialResults:
           type: array
           items:
@@ -1522,10 +1903,14 @@ components:
       properties:
         verifiableCredential:
           type: string
+          description: full verifiable credential details
         allChecksSuccessful:
           type: boolean
+          description: |
+            True only if `schemaAndSignatureCheck`, `expiryCheck`,
+            and all status checks pass.
         holderProofCheck:
-          $ref: '#/components/schemas/ValidationResult'
+          $ref: '#/components/schemas/HolderResult'
         schemaAndSignatureCheck:
           $ref: '#/components/schemas/ValidationResult'
         expiryCheck:
@@ -1536,13 +1921,26 @@ components:
             $ref: '#/components/schemas/StatusCheckResult'
         claims:
           type: object
+          description: claims from the verifiable credential are extracted depending on the credential format
           additionalProperties: true
+    HolderResult:
+      type: object
+      x-stoplight:
+        id: 00c3a51c2168a
+      nullable: true
+      properties:
+        valid:
+          type: boolean
+          description: 'true when holder proof check is successful, false if it fails'
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
     ValidationResult:
       type: object
       nullable: true
       properties:
         valid:
           type: boolean
+          description: 'true when schema and signature are both valid for a credential, false if any check fails'
         error:
           $ref: '#/components/schemas/ErrorDetail'
     ExpiryCheckResult:
@@ -1551,6 +1949,7 @@ components:
       properties:
         valid:
           type: boolean
+          description: 'true when credential is not expired, false when credential is expired'
     StatusCheckResult:
       type: object
       properties:
@@ -1558,6 +1957,7 @@ components:
           type: string
         valid:
           type: boolean
+          description: 'if status checks passes then this is true, otherwise false'
         error:
           $ref: '#/components/schemas/ErrorDetail'
     ErrorDetail:
@@ -1566,5 +1966,7 @@ components:
       properties:
         code:
           type: string
+          description: error code occured
         message:
           type: string
+          description: error description

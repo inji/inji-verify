@@ -147,7 +147,13 @@ export const getVerifiableClaims = () => verifiableClaims;
 export const getWebWallets = () => webWallets;
 
 
-export const resolveWalletBaseUrl = (url: string): string => url.replace(/\/+$/, "");
+export const resolveWalletBaseUrl = (url: string): string => {
+    let end = url.length;
+    while (end > 0 && url[end - 1] === "/") {
+        end--;
+    }
+    return url.slice(0, end);
+};
 
 export const initializeClaims = async () => {
   try {

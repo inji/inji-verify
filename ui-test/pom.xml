@@ -170,6 +170,17 @@
             <version>7.17.0</version>
             <scope>compile</scope>
         </dependency>
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>core</artifactId>
+            <version>3.5.3</version>
+        </dependency>
+
+        <dependency>
+            <groupId>com.google.zxing</groupId>
+            <artifactId>javase</artifactId>
+            <version>3.5.3</version>
+        </dependency>
     </dependencies>
 
     <build>
@@ -177,7 +188,7 @@
             <testResource>
                 <directory>src/test/resources</directory>
                 <includes>
-                    <include>**/*.feature</include>
+                    <include>**/*</include>
                 </includes>
             </testResource>
         </testResources>

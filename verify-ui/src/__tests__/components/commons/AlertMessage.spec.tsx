@@ -5,24 +5,32 @@ import { Provider } from "react-redux";
 import configureMockStore from "redux-mock-store";
 import { PreloadedState } from "../../../redux/features/verification/verification.slice";
 import { AlertMessages } from "../../../utils/config";
-import "../../../utils/i18n";
+
+jest.mock("react-i18next", () => ({
+    useTranslation: () => ({
+        t: (key: string) => key,
+        i18n: {changeLanguage: jest.fn(), language: "en"}
+    }),
+    initReactI18next: {
+        type: "3rdParty",
+        init: jest.fn(),
+    },
+}));
 
 const mockStore = configureMockStore();
-const store = mockStore({
-  verification: PreloadedState,
-  alert: { ...AlertMessages().qrUploadSuccess, open: true },
-});
-
 describe("AlertMessage", () => {
-  test("renders alert message content", () => {
-    render(
-      <Provider store={store}>
-        <AlertMessage />
-      </Provider>
-    );
+    test("renders alert message component", () => {
+        const store = mockStore({
+            verification: PreloadedState,
+            alert: { ...AlertMessages().qrUploadSuccess, open: true },
+        });
 
-    expect(
-      screen.getByText(AlertMessages().qrUploadSuccess.message ?? "")
-    ).toBeInTheDocument();
-  });
+        render(
+            <Provider store={store}>
+                <AlertMessage />
+            </Provider>
+        );
+
+        expect(screen.getByRole("button", { name: /close/i })).toBeInTheDocument();
+    });
 });

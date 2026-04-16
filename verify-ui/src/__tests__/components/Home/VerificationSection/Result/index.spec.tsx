@@ -4,46 +4,64 @@ import Result from "../../../../../components/Home/VerificationSection/Result";
 import { useVerificationFlowSelector } from "../../../../../redux/features/verification/verification.selector";
 import { VerificationResult } from "../../../../../types/data-types";
 
+jest.mock("iso-639-3", () => ({
+    iso6393: [],
+}));
+
 jest.mock("../../../../../redux/hooks", () => ({
-  useAppDispatch: jest.fn(),
+    useAppDispatch: jest.fn(),
 }));
 
 jest.mock("../../../../../redux/features/verification/verification.selector", () => ({
-  useVerificationFlowSelector: jest.fn(),
-}));
+        useVerificationFlowSelector: jest.fn(),
+    }));
 
 jest.mock("../../../../../utils/cborUtils", () => ({
-  isCWT: () => false,
-  uint8ArrayToHex: () => "",
-  extractMappedClaim: () => ({}),
+    isCWT: () => false,
+    uint8ArrayToHex: () => "",
+    extractMappedClaim: () => ({}),
 }));
 
 jest.mock(
-  "../../../../../components/Home/VerificationSection/Result/DisplayVcDetailView",
-  () =>
-    () =>
-      <div data-testid="vc-detail-view-mock" />
+    "../../../../../components/Home/VerificationSection/Result/DisplayVcDetailView",
+    () => {
+        const React = require("react");
+        return {
+            __esModule: true,
+            default: () =>
+                React.createElement("div", {
+                    "data-testid": "vc-detail-view-mock",
+                }),
+        };
+    }
 );
 
 jest.mock(
-  "../../../../../components/Home/VerificationSection/Result/DisplayVcDetailsModal",
-  () =>
-    () =>
-      <div data-testid="vc-detail-modal-mock" />
+    "../../../../../components/Home/VerificationSection/Result/DisplayVcDetailsModal",
+    () => {
+        const React = require("react");
+        return {
+            __esModule: true,
+            default: () =>
+                React.createElement("div", {
+                    "data-testid": "vc-detail-modal-mock",
+                }),
+        };
+    }
 );
 
 const mockVerificationSelector = (verificationResult: VerificationResult) => {
-  (useVerificationFlowSelector as jest.Mock).mockImplementation(
-    (selector: (state: any) => any) =>
-      selector({
-        method: "SCAN",
-        activeScreen: 1,
-        qrReadResult: { status: "SUCCESS" },
-        verificationResult,
-        alert: {},
-        ovp: {},
-      })
-  );
+    (useVerificationFlowSelector as jest.Mock).mockImplementation(
+        (selector: (state: any) => any) =>
+            selector({
+                method: "SCAN",
+                activeScreen: 1,
+                qrReadResult: { status: "SUCCESS" },
+                verificationResult,
+                alert: {},
+                ovp: {},
+            })
+    );
 };
 
 const workingVc: any = {

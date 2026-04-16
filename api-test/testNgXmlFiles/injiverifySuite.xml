@@ -101,7 +101,22 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
 		</classes>
 	</test>
-
+	<test name="VcVerificationES256K">
+		<parameter name="ymlFile"
+			value="injiverify/VcVerificationES256K/VcVerificationES256K.yml" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
+		</classes>
+	</test>
+	<test name="VcVerificationES256">
+		<parameter name="ymlFile"
+			value="injiverify/VcVerificationES256/VcVerificationES256.yml" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
+		</classes>
+	</test>
 	<test name="VcRevocationStatus">
 		<parameter name="ymlFile"
 			value="injiverify/VcRevocationStatus/VcRevocationStatus.yml" />

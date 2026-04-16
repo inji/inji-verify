@@ -1,36 +1,36 @@
 package runnerfiles;
 
 import api.InjiVerifyConfigManager;
-import io.cucumber.testng.FeatureWrapper;
-import io.cucumber.testng.PickleWrapper;
-import io.mosip.testrig.apirig.dataprovider.BiometricDataProvider;
-import io.mosip.testrig.apirig.testrunner.BaseTestCase;
-import io.mosip.testrig.apirig.testrunner.ExtractResource;
-import io.mosip.testrig.apirig.testrunner.HealthChecker;
-import io.mosip.testrig.apirig.utils.*;
-import org.junit.runner.RunWith;
-
 import io.cucumber.junit.Cucumber;
-import io.cucumber.testng.CucumberOptions.SnippetType;
 import io.cucumber.testng.AbstractTestNGCucumberTests;
 import io.cucumber.testng.CucumberOptions;
+import io.cucumber.testng.CucumberOptions.SnippetType;
+import io.cucumber.testng.FeatureWrapper;
+import io.cucumber.testng.PickleWrapper;
+import io.mosip.testrig.apirig.testrunner.BaseTestCase;
+import io.mosip.testrig.apirig.testrunner.ExtractResource;
+import io.mosip.testrig.apirig.utils.*;
 import org.apache.log4j.Logger;
+import org.junit.runner.RunWith;
 import org.testng.ITestResult;
 import org.testng.TestNG;
 import org.testng.annotations.BeforeMethod;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import java.io.BufferedReader;
 import java.io.File;
-import java.io.IOException;
-import java.nio.file.*;
-import java.nio.file.attribute.BasicFileAttributes;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 
 @RunWith(Cucumber.class)
 @CucumberOptions(
-		features = {"/home/inji/featurefiles/"},
+		features = {},
 		dryRun = !true,
 		glue = {"stepdefinitions", "utils"},
 		snippets = SnippetType.CAMELCASE,
@@ -43,13 +43,21 @@ import java.util.List;
 
 public class Runner extends AbstractTestNGCucumberTests{
 
-
 	private static final Logger LOGGER = Logger.getLogger(Runner.class);
 	private static String cachedPath = null;
 
 	public static String jarUrl = Runner.class.getProtectionDomain().getCodeSource().getLocation().getPath();
 	public static List<String> languageList = new ArrayList<>();
 	public static boolean skipAll = false;
+
+	// ── Known Issues ──────────────────────────────────────────────────────────────
+	public static Map<String, String> knownIssues = new ConcurrentHashMap<>();
+
+	static {
+		updateFeaturesPath();  
+		loadKnownIssues(); 
+	}
+	// ─────────────────────────────────────────────────────────────────────────────
 
 
 	public static void main(String[] args) {
@@ -69,10 +77,10 @@ public class Runner extends AbstractTestNGCucumberTests{
 			suiteSetup(getRunType());
 			setLogLevels();
 
-			KeycloakUserManager.removeUser();
-			KeycloakUserManager.createUsers();
-			KeycloakUserManager.closeKeycloakInstance();
-			AdminTestUtil.getRequiredField();
+			 KeycloakUserManager.removeUser();
+			 KeycloakUserManager.createUsers();
+			 KeycloakUserManager.closeKeycloakInstance();
+			 AdminTestUtil.getRequiredField();
 
 			startTestRunner();
 		} catch (Exception e) {
@@ -91,7 +99,7 @@ public class Runner extends AbstractTestNGCucumberTests{
 
 		BaseTestCase.currentModule = "injiverify";
 		BaseTestCase.certsForModule = "injiverify";
-		AdminTestUtil.copymoduleSpecificAndConfigFile("injiverify");
+		BaseTestCase.copymoduleSpecificAndConfigFile("injiverify");
 	}
 
 	public static void startTestRunner() {
@@ -133,7 +141,7 @@ public class Runner extends AbstractTestNGCucumberTests{
 	}
 
 	@Override
-	@DataProvider(parallel = false)
+	@DataProvider(parallel = true)
 	public Object[][] scenarios() {
 		Object[][] scenarios = super.scenarios();
 		System.out.println("Number of scenarios provided: " + scenarios.length);
@@ -154,14 +162,71 @@ public class Runner extends AbstractTestNGCucumberTests{
 		result.getMethod().setDescription("Running Scenario: " + result.getMethod().getMethodName());
 	}
 
-
-
 	@Test(dataProvider = "scenarios")
 	public void runScenario(PickleWrapper pickle, FeatureWrapper feature) {
 		System.out.println("Running Scenario: " + pickle.getPickle().getName());
 		Thread.currentThread().setName(pickle.getPickle().getName());
 		super.runScenario(pickle, feature);
 	}
+
+	// ── Known Issues ──────────────────────────────────────────────────────────────
+	/**
+	 * Resets all scenario counters between runs (e.g. multi-language loops).
+	 * knownIssueCount is kept in BaseTest alongside the other counters.
+	 */
+	public static void resetCounters() {
+		utils.BaseTest.passedCount.set(0);
+		utils.BaseTest.failedCount.set(0);
+		utils.BaseTest.totalCount.set(0);
+		utils.BaseTest.knownIssueCount.set(0);
+	}
+
+	/**
+	 * Loads known issues from {@code src/test/resources/Known_Issues.txt}.
+	 *
+	 * <p>Each non-blank, non-comment line must follow the format:
+	 * <pre>
+	 *   BUGID------Scenario Name
+	 * </pre>
+	 * Lines starting with {@code #} are treated as comments and skipped.
+	 */
+	private static void loadKnownIssues() {
+		InputStream knownIssuesStream = Runner.class.getClassLoader()
+				.getResourceAsStream("config/Known_Issues.txt");
+
+		if (knownIssuesStream == null) {
+			LOGGER.warn("Known issues file not found in classpath: config/Known_Issues.txt");
+			return;
+		}
+
+		try (BufferedReader br = new BufferedReader(
+				new InputStreamReader(knownIssuesStream, StandardCharsets.UTF_8))) {
+
+			String line;
+			while ((line = br.readLine()) != null) {
+				line = line.trim();
+
+				// Skip blank lines and comments
+				if (line.isEmpty() || line.startsWith("#") || !line.contains("------")) {
+					continue;
+				}
+
+				String[] parts = line.split("------", 2);
+				if (parts.length == 2) {
+					String bugId        = parts[0].trim();
+					String scenarioName = parts[1].trim().replaceAll("\\s+", " ");
+					knownIssues.put(scenarioName, bugId);
+				}
+			}
+
+			LOGGER.info("Known Issues Loaded: " + knownIssues);
+
+		} catch (Exception e) {
+			LOGGER.warn("Error reading Known_Issues.txt: " + e.getMessage());
+		}
+	}
+	// ─────────────────────────────────────────────────────────────────────────────
+
 
 	public static String getGlobalResourcePath() {
 		if (cachedPath != null) {
@@ -185,6 +250,7 @@ public class Runner extends AbstractTestNGCucumberTests{
 			return "Global Resource File Path Not Found";
 		}
 	}
+
 	public static String getResourcePath() {
 		return getGlobalResourcePath();
 	}
@@ -198,14 +264,35 @@ public class Runner extends AbstractTestNGCucumberTests{
 		JWKKeyUtil.setLogLevel();
 		CertsUtil.setLogLevel();
 	}
-	
-	public static void updateFeaturesPath() {
-		File homeDir = null;
-	    String os = System.getProperty("os.name").toLowerCase();
-	    if (os.contains("windows")) {
-	        System.setProperty("cucumber.features", "src\\test\\resources\\featurefiles\\");
-	    } else {
-	        System.setProperty("cucumber.features", "/home/inji/featurefiles/");
-	    }
-	} 
+
+	   public static void updateFeaturesPath() {
+        String existingFeatures = System.getProperty("cucumber.features");
+        if (existingFeatures != null && !existingFeatures.trim().isEmpty()) {
+            LOGGER.info("cucumber.features already set by caller, skipping override: " + existingFeatures);
+            return;
+        }
+
+        CucumberOptions cucumberOptions = Runner.class.getAnnotation(CucumberOptions.class);
+
+        if (cucumberOptions != null) {
+            String[] annotatedFeatures = cucumberOptions.features();
+            if (annotatedFeatures != null) {
+                for (String feature : annotatedFeatures) {
+                    if (feature != null && !feature.trim().isEmpty()) {
+                        LOGGER.info("Using @CucumberOptions feature path: " + feature.trim());
+                        return;
+                    }
+                }
+            }
+        }
+
+        String os = System.getProperty("os.name").toLowerCase();
+        String featuresPath = os.contains("windows")
+                ? "src\\test\\resources\\featurefiles\\"
+                : "/home/inji/featurefiles/";
+
+        System.setProperty("cucumber.features", featuresPath);
+        LOGGER.info("No feature path in @CucumberOptions. cucumber.features set to: " + featuresPath);
+    }
 }
+

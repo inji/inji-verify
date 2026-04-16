@@ -40,3 +40,4 @@ testng-report/
 ./reg
 reports
 screenshots/
+*.err
