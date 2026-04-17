@@ -95,7 +95,7 @@ VpRequestWithPresentationId:
       "nonce": "MTc2Mzk1NTY5NDI5NQ==",
       "acceptVPWithoutHolderProof": true,
       "presentationDefinition": {
-        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
+        "id": "$PRESENTATIONDEFINITIONID$",
         "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
         "input_descriptors": [
           {
@@ -141,7 +141,7 @@ VpRequestWithPresentationId:
       "acceptVPWithoutHolderProof": true,
       "responseCodeValidationRequired": invalidValue,
       "presentationDefinition": {
-        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
+        "id": "$PRESENTATIONDEFINITIONID$",
         "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
         "input_descriptors": [
           {
