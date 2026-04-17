@@ -34,6 +34,9 @@ public class InjiWebWalletPage extends BasePage {
 	@FindBy(xpath = "(//button[@data-testid='btn-consent-share'])[2]")
 	WebElement consentAndShareButton;
 
+	@FindBy(xpath = "//button[@data-testid='google-login-button']")
+	WebElement googleButton;
+
 	@FindBy(id = "title-no-matching-credentials")
 	WebElement noMatchingCredentialsError;
 
@@ -77,7 +80,7 @@ public void enterConfirmPasscode(String string) {
 	}
 
 	public Boolean isgoogleButtonDisplayed() {
-		return isElementPresent(By.xpath("//button[@data-testid='google-login-button']"));
+		return isElementPresent(driver, googleButton);
 	}
 
 	public void navigateToWalletHome() {
