@@ -20,7 +20,7 @@ Unlike the cross-device flow (which relies on QR code scanning), this flow uses 
 
       | Response Mode         | Description|
            | --------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
-      | Direct Post (Default) | * Response will be sent to verifier using HTTP post request and response body will be encoded by specifying the content type as “application/x-www-form-urlencoded" <br/> * Here response will be sent to a specific resource (response_uri) which will be controlled by the verifier and verifier will fetch the response (vp_token) from this resource by using transaction-id which is unique to this vp flow. <br/>* Verifier will provide the uri of the resource to wallet by sending response_uri in Authorization request. |
+      | Direct Post (Default) | Response will be sent to verifier using HTTP POST request and response body will be encoded with content type `application/x-www-form-urlencoded`. <br/> - Response is sent to `response_uri` controlled by the verifier. <br/> - Verifier fetches the `vp_token` using transaction-id. <br/> - Verifier provides `response_uri` in Authorization request. |
       | Fragment              | Response will be encoded in the Fragment added to the redirect_uri and will be sent to the verifier when redirecting the end-user back to the verifier
     * **response_uri**- if verifier send the response mode as Direct post, then verifier is expecting the response to be sent to some resource which will be under the control of the verifier and verifier will get the response from this response-uri.
     * **presentation_definition** (Required)- It is an JSON object which contains the info about the credentials that are being requested by the verifier.
@@ -78,7 +78,7 @@ Unlike the cross-device flow (which relies on QR code scanning), this flow uses 
 >
 > **Same-Device Flow Behavior**
 >
-> For same-device flows, responseCodeValidationRequired is always set to true.
+> For same-device flows, responseCodeValidationRequired should typically be set to `true` by the client/UI (e.g., web wallet) to ensure proper response validation.
 
 7. **Validation of the Authorization Response**: Upon receiving the Authorization Response from the wallet, the verifier validates the signature of the Verifiable Presentation (VP) using the wallet’s public key. It then verifies each Verifiable Credential (VC) by validating the issuer’s proof details.After successful proof validation, the verifier performs a holder binding check to ensure that the VP is presented by the legitimate holder of the credentials.The Verifier UI uses the response_code along with the transactionId (retrieved from the HTTP-only cookie) to securely fetch the verification results.
 

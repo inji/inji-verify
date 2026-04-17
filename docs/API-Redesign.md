@@ -192,7 +192,7 @@ Set-Cookie: transaction_id=<uuid>; HttpOnly; Secure; SameSite=None
 
 ---
 
-### 2. POST /vp-submission
+### 2. POST /vp-submission/direct-post
 
 #### Case 1: Validation Required
 
@@ -207,7 +207,9 @@ Set-Cookie: transaction_id=<uuid>; HttpOnly; Secure; SameSite=None
 
 ```json
 {
-  "redirect_uri": "https://app#response_code=<response_code>"
+
+  "redirect_uri": "https://example.com#response_code=<response_code>"
+
 }
 ```
 
@@ -244,7 +246,7 @@ Cookie: transaction_id=<transaction_id>
 
 ---
 
-#### Processing Logic
+#### Validation Logic
 
 **Step 1: Validate Cookie**
 - Missing → `401 Unauthorized`
