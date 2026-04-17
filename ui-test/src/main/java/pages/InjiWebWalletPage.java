@@ -36,6 +36,9 @@ public class InjiWebWalletPage extends BasePage {
 
 	@FindBy(xpath = "//button[@data-testid='google-login-button']")
 	WebElement googleButton;
+	
+	@FindBy(xpath = "//button[contains(.,'Google') or contains(.,'google') or contains(.,'Continue with Google')]")
+	WebElement googleButton;
 
 	@FindBy(id = "title-no-matching-credentials")
 	WebElement noMatchingCredentialsError;
@@ -135,8 +138,7 @@ public void enterConfirmPasscode(String string) {
 	}
 
 	public boolean isGoogleLoginVisible() {
-		return isElementPresent(By.xpath(
-				"//button[contains(.,'Google') or contains(.,'google') or contains(.,'Continue with Google')]"));
+		return isElementPresent(driver, googleLogin);
 	}
 
 	public void enterPasscode(String passcode) {

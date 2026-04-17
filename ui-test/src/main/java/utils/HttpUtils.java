@@ -40,6 +40,14 @@ public class HttpUtils {
 		throw new RuntimeException("Missing required config value for key: " + key);
 	}
 
+	private static String buildApiInternalUrl(String path) {
+		String baseUrl = get("apiInternalEndPoint");
+		if (baseUrl.endsWith("/")) {
+			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
+		}
+		return baseUrl + path;
+	}
+
 	public static String getIdToken() throws IOException {
 		String clientId = get("INJIWEB_GOOGLE_CLIENT_ID");
 		String clientSecret = get("INJIWEB_GOOGLE_CLIENT_SECRET");
@@ -75,7 +83,7 @@ public class HttpUtils {
 	}
 
 	public static String getSessionCookieFromIdToken(String idToken) throws IOException {
-		String tokenLoginUrl = InjiLoginUrl() + "/api/auth/token-login";
+		String tokenLoginUrl = buildApiInternalUrl("/v1/mimoto/auth/google/token-login");
 		URL url = new URL(tokenLoginUrl);
 
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -104,7 +112,7 @@ public class HttpUtils {
 	}
 
 	public static List<String> getWalletIds(String sessionCookie) throws IOException {
-		String walletsUrl = "https://api-internal.dev-int-inji.mosip.net/v1/mimoto/wallets";
+		String walletsUrl = buildApiInternalUrl("/v1/mimoto/wallets");
 		URL url = new URL(walletsUrl);
 
 		HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -122,7 +130,7 @@ public class HttpUtils {
 	}
 
 	public static void deleteWallet(String walletId, String sessionCookie) throws IOException {
-		String deleteUrl = "https://api-internal.dev-int-inji.mosip.net/v1/mimoto/wallets/" + walletId;
+		String deleteUrl = buildApiInternalUrl("/v1/mimoto/wallets/" + walletId);
 		HttpURLConnection conn = (HttpURLConnection) new URL(deleteUrl).openConnection();
 		conn.setRequestMethod("DELETE");
 		conn.setRequestProperty("Cookie", sessionCookie);
