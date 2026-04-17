@@ -25,7 +25,8 @@ public enum ErrorCode {
     MALFORMED_COOKIE("MALFORMED_COOKIE", "Request cannot be processed due to malformed cookie" ),
     RESPONSE_CODE_NOT_USED("RESPONSE_CODE_NOT_USED", "Transaction was incomplete, response_code was not used" ),
     NONCE_VALIDATION_FAILED("invalid_request", "Nonce validation failed due to invalid nonce"),
-    CLIENT_ID_VALIDATION_FAILED("invalid_request", "Client id validation failed due to invalid client id");
+    CLIENT_ID_VALIDATION_FAILED("invalid_request", "Client id validation failed due to invalid client id"),
+    CLIENT_ID_NONCE_VALIDATION_FAILED("invalid_request", "Client id or nonce validation failed");
 
     private final String errorCode;
     private final String errorMessage;
