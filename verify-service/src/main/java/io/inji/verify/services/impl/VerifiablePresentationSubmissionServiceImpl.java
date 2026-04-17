@@ -21,14 +21,7 @@ import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
-import io.inji.verify.exception.RedirectUriNotFoundException;
-import io.inji.verify.exception.InvalidVpTokenException;
-import io.inji.verify.exception.VPWithoutProofException;
-import io.inji.verify.exception.VPSubmissionWalletError;
-import io.inji.verify.exception.CredentialStatusCheckException;
-import io.inji.verify.exception.TokenMatchingFailedException;
-import io.inji.verify.exception.VPSubmissionNotFoundException;
-import io.inji.verify.exception.ResponseCodeException;
+import io.inji.verify.exception.*;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
@@ -163,18 +156,18 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             VPTokenDto vpTokenDto = extractTokens(vpToken);
 
             if (!acceptVPWithoutHolderProof) {
-                if (nonce == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
-                if (clientId == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
+                if (nonce == null) throw new ClientIdNonceException(ErrorCode.NONCE_VALIDATION_FAILED);
+                if (clientId == null) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
                 for (JSONObject jsonVPToken : vpTokenDto.getJsonVpTokens()) {
                     JSONObject proof = jsonVPToken.optJSONObject("proof");
-                    if (proof == null) throw new InvalidVpTokenException();
+                    if (proof == null) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_NONCE_VALIDATION_FAILED);
 
                     String challenge = proof.optString("challenge", null);
                     String domain = proof.optString("domain", null);
 
-                    if (challenge == null || domain == null) throw new InvalidVpTokenException();
-                    if (!nonce.equals(challenge)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
-                    if (!clientId.equals(domain)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
+                    if (challenge == null || domain == null) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_NONCE_VALIDATION_FAILED);
+                    if (!nonce.equals(challenge)) throw new ClientIdNonceException(ErrorCode.NONCE_VALIDATION_FAILED);
+                    if (!clientId.equals(domain)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
                 }
             }
 
@@ -399,7 +392,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     public VPTokenDto extractTokens(String vpTokenString) {
-        if (vpTokenString == null) throw new InvalidVpTokenException();
+        if (vpTokenString == null || vpTokenString.isEmpty()) throw new InvalidVpTokenException();
         List<JSONObject> jsonVpTokens = new ArrayList<>();
         List<String> sdJwtVpTokens = new ArrayList<>();
 
