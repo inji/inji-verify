@@ -11,19 +11,19 @@ Starting with v0.18, `Inji Verify Backend` returns detailed verification informa
 #### 1. Limited Response Visibility
 - Only final status returned:  
   `SUCCESS / INVALID / EXPIRED / REVOKED`
-- No insight into why verification failed
+- No explanation is provided when verification fails
 
 #### 2. Session Handling Issues
 - `transactionId` stored in `sessionStorage`
-- Lost during redirect (Web Wallet → Verify UI)
+- Lost during redirection in Same-Device flow (Web Wallet → Verify UI)
 
 #### 3. Security Concerns
 
-| Mechanism       | Issue                  |
-|----------------|------------------------|
-| sessionStorage | Lost on redirect       |
-| localStorage   | Vulnerable to XSS      |
-| No binding     | Weak session integrity |
+| Mechanism          | Issue                       |
+|--------------------|-----------------------------|
+| sessionStorage     | Lost on redirect            |
+| localStorage       | Vulnerable to XSS           |
+| No session binding | Risk of unauthorised access |
 
 ---
 
@@ -41,14 +41,14 @@ Starting with v0.18, `Inji Verify Backend` returns detailed verification informa
 
 ### 1. POST /vc-verification
 
-#### Request
+#### Request Body
 ```json
 {
   "vc": "..."
 }
 ```
 
-#### Response
+#### Response Body
 ```json
 {
   "verificationStatus": "SUCCESS"
@@ -59,7 +59,7 @@ Starting with v0.18, `Inji Verify Backend` returns detailed verification informa
 
 ### 2. GET /vp-results/{transactionId}
 
-#### Response
+#### Response Body
 ```json
 {
   "transactionId": "txn_11",
@@ -89,7 +89,7 @@ Starting with v0.18, `Inji Verify Backend` returns detailed verification informa
 
 ### 1. POST /v2/vc-verification
 
-#### Request
+#### Request Body
 ```json
 {
   "verifiableCredential": "...",
@@ -99,7 +99,7 @@ Starting with v0.18, `Inji Verify Backend` returns detailed verification informa
 }
 ```
 
-#### Response
+#### Response Body
 ```json
 {
   "allChecksSuccessful": true,
@@ -121,7 +121,7 @@ Starting with v0.18, `Inji Verify Backend` returns detailed verification informa
 
 ### 2. POST /v2/vp-results/{transactionId}
 
-#### Request
+#### Request Body
 ```json
 {
   "skipStatusChecks": false,
@@ -130,7 +130,7 @@ Starting with v0.18, `Inji Verify Backend` returns detailed verification informa
 }
 ```
 
-#### Response
+#### Response Body
 ```json
 {
   "transactionId": "txn_11",
@@ -141,13 +141,12 @@ Starting with v0.18, `Inji Verify Backend` returns detailed verification informa
 
 ---
 
-## VP Session Handling
+## Session Storage Handling
 
 ### Problem
 
 - Session loss during redirect
-- `transactionId` stored in `sessionStorage`
-- Lost after Wallet → Verify UI redirect
+- `transactionId` is stored in sessionStorage, but it gets lost after the Wallet → Verify UI redirect.
 - Mobile wallets do not reliably support redirect-based flows
 
 ---
@@ -252,12 +251,12 @@ Cookie: transaction_id=<transaction_id>
 
 ---
 
-**Case 1: Validation Not Required**
+**Case 2: Validation Not Required**
 - Return results directly
 
 ---
 
-**Case 2: Validation Required**
+**Case 3: Validation Required**
 
 With `response_code`:
 
