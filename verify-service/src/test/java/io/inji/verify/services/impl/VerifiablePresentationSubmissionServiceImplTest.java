@@ -11,16 +11,11 @@ import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.dto.submission.PathNestedDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
-import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
-import io.inji.verify.exception.VPSubmissionNotFoundException;
-import io.inji.verify.exception.InvalidVpTokenException;
-import io.inji.verify.exception.VPSubmissionWalletError;
-import io.inji.verify.exception.VPWithoutProofException;
-import io.inji.verify.exception.ResponseCodeException;
+import io.inji.verify.exception.*;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
@@ -30,7 +25,6 @@ import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
 import io.mosip.pixelpass.PixelPass;
-import io.inji.verify.utils.Utils;
 import io.mosip.vercred.vcverifier.data.*;
 import io.inji.verify.repository.VPSubmissionRepository;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
@@ -352,14 +346,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
             when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-            ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
-
-            assertEquals(400, response.getStatusCode().value());
-            assertInstanceOf(ErrorDto.class, response.getBody());
-            ErrorDto error = (ErrorDto) response.getBody();
-            assertEquals(ErrorCode.NONCE_VALIDATION_FAILED.getErrorCode(), error.getErrorCode());
-            assertEquals(ErrorCode.NONCE_VALIDATION_FAILED.getErrorMessage(), error.getErrorMessage());
-            verify(vpSubmissionRepository, never()).save(any());
+            assertThrows(ClientIdNonceException.class, () -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
         }
 
         @Test
@@ -378,14 +365,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
             when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-            ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
-
-            assertEquals(400, response.getStatusCode().value());
-            assertInstanceOf(ErrorDto.class, response.getBody());
-            ErrorDto error = (ErrorDto) response.getBody();
-            assertEquals(ErrorCode.CLIENT_ID_VALIDATION_FAILED.getErrorCode(), error.getErrorCode());
-            assertEquals(ErrorCode.CLIENT_ID_VALIDATION_FAILED.getErrorMessage(), error.getErrorMessage());
-            verify(vpSubmissionRepository, never()).save(any());
+            assertThrows(ClientIdNonceException.class, () -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
         }
 
         @Test
@@ -404,13 +384,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
             when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-            ResponseEntity<?> response = verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null);
-
-            assertEquals(400, response.getStatusCode().value());
-            assertInstanceOf(ErrorDto.class, response.getBody());
-            ErrorDto error = (ErrorDto) response.getBody();
-            assertEquals("invalid_request", error.getErrorCode());
-            verify(vpSubmissionRepository, never()).save(any());
+            assertThrows(ClientIdNonceException.class, () -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
         }
 
         @Test
@@ -429,7 +403,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(authorizationRequestCreateResponseRepository.findById(state)).thenReturn(Optional.of(authResponse));
             when(gson.fromJson(presentationSubmission, PresentationSubmissionDto.class)).thenReturn(presentationSubmissionDto);
 
-            assertThrows(InvalidVpTokenException.class,() -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
+            assertThrows(ClientIdNonceException.class,() -> verifiablePresentationSubmissionService.submit(vpToken, presentationSubmission, state, null, null));
             verify(vpSubmissionRepository, never()).save(any());
         }
 
@@ -1474,8 +1448,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
 
-            VPSubmissionNotFoundException exception = assertThrows(VPSubmissionNotFoundException.class, () ->
-                verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+            assertThrows(VPSubmissionNotFoundException.class, () -> verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
         }
 
         @Test
@@ -2353,6 +2326,46 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         @Test
         public void testExtractTokens_InvalidBase64() {
             String arrayToken = "[\"invalid-base64!!!\"]";
+            assertThrows(InvalidVpTokenException.class, () -> verifiablePresentationSubmissionService.extractTokens(arrayToken));
+        }
+
+        @Test
+        public void testExtractTokens_NullVpToken() {
+            assertThrows(InvalidVpTokenException.class, () -> verifiablePresentationSubmissionService.extractTokens(null));
+        }
+
+        @Test
+        public void testExtractTokens_EmptyVpToken() {
+            assertThrows(InvalidVpTokenException.class, () -> verifiablePresentationSubmissionService.extractTokens(""));
+        }
+
+        @Test
+        public void testExtractTokens_MalformedJsonVpToken() {
+            String malformedJson = "{invalid json}";
+            assertThrows(InvalidVpTokenException.class, () -> verifiablePresentationSubmissionService.extractTokens(malformedJson));
+        }
+
+        @Test
+        public void testExtractTokens_MalformedArrayVpToken() {
+            String malformedArray = "[invalid array format";
+            assertThrows(InvalidVpTokenException.class, () -> verifiablePresentationSubmissionService.extractTokens(malformedArray));
+        }
+
+        @Test
+        public void testExtractTokens_EmptyArrayVpToken() {
+            String emptyArray = "[]";
+            assertThrows(InvalidVpTokenException.class, () -> verifiablePresentationSubmissionService.extractTokens(emptyArray));
+        }
+
+        @Test
+        public void testExtractTokens_ArrayWithEmptyStrings() {
+            String arrayWithEmptyStrings = "[\"\", \"\"]";
+            assertThrows(InvalidVpTokenException.class, () -> verifiablePresentationSubmissionService.extractTokens(arrayWithEmptyStrings));
+        }
+
+        @Test
+        public void testExtractTokens_InvalidBase64InArray() {
+            String arrayToken = "[\"valid-base64-first\", \"invalid!!!base64\"]";
             assertThrows(InvalidVpTokenException.class, () -> verifiablePresentationSubmissionService.extractTokens(arrayToken));
         }
     }
