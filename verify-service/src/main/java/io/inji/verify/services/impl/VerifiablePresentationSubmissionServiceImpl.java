@@ -29,6 +29,7 @@ import io.inji.verify.exception.CredentialStatusCheckException;
 import io.inji.verify.exception.TokenMatchingFailedException;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
 import io.inji.verify.exception.ResponseCodeException;
+import io.inji.verify.exception.ClientIdNonceException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
@@ -54,6 +55,7 @@ import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONArray;
+import org.json.JSONException;
 import org.json.JSONObject;
 import org.json.JSONTokener;
 import org.springframework.beans.factory.annotation.Value;
@@ -61,6 +63,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
 import org.springframework.web.util.UriComponentsBuilder;
 import java.sql.Timestamp;
 import java.time.Instant;
@@ -163,18 +166,18 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             VPTokenDto vpTokenDto = extractTokens(vpToken);
 
             if (!acceptVPWithoutHolderProof) {
-                if (nonce == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
-                if (clientId == null) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
+                if (!StringUtils.hasText(nonce)) throw new ClientIdNonceException(ErrorCode.NONCE_VALIDATION_FAILED);
+                if (!StringUtils.hasText(clientId)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
                 for (JSONObject jsonVPToken : vpTokenDto.getJsonVpTokens()) {
                     JSONObject proof = jsonVPToken.optJSONObject("proof");
-                    if (proof == null) throw new InvalidVpTokenException();
+                    if (proof == null) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_NONCE_VALIDATION_FAILED);
 
                     String challenge = proof.optString("challenge", null);
                     String domain = proof.optString("domain", null);
 
-                    if (challenge == null || domain == null) throw new InvalidVpTokenException();
-                    if (!nonce.equals(challenge)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
-                    if (!clientId.equals(domain)) return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
+                    if (!StringUtils.hasText(challenge) || !StringUtils.hasText(domain)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_NONCE_VALIDATION_FAILED);
+                    if (!nonce.equals(challenge)) throw new ClientIdNonceException(ErrorCode.NONCE_VALIDATION_FAILED);
+                    if (!clientId.equals(domain)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
                 }
             }
 
@@ -399,16 +402,21 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     public VPTokenDto extractTokens(String vpTokenString) {
-        if (vpTokenString == null) throw new InvalidVpTokenException();
+        if (vpTokenString == null || vpTokenString.isEmpty()) throw new InvalidVpTokenException();
         List<JSONObject> jsonVpTokens = new ArrayList<>();
         List<String> sdJwtVpTokens = new ArrayList<>();
 
-        Object vpTokenRaw = new JSONTokener(vpTokenString).nextValue();
+        try {
+            Object vpTokenRaw = new JSONTokener(vpTokenString).nextValue();
 
-        if (vpTokenRaw instanceof JSONArray array) {
-            IntStream.range(0, array.length()).forEach(i -> processSingleToken(array.get(i), jsonVpTokens, sdJwtVpTokens));
-        } else {
-            processSingleToken(vpTokenRaw, jsonVpTokens, sdJwtVpTokens);
+            if (vpTokenRaw instanceof JSONArray array) {
+                IntStream.range(0, array.length()).forEach(i -> processSingleToken(array.get(i), jsonVpTokens, sdJwtVpTokens));
+            } else {
+                processSingleToken(vpTokenRaw, jsonVpTokens, sdJwtVpTokens);
+            }
+        } catch (JSONException e) {
+            log.error("Failed to parse VP Token JSON", e);
+            throw new InvalidVpTokenException();
         }
 
         log.debug("Number of VP tokens to verify: {}", jsonVpTokens.size() + ":" + sdJwtVpTokens.size());

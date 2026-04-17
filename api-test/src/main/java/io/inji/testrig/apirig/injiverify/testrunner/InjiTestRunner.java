@@ -79,7 +79,7 @@ public class InjiTestRunner {
 			}
 
 			HealthChecker healthcheck = new HealthChecker();
-			healthcheck.setCurrentRunningModule(BaseTestCase.currentModule);
+			healthcheck.setCurrentRunningModule(GlobalConstants.INJIVERIFY);
 			Thread trigger = new Thread(healthcheck);
 			trigger.start();
 
