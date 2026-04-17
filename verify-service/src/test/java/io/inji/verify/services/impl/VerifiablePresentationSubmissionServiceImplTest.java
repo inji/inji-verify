@@ -11,7 +11,6 @@ import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.dto.submission.PathNestedDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
-import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
 import io.inji.verify.enums.KBJwtErrorCodes;
@@ -26,7 +25,6 @@ import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
 import io.mosip.pixelpass.PixelPass;
-import io.inji.verify.utils.Utils;
 import io.mosip.vercred.vcverifier.data.*;
 import io.inji.verify.repository.VPSubmissionRepository;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
@@ -1450,8 +1448,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(authResponse);
 
-            VPSubmissionNotFoundException exception = assertThrows(VPSubmissionNotFoundException.class, () ->
-                verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
+            assertThrows(VPSubmissionNotFoundException.class, () -> verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId));
         }
 
         @Test
