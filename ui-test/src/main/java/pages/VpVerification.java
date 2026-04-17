@@ -336,7 +336,11 @@ public class VpVerification extends BasePage {
 	}
 
 	public boolean isWalletOptionVisible(String walletName) {
-		String normalizedWalletName = walletName.toLowerCase().replace("-", " ");
+		String normalizedWalletName = normalizeVisibleText(walletName);
+		if (normalizedWalletName == null) {
+			normalizedWalletName = "";
+		}
+		normalizedWalletName = normalizedWalletName.toLowerCase().replace("-", " ");
 		return !driver.findElements(By.xpath(
 				"//span[contains(@class,'walletName') and contains(translate(translate(normalize-space(.),"
 						+ "'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'-',' '),'" + normalizedWalletName

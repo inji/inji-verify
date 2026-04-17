@@ -24,24 +24,12 @@ public class HttpUtils {
         return InjiVerifyConfigManager.getproperty("apiInternalEndPoint");
     }
 
-	public static String get(String key) {
-		String envValue = System.getenv(key);
-		if (envValue != null && !envValue.trim().isEmpty()) {
-			return envValue.trim();
-		}
-		String sysProp = System.getProperty(key);
-		if (sysProp != null && !sysProp.trim().isEmpty()) {
-			return sysProp.trim();
-		}
-		String fileProp = InjiVerifyConfigManager.getproperty(key);
-		if (fileProp != null && !fileProp.trim().isEmpty()) {
-			return fileProp.trim();
-		}
-		throw new RuntimeException("Missing required config value for key: " + key);
-	}
-
 	private static String buildApiInternalUrl(String path) {
-		String baseUrl = get("apiInternalEndPoint");
+		String baseUrl = InjiVerifyConfigManager.getproperty("apiInternalEndPoint");
+		if (baseUrl == null || baseUrl.trim().isEmpty()) {
+			throw new RuntimeException("Missing required config value for key: apiInternalEndPoint");
+		}
+		baseUrl = baseUrl.trim();
 		if (baseUrl.endsWith("/")) {
 			baseUrl = baseUrl.substring(0, baseUrl.length() - 1);
 		}
@@ -49,9 +37,9 @@ public class HttpUtils {
 	}
 
 	public static String getIdToken() throws IOException {
-		String clientId = get("INJIWEB_GOOGLE_CLIENT_ID");
-		String clientSecret = get("INJIWEB_GOOGLE_CLIENT_SECRET");
-		String refreshToken = get("INJIWEB_GOOGLE_REFRESH_TOKEN");
+		String clientId = InjiVerifyConfigManager.getproperty("INJIWEB_GOOGLE_CLIENT_ID");
+		String clientSecret = InjiVerifyConfigManager.getproperty("INJIWEB_GOOGLE_CLIENT_SECRET");
+		String refreshToken = InjiVerifyConfigManager.getproperty("INJIWEB_GOOGLE_REFRESH_TOKEN");
 
 		URL url = new URL("https://oauth2.googleapis.com/token");
 		String urlParameters = "client_id=" + URLEncoder.encode(clientId, "UTF-8") +

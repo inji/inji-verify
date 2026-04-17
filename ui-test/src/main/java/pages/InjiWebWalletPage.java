@@ -244,7 +244,11 @@ public void enterConfirmPasscode(String string) {
 	}
 
 	private String buildContainsTextCondition(String text) {
-		String normalized = text.toLowerCase().replace("-", " ");
+		String normalized = normalizeVisibleText(text);
+		if (normalized == null) {
+			normalized = "";
+		}
+		normalized = normalized.toLowerCase().replace("-", " ");
 		return "contains(translate(translate(normalize-space(.),'ABCDEFGHIJKLMNOPQRSTUVWXYZ','abcdefghijklmnopqrstuvwxyz'),'-',' '),'"
 				+ normalized + "')";
 	}

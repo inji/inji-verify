@@ -202,7 +202,7 @@ Scenario: Verify VP verification same device flow
     And User click on login button
     And User switches back to inji-verify tab
     Given User gets the title of the page
-    And Click on vp verification tab
+    Then Click on vp verification tab
     And Verify click on request verifiable credentials button
     And Uncheck MOSIP ID
     And Select Health Insurance
@@ -235,7 +235,7 @@ Scenario: Verify VP verification same device flow
     #And User verifies health insurance credential is stored in inji-web wallet
     And User switches back to inji-verify tab
     Given User gets the title of the page
-    And Click on vp verification tab
+    Then Click on vp verification tab
     And Verify click on request verifiable credentials button
     And Select Health Insurance
     #And Health Insurance is selected and MOSIP ID is unselected
