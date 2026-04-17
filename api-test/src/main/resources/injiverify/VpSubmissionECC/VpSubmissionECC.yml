@@ -1,12 +1,12 @@
 VpSubmissionECC:
-  Injiverify_VpSubmissionECR1_All_Valid_Smoke:
+  Injiverify_VpSubmissionECCR1_All_Valid_Smoke:
       endPoint: /v1/verify/vp-submission/direct-post
       description: Submitting the authorization response for ECCR1
-      uniqueIdentifier: TC_InjiVerify_VpSubmissionECR1_01
+      uniqueIdentifier: TC_InjiVerify_VpSubmissionECCR1_01
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpSubmissionECC/VpSubmissionECR1
+      inputTemplate: injiverify/VpSubmissionECC/VpSubmissionECCR1
       outputTemplate: injiverify/responseCode
       input: '{
       "state": "$ID:CreateNewVerificationRequest_All_ValidForECCR1_Smoke_Sid_requestId$",
@@ -16,7 +16,7 @@ VpSubmissionECC:
       "vc_ld_proof_verificationMethod": "did:web:api.released.mosip.net:identity-service:02b073b8-aacd-472e-b63f-265bb7ccdd9f#key-0",
       "vc_ld_proof_proof_value_is_null": 0,
       "vc_ld_proof_proofValue": "z5frV9G57p37N5dxJYPtNDUzPHZhvo4NHmH3MuXcAMeVLpLu5zSJSNtrs7np7zQaq2zje9u14npJVC1vMQVvyuBwY",
-      "vc_expiration_date": "2026-04-22T12:29:13.469Z",
+      "vc_expiration_date": "2030-04-22T12:29:13.469Z",
       "vc_issuance_date": "2026-03-23T12:29:13.478Z",
       "vp_proof_jws": "eyJhbGciOiJFUzI1NiIsImNyaXQiOlsiYjY0Il0sImI2NCI6ZmFsc2V9..wm81lyiEnjcTxAGE1LTbQDoxV2bnfv9K_ZOBv48WSostNvO2gjzUwsMljILVGvchN5RoZiFhId7Y62rK833FoQ"
       }'

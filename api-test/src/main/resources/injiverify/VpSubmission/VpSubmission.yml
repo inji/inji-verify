@@ -39,16 +39,15 @@ VpSubmission:
       uniqueIdentifier: TC_InjiVerify_VpSubmission_03
       role: noauth
       restMethod: post
-      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/VpSubmission/VpSubmissionNeg
-      outputTemplate: injiverify/responseCode
+      outputTemplate: injiverify/error2
       input: '{
       "state":"$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
       "definition_id":"$PRESENTATIONDEFINITIONID$",
       "vp_token": "bdhgyga"
       }'
       output: '{
-      "responseCode": "200"
+      "errorCode": "INVALID_VP_TOKEN"
 }'
 
   Injiverify_VpSubmission_Empty_VpToken_Neg:
@@ -97,7 +96,7 @@ VpSubmission:
       outputTemplate: injiverify/responseCode
       input: '{
       "state":"$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$%^$^"
+      "definition_id":"hbdBYGdy"
       }'
       output: '{
       "responseCode": "200"
@@ -213,7 +212,7 @@ VpSubmission:
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpSubmission/VpSubmissionWithProofRequest
+      inputTemplate: injiverify/VpSubmission/VpSubmissionWithoutProofRequest
       outputTemplate: injiverify/responseCode
       input: '{
       "state":"$ID:CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid_requestId$",
@@ -225,7 +224,7 @@ VpSubmission:
 
   Injiverify_VpSubmission_With_PresentationId_All_Valid_Smoke:
       endPoint: /v1/verify/vp-submission/direct-post
-      description: Submitting VC with valid presentationDefinitionId data
+      description: Submitting VC with valid Presentation Id data
       uniqueIdentifier: TC_InjiVerify_VpSubmission_12
       role: noauth
       restMethod: post
@@ -294,14 +293,13 @@ VpSubmission:
       uniqueIdentifier: TC_InjiVerify_VpSubmission_16
       role: noauth
       restMethod: post
-      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/VpSubmission/VpSubmission
-      outputTemplate: injiverify/responseCode
+      outputTemplate: injiverify/error2
       input: '{
       "state": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
       "definition_id": "$PRESENTATIONDEFINITIONID$",
       "challenge": "invalid_nonce"
       }'
       output: '{
-      "responseCode": "400"
+      "errorCode": "invalid_request"
 }'

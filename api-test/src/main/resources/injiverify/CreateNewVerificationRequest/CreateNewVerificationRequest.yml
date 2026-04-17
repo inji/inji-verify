@@ -167,7 +167,7 @@ CreateNewVerificationRequest:
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestECR1
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestECCR1
       outputTemplate: injiverify/responseCode
       input: '{
       "clientId": "did:jwk:eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6IkI3X0dpOFRhc3JPQ3d3d2xUbnZqUEtXY0d0empKTndBZUlTcVBLYm1wYVEiLCJ5IjoiSkVwNjFlbmE5NlNzc2JGOVlSV0xoZG1HNEtqY0JhTExmTFNqR2E3eXAwSSIsInVzZSI6InNpZyJ9#0",
@@ -185,7 +185,7 @@ CreateNewVerificationRequest:
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestECR1
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestECCK1
       outputTemplate: injiverify/responseCode
       input: '{
       "clientId": "did:jwk:eyJrdHkiOiJFQyIsImNydiI6InNlY3AyNTZrMSIsIngiOiJDRTRWQkRiUTBaODJ3Rnp4elNLN0lGcTF0Sl9ORVc5OTRrUkpicFVJU193IiwieSI6IlBNRUdJb3J2VlpLMnRZZlNRaVNYSlJscTlxWkhkdWZMWmtiZkNKdFBZWTQiLCJ1c2UiOiJzaWcifQ#0",

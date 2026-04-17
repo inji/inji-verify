@@ -55,7 +55,7 @@ GetVpTokenForRequest:
       inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
       outputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequestResult
       input: '{
-      "transactionId":"$ID:CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId": "$ID:CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
     "transactionId": "$ID:CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid_transactionId$",
@@ -69,13 +69,13 @@ GetVpTokenForRequest:
       role: noauth
       restMethod: get
       inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
-      outputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequestError
+      outputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequestResult
       input: '{
       "transactionId":"$ID:CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-      "errorCode": "VP_WITHOUT_PROOF",
-   "errorMessage": "Invalid VP Submission since VP is without proof"
+        "transactionId": "$ID:CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid_transactionId$",
+        "vpResultStatus": "SUCCESS"
 }'  
 
   Injiverify_GetVpTokenForRequest_Of_PresentationID_All_Valid_Smoke:

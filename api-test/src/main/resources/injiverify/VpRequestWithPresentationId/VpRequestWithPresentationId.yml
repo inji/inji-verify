@@ -27,7 +27,7 @@ VpRequestWithPresentationId:
       outputTemplate: injiverify/VpRequestWithPresentationId/presentationDefinitionIdNegResult
       input: '{
       "clientId":"client123",
-      "presentationDefinitionId":"201"
+      "presentationDefinitionId":"automationTestPresentationDefinitionId"
       }'
       output: '{
     "errorCode": "NO_PRESENTATION_DEFINITION",

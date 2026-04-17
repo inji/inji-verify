@@ -36,7 +36,7 @@ VpSessionResults:
       output: '{
       "responseCode": "200"
 }'
-  Injiverify_VpSessionResults_Invalid_withoutCookie_Neg:
+  Injiverify_VpSessionResults_withoutCookie_Neg:
       endPoint: /v1/verify/vp-session-results
       description: Verify VP session results without cookie
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_03
@@ -54,7 +54,7 @@ VpSessionResults:
         "errorCode": "VP_SESSION_INVALID",
         "errorMessage": "Your VP verification session is invalid. Please restart the process and try again"
 }'
-  Injiverify_VpSessionResults_Invalid_invalidCookie_Neg:
+  Injiverify_VpSessionResults_invalidCookie_Neg:
       endPoint: /v1/verify/vp-session-results
       description: Verify VP session results with invalid cookie
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_04
@@ -73,7 +73,7 @@ VpSessionResults:
         "errorCode": "VP_SESSION_INVALID",
         "errorMessage": "Your VP verification session is invalid. Please restart the process and try again"
 }'
-  Injiverify_VpSessionResults_Invalid_invalidResponseCode_Neg:
+  Injiverify_VpSessionResults_invalidResponseCode_Neg:
       endPoint: /v1/verify/vp-session-results
       description: Verify VP session results with invalid response code
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_05
@@ -92,7 +92,7 @@ VpSessionResults:
         "errorCode": "RESPONSE_CODE_NOT_MATCHING",
         "errorMessage": "Response code is not matching the VP Submission response"
 }'
-  Injiverify_VpSessionResults_Invalid_withoutResponseCode_whenValidationRequired_Neg:
+  Injiverify_VpSessionResults_withoutResponseCode_whenValidationRequired_Neg:
       endPoint: /v1/verify/vp-session-results
       description: Verify VP session results without response code when validation required is true
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_06
@@ -110,9 +110,9 @@ VpSessionResults:
         "errorCode": "RESPONSE_CODE_NOT_MATCHING",
         "errorMessage": "Response code is not matching the VP Submission response"
 }'
-  Injiverify_VpSessionResults_Invalid_usedResponseCode_Neg:
+  Injiverify_VpSessionResults_usedResponseCode_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results with used response code
+      description: Verify VP session results with used response code and expect response code not matching error
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_07
       role: userDefinedCookie
       restMethod: post
@@ -129,7 +129,7 @@ VpSessionResults:
         "errorCode": "RESPONSE_CODE_NOT_MATCHING",
         "errorMessage": "Response code is not matching the VP Submission response"
 }'
-  Injiverify_VpSessionResults_Invalid_expiredResponseCode_Neg:
+  Injiverify_VpSessionResults_expiredResponseCode_Neg:
       endPoint: /v1/verify/vp-session-results
       description: Verify VP session results with expired response code
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_08
@@ -148,14 +148,14 @@ VpSessionResults:
         "errorCode": "RESPONSE_CODE_NOT_MATCHING",
         "errorMessage": "Response code is not matching the VP Submission response"
 }'
-  Injiverify_VpSessionResults_Invalid_expiredCookie_Neg:
+  Injiverify_VpSessionResults_expiredCookie_Neg:
       endPoint: /v1/verify/vp-session-results
       description: Verify VP session results with expired cookie
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_09
       role: userDefinedCookie
       restMethod: post
       inputTemplate: injiverify/VpSessionResults/VpSessionResults
-      outputTemplate: injiverify/errorCodeAndMessage
+      outputTemplate: injiverify/error2
       input: '{
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
@@ -164,10 +164,9 @@ VpSessionResults:
       "cookie": "transaction_id=dHhuX2RkNWNmMDkyLWI0NTAtNGM0Ni1iYjMxLTFkOGFhYmJjYzFlNQ=="
       }'
       output: '{
-        "errorCode": "RESPONSE_CODE_NOT_MATCHING",
-        "errorMessage": "Response code is not matching the VP Submission response"
+        "errorCode": "INVALID_TRANSACTION_ID"
 }'
-  Injiverify_VpSessionResults_Invalid_beforeVpSubmission_Neg:
+  Injiverify_VpSessionResults_beforeVpSubmission_Neg:
       endPoint: /v1/verify/vp-session-results
       description: Verify VP session results with cookie before vp submission is done
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_10
@@ -186,7 +185,7 @@ VpSessionResults:
         "errorCode": "RESPONSE_CODE_NOT_MATCHING",
         "errorMessage": "Response code is not matching the VP Submission response"
 }'
-  Injiverify_VpSessionResults_Invalid_validResponseCodeOfAnotherSession_Neg:
+  Injiverify_VpSessionResults_validResponseCodeOfAnotherSession_Neg:
       endPoint: /v1/verify/vp-session-results
       description: Verify VP session results with valid response code of another session
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_11
@@ -204,7 +203,7 @@ VpSessionResults:
         "errorCode": "VP_SESSION_INVALID",
         "errorMessage": "Your VP verification session is invalid. Please restart the process and try again"
 }'
-  Injiverify_VpSessionResults_Invalid_invalidHttpMethodGet_Neg:
+  Injiverify_VpSessionResults_invalidHttpMethodGet_Neg:
       endPoint: /v1/verify/vp-session-results
       description: Verify VP session results with invalid http method get
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_12
@@ -218,7 +217,7 @@ VpSessionResults:
       "statusCheckFilters": ["revocation", "suspension"],
       "includeClaims": true,
       "responseCode": "$RESPONSE_CODE$",
-      "cookie": "$TRANSACTIN_COOKIE$"
+      "cookie": "invalidCookie"
       }'
       output: '{
         "responseCode": "401"
