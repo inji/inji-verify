@@ -23,6 +23,10 @@ public class HttpUtils {
     public static String InjiLoginUrl() {
         return InjiVerifyConfigManager.getproperty("apiInternalEndPoint");
     }
+    
+    public static String get(String key) {
+        return InjiVerifyConfigManager.getproperty(key);
+    }
 
 	private static String buildApiInternalUrl(String path) {
 		String baseUrl = InjiVerifyConfigManager.getproperty("apiInternalEndPoint");

@@ -82,6 +82,14 @@ public void enterConfirmPasscode(String string) {
 		}
 	}
 
+	public boolean isElementPresent(WebDriver driver, WebElement element) {
+    try {
+        return element.isDisplayed();
+    } catch (Exception e) {
+        return false;
+    }
+	}
+
 	public Boolean isgoogleButtonDisplayed() {
 		return isElementPresent(driver, googleButton);
 	}
