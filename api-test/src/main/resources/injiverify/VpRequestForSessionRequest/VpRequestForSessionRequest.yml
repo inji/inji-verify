@@ -41,9 +41,11 @@ VpRequestForSessionRequest:
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_03
     role: noauth
     restMethod: post
-    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequestWithoutResponseCodeValidation
+    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
     outputTemplate: injiverify/status
-    input: '{}'
+    input: '{
+      "responseCodeValidationRequired": "$IGNORE$"
+    }'
     output: '{
       "status": "400"
 }'
@@ -53,7 +55,7 @@ VpRequestForSessionRequest:
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_04
     role: noauth
     restMethod: post
-    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequestMalformed
+    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
     outputTemplate: injiverify/status
     input: '{}'
     output: '{

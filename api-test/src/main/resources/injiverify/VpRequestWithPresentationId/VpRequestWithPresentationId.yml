@@ -60,12 +60,13 @@ VpRequestWithPresentationId:
     uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_04
     role: noauth
     restMethod: post
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequestWithoutResponseCodeValidation
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
     outputTemplate: injiverify/status
     input: '{
       "clientId": "injiverify.mosip.net",
       "nonce": "MTc2Mzk1NTY5NDI5NQ==",
       "acceptVPWithoutHolderProof": true,
+      "responseCodeValidationRequired": "$IGNORE$",
       "id": "$PRESENTATIONDEFINITIONID$"
     }'
     output: '{
@@ -77,12 +78,13 @@ VpRequestWithPresentationId:
     uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_05
     role: noauth
     restMethod: post
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequestInvalidResponseCodeValidation
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
     outputTemplate: injiverify/status
     input: '{
       "clientId": "injiverify.mosip.net",
       "nonce": "MTc2Mzk1NTY5NDI5NQ==",
       "acceptVPWithoutHolderProof": true,
+      "responseCodeValidationRequired": "$IGNORE$",
       "id": "$PRESENTATIONDEFINITIONID$"
     }'
     output: '{

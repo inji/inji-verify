@@ -1,7 +1,7 @@
 VpSessionResults:
   Injiverify_VpSessionResults_All_Valid_Smoke:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results with valid data
+      description: Verify VP session results with valid data and expect 200 status code
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_01
       role: userDefinedCookie
       restMethod: post
@@ -20,7 +20,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_Valid_withoutResponseCode_Smoke:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results without response code optional field
+      description: Verify VP session results without response code optional field and expect 200 status code
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_02
       role: userDefinedCookie
       restMethod: post
@@ -38,7 +38,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_withoutCookie_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results without cookie
+      description: Verify VP session results without cookie and expect VP session invalid error
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_03
       role: userDefinedCookie
       restMethod: post
@@ -56,7 +56,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_invalidCookie_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results with invalid cookie
+      description: Verify VP session results with invalid cookie and expect VP session invalid error
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_04
       role: userDefinedCookie
       restMethod: post
@@ -75,7 +75,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_invalidResponseCode_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results with invalid response code
+      description: Verify VP session results with invalid response code and expect response code not matching error
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_05
       role: userDefinedCookie
       restMethod: post
@@ -94,7 +94,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_withoutResponseCode_whenValidationRequired_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results without response code when validation required is true
+      description: Verify VP session results without response code when validation required is true and expect response code not matching error
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_06
       role: userDefinedCookie
       restMethod: post
@@ -131,7 +131,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_expiredResponseCode_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results with expired response code
+      description: Verify VP session results with expired response code and expect response code not matching error
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_08
       role: userDefinedCookie
       restMethod: post
@@ -150,7 +150,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_expiredCookie_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results with expired cookie
+      description: Verify VP session results with expired cookie and expect invalid transaction id error
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_09
       role: userDefinedCookie
       restMethod: post
@@ -168,7 +168,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_beforeVpSubmission_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results with cookie before vp submission is done
+      description: Verify VP session results with cookie before vp submission is done and expect invalid transaction id error
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_10
       role: userDefinedCookie
       restMethod: post
@@ -187,7 +187,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_validResponseCodeOfAnotherSession_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results with valid response code of another session
+      description: Verify VP session results with valid response code of another session and expect VP session invalid error
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_11
       role: userDefinedCookie
       restMethod: post
@@ -205,7 +205,7 @@ VpSessionResults:
 }'
   Injiverify_VpSessionResults_invalidHttpMethodGet_Neg:
       endPoint: /v1/verify/vp-session-results
-      description: Verify VP session results with invalid http method get
+      description: Verify VP session results with invalid http method get and expect 401 status code
       uniqueIdentifier: TC_InjiVerify_VpSessionResults_12
       role: userDefinedCookie
       restMethod: get
