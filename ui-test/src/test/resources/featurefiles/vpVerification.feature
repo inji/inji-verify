@@ -68,6 +68,40 @@ Scenario: Verify VP verification same device flow
     And verify loading screen
 
   @smoke @verifyingVpVerification
+  Scenario: Verify same device VP verification using inji-web wallet and health insurance credential
+    When Open inji web in new tab
+    And User performs token-based login to inji-web wallet
+    And User unlocks inji-web wallet with configured passcode
+    And User opens the inji-web issuer catalog
+    And User search the issuers sunbird
+    And User click on StayProtected Insurance credentials button
+    And User click on health insurance by e-signet button
+    And User click on validity dropdown
+    And User click on no limit
+    And User click on proceed
+    And User enter the policy number
+    And User enter the full name
+    And User enter the date of birth
+    And User click on login button
+    Then User verify Download Success text displayed
+    And User verifies health insurance credential is stored in inji-web wallet
+    And User switches back to inji-verify tab
+    Given User gets the title of the page
+    Then Validate the title of the page
+    And Click on right arrow
+    And Click on vp verification tab
+    And Verify click on request verifiable credentials button
+    And Uncheck MOSIP ID
+    And Select Health Insurance
+    And Health Insurance is selected and MOSIP ID is unselected
+    And Verify Click on open wallet button
+    And User selects configured inji-web wallet in verifier
+    And Verify Click on Proceed
+    And User is redirected to inji-web wallet presentation page
+    And User presents the requested health insurance credential from inji-web wallet
+    And VP result is posted back to inji-verify successfully
+
+  @smoke @verifyingVpVerification
   Scenario Outline: Verify the VP verification QR code is generated
 
     Given User gets the title of the page
@@ -89,3 +123,127 @@ Scenario: Verify VP verification same device flow
     Examples:
       | credential type |
       | SD JWT     |
+	  
+	  
+	  @smoke @verifyingVpVerification
+  Scenario: Verify OVP verification using inji-web wallet 
+    When Open inji web in new tab
+    And User performs token-based login to inji-web wallet
+    And User unlocks inji-web wallet with configured passcode
+    #And User confirms inji-web wallet with configured passcode
+    And User click on submit button
+    And User opens the inji-web issuer catalog
+    Then User search the issuers sunbird
+    When User click on StayProtected Insurance credentials button
+    When User click on health insurance by e-signet button
+    #And User click on validity dropdown
+    #And User click on no limit
+    #And User click on proceed
+    And User enter the policy number
+    And User enter the full name
+    And User enter the date of birth
+    And User click on login button
+    #Then User verify Download Success text displayed
+    #And User verifies health insurance credential is stored in inji-web wallet
+    And User switches back to inji-verify tab
+    Given User gets the title of the page
+    #Then Validate the title of the page
+    #And Click on right arrow
+    And Click on vp verification tab
+    And Verify click on request verifiable credentials button
+    And Uncheck MOSIP ID
+    And Select Health Insurance
+    And Health Insurance is selected and MOSIP ID is unselected
+    And Verify Click on open wallet button
+    And User selects configured inji-web wallet in verifier
+    And User clicks on Proceed button
+    #And User is redirected to inji-web wallet presentation page
+    #And User click on trust verifier
+    And User selects the credential for verification
+    And User clicks consent and share button
+    And VP result is posted back to inji-verify successfully
+	
+	@smoke @verifyingVpVerificationNegative
+  Scenario: Verify VP verification error when no matching credentials found
+    Given User gets the title of the page
+    And Click on vp verification tab
+    And Verify click on request verifiable credentials button
+    And Verify Click on open wallet button
+    And User selects configured inji-web wallet in verifier
+    And User clicks on Proceed button
+    #And User is redirected to inji-web wallet presentation page
+    And User performs token-based login to inji-web wallet
+    And User unlocks inji-web wallet with configured passcode
+    And User click on submit button
+    And Then Verify error message is displayed
+	
+	@smoke @verifyingVpVerification
+    Scenario: Verify multiple VC OVP verification using inji-web wallet 
+    When Open inji web in new tab
+    And User performs token-based login to inji-web wallet
+    And User unlocks inji-web wallet with configured passcode
+    #And User confirms inji-web wallet with configured passcode
+    And User click on submit button
+    And User opens the inji-web issuer catalog
+    Then User search the issuers sunbird
+    When User click on StayProtected Insurance credentials button
+    When User click on health insurance by e-signet button
+    And User enter the policy number
+    And User enter the full name
+    And User enter the date of birth
+    And User click on login button
+    And User Click on home button
+    Then User search the issuers sunbird
+    When User click on StayProtected Insurance credentials button
+    When User click on health insurance by e-signet button
+    And User enter the policy number
+    And User enter the full name
+    And User enter the date of birth
+    And User click on login button
+    And User switches back to inji-verify tab
+    Given User gets the title of the page
+    Then Click on vp verification tab
+    And Verify click on request verifiable credentials button
+    And Uncheck MOSIP ID
+    And Select Health Insurance
+    And Health Insurance is selected and MOSIP ID is unselected
+    And Verify Click on open wallet button
+    And User selects configured inji-web wallet in verifier
+    And User clicks on Proceed button
+    #And User is redirected to inji-web wallet presentation page
+    #And User click on trust verifier
+    And User selects the credential for verification
+    And User select the second credential for verification
+    And User clicks consent and share button
+    And VP result is posted back to inji-verify successfully
+
+  @smoke @verifyingVpVerification
+  Scenario: Verify partial sharing in OVP verification using inji-web wallet 
+    When Open inji web in new tab
+    And User performs token-based login to inji-web wallet
+    And User unlocks inji-web wallet with configured passcode
+    #And User confirms inji-web wallet with configured passcode
+    And User click on submit button
+    And User opens the inji-web issuer catalog
+    Then User search the issuers sunbird
+    When User click on StayProtected Insurance credentials button
+    When User click on health insurance by e-signet button
+    And User enter the policy number
+    And User enter the full name
+    And User enter the date of birth
+    And User click on login button
+    #And User verifies health insurance credential is stored in inji-web wallet
+    And User switches back to inji-verify tab
+    Given User gets the title of the page
+    Then Click on vp verification tab
+    And Verify click on request verifiable credentials button
+    And Select Health Insurance
+    #And Health Insurance is selected and MOSIP ID is unselected
+    And Verify Click on open wallet button
+    And User selects configured inji-web wallet in verifier
+    And User clicks on Proceed button
+    #And User click on trust verifier
+    And User selects the credential for verification
+    And User clicks consent and share button
+    And VP result for partial sharing
+
