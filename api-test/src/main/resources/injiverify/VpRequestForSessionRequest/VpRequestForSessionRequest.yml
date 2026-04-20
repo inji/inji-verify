@@ -12,35 +12,7 @@ VpRequestForSessionRequest:
       "nonce": "Mi0vDP17DlFcu/8m+OcP9A==",
       "acceptVPWithoutHolderProof": true,
       "responseCodeValidationRequired": true,
-      "presentationDefinition": {
-        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
-        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-        "input_descriptors": [
-          {
-            "id": "id card credential",
-            "format": {
-              "ldp_vc": {
-                "proof_type": [
-                  "Ed25519Signature2020"
-                ]
-              }
-            },
-            "constraints": {
-              "fields": [
-                {
-                  "path": [
-                    "$.type"
-                  ],
-                  "filter": {
-                    "type": "object",
-                    "pattern": "LifeInsuranceCredential"
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
+      "id": "$PRESENTATIONDEFINITIONID$"
     }'
     output: '{
       "responseCodeValidationRequired": "true",
@@ -48,7 +20,7 @@ VpRequestForSessionRequest:
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withoutClientID_Neg:
     endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request without clientId for VP Session result API
+    description: Creates a VP request without clientId and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_02
     role: noauth
     restMethod: post
@@ -58,134 +30,38 @@ VpRequestForSessionRequest:
       "nonce": "MTc2Mzk1NTY5NDI5NQ==",
       "acceptVPWithoutHolderProof": true,
       "responseCodeValidationRequired": true,
-      "presentationDefinition": {
-        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
-        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-        "input_descriptors": [
-          {
-            "id": "id card credential",
-            "format": {
-              "ldp_vc": {
-                "proof_type": [
-                  "Ed25519Signature2020"
-                ]
-              }
-            },
-            "constraints": {
-              "fields": [
-                {
-                  "path": [
-                    "$.type"
-                  ],
-                  "filter": {
-                    "type": "object",
-                    "pattern": "LifeInsuranceCredential"
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
+      "id": "$PRESENTATIONDEFINITIONID$"
     }'
     output: '{
       "status": "400"
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withoutResponseCodeValidationRequired_Neg:
     endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request without responseCodeValidationRequired for VP Session result API
+    description: Creates a VP request with responseCodeValidationRequired present but no value and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_03
     role: noauth
     restMethod: post
-    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
+    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequestWithoutResponseCodeValidation
     outputTemplate: injiverify/status
-    input: '{
-      "clientId": "injiverify.mosip.net",
-      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
-      "acceptVPWithoutHolderProof": true,
-      "presentationDefinition": {
-        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
-        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-        "input_descriptors": [
-          {
-            "id": "id card credential",
-            "format": {
-              "ldp_vc": {
-                "proof_type": [
-                  "Ed25519Signature2020"
-                ]
-              }
-            },
-            "constraints": {
-              "fields": [
-                {
-                  "path": [
-                    "$.type"
-                  ],
-                  "filter": {
-                    "type": "object",
-                    "pattern": "LifeInsuranceCredential"
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    }'
+    input: '{}'
     output: '{
       "status": "400"
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withMalformedJSONRequest_Neg:
     endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request with Malformed JSON Request for VP Session result API
+    description: Creates a VP request with empty presentationDefinition fields and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_04
     role: noauth
     restMethod: post
-    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
+    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequestMalformed
     outputTemplate: injiverify/status
-    input: '{
-      "clientId": "injiverify.mosip.net",
-      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
-      "acceptVPWithoutHolderProof": true,
-      "responseCodeValidationRequired": true,
-      "": {
-        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
-        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-        "input_descriptors": [
-          {
-            "id": "id card credential",
-            "format": {
-              "ldp_vc": {
-                "proof_type": [
-                  "Ed25519Signature2020"
-                ]
-              }
-            },
-            "constraints": {
-              "fields": [
-                {
-                  "path": [
-                    "$.type"
-                  ],
-                  "filter": {
-                    "type": "object",
-                    "pattern": "LifeInsuranceCredential"
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
-    }'
+    input: '{}'
     output: '{
       "status": "400"
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid:
     endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request with valid data and responseCodeValidationRequired is false for VP Session result API
-    description: Creates a VP request with valid data and responseCodeValidationRequired is false for VP Session result API
+    description: Creates a VP request with valid data and response Code Validation Required is false for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_05
     role: noauth
     restMethod: post
@@ -196,35 +72,7 @@ VpRequestForSessionRequest:
       "nonce": "MTc2Mzk1NTY5NDI5NQ==",
       "acceptVPWithoutHolderProof": true,
       "responseCodeValidationRequired": false,
-      "presentationDefinition": {
-        "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
-        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-        "input_descriptors": [
-          {
-            "id": "id card credential",
-            "format": {
-              "ldp_vc": {
-                "proof_type": [
-                  "Ed25519Signature2020"
-                ]
-              }
-            },
-            "constraints": {
-              "fields": [
-                {
-                  "path": [
-                    "$.type"
-                  ],
-                  "filter": {
-                    "type": "object",
-                    "pattern": "LifeInsuranceCredential"
-                  }
-                }
-              ]
-            }
-          }
-        ]
-      }
+      "id": "$PRESENTATIONDEFINITIONID$"
     }'
     output: '{
       "responseCodeValidationRequired": "false",

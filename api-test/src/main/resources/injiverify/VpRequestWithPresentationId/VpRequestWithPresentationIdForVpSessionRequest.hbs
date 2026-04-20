@@ -4,17 +4,15 @@
   "acceptVPWithoutHolderProof": {{acceptVPWithoutHolderProof}},
   "responseCodeValidationRequired": {{responseCodeValidationRequired}},
   "presentationDefinition": {
-    "id": "{{presentationDefinition.id}}",
-    "purpose": "{{presentationDefinition.purpose}}",
+    "id": "{{id}}",
+    "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
     "input_descriptors": [
       {
-        "id": "{{inputDescriptor.id}}",
+        "id": "id card credential",
         "format": {
           "ldp_vc": {
             "proof_type": [
-              {{#each inputDescriptor.format.ldp_vc.proof_type}}
-              "{{this}}"{{#unless @last}},{{/unless}}
-              {{/each}}
+              "Ed25519Signature2020"
             ]
           }
         },
@@ -22,13 +20,11 @@
           "fields": [
             {
               "path": [
-                {{#each inputDescriptor.constraints.fields.[0].path}}
-                "{{this}}"{{#unless @last}},{{/unless}}
-                {{/each}}
+                "$.type"
               ],
               "filter": {
-                "type": "{{inputDescriptor.constraints.fields.[0].filter.type}}",
-                "pattern": "{{inputDescriptor.constraints.fields.[0].filter.pattern}}"
+                "type": "object",
+                "pattern": "LifeInsuranceCredential"
               }
             }
           ]

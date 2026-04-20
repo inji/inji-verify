@@ -1,19 +1,18 @@
 {
-  "clientId": "{{clientId}}",
-  "nonce": "{{nonce}}",
+  "clientId": "injiverify.mosip.net",
+  "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+  "acceptVPWithoutHolderProof": true,
+  "responseCodeValidationRequired": ,
   "presentationDefinition": {
-    "id": "{{id}}",
+    "id": "c4822b58-7fb4-454e-b827-f8758fe27f9a",
     "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
     "input_descriptors": [
       {
-        "id": "id card credential",
-        "name": "InsuranceCredential",
-        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-        "group": [""],
+        "id": "",
         "format": {
           "ldp_vc": {
             "proof_type": [
-              "Ed25519Signature2020"
+
             ]
           }
         },
@@ -21,11 +20,11 @@
           "fields": [
             {
               "path": [
-                "$.type"
+
               ],
               "filter": {
-                "type": "object",
-                "pattern": "InsuranceCredential"
+                "type": "",
+                "pattern": ""
               }
             }
           ]

@@ -185,7 +185,7 @@ CreateNewVerificationRequest:
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestECCK1
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestECCR1
       outputTemplate: injiverify/responseCode
       input: '{
       "clientId": "did:jwk:eyJrdHkiOiJFQyIsImNydiI6InNlY3AyNTZrMSIsIngiOiJDRTRWQkRiUTBaODJ3Rnp4elNLN0lGcTF0Sl9ORVc5OTRrUkpicFVJU193IiwieSI6IlBNRUdJb3J2VlpLMnRZZlNRaVNYSlJscTlxWkhkdWZMWmtiZkNKdFBZWTQiLCJ1c2UiOiJzaWcifQ#0",
