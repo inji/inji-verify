@@ -5,22 +5,21 @@ VpRequestWithPresentationId:
       uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_01
       role: noauth
       restMethod: post
+      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
-      outputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdResult
+      outputTemplate: injiverify/responseCode
       input: '{
-      "clientId":"client123",
-      "presentationDefinitionId":"200"
+      "clientId": "did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+      "presentationDefinitionId": "200"
       }'
       output: '{
-    "responseType": "vp_token",
-    "clientId": "client123",
-    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
-    "id": "200"
+      "responseCode": "201"
 }'
 
   Injiverify_CreateNewVerificationRequest_With_Invalid_PresentationId_Neg:
       endPoint: /v1/verify/vp-request
-      description: Fails to create a VP request due to invalid presentationDefinitionId.
+      description: Creates a VP request with a invalid presentationDefinitionId
       uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_02
       role: noauth
       restMethod: post
@@ -28,9 +27,66 @@ VpRequestWithPresentationId:
       outputTemplate: injiverify/VpRequestWithPresentationId/presentationDefinitionIdNegResult
       input: '{
       "clientId":"client123",
-      "presentationDefinitionId":"201"
+      "presentationDefinitionId":"automationTestPresentationDefinitionId"
       }'
       output: '{
     "errorCode": "NO_PRESENTATION_DEFINITION",
     "errorMessage": "No Presentation Definition found for given Presentation Definition ID."
+}'
+
+  Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_All_Valid_Smoke_Sid:
+    endPoint: /v1/verify/vp-request
+    description: Creates a VP request with a valid presentationDefinitionId for VP session result
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_03
+    role: noauth
+    restMethod: post
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
+    outputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionResult
+    input: '{
+      "clientId": "injiverify.mosip.net",
+      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+      "acceptVPWithoutHolderProof": true,
+      "responseCodeValidationRequired": true,
+      "id": "$PRESENTATIONDEFINITIONID$"
+    }'
+    output: '{
+      "responseCodeValidationRequired": "true",
+      "responseType": "vp_token"
+}'
+
+  Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_withoutResponseCodeValidationRequired_Neg:
+    endPoint: /v1/verify/vp-request
+    description: Creates a VP request with responseCodeValidationRequired present but no value and expect 400 status code
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_04
+    role: noauth
+    restMethod: post
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
+    outputTemplate: injiverify/status
+    input: '{
+      "clientId": "injiverify.mosip.net",
+      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+      "acceptVPWithoutHolderProof": true,
+      "responseCodeValidationRequired": "$IGNORE$",
+      "id": "$PRESENTATIONDEFINITIONID$"
+    }'
+    output: '{
+      "status": "400"
+}'
+  Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_invalidResponseCodeValidationRequired_Neg:
+    endPoint: /v1/verify/vp-request
+    description: Creates a VP request with invalid Response Code Validation Required parameter
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_05
+    role: noauth
+    restMethod: post
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
+    outputTemplate: injiverify/status
+    input: '{
+      "clientId": "injiverify.mosip.net",
+      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+      "acceptVPWithoutHolderProof": true,
+      "responseCodeValidationRequired": "$IGNORE$",
+      "id": "$PRESENTATIONDEFINITIONID$"
+    }'
+    output: '{
+      "status": "400"
 }'

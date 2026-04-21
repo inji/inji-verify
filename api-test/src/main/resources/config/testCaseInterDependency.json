@@ -14,5 +14,7 @@
     "TC_InjiVerify_GetVpRequestStatus_01": ["TC_InjiVerify_CreateNewVerificationRequest_01"],
     "TC_InjiVerify_VpSubmission_07": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
     "TC_InjiVerify_VpSubmission_11": ["TC_InjiVerify_CreateNewVerificationRequest_01"],
-    "TC_InjiVerify_VpSubmission_10": ["TC_InjiVerify_CreateNewVerificationRequest_09"]
+    "TC_InjiVerify_VpSubmission_10": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
+    "TC_InjiVerify_VpSubmissionECR1_01": ["TC_InjiVerify_CreateNewVerificationRequest_10"],
+    "TC_InjiVerify_VpSubmissionECCK1_01": ["TC_InjiVerify_CreateNewVerificationRequest_11"]
 }

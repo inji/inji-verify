@@ -1,13 +1,15 @@
 {
-  "clientId": "redirect_uri:https://faceb18cd424.ngrok-free.app/verifier/vp-response",
-  "nonce": "oNjl1LmAXj6pqygwQnMBFQ==",
-  "acceptVPWithoutHolderProof": false,
+  "clientId": "{{clientId}}",
+  "nonce": "{{nonce}}",
   "presentationDefinition": {
-    "id": "32f54163-7166-48f1-93d8-ff217bdb0653",
+    "id": "{{id}}",
     "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
     "input_descriptors": [
       {
         "id": "id card credential",
+        "name": "InsuranceCredential",
+        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+        "group": [""],
         "format": {
           "ldp_vc": {
             "proof_type": [
@@ -23,7 +25,7 @@
               ],
               "filter": {
                 "type": "object",
-                "pattern": "LifeInsuranceCredential"
+                "pattern": "InsuranceCredential"
               }
             }
           ]

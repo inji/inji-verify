@@ -1,0 +1,14 @@
+{
+  {{#if rawVerifiableCredential}}
+  "verifiableCredential": "{{rawVerifiableCredential}}",
+  {{else}}
+  "verifiableCredential": "{\"issuanceDate\":\"2025-11-17T06:06:36.456Z\",\"credentialSubject\":{\"gender\":\"Male\",\"primaryCropType\":\"Maize\",\"mobileNumber\":\"9876543210\",\"postalCode\":\"453000\",\"landArea\":\"3 hectares\",\"fullName\":\"John Doe\",\"secondaryCropType\":\"Rice\",\"dateOfBirth\":\"25-05-1990\",\"face\":\"data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAABwAAAAFCAYAAABW1IzHAAAAHklEQVQokWNgGPaAkZHxPyMj439sYrSQo51PBgsAALa0ECF30JSdAAAAAElFTkSuQmCC\",\"farmerID\":\"987654321\",\"villageOrTown\":\"Koramangala\",\"district\":\"Bangalore\",\"id\":\"{{#if credentialSubject_id}}{{credentialSubject_id}}{{else}}did:jwk:eyJrdHkiOiJSU0EiLCJlIjoiQVFBQiIsInVzZSI6InNpZyIsImtpZCI6ImI3MmlpM29XaGlFLThrYk0wal8yODZUemJoNkF4N2x3VnhsOUN1SndzTUEiLCJhbGciOiJSUzI1NiIsIm4iOiJyZURKRzh1VXB0VE1mbE93Sjh5VnNad05GTU5Lam43am5objJickt1eUU2LUhmMm92eHZoYi1fWFVPM3pMTDdTSGp5WE5YdHdMRUM5ZWI4dDNNQXAzQ25GMEpuaGZPSGdFcDRyY0M5ekgtS2hIRXVndWEtQkVEVkdqcWdLbFpZeTJIZTVPWGJlVHJuWXdNQm9fZmlXT0V3VG9OTkd3TFVuOEdNdDRGaklqcHlzRGRDbDg0ZGFBMHJhYU12THZVTEFKdlhBNjBvbmg5QkIxLThOQXVLV1hRdW1KSmU2VGJ4M1RXVmo0Nk1NSmxDR2V2MDByWEplc1BZNGJ6VTBhZ1ZtZXprMDljRUZEazh2QjVsTXVkek1nNkI1b0hIMUVmcnBmMkp5VWZ4YU1tZlo4d2NXMmtDcV93QThIa3dkbU9sVHBHZHgzSWl0TnU3cmRBbE9tRVBGV1EifQ=={{/if}}\",\"state\":\"Karnataka\",\"landOwnershipType\":\"Owner\"},\"type\":[\"VerifiableCredential\",\"FarmerCredential\"],\"@context\":[\"https://www.w3.org/2018/credentials/v1\",\"https://piyush7034.github.io/my-files/farmer.json\"],\"issuer\":\"did:web:piyush7034.github.io:DID:local-rsa\",\"expirationDate\":\"{{#if expirationDate}}{{expirationDate}}{{else}}2027-11-17T06:06:36.456Z{{/if}}\",\"proof\":{\"type\":\"RsaSignature2018\",\"created\":\"2025-11-17T00:36:36Z\",\"proofPurpose\":\"assertionMethod\",\"verificationMethod\":\"did:web:piyush7034.github.io:DID:local-rsa#QizhlYu5pcVa8l_fmElYzeLukKPShmkd0vIfF1Y7Oco\",\"jws\":\"{{#if jws}}{{jws}}{{else}}eyJ4NXQjUzI1NiI6IlRjX1B6cUVUeUpYSDllbWpVOXVEY2JlZUU5U1BYVlVBeldwNnF0V1pEVnciLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJraWQiOiJRaXpobFl1NXBjVmE4bF9mbUVsWXplTHVrS1BTaG1rZDB2SWZGMVk3T2NvIiwiYWxnIjoiUlMyNTYifQ..B8DPrx7ieT3lkLJUwvppRwk63vOpIOk6Y7UuV-KYBexFn4BNPe7rvnDn15pLCPG6tHa1FV-MX9yRZztKQMpXrdt42Sg6vqLMATfBXrWiiGCneePGXhXSvyYGiJ1zP9-hdZkikcT8G2Ho3LM3uWpk1O39a8qnQRM09leh0cuw3s16ODPnsFBFesd_ZDDJSzKemWvlvGdvCFJTE6Y78b4gRM-NErAba27KVyfXRvRpZz--kcaMWQHVcXQekAv0b-C8cX3NtPAXAflq4-pnrOXwwGc5RWqmq1pyIh5ZM1vZo1vnh-L0yjct2FGbTDNVAK3BTAHXCUpDd-CvzdSa3QaCPA{{/if}}\"}}",
+  {{/if}}
+  "skipStatusChecks": {{skipStatusChecks}},
+  "statusCheckFilters": [
+    {{#each statusCheckFilters}}
+      "{{this}}"{{#unless @last}},{{/unless}}
+    {{/each}}
+  ],
+  "includeClaims": {{includeClaims}}
+}

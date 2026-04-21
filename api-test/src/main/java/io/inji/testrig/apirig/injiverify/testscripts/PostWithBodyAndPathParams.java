@@ -69,10 +69,10 @@ public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
 	/**
 	 * Test method for POST requests with body and path parameters.
 	 * 
-	 * `@param` testCaseDTO the test case data transfer object
-	 * `@throws` AuthenticationTestException
-	 * `@throws` AdminTestException
-	 * `@throws` SecurityXSSException
+	 * @param testCaseDTO the test case data transfer object
+	 * @throws AuthenticationTestException
+	 * @throws AdminTestException
+	 * @throws SecurityXSSException
 	 */
 	@Test(dataProvider = "testcaselist")
 	public void test(TestCaseDTO testCaseDTO) throws AuthenticationTestException, AdminTestException, SecurityXSSException {
@@ -92,8 +92,11 @@ public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
 			ArrayList<JSONObject> inputtestCases = AdminTestUtil.getInputTestCase(testCaseDTO);
 			ArrayList<JSONObject> outputtestcase = AdminTestUtil.getOutputTestCase(testCaseDTO);
 			for (int i = 0; i < languageList.size(); i++) {
+				String inputJsonFromTemplate = getJsonFromTemplate(inputtestCases.get(i).toString(), testCaseDTO.getInputTemplate());
+				inputJsonFromTemplate = InjiVerifyUtil.replaceResponseCodePlaceholder(inputJsonFromTemplate);
+				
 				response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(),
-						getJsonFromTemplate(inputtestCases.get(i).toString(), testCaseDTO.getInputTemplate()),
+						inputJsonFromTemplate,
 						COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
 
 				Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil.doJsonOutputValidation(
@@ -108,6 +111,8 @@ public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
 		}
 
 		else {
+			inputJson = InjiVerifyUtil.replaceResponseCodePlaceholder(inputJson);
+			
 			response = postWithPathParamsBodyAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(), inputJson,
 					COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams);
 
@@ -117,14 +122,15 @@ public class PostWithBodyAndPathParams extends InjiVerifyUtil implements ITest {
 
 			if (!OutputValidationUtil.publishOutputResult(ouputValid))
 				throw new AdminTestException("Failed at output validation");
+
 		}
 	}
 
 	/**
-	 * The method ser current test name to result
+	 * The method sets current test name to result
 	 * 
 	 * @param result
-	 */
+	 */	
 	@AfterMethod(alwaysRun = true)
 	public void setResultTestName(ITestResult result) {
 		result.setAttribute("TestCaseName", testCaseName);
