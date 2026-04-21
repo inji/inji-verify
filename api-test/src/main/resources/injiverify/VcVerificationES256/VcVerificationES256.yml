@@ -13,14 +13,14 @@ VcVerificationES256:
           {"context_value": "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json"},
           {"context_value": "https://w3id.org/security/suites/ed25519-2020/v1"}
         ],
-        "id": "https://mosip.io/credential/a6ab3eba-f8f1-4bc4-8ba6-8a86f04daec5",
+        "id": "https://mosip.io/credential/2bff7867-49e6-4bc4-a42a-547237d11b76",
         "type": [
           {"type_value": "VerifiableCredential"},
           {"type_value": "RegistrationReceiptCredential"}
         ],
         "issuer": "did:web:inji.github.io:inji-config:qa-inji1:landregistry",
-        "issuanceDate": "2026-03-26T07:45:59.374Z",
-        "expirationDate": "2028-03-25T07:45:59.374Z",
+        "issuanceDate": "2026-04-20T17:53:49.486Z",
+        "expirationDate": "2028-04-19T17:53:49.486Z",
         "RuralPropertyName": "Guimaraes Plateau",
         "LegalReserveArea": 400.3,
         "Municipality": "Saint John of Alliance, State: Goias",
@@ -41,10 +41,10 @@ VcVerificationES256:
         "ConsolidatedArea": 2700.5,
         "RestrictedUseArea": 150.1,
         "proof_type": "EcdsaSecp256r1Signature2019",
-        "proof_created": "2026-03-26T07:45:59Z",
+        "proof_created": "2026-04-20T17:53:49Z",
         "proofPurpose": "assertionMethod",
-        "verificationMethod": "did:web:inji.github.io:inji-config:qa-inji1:landregistry#i9UN92j4oK60qFoACqXodq4LDpJ7McRuMn60JTf6rDI",
-        "proofValue": "z4gNKvTHVUX1PfzCrM4mxydPrzvUsfMc2sX1siJCTM7B1UGQwEDR3CxMNm6ibc9iEAjBq1qz6hYGnvyMUW1GmeW5c"
+        "verificationMethod": "did:web:inji.github.io:inji-config:qa-inji1:landregistry#iBVwaDR3b5vSwb-2nRtEj9wOY2OrmYJ-44A_JZ-zDpA",
+        "proofValue": "z32o39DoZ2pMzZiWwXo4dPxJ45XqP3KZiujaGo2XrJzDs1R25GHSn3XmxVdwPqcyTr5ZmmZXNhKwbsnXab8M81bxb"
       }'
       output: '{
           "verificationStatus": "SUCCESS"

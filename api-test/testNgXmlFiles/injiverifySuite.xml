@@ -1,23 +1,35 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-
 <suite name="Inji-Verify API Test">
 	<!-- Passing Group as parmeter unsing "testType" Possible Groups are: smoke 
 		regression smokeAndRegression -->
 	<listeners>
-		<listener class-name="io.mosip.testrig.apirig.report.EmailableReport" />
+		<listener
+			class-name="io.mosip.testrig.apirig.report.EmailableReport" />
 	</listeners>
-			<test name="InsertDBData">
+	<test name="InsertDBData">
 		<parameter name="ymlFile"
 			value="injiverify/InsertDBData/InsertDBData.yml" />
 		<classes>
-			<class name="io.inji.testrig.apirig.injiverify.testscripts.DBIntegration" />
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.DBIntegration" />
 		</classes>
 	</test>
-		<test name="VpRequestWithPresentationId">
+	<test name="VpRequestWithPresentationId">
 		<parameter name="ymlFile"
 			value="injiverify/VpRequestWithPresentationId/VpRequestWithPresentationId.yml" />
-		<parameter name="idKeyName" value="transactionId,requestId,id" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId,id,nonce" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpRequestForSessionRequest">
+		<parameter name="ymlFile"
+			value="injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId,id" />
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
@@ -26,7 +38,8 @@
 	<test name="CreateNewVerificationRequest">
 		<parameter name="ymlFile"
 			value="injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest.yml" />
-		<parameter name="idKeyName" value="transactionId,requestId,id" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId,id,nonce" />
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
@@ -35,7 +48,8 @@
 	<test name="CreateNewVerificationRequestWithProof">
 		<parameter name="ymlFile"
 			value="injiverify/CreateNewVerificationRequestWithProof/CreateNewVerificationRequestWithOutProof.yml" />
-			<parameter name="idKeyName" value="transactionId,requestId,id" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId,id" />
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
@@ -44,7 +58,8 @@
 	<test name="CreateNewVerificationRequestWithDID">
 		<parameter name="ymlFile"
 			value="injiverify/CreateNewVerificationRequestWithDID/CreateNewVerificationRequestWithDID.yml" />
-		<parameter name="idKeyName" value="transactionId,requestId,requestUri" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId,requestUri" />
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
@@ -53,8 +68,8 @@
 	<test name="GetVpRequestWithDID">
 		<parameter name="ymlFile"
 			value="injiverify/GetVpRequestWithDID/GetVpRequestWithDID.yml" />
-			<parameter name="pathParams" value="requestId" />
-			<parameter name="headers" value="" />
+		<parameter name="pathParams" value="requestId" />
+		<parameter name="headers" value="" />
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParamAndHeader" />
@@ -63,18 +78,47 @@
 	<test name="VpSubmission">
 		<parameter name="ymlFile"
 			value="injiverify/VpSubmission/VpSubmission.yml" />
-			<parameter name="idKeyName" value="transactionId"/>
+		<parameter name="idKeyName"
+			value="transactionId,redirect_uri,response_code" />
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
 		</classes>
 	</test>
+	<test name="VpSubmissionECC">
+		<parameter name="ymlFile"
+			value="injiverify/VpSubmissionECC/VpSubmissionECC.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="GetVpRequestStatusV2">
+		<parameter name="ymlFile"
+			value="injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
+		</classes>
+	</test>
+	<test name="VpSessionResults">
+		<parameter name="ymlFile"
+			value="injiverify/VpSessionResults/VpSessionResults.yml" />
+		<parameter name="idKeyName" value="response_code" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
 	<test name="VcVerificationV2">
 		<parameter name="ymlFile"
 			value="injiverify/VcVerificationV2/VcVerificationV2.yml" />
-			<classes>
+		<classes>
 			<class
-					name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
 		</classes>
 	</test>
 	<test name="GetVpRequestStatus">
@@ -117,6 +161,14 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
 		</classes>
 	</test>
+	<test name="VcVerificationDid">
+		<parameter name="ymlFile"
+			value="injiverify/VcVerificationDid/VcVerificationDid.yml" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
+		</classes>
+	</test>
 	<test name="VcRevocationStatus">
 		<parameter name="ymlFile"
 			value="injiverify/VcRevocationStatus/VcRevocationStatus.yml" />
@@ -125,11 +177,11 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
 		</classes>
 	</test>
-
-    <test name="CreateVpRequestWithSDJWT">
+	<test name="CreateVpRequestWithSDJWT">
 		<parameter name="ymlFile"
 			value="injiverify/CreateVpRequestWithSDJWT/CreateVpRequestWithSDJWT.yml" />
-			<parameter name="idKeyName" value="transactionId,requestId,requestUri,id"/>
+		<parameter name="idKeyName"
+			value="transactionId,requestId,requestUri,id" />
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
@@ -157,15 +209,6 @@
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
-		</classes>
-	</test>
-		<test name="GetVpRequestStatusV2">
-		<parameter name="ymlFile"
-			value="injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2.yml" />
-		<parameter name="pathParams" value="requestId"/>
-		<classes>
-			<class
-				name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
 		</classes>
 	</test>
 </suite>
