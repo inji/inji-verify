@@ -9,8 +9,8 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmission
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "state": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
+      "definition_id": "$PRESENTATIONDEFINITIONID$"
       }'
       output: '{
       "responseCode": "200"
@@ -39,16 +39,15 @@ VpSubmission:
       uniqueIdentifier: TC_InjiVerify_VpSubmission_03
       role: noauth
       restMethod: post
-      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/VpSubmission/VpSubmissionNeg
-      outputTemplate: injiverify/responseCode
+      outputTemplate: injiverify/error2
       input: '{
       "state":"$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
       "definition_id":"$PRESENTATIONDEFINITIONID$",
       "vp_token": "bdhgyga"
       }'
       output: '{
-      "responseCode": "200"
+      "errorCode": "INVALID_VP_TOKEN"
 }'
 
   Injiverify_VpSubmission_Empty_VpToken_Neg:
@@ -96,7 +95,7 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmission
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
+      "state":"$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
       "definition_id":"hbdBYGdy"
       }'
       output: '{
@@ -213,7 +212,7 @@ VpSubmission:
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpSubmission/VpSubmissionWithProofRequest
+      inputTemplate: injiverify/VpSubmission/VpSubmissionWithoutProofRequest
       outputTemplate: injiverify/responseCode
       input: '{
       "state":"$ID:CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid_requestId$",
@@ -225,7 +224,7 @@ VpSubmission:
 
   Injiverify_VpSubmission_With_PresentationId_All_Valid_Smoke:
       endPoint: /v1/verify/vp-submission/direct-post
-      description: Submitting the Verifiable Credential (VC) to the PresentationID VP request
+      description: Submitting VC with valid Presentation Id data
       uniqueIdentifier: TC_InjiVerify_VpSubmission_12
       role: noauth
       restMethod: post
@@ -234,8 +233,73 @@ VpSubmission:
       outputTemplate: injiverify/responseCode
       input: '{
       "state":"$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "definition_id":"$PRESENTATIONDEFINITIONID$",
+      "challenge": "MTc2Mzk1NTY5NDI5NQ=="
       }'
       output: '{
       "responseCode": "200"
       }'
+  Injiverify_VpSubmissionForSessionRequest_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting VC to VP Session Request with valid data
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_13
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$",
+      "definition_id": "$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+  Injiverify_VpSubmissionForSessionRequest_duplicateRequestID_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting VC to VP Session Request with valid and already used requestID
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$",
+      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+  Injiverify_VpSubmissionForSessionRequest_whenResponseCodeValidationIsFalse_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting VC to VP Session Request with valid and responseCodeValidationRequired is false
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_15
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid_requestId$",
+      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+  Injiverify_VpSubmission_InvalidNonce_Neg:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting the authorization response with invalid nonce
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_16
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/error2
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
+      "definition_id": "$PRESENTATIONDEFINITIONID$",
+      "challenge": "invalid_nonce"
+      }'
+      output: '{
+      "errorCode": "invalid_request"
+}'
