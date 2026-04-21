@@ -1,11 +1,11 @@
 # OpenID4VP - Online Sharing Cross Device Flow
 
-Inji Verify supports the OpenID for Verifiable Presentations (OpenID4VP) specification (Draft 21). This document provides a comprehensive overview of the cross-device flow, where a verifier initiates a request and a wallet generates and submits a Verifiable Presentation (VP) in response.
+Inji Verify supports the OpenID for Verifiable Presentations (OpenID4VP) specification (Draft 23). This document provides a comprehensive overview of the cross-device flow, where a verifier initiates a request and a wallet generates and submits a Verifiable Presentation (VP) in response.
 
 The implementation adheres to the OpenID4VP [specification](https://openid.net/specs/openid-4-verifiable-presentations-1_0-21.html) and defines how Verifiable Credentials (VCs) are requested, presented, and verified.
 
 ## Specifications supported
-- OpenID for Verifiable Presentations – [Draft 21 🔗](https://openid.net/specs/openid-4-verifiable-presentations-1_0-21.html).
+- OpenID for Verifiable Presentations – [Draft 23 🔗](https://openid.net/specs/openid-4-verifiable-presentations-1_0-23.html).
 - Presentation Exchange 2.0.0 [specification 🔗](https://identity.foundation/presentation-exchange/spec/v2.0.0)
 - Supported VC format: LDP VC, SD-JWT VC, CWT VC
 
