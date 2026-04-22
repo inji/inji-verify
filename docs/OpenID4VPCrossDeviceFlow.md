@@ -128,7 +128,7 @@ sequenceDiagram
     participant Verify UI
     participant Wallet
 
-    Verify UI->>Verify Backend: 1. Send the selected credentials to be verified from the verify
+    Verify UI->>Verify Backend: 1. Send the selected credentials to be verified from the verify.
     Verify Backend--)Verify Backend: 2. Process request and creates an authorisation request internally
     Verify Backend->>Verify UI: 3. Authorization Request Response + Set HttpOnly Cookie (transactionId)
 
@@ -136,7 +136,7 @@ sequenceDiagram
     Verify UI--)Verify UI: 5. Poll Status (ACTIVE, VP_SUBMITTED, EXPIRED)
 
     Wallet->>Verify UI: 6. Scan QR Code
-    Verify UI->>Wallet: 7. Upon receiving the rcodeData, the system processes the response body and selects the matching Verifiable Credentials (VCs) based on the request criteria.
+    Verify UI->>Wallet: 7. Upon receiving the qrcodeData, the system processes the response body and selects the matching Verifiable Credentials (VCs) based on the request criteria.
     Wallet->>Verify Backend: 8. Submit VP or Error (BACKEND_URL/vp-submission/direct-post)
 
     Verify Backend->>Wallet: 9. Return redirect_uri (only if enabled)
