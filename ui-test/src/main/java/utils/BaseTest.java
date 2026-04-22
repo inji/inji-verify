@@ -3,6 +3,7 @@ package utils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import api.InjiVerifyConfigManager;
+import api.InjiVerifyUtil;
 import io.cucumber.java.*;
 import org.openqa.selenium.JavascriptExecutor;
 import org.openqa.selenium.OutputType;
@@ -17,6 +18,7 @@ import com.aventstack.extentreports.ExtentReports;
 import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter;
 import com.browserstack.local.Local;
+import org.testng.SkipException;
 
 import io.cucumber.plugin.event.PickleStepTestStep;
 import io.cucumber.plugin.event.TestStep;
@@ -46,6 +48,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.CountDownLatch;
 
 public class BaseTest extends BaseTestUtil{
 	private static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
@@ -60,6 +63,10 @@ public class BaseTest extends BaseTestUtil{
 	public static final AtomicInteger totalCount = new AtomicInteger(0);
 	private static final ConcurrentMap<String, String> scenarioHookStatuses = new ConcurrentHashMap<>();
 	private static final AtomicBoolean reportsPushed = new AtomicBoolean(false);
+
+	private static final CountDownLatch prerequisiteLatch = new CountDownLatch(1);
+	private static final AtomicBoolean prerequisitePassed = new AtomicBoolean(false);
+	private static volatile String prerequisiteScenarioName = null;
 
 	// ── Known Issues ──────────────────────────────────────────────────────────────
 	public static final AtomicInteger knownIssueCount = new AtomicInteger(0);
@@ -82,6 +89,8 @@ public class BaseTest extends BaseTestUtil{
 	private static volatile String insuranceCredentialPngPath;
 	private static volatile String insuranceCredentialJpgPath;
 	private static volatile String insuranceCredentialJpegPath;
+	private static ThreadLocal<Boolean> skipScenario = ThreadLocal.withInitial(() -> false);
+	private static ThreadLocal<String> skipReason = new ThreadLocal<>();
 
 	public static final String url = InjiVerifyConfigManager.getInjiVerifyUi();
 	private static final String buildIdentifier = "#" + new SimpleDateFormat("dd-MMM-HH:mm").format(new Date());
@@ -104,6 +113,33 @@ public class BaseTest extends BaseTestUtil{
 	// Limits concurrent BrowserStack sessions to the plan's allowed maximum (read from injiVerify.properties)
 	private static final Semaphore bsSessionSlots = new Semaphore(
 			Integer.parseInt(InjiVerifyConfigManager.getproperty("browserstack_max_sessions").trim()), true);
+
+
+	@Before("@prerequisiteVP")
+	public void registerPrerequisite(Scenario scenario) {
+		prerequisiteScenarioName = scenario.getName();
+		logger.info("Registered prerequisite: {}", prerequisiteScenarioName);
+	}
+
+	@Before("@dependsOnVP")
+	public void waitForPrerequisite(Scenario scenario) {
+	try {
+        logger.info("Waiting for prerequisite before running: {}", scenario.getName());
+
+        prerequisiteLatch.await(); // 🔥 waits until prerequisite finishes
+
+        if (!prerequisitePassed.get()) {
+            throw new SkipException("Skipping because prerequisite failed: " + prerequisiteScenarioName);
+        }
+
+        logger.info("Prerequisite passed. Continuing: {}", scenario.getName());
+
+    } catch (InterruptedException e) {
+        Thread.currentThread().interrupt();
+        throw new RuntimeException("Interrupted while waiting for prerequisite", e);
+    }
+	}
+
 
 	@Before
 	public void beforeAll(Scenario scenario) throws MalformedURLException {
@@ -316,6 +352,20 @@ public class BaseTest extends BaseTestUtil{
 			ExtentReportManager.getTest().pass("✅ Scenario Passed: " + scenario.getName());
 		}
 
+		/* 🔥 ADD THIS EXACTLY HERE */
+		if (scenario.getSourceTagNames().contains("@prerequisiteVP")) {
+
+			if (!scenario.isFailed()) {
+				prerequisitePassed.set(true);
+				logger.info("Prerequisite PASSED");
+			} else {
+				prerequisitePassed.set(false);
+				logger.error("Prerequisite FAILED");
+			}
+
+			prerequisiteLatch.countDown();
+		}
+
 		markBrowserStackSessionStatus(scenario);
 		attachBrowserStackVideoLinkIfFailed(scenario);
 		ExtentReportManager.flushReport();
@@ -379,6 +429,52 @@ public class BaseTest extends BaseTestUtil{
 		} catch (Exception e) {
 			logger.error("Unable to update BrowserStack session status for scenario: {}", scenario.getName(), e);
 		}
+	}
+
+		public static boolean isScenarioSkipped() {
+		return skipScenario.get();
+	}
+
+	public static String getSkipReason() {
+		return skipReason.get();
+	}
+
+		public static void markScenarioSkipped(String reason) {
+		skipScenario.set(true);
+		skipReason.set(reason);
+	}
+
+	@Before("@skipBasedOnThreshold")
+	public void skipScenarioBasedOnThreshold(Scenario scenario) {
+		try {
+			int retryBlockedUntil = getWalletPasscodeSettings().get("retryBlockedUntil");
+			String envThreshold = System.getenv("THRESH_TEMP_LOCK");
+			int THRESH_TEMP_LOCK = (envThreshold != null && !envThreshold.isEmpty()) ? Integer.parseInt(envThreshold)
+					: 1;
+
+			if (retryBlockedUntil > THRESH_TEMP_LOCK) {
+				String reason = "Threshold not met: retryBlockedUntil(" + retryBlockedUntil + ") < THRESH_TEMP_LOCK("
+						+ THRESH_TEMP_LOCK + ")";
+				markScenarioSkipped(reason);
+				throw new SkipException("Scenario skipped due to threshold: " + reason);
+			}
+		} catch (Exception e) {
+			logger.error("Error checking threshold for skipping scenario", e);
+		}
+	}
+
+	private static HashMap<String, Integer> walletPasscodeSettingsCache;
+
+		public static HashMap<String, Integer> getWalletPasscodeSettings() throws Exception {
+		if (walletPasscodeSettingsCache == null) {
+			HashMap<String, String> keyMap = new HashMap<>();
+			keyMap.put("wallet.passcode.retryBlockedUntil", "retryBlockedUntil");
+			keyMap.put("wallet.passcode.maxFailedAttemptsAllowedPerCycle", "maxFailedAttempts");
+			keyMap.put("wallet.passcode.maxLockCyclesAllowed", "maxLockCycles");
+
+			walletPasscodeSettingsCache = InjiVerifyUtil.getActuatorValues(keyMap);
+		}
+		return walletPasscodeSettingsCache;
 	}
 
 	private void attachBrowserStackVideoLinkIfFailed(Scenario scenario) {
@@ -504,15 +600,34 @@ public class BaseTest extends BaseTestUtil{
 		}
 	}
 
-	@AfterAll
-	public static void afterAll() {
-		try {
-			cleanupSharedInsuranceArtifactsForSuite();
-		} catch (Exception e) {
-			logger.error("Failed to clean shared insurance artifacts at suite end", e);
-		}
-		pushReportsOnce();
-	}
+@AfterAll
+public static void afterAll() {
+    try {
+        cleanupSharedInsuranceArtifactsForSuite();
+    } catch (Exception e) {
+        logger.error("Failed to clean shared insurance artifacts at suite end", e);
+    }
+
+    try {
+        pushReportsOnce();
+    } catch (Exception e) {
+        logger.error("Failed to push reports once", e);
+    }
+    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+        try {
+            utils.HttpUtils.cleanupWallets();
+            if (extent != null) {
+                extent.flush();
+            }
+
+            Thread.sleep(5000);
+
+            pushReportsToS3();
+        } catch (Exception e) {
+            logger.error("Error in shutdown hook execution", e);
+        }
+    }));
+}
 
 	public WebDriver getDriver() {
 		return driverHolder.get();
