@@ -51,7 +51,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.CountDownLatch;
 
-public class BaseTest extends BaseTestUtil{
+public class BaseTest extends BaseTestUtil {
 	private static final Logger logger = LoggerFactory.getLogger(BaseTest.class);
 	private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
@@ -69,7 +69,8 @@ public class BaseTest extends BaseTestUtil{
 	private static final AtomicBoolean prerequisitePassed = new AtomicBoolean(false);
 	private static volatile String prerequisiteScenarioName = null;
 
-	// ── Known Issues ──────────────────────────────────────────────────────────────
+	// ── Known Issues
+	// ──────────────────────────────────────────────────────────────
 	public static final AtomicInteger knownIssueCount = new AtomicInteger(0);
 	private static final ThreadLocal<Boolean> isKnownIssueScenario = new ThreadLocal<>();
 	// ─────────────────────────────────────────────────────────────────────────────
@@ -79,10 +80,12 @@ public class BaseTest extends BaseTestUtil{
 	private static final ThreadLocal<String> scanQrCodeFile = new ThreadLocal<>();
 	private static final ThreadLocal<String> scanCameraProfile = new ThreadLocal<>();
 	private static final ThreadLocal<Boolean> autoAllowScanCamera = ThreadLocal.withInitial(() -> Boolean.TRUE);
-	private static final ThreadLocal<Boolean> browserStackSessionSlotAcquired = ThreadLocal.withInitial(() -> Boolean.FALSE);
+	private static final ThreadLocal<Boolean> browserStackSessionSlotAcquired = ThreadLocal
+			.withInitial(() -> Boolean.FALSE);
 	private static final ThreadLocal<String> scenarioRuntimeDir = new ThreadLocal<>();
 	private static final ThreadLocal<java.util.Set<String>> scenarioTags = new ThreadLocal<>();
-	private static final ThreadLocal<Boolean> failedStepScreenshotCaptured = ThreadLocal.withInitial(() -> Boolean.FALSE);
+	private static final ThreadLocal<Boolean> failedStepScreenshotCaptured = ThreadLocal
+			.withInitial(() -> Boolean.FALSE);
 	private static final Object insuranceArtifactsLock = new Object();
 	private static final AtomicBoolean insuranceArtifactsPreparedForRun = new AtomicBoolean(false);
 	private static final AtomicBoolean insuranceArtifactsRunInitialised = new AtomicBoolean(false);
@@ -108,13 +111,14 @@ public class BaseTest extends BaseTestUtil{
 	public final String URL = "https://" + username + ":" + accessKey + "@hub-cloud.browserstack.com/wd/hub";
 
 	private Scenario scenario;
-	// Shared BrowserStack Local tunnel — started once, reused across parallel scenarios
+	// Shared BrowserStack Local tunnel — started once, reused across parallel
+	// scenarios
 	private static volatile Local bsLocal = null;
 	private static final Object bsLocalLock = new Object();
-	// Limits concurrent BrowserStack sessions to the plan's allowed maximum (read from injiVerify.properties)
+	// Limits concurrent BrowserStack sessions to the plan's allowed maximum (read
+	// from injiVerify.properties)
 	private static final Semaphore bsSessionSlots = new Semaphore(
 			Integer.parseInt(InjiVerifyConfigManager.getproperty("browserstack_max_sessions").trim()), true);
-
 
 	@Before("@prerequisiteVP")
 	public void registerPrerequisite(Scenario scenario) {
@@ -124,28 +128,27 @@ public class BaseTest extends BaseTestUtil{
 
 	@Before("@dependsOnVP")
 	public void waitForPrerequisite(Scenario scenario) {
-	try {
-        logger.info("Waiting for prerequisite before running: {}", scenario.getName());
+		try {
+			logger.info("Waiting for prerequisite before running: {}", scenario.getName());
 
-           boolean prerequisiteCompleted = prerequisiteLatch.await(
-                Long.parseLong(InjiVerifyConfigManager.getproperty("explicitWaitTimeout").trim()) * 2L,
-                TimeUnit.SECONDS);
-        if (!prerequisiteCompleted) {
-            throw new SkipException("Skipping because prerequisite did not complete: " + prerequisiteScenarioName);
-        }
+			boolean prerequisiteCompleted = prerequisiteLatch.await(
+					Long.parseLong(InjiVerifyConfigManager.getproperty("explicitWaitTimeout").trim()) * 2L,
+					TimeUnit.SECONDS);
+			if (!prerequisiteCompleted) {
+				throw new SkipException("Skipping because prerequisite did not complete: " + prerequisiteScenarioName);
+			}
 
-        if (!prerequisitePassed.get()) {
-            throw new SkipException("Skipping because prerequisite failed: " + prerequisiteScenarioName);
-        }
+			if (!prerequisitePassed.get()) {
+				throw new SkipException("Skipping because prerequisite failed: " + prerequisiteScenarioName);
+			}
 
-        logger.info("Prerequisite passed. Continuing: {}", scenario.getName());
+			logger.info("Prerequisite passed. Continuing: {}", scenario.getName());
 
-    } catch (InterruptedException e) {
-        Thread.currentThread().interrupt();
-        throw new RuntimeException("Interrupted while waiting for prerequisite", e);
-    }
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+			throw new RuntimeException("Interrupted while waiting for prerequisite", e);
+		}
 	}
-
 
 	@Before
 	public void beforeAll(Scenario scenario) throws MalformedURLException {
@@ -164,7 +167,8 @@ public class BaseTest extends BaseTestUtil{
 		isKnownIssueScenario.set(false);
 		// ─────────────────────────────────────────────────────────────────────────────
 
-		boolean browserStackEnabled = Boolean.parseBoolean(InjiVerifyConfigManager.getproperty("runOnBrowserStack").trim());
+		boolean browserStackEnabled = Boolean
+				.parseBoolean(InjiVerifyConfigManager.getproperty("runOnBrowserStack").trim());
 		initialiseScenarioRuntimeArtifacts(scenario);
 		initialiseSharedInsuranceArtifactPaths();
 		initialiseInsuranceArtifactsForRun();
@@ -256,7 +260,8 @@ public class BaseTest extends BaseTestUtil{
 	private void initialiseScenarioRuntimeArtifacts(Scenario scenario) {
 		try {
 			String safeScenarioName = scenario.getName().replaceAll("[^a-zA-Z0-9._-]", "_");
-			String uniqueId = safeScenarioName + "-" + System.currentTimeMillis() + "-" + Thread.currentThread().getId();
+			String uniqueId = safeScenarioName + "-" + System.currentTimeMillis() + "-"
+					+ Thread.currentThread().getId();
 			File runtimeDir = new File(System.getProperty("user.dir") + File.separator + "test-output" + File.separator
 					+ "runtime-media" + File.separator + uniqueId);
 			Files.createDirectories(runtimeDir.toPath());
@@ -267,20 +272,23 @@ public class BaseTest extends BaseTestUtil{
 	}
 
 	private void initialiseSharedInsuranceArtifactPaths() {
-		if (downloadedInsurancePdfPath != null && insuranceCredentialPngPath != null && insuranceCredentialJpgPath != null
+		if (downloadedInsurancePdfPath != null && insuranceCredentialPngPath != null
+				&& insuranceCredentialJpgPath != null
 				&& insuranceCredentialJpegPath != null) {
 			return;
 		}
 
 		synchronized (insuranceArtifactsLock) {
-			if (downloadedInsurancePdfPath != null && insuranceCredentialPngPath != null && insuranceCredentialJpgPath != null
+			if (downloadedInsurancePdfPath != null && insuranceCredentialPngPath != null
+					&& insuranceCredentialJpgPath != null
 					&& insuranceCredentialJpegPath != null) {
 				return;
 			}
 
 			try {
-				File sharedDir = new File(System.getProperty("user.dir") + File.separator + "test-output" + File.separator
-						+ "runtime-media" + File.separator + "shared-insurance-artifacts");
+				File sharedDir = new File(
+						System.getProperty("user.dir") + File.separator + "test-output" + File.separator
+								+ "runtime-media" + File.separator + "shared-insurance-artifacts");
 				Files.createDirectories(sharedDir.toPath());
 				downloadedInsurancePdfPath = new File(sharedDir, "InsuranceCredential.pdf").getAbsolutePath();
 				insuranceCredentialPngPath = new File(sharedDir, "InsuranceCredential0.png").getAbsolutePath();
@@ -335,7 +343,7 @@ public class BaseTest extends BaseTestUtil{
 		if (scenario.getStatus().toString().equalsIgnoreCase("SKIPPED")
 				&& runnerfiles.Runner.knownIssues.containsKey(scenario.getName())) {
 
-			String bugId  = runnerfiles.Runner.knownIssues.get(scenario.getName());
+			String bugId = runnerfiles.Runner.knownIssues.get(scenario.getName());
 			String bugUrl = "https://mosip.atlassian.net/browse/" + bugId;
 			knownIssueCount.incrementAndGet();
 
@@ -427,8 +435,7 @@ public class BaseTest extends BaseTestUtil{
 			String executorCommand = String.format(
 					"browserstack_executor: {\"action\": \"setSessionStatus\", \"arguments\": {\"status\":\"%s\", \"reason\": \"%s\"}}",
 					status,
-					escapeForJson(reason)
-			);
+					escapeForJson(reason));
 			((JavascriptExecutor) driverHolder.get()).executeScript(executorCommand);
 			logger.info("BrowserStack session marked as {} for scenario: {}", status, scenario.getName());
 		} catch (Exception e) {
@@ -436,7 +443,7 @@ public class BaseTest extends BaseTestUtil{
 		}
 	}
 
-		public static boolean isScenarioSkipped() {
+	public static boolean isScenarioSkipped() {
 		return skipScenario.get();
 	}
 
@@ -444,7 +451,7 @@ public class BaseTest extends BaseTestUtil{
 		return skipReason.get();
 	}
 
-		public static void markScenarioSkipped(String reason) {
+	public static void markScenarioSkipped(String reason) {
 		skipScenario.set(true);
 		skipReason.set(reason);
 	}
@@ -475,12 +482,14 @@ public class BaseTest extends BaseTestUtil{
 
 			if (link != null) {
 				ExtentReportManager.getTest().info(
-						"<a href='" + escapeHtmlAttribute(link) + "' target='_blank'>Click here for BrowserStack video/session</a>");
+						"<a href='" + escapeHtmlAttribute(link)
+								+ "' target='_blank'>Click here for BrowserStack video/session</a>");
 				logger.info("Attached BrowserStack video/session link for failed scenario: {}", scenario.getName());
 				return;
 			}
 
-			String hashedId = firstNonBlank(getJsonText(sessionDetails, "hashed_id"), getJsonText(sessionDetails, "hashedId"));
+			String hashedId = firstNonBlank(getJsonText(sessionDetails, "hashed_id"),
+					getJsonText(sessionDetails, "hashedId"));
 			if (hashedId != null) {
 				ExtentReportManager.getTest().info("BrowserStack session id: " + hashedId);
 			}
@@ -536,7 +545,8 @@ public class BaseTest extends BaseTestUtil{
 		try {
 			Field testCaseField = scenario.getClass().getDeclaredField("testCase");
 			testCaseField.setAccessible(true);
-			io.cucumber.plugin.event.TestCase testCase = (io.cucumber.plugin.event.TestCase) testCaseField.get(scenario);
+			io.cucumber.plugin.event.TestCase testCase = (io.cucumber.plugin.event.TestCase) testCaseField
+					.get(scenario);
 			List<TestStep> testSteps = testCase.getTestSteps();
 
 			for (TestStep step : testSteps) {
@@ -558,8 +568,7 @@ public class BaseTest extends BaseTestUtil{
 				String base64Screenshot = java.util.Base64.getEncoder().encodeToString(screenshot);
 				ExtentCucumberAdapter.getCurrentStep().addScreenCaptureFromBase64String(
 						base64Screenshot,
-						"Failure Screenshot"
-				);
+						"Failure Screenshot");
 
 				if (ExtentReportManager.getTest() != null) {
 					ExtentReportManager.getTest().info("Failure Screenshot",
@@ -573,8 +582,8 @@ public class BaseTest extends BaseTestUtil{
 	}
 
 	private static boolean isReportReady() {
-    // Example condition — adjust based on your framework
-    return extent == null || extent.getReport() != null;
+		// Example condition — adjust based on your framework
+		return extent == null || extent.getReport() != null;
 	}
 
 	@AfterAll
@@ -596,7 +605,7 @@ public class BaseTest extends BaseTestUtil{
 				if (extent != null) {
 					extent.flush();
 				}
-			WaitUtil.waitForCondition(driverHolder.get(), () -> extent != null, 10);
+				WaitUtil.waitForCondition(driverHolder.get(), () -> extent != null, 10);
 				pushReportsOnce();
 			} catch (Exception e) {
 				logger.error("Error in shutdown hook execution", e);
@@ -723,7 +732,8 @@ public class BaseTest extends BaseTestUtil{
 	public static void updateBrowserStackNetworkProfile(String networkProfile) {
 		WebDriver currentDriver = driverHolder.get();
 		if (!Boolean.TRUE.equals(browserStackSession.get()) || !(currentDriver instanceof RemoteWebDriver)) {
-			throw new IllegalStateException("BrowserStack network profile can be updated only for active RemoteWebDriver sessions.");
+			throw new IllegalStateException(
+					"BrowserStack network profile can be updated only for active RemoteWebDriver sessions.");
 		}
 
 		String sessionId = ((RemoteWebDriver) currentDriver).getSessionId().toString();
@@ -790,10 +800,14 @@ public class BaseTest extends BaseTestUtil{
 	public static void pushReportsToS3() {
 
 		String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date());
-		int finalTotalCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getTotalCount() : totalCount.get();
-		int finalPassedCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getPassedCount() : passedCount.get();
-		int finalFailedCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getFailedCount() : failedCount.get();
-		String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-" + timestamp + "-T-" + finalTotalCount + "-P-" + finalPassedCount + "-F-" + finalFailedCount + ".html";
+		int finalTotalCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getTotalCount()
+				: totalCount.get();
+		int finalPassedCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getPassedCount()
+				: passedCount.get();
+		int finalFailedCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getFailedCount()
+				: failedCount.get();
+		String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-" + timestamp + "-T-" + finalTotalCount
+				+ "-P-" + finalPassedCount + "-F-" + finalFailedCount + ".html";
 		String newFileName = "InjiVerifyUi-" + name;
 		File originalReportFile = new File(System.getProperty("user.dir") + "/test-output/ExtentReport.html");
 		File newReportFile = new File(System.getProperty("user.dir") + "/test-output/" + newFileName);
@@ -813,8 +827,7 @@ public class BaseTest extends BaseTestUtil{
 						"",
 						null, null,
 						newFileName,
-						newReportFile
-				);
+						newReportFile);
 				logger.info("isStoreSuccess:: {}", isStoreSuccess);
 			} catch (Exception e) {
 				logger.error("Error occurred while pushing the object: {}", e.getLocalizedMessage());
