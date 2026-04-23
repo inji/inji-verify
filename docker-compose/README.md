@@ -1,49 +1,111 @@
 # Inji Verify – Docker Compose Setup
 
-- **Docker**
-
-  - [Install on Ubuntu](https://docs.docker.com/engine/install/ubuntu/)
-  - [Docker Desktop for Windows](https://docs.docker.com/desktop/install/windows-install/)
-  - [Other platforms](https://docs.docker.com/engine/install/)
-
-- **Docker Compose**
-
-  `Note: Requires installation of Docker. This step can be skippped if Docker desktop(Windows) is installed as it comes along with docker compose. Please install Docker using above links before proceeding for the installation of docker compose`
-
-  - [Install as plugin to docker command](https://docs.docker.com/compose/install/#scenario-two-install-the-compose-plugin)
-  - [Install the Compose standalone](https://docs.docker.com/compose/install/#scenario-three-install-the-compose-standalone)
-
-Once installed, use Docker compose option below to run the Inji Verify application for a quick demo.
+A clean and structured guide to run **Inji Verify** locally using Docker Compose, including OpenID4VP flows and local SDK setup.
 
 ---
 
-## Setup
+# 🧱 Architecture Overview
 
+### OPENID4VP
 
-### WebWallets Configuration
+![SETUP](<mermaid-diagram.png>)
 
-The `WebWallets` array in `config/config.json` defines the web wallet(s) available for the Same Device VP flow.
+### OPENID4VC
 
-```json
-"WebWallets": [
-  {
-    "id": "inji-wallet",
-    "name": "Inji Wallet",
-    "iconUrl": "/assets/inji-web-wallet-icon.svg",
-    "walletBaseUrl": "https://injiweb.dev-int-inji.mosip.net"
-  }
-]
+---
+
+# ⚙️ Prerequisites
+
+## Docker
+
+* Install Docker from: [https://docs.docker.com/engine/install/](https://docs.docker.com/engine/install/)
+
+## Docker Compose
+
+> Included by default in Docker Desktop (Windows/Mac)
+
+Install separately if needed:
+
+* Plugin: [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)
+* Standalone: [https://docs.docker.com/compose/install/](https://docs.docker.com/compose/install/)
+
+---
+
+# 🚀 Quick Start
+
+```bash
+cd docker-compose
+
+docker compose up -d
 ```
 
-> **External dependency:** The default `walletBaseUrl` (`https://injiweb.dev-int-inji.mosip.net`) points to a shared **dev/integration** instance of Inji Web Wallet hosted by MOSIP. Wallet flows will **silently fail** if this host is unavailable, retired, or unreachable from your network.
+### Access:
 
-**Before running locally**, replace `walletBaseUrl` with one of the following:
+* UI → [http://localhost:3000](http://localhost:3000)
+* API → [http://localhost:8080/v1/verify/swagger-ui/index.html](http://localhost:8080/v1/verify/swagger-ui/index.html)
 
-| Scenario | `walletBaseUrl` value |
-|---|---|
-| Own deployed Inji Web Wallet | `https://<your-inji-web-wallet-host>` |
-| Local Inji Web Wallet (default port) | `http://localhost:3001` |
-| Mock / disable the entry | remove the entry from the array |
+---
+
+# 🔐 OpenID4VP Configuration
+
+Located in: `config/`
+
+## Example 
+```
+{
+      "logo": "/assets/cert.png",
+      "name": "Health Insurance",
+      "type": "InsuranceCredential",
+      "clientIdScheme":"pre_registered",
+      "definition": {
+        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+        "format": {
+          "ldp_vc": {
+            "proof_type": ["Ed25519Signature2018"]
+          }
+        },
+        "input_descriptors": [
+          {
+            "id": "id card credential",
+            "format": {
+              "ldp_vc": {
+                "proof_type": ["Ed25519Signature2020"]
+              }
+            },
+            "constraints": {
+              "fields": [
+                {
+                  "path": ["$.type"],
+                  "filter": {
+                    "type": "object",
+                    "pattern": "InsuranceCredential"
+                  }
+                }
+              ]
+            }
+          }
+        ]
+      }
+    }
+ ```   
+
+## Key Fields
+
+* `logo` → Display image
+* `name` → Credential name
+* `type` → Credential identifier
+* `essential` → Required or optional
+* `clientIdScheme`
+
+  * `did` → Uses request_uri
+  * `pre_registered` → Embedded request
+* `definition` → Presentation Exchange spec
+
+---
+
+# 👛 Web Wallet Configuration
+
+File: `config/config.json`
 
 ```json
 "WebWallets": [
@@ -56,149 +118,163 @@ The `WebWallets` array in `config/config.json` defines the web wallet(s) availab
 ]
 ```
 
-See [Inji Web Wallet](https://github.com/mosip/inji-web) for instructions on running your own instance.
+## ⚠️ Important
+
+Default wallet URL may fail if unreachable.
+
+### Options:
+
+* Use hosted wallet
+* Run locally → `http://localhost:3001`
+* Remove entry to disable
 
 ---
 
-### OpenID4VP config
+# 🌐 Localhost Proxy Setup
 
-The configuration file can be found under `config` directory.
+Required for mobile / cross-device flows.
 
-**Example Configuration Explanation**
+## Why?
 
-Let's look at the "MOSIP ID" example to understand how these properties work together:
+Mobile devices cannot access `localhost`.
 
-```json
-{
-  "logo": "/assets/cert.png",
-  "name": "MOSIP ID",
-  "type": "MOSIPVerifiableCredential",
-  "essential": true,
-  "clientIdScheme":"did",
-  "definition": {
-    "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-    "format": {
-      "ldp_vc": {
-        "proof_type": [
-          "RsaSignature2018"
-        ]
-      }
-    },
-    "input_descriptors": [
-      {
-        "id": "id card credential",
-        "format": {
-          "ldp_vc": {
-            "proof_type": [
-              "RsaSignature2018"
-            ]
-          }
-        },
-        "constraints": {
-          "fields": [
-            {
-              "path": [
-                "$.type"
-              ],
-              "filter": {
-                "type": "object",
-                "pattern": "MOSIPVerifiableCredential"
-              }
-            }
-          ]
-        }
-      }
-    ]
-  }
-}
+## Solution:
+
+```bash
+ngrok http 3000
 ```
-`logo`: The image /assets/cert.png will be shown on the credential selection panel.
 
-`name`: The name that has to be shown on the credential selection panel.
+Example:
 
-`type`: Internally, this configuration is used to identify what are the different types of credential.
+```
+https://abc123.ngrok.app → http://localhost:3000
+```
 
-`essential`: This credential is required for the verification to succeed.
+## Update docker-compose.yml
 
-`clientIdScheme: did`: The corresponding VP request will use `client_id_scheme` as `DID` and Auth Request will be available to wallet via Request_Uri within the VP request.
+Replace:
 
-`clientIdScheme: pre_registered`: The corresponding VP request will use `client_id_scheme` as `pre_registered` and Auth Request will be available to wallet directly within the VP request.
+```
+VERIFY_SERVICE_PROXY_FOR_LOCALHOST
+```
 
-`definition` : The presentation definition for the particular type of credential. For more details check [[DIF.PresentationExchange]](https://identity.foundation/presentation-exchange/spec/v2.0.0/)
+With:
 
----
-
-### OpenID4VP Setting Up Proxy For Localhost
-
-To get the OpenID4VP flow working locally, use a proxy service like ngrok or localtunnel 
-to create a proxy url like https://proxyurl.ngrok.app for http://localhost:3000.
-
-This is required since wallet running on your mobile / tablet device, will not be able to invoke the http://localhost:3000 url,
-while sharing the credentials.
-
-#### In docker-compose.yml file replace `VERIFY_SERVICE_PROXY_FOR_LOCALHOST` with `proxyurl.ngrok.app`. 
-Save the `docker-compose.yml` file.
-
-### Cross Device Flow
-
-To test the Cross Device flow on your mobile / tablet device, scan the VP request QR code directly.
-For Credentials which use `client_id_scheme` as`pre_registered` in the VP request, the wallet will not be able to share the VC since
-your locally running Verify application will not be pre registered with the wallet. 
-For other Credentials which use `client_id_scheme` as `DID` in the VP request, the wallet will be able to share the VC. 
-For `pre_registered`, we should add our client_id into `mimoto-trusted-verifiers.json` which is referred by Inji Wallet.
-
-### Same Device Flow
-
-To test the Same Device flow on your mobile / tablet device, hit the URL https://proxyurl.ngrok.app. 
-This will open app. 
+```
+abc123.ngrok.app
+```
 
 ---
 
-## Run Using Docker Compose:
+# 📱 Flows
 
-Navigate to the docker-compose directory:
+## Cross Device Flow
 
-```shell
+To test the Cross Device flow on your mobile / tablet device, scan the VP request QR code directly. For Credentials which use client_id_scheme aspre_registered in the VP request, the wallet will not be able to share the VC since your locally running Verify application will not be pre registered with the wallet. For other Credentials which use client_id_scheme as DID in the VP request, the wallet will be able to share the VC. For pre_registered, we should add our client_id into mimoto-trusted-verifiers.json which is referred by Inji Wallet.
+
+### Behavior:
+
+* `did` → Works directly
+* `pre_registered` → Needs trusted verifier config
+---
+
+## Same Device Flow
+
+To test the Same Device flow on your mobile / tablet device, hit the URL https://proxyurl.ngrok.app. This will open app.
+
+---
+
+# 🐳 Docker Commands
+
+## Start
+
+```bash
+docker compose up -d
+```
+
+## Stop
+
+```bash
+docker compose down
+```
+
+## Reset (with volumes)
+
+```bash
+docker compose down -v
+```
+
+## Logs
+
+```bash
+docker compose logs -f
+```
+
+---
+
+# 🛠 Local Development 
+
+## 1. Enable Local Build
+
+```yaml
+verify-service:
+  #image: injistackdev/inji-verify-service:develop  
+  build:
+    context: ./verify-service
+  image: inji-verify-service:local    
+verify-ui:
+  #image: injistackdev/inji-verify-ui:develop
+  build:
+    context: ./verify-ui
+  image: inji-verify-ui:local    
+```
+---
+
+## 2. Clear Cache and Start Docker Compose
+
+```bash
+cd ..
+cd verify-ui
+rm -rf node_modules package-lock.json
+cd ..
 cd docker-compose
+docker compose build --no-cache
+docker compose up
 ```
 
-> Make sure ports 3000, 8080, and 5432 are free.
-
-Run the following command to build and start all services:
-
-```shell
-docker-compose up -d # if docker compose is installed as a standalone command.
-docker compose up -d # if docker compose is installed as a plugin to docker command
-```
-
-This will start:
-
-* verify-service (backend)
-* verify-ui (frontend)
-* postgres (database)
-
-The UI will be accessible at: http://localhost:3000
-
-API (verify-service) swagger runs at: http://localhost:8080/v1/verify/swagger-ui/index.html
-
-To stop the application, run the following command:
-
-```shell
-docker-compose down # if docker compose is installed as a standalone command.
-docker compose down # if docker compose is installed as a plugin to docker command
-```
-
-To remove volumes as well (clean reset):
-
-```shell
-docker-compose down -v # if docker compose is installed as a standalone command.
-docker compose down -v # if docker compose is installed as a plugin to docker command
-```
 ---
-### Troubleshooting
 
-To check container logs:
+# 🧪 Testing
 
-```shell
-docker-compose logs -f
+Open:
+
 ```
+https://<ngrok-url>
+```
+
+---
+
+# ⚡ Tips
+
+* Use `--no-cache` for fresh builds
+* Hard refresh browser if needed
+* If ngrok does not work or gives CORS error, you can try with localtunnel or any other proxy
+* If stuck:
+
+```bash
+docker compose down --volumes --remove-orphans
+or
+docker system prune -a --volumes
+```
+
+---
+
+# ✅ You're Ready
+
+You now have:
+
+* Local Verify UI + Service
+* Wallet integration
+* Cross-device support
+
+---
