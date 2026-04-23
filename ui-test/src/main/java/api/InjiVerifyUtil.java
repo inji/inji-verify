@@ -141,6 +141,12 @@ public class InjiVerifyUtil extends AdminTestUtil {
 		HashMap<String, Integer> result = new HashMap<>();
 		String actuatorUrl = ConfigManager.getproperty("apiInternalEndPoint")
 				+ ConfigManager.getproperty("actuatorMimotoEndpoint");
+					if (System.getenv("useOldContextURL") != null
+			&& !System.getenv("useOldContextURL").isBlank()
+			&& System.getenv("useOldContextURL").equalsIgnoreCase("true")
+			&& actuatorUrl.contains("/v1/mimoto/")) {
+		actuatorUrl = actuatorUrl.replace("/v1/mimoto/", "/residentmobileapp/");
+	}
 		logger.info("Printing actauator url" + actuatorUrl);
 		Response response = RestClient.getRequest(actuatorUrl, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
 		if (response.getStatusCode() != 200) {

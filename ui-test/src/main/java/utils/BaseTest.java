@@ -19,6 +19,7 @@ import com.aventstack.extentreports.ExtentTest;
 import com.aventstack.extentreports.cucumber.adapter.ExtentCucumberAdapter;
 import com.browserstack.local.Local;
 import org.testng.SkipException;
+import java.util.concurrent.TimeUnit;
 
 import io.cucumber.plugin.event.PickleStepTestStep;
 import io.cucumber.plugin.event.TestStep;
@@ -126,7 +127,12 @@ public class BaseTest extends BaseTestUtil{
 	try {
         logger.info("Waiting for prerequisite before running: {}", scenario.getName());
 
-        prerequisiteLatch.await(); // 🔥 waits until prerequisite finishes
+           boolean prerequisiteCompleted = prerequisiteLatch.await(
+                Long.parseLong(InjiVerifyConfigManager.getproperty("explicitWaitTimeout").trim()) * 2L,
+                TimeUnit.SECONDS);
+        if (!prerequisiteCompleted) {
+            throw new SkipException("Skipping because prerequisite did not complete: " + prerequisiteScenarioName);
+        }
 
         if (!prerequisitePassed.get()) {
             throw new SkipException("Skipping because prerequisite failed: " + prerequisiteScenarioName);
@@ -352,7 +358,6 @@ public class BaseTest extends BaseTestUtil{
 			ExtentReportManager.getTest().pass("✅ Scenario Passed: " + scenario.getName());
 		}
 
-		/* 🔥 ADD THIS EXACTLY HERE */
 		if (scenario.getSourceTagNames().contains("@prerequisiteVP")) {
 
 			if (!scenario.isFailed()) {
@@ -367,7 +372,7 @@ public class BaseTest extends BaseTestUtil{
 		}
 
 		markBrowserStackSessionStatus(scenario);
-		attachBrowserStackVideoLinkIfFailed(scenario);
+		attachBrowserStackVideoLink(scenario);
 		ExtentReportManager.flushReport();
 		try {
 			int done = passedCount.get() + failedCount.get();
@@ -444,42 +449,9 @@ public class BaseTest extends BaseTestUtil{
 		skipReason.set(reason);
 	}
 
-	@Before("@skipBasedOnThreshold")
-	public void skipScenarioBasedOnThreshold(Scenario scenario) {
-		try {
-			int retryBlockedUntil = getWalletPasscodeSettings().get("retryBlockedUntil");
-			String envThreshold = System.getenv("THRESH_TEMP_LOCK");
-			int THRESH_TEMP_LOCK = (envThreshold != null && !envThreshold.isEmpty()) ? Integer.parseInt(envThreshold)
-					: 1;
-
-			if (retryBlockedUntil > THRESH_TEMP_LOCK) {
-				String reason = "Threshold not met: retryBlockedUntil(" + retryBlockedUntil + ") < THRESH_TEMP_LOCK("
-						+ THRESH_TEMP_LOCK + ")";
-				markScenarioSkipped(reason);
-				throw new SkipException("Scenario skipped due to threshold: " + reason);
-			}
-		} catch (Exception e) {
-			logger.error("Error checking threshold for skipping scenario", e);
-		}
-	}
-
-	private static HashMap<String, Integer> walletPasscodeSettingsCache;
-
-		public static HashMap<String, Integer> getWalletPasscodeSettings() throws Exception {
-		if (walletPasscodeSettingsCache == null) {
-			HashMap<String, String> keyMap = new HashMap<>();
-			keyMap.put("wallet.passcode.retryBlockedUntil", "retryBlockedUntil");
-			keyMap.put("wallet.passcode.maxFailedAttemptsAllowedPerCycle", "maxFailedAttempts");
-			keyMap.put("wallet.passcode.maxLockCyclesAllowed", "maxLockCycles");
-
-			walletPasscodeSettingsCache = InjiVerifyUtil.getActuatorValues(keyMap);
-		}
-		return walletPasscodeSettingsCache;
-	}
-
-	private void attachBrowserStackVideoLinkIfFailed(Scenario scenario) {
+	private void attachBrowserStackVideoLink(Scenario scenario) {
 		WebDriver currentDriver = driverHolder.get();
-		if (!scenario.isFailed() || !isUsingBrowserStack() || currentDriver == null || ExtentReportManager.getTest() == null) {
+		if (!isUsingBrowserStack() || currentDriver == null || ExtentReportManager.getTest() == null) {
 			return;
 		}
 
@@ -502,7 +474,7 @@ public class BaseTest extends BaseTestUtil{
 					getJsonText(sessionDetails, "sessionUrl"));
 
 			if (link != null) {
-				ExtentReportManager.getTest().fail(
+				ExtentReportManager.getTest().info(
 						"<a href='" + escapeHtmlAttribute(link) + "' target='_blank'>Click here for BrowserStack video/session</a>");
 				logger.info("Attached BrowserStack video/session link for failed scenario: {}", scenario.getName());
 				return;
@@ -510,7 +482,7 @@ public class BaseTest extends BaseTestUtil{
 
 			String hashedId = firstNonBlank(getJsonText(sessionDetails, "hashed_id"), getJsonText(sessionDetails, "hashedId"));
 			if (hashedId != null) {
-				ExtentReportManager.getTest().fail("BrowserStack session id: " + hashedId);
+				ExtentReportManager.getTest().info("BrowserStack session id: " + hashedId);
 			}
 		} catch (Exception e) {
 			logger.warn("Unable to fetch BrowserStack session details for scenario: {}", scenario.getName(), e);
@@ -600,34 +572,37 @@ public class BaseTest extends BaseTestUtil{
 		}
 	}
 
-@AfterAll
-public static void afterAll() {
-    try {
-        cleanupSharedInsuranceArtifactsForSuite();
-    } catch (Exception e) {
-        logger.error("Failed to clean shared insurance artifacts at suite end", e);
-    }
+	private static boolean isReportReady() {
+    // Example condition — adjust based on your framework
+    return extent == null || extent.getReport() != null;
+	}
 
-    try {
-        pushReportsOnce();
-    } catch (Exception e) {
-        logger.error("Failed to push reports once", e);
-    }
-    Runtime.getRuntime().addShutdownHook(new Thread(() -> {
-        try {
-            utils.HttpUtils.cleanupWallets();
-            if (extent != null) {
-                extent.flush();
-            }
+	@AfterAll
+	public static void afterAll() {
+		try {
+			cleanupSharedInsuranceArtifactsForSuite();
+		} catch (Exception e) {
+			logger.error("Failed to clean shared insurance artifacts at suite end", e);
+		}
+		try {
+			pushReportsOnce();
+		} catch (Exception e) {
+			logger.error("Failed to push reports once", e);
+		}
+		Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+			try {
+				utils.HttpUtils.cleanupWallets();
 
-            Thread.sleep(5000);
-
-            pushReportsToS3();
-        } catch (Exception e) {
-            logger.error("Error in shutdown hook execution", e);
-        }
-    }));
-}
+				if (extent != null) {
+					extent.flush();
+				}
+			WaitUtil.waitForCondition(driverHolder.get(), () -> extent != null, 10);
+				pushReportsOnce();
+			} catch (Exception e) {
+				logger.error("Error in shutdown hook execution", e);
+			}
+		}));
+	}
 
 	public WebDriver getDriver() {
 		return driverHolder.get();
