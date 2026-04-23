@@ -1,3 +1,5 @@
 #Add the Known Issue scenario with its bug id here
 #Ex:bugId------scenario
-#INJIVER-1234------Verify the VP verification panel
+INJIVER-1624------Verify the scan for valid qr code when internet is unavailable
+INJIVER-1621------Verify upload qr code when internet is unavailable
+INJIVER-1624------Verify the scan for valid qr code

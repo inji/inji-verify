@@ -15,6 +15,7 @@ import javax.ws.rs.core.MediaType;
 
 import java.time.LocalDate;
 import java.time.format.DateTimeFormatter;
+import java.util.HashMap;
 
 public class InjiVerifyUtil extends AdminTestUtil {
 
@@ -134,6 +135,64 @@ public class InjiVerifyUtil extends AdminTestUtil {
 
 	public static String getSunbirdBaseURL() {
 		return InjiVerifyUtil.getValueFromMimotoActuator("overrides", "mosip.sunbird.url");
+	}
+
+	public static HashMap<String, Integer> getActuatorValues(HashMap<String, String> keyMapping) throws Exception {
+		HashMap<String, Integer> result = new HashMap<>();
+		String actuatorUrl = ConfigManager.getproperty("apiInternalEndPoint")
+				+ ConfigManager.getproperty("actuatorMimotoEndpoint");
+					if (System.getenv("useOldContextURL") != null
+			&& !System.getenv("useOldContextURL").isBlank()
+			&& System.getenv("useOldContextURL").equalsIgnoreCase("true")
+			&& actuatorUrl.contains("/v1/mimoto/")) {
+		actuatorUrl = actuatorUrl.replace("/v1/mimoto/", "/residentmobileapp/");
+	}
+		logger.info("Printing actauator url" + actuatorUrl);
+		Response response = RestClient.getRequest(actuatorUrl, MediaType.APPLICATION_JSON, MediaType.APPLICATION_JSON);
+		if (response.getStatusCode() != 200) {
+			throw new RuntimeException("Failed to fetch actuator values. HTTP error: " + response.getStatusCode());
+		}
+
+		JSONObject root = new JSONObject(response.getBody().asString());
+
+		if (!root.has("propertySources")) {
+			throw new RuntimeException("[ERROR] No propertySources found in actuator response!");
+		}
+
+		for (Object srcObj : root.getJSONArray("propertySources")) {
+			if (!(srcObj instanceof JSONObject))
+				continue;
+
+			JSONObject src = (JSONObject) srcObj;
+			JSONObject props = src.optJSONObject("properties");
+			if (props == null)
+				continue;
+
+			for (String actuatorKey : keyMapping.keySet()) {
+				String resultKey = keyMapping.get(actuatorKey);
+
+				if (!result.containsKey(resultKey) && props.has(actuatorKey)) {
+					String rawValue = props.getJSONObject(actuatorKey).optString("value", "0");
+
+					try {
+						int intValue = Integer.parseInt(rawValue.trim());
+						result.put(resultKey, intValue);
+					} catch (NumberFormatException e) {
+						System.err
+								.println("[WARN] Failed to parse value for key " + actuatorKey + " (" + rawValue + ")");
+					}
+				}
+			}
+			if (result.size() == keyMapping.size()) {
+				logger.info("All keys mapped successfully");
+				break;
+			}
+		}
+		if (result.isEmpty()) {
+			logger.info("No actuator values matched the provided key mapping.\"");
+		}
+
+		return result;
 	}
 
 }
