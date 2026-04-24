@@ -108,14 +108,16 @@ Located in: `config/`
 File: `config/config.json`
 
 ```json
-"WebWallets": [
-  {
-    "id": "inji-wallet",
-    "name": "Inji Wallet",
-    "iconUrl": "/assets/inji-web-wallet-icon.svg",
-    "walletBaseUrl": "http://localhost:3001"
-  }
-]
+{
+  "WebWallets": [
+    {
+      "id": "inji-wallet",
+      "name": "Inji Wallet",
+      "iconUrl": "/assets/inji-web-wallet-icon.svg",
+      "walletBaseUrl": "http://localhost:3001"
+    }
+  ]
+}
 ```
 
 ## ⚠️ Important
@@ -170,7 +172,7 @@ abc123.ngrok.app
 
 ## Cross Device Flow
 
-To test the Cross Device flow on your mobile / tablet device, scan the VP request QR code directly. For Credentials which use client_id_scheme aspre_registered in the VP request, the wallet will not be able to share the VC since your locally running Verify application will not be pre registered with the wallet. For other Credentials which use client_id_scheme as DID in the VP request, the wallet will be able to share the VC. For pre_registered, we should add our client_id into mimoto-trusted-verifiers.json which is referred by Inji Wallet.
+To test the cross-device flow on a mobile or tablet device, scan the VP request QR code directly. For credentials with `client_id_scheme` set to `pre_registered`, the wallet cannot share the VC unless the locally running Verify application is registered as a trusted verifier. For credentials with `client_id_scheme` set to `did`, the wallet can share the VC. For `pre_registered`, add the client ID to `mimoto-trusted-verifiers.json`, which Inji Wallet uses as its trusted verifier list.
 
 ### Behavior:
 
@@ -220,12 +222,12 @@ docker compose logs -f
 verify-service:
   #image: injistackdev/inji-verify-service:develop  
   build:
-    context: ./verify-service
+    context: ../verify-service
   image: inji-verify-service:local    
 verify-ui:
   #image: injistackdev/inji-verify-ui:develop
   build:
-    context: ./verify-ui
+    context: ../verify-ui
   image: inji-verify-ui:local    
 ```
 ---
@@ -233,10 +235,6 @@ verify-ui:
 ## 2. Clear Cache and Start Docker Compose
 
 ```bash
-cd ..
-cd verify-ui
-rm -rf node_modules package-lock.json
-cd ..
 cd docker-compose
 docker compose build --no-cache
 docker compose up
@@ -264,6 +262,7 @@ https://<ngrok-url>
 ```bash
 docker compose down --volumes --remove-orphans
 or
+# Last resort only: this removes unused Docker resources across your machine.
 docker system prune -a --volumes
 ```
 

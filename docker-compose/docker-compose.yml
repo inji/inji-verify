@@ -26,7 +26,6 @@ services:
       - INJI_KEYSTORE_FILE_PASS=mosip
       - INJI_VERIFY_REDIRECT_URI=https://VERIFY_SERVICE_PROXY_FOR_LOCALHOST
       - INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS=5
-      - INJI_VERIFY_REDIRECT_URI=https://VERIFY_SERVICE_PROXY_FOR_LOCALHOST
       - INJI_VERIFY_CLAIMS_WITH_META_DATA=_sd,_sd_alg,iss,cnf,sub,aud,exp,nbf,iat,cti
     depends_on:
       - postgres
