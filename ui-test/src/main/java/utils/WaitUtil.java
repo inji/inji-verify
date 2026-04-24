@@ -8,6 +8,7 @@ import org.openqa.selenium.support.ui.WebDriverWait;
 
 import base.BasePage;
 import java.time.Duration;
+import java.util.function.Supplier;
 
 public class WaitUtil {
 
@@ -16,6 +17,11 @@ public class WaitUtil {
     public static void waitForVisibility(WebDriver driver, WebElement element, int timeout) {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
         wait.until(ExpectedConditions.visibilityOf(element));
+    }
+
+    public static void waitForCondition(WebDriver driver, Supplier<Boolean> condition, int timeoutInSeconds) {
+    WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeoutInSeconds));
+    wait.until(d -> condition.get());
     }
 
     public static void waitForClickability(WebDriver driver, WebElement element) {

@@ -2316,7 +2316,7 @@
                       "var encodedTxnId = btoa(txnId);",
                       "",
                       "pm.collectionVariables.set('txnIdForVPSession', encodedTxnId);",
-                      "pm.collectionVariables.set('reqIdForVPSession', responseJson.requestId);"
+                      "pm.collectionVariables.set('reqIdForInvalidRequest', responseJson.requestId);"
                     ],
                     "type": "text/javascript",
                     "packages": {},

@@ -1,0 +1,85 @@
+{
+  "vp_token": {
+    "verifiableCredential": [
+      {
+        "issuer": "did:web:api.released.mosip.net:identity-service:02b073b8-aacd-472e-b63f-265bb7ccdd9f",
+        "credentialSubject": {
+          "dob": "2025-01-01",
+          "policyIssuedOn": "2023-04-20",
+          "policyExpiresOn": "2033-04-20",
+          "id": "did:jwk:eyJrdHkiOiJFQyIsInVzZSI6InNpZyIsImNydiI6IlAtMjU2IiwieCI6IkI3X0dpOFRhc3JPQ3d3d2xUbnZqUEtXY0d0empKTndBZUlTcVBLYm1wYVEiLCJ5IjoiSkVwNjFlbmE5NlNzc2JGOVlSV0xoZG1HNEtqY0JhTExmTFNqR2E3eXAwSSJ9",
+          "policyNumber": "5555",
+          "email": "abcd@gmail.com",
+          "policyName": "wallet",
+          "fullName": "{{credential_subject_fullName}}",
+          "mobile": "0123456789",
+          "benefits": ["Critical Surgery", "Full body checkup"],
+          "gender": "Male"
+        }
+        {{#if credential_status_enabled}}
+        ,
+        "credentialStatus": {
+          "id": "https://example.com/status-list#1",
+          "type": "BitstringStatusListEntry",
+          "statusPurpose": "revocation",
+          "statusListIndex": "1",
+          "statusListCredential": "https://example.com/status-list-credential"
+        }
+        {{/if}}
+        ,
+        "id": "did:rcw:fe3c653d-e6f5-4a8f-b2b0-d2c3c1324231",
+        "proof": {
+          "created": "2026-03-23T12:29:13Z",
+          "verificationMethod": "{{vc_ld_proof_verificationMethod}}",
+{{#if vc_ld_proof_proof_value_is_null}}
+          "proofValue": null,
+          "jws": null,
+{{else}}
+          "proofValue": "{{vc_ld_proof_proofValue}}",
+{{/if}}
+          "type": "Ed25519Signature2020",
+          "proofPurpose": "assertionMethod"
+        },
+        "expirationDate": "{{vc_expiration_date}}",
+        "issuanceDate": "{{vc_issuance_date}}",
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://inji.github.io/inji-config/contexts/insurance-context.json",
+          "https://w3id.org/security/suites/ed25519-2020/v1"
+        ],
+        "type": ["VerifiableCredential", "InsuranceCredential"]
+      }
+    ],
+    "@context": [
+      "https://www.w3.org/2018/credentials/v1",
+      "https://w3id.org/security/suites/jws-2020/v1"
+    ],
+    "proof": {
+      "type": "JsonWebSignature2020",
+      "verificationMethod": "did:jwk:eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6IkI3X0dpOFRhc3JPQ3d3d2xUbnZqUEtXY0d0empKTndBZUlTcVBLYm1wYVEiLCJ5IjoiSkVwNjFlbmE5NlNzc2JGOVlSV0xoZG1HNEtqY0JhTExmTFNqR2E3eXAwSSIsInVzZSI6InNpZyJ9#0",
+      "jws": "{{vp_proof_jws}}",
+      "domain": "did:jwk:eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6IkI3X0dpOFRhc3JPQ3d3d2xUbnZqUEtXY0d0empKTndBZUlTcVBLYm1wYVEiLCJ5IjoiSkVwNjFlbmE5NlNzc2JGOVlSV0xoZG1HNEtqY0JhTExmTFNqR2E3eXAwSSIsInVzZSI6InNpZyJ9#0",
+      "challenge": "bGvxyRYPVQewlMOAaRvk0w=="
+    },
+    "type": ["VerifiablePresentation"],
+    "holder": "did:jwk:eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6IkI3X0dpOFRhc3JPQ3d3d2xUbnZqUEtXY0d0empKTndBZUlTcVBLYm1wYVEiLCJ5IjoiSkVwNjFlbmE5NlNzc2JGOVlSV0xoZG1HNEtqY0JhTExmTFNqR2E3eXAwSSIsInVzZSI6InNpZyJ9#0",
+    "id": "urn:uuid:52640c74-50ba-4c3c-b14b-e919c2ff593c"
+  },
+  "state": "{{state}}",
+  "presentation_submission": {
+    "id": "{{definition_id}}",
+    "definition_id": "{{definition_id}}",
+    "descriptor_map": [
+      {
+        "format": "ldp_vp",
+        "path": "$",
+        "path_nested": {
+          "path": "$.verifiableCredential[0]",
+          "id": "id card credential",
+          "format": "ldp_vc"
+        },
+        "id": "id card credential"
+      }
+    ]
+  }
+}
