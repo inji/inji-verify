@@ -6,11 +6,11 @@ A clean and structured guide to run **Inji Verify** locally using Docker Compose
 
 # 🧱 Architecture Overview
 
-### OPENID4VP
+## OPENID4VP
 
 ![SETUP](<mermaid-diagram.png>)
 
-### OPENID4VC
+## OPENID4VC
 
 ---
 
@@ -39,7 +39,7 @@ cd docker-compose
 docker compose up -d
 ```
 
-### Access:
+## Access:
 
 * UI → [http://localhost:3000](http://localhost:3000)
 * API → [http://localhost:8080/v1/verify/swagger-ui/index.html](http://localhost:8080/v1/verify/swagger-ui/index.html)
