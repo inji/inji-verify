@@ -644,13 +644,18 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         }
     };
 
+    const hash = window.location.hash;
+    const params = new URLSearchParams(hash.substring(1));
+    const responseCode = params.get("response_code");
+
   const startScanning =
     Boolean(scannerActive) &&
     isEnableScan &&
     (hasTrigger ? activeFlow === "scan" || activeFlow === "inline" : true) &&
     !isUploading &&
     !isScanning &&
-    !scanSessionCompletedRef.current;
+    !scanSessionCompletedRef.current &&
+    !Boolean(responseCode);
 
   const startVideoStreamRef = useRef(startVideoStream);
   startVideoStreamRef.current = startVideoStream;
