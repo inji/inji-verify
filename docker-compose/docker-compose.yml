@@ -4,6 +4,10 @@ services:
   verify-service:
     container_name: verify-service
     image: injistackdev/inji-verify-service:develop
+#    build:
+#      context: ../verify-service
+#      dockerfile: Dockerfile
+#    image: inji-verify-service:local
     user: root
     ports:
       - "8080:8080"
@@ -29,6 +33,10 @@ services:
   verify-ui:
     container_name: verify-ui
     image: injistackdev/inji-verify-ui:develop
+#    build:
+#      context: ../verify-ui
+#      dockerfile: Dockerfile
+#    image: inji-verify-ui:local
     ports:
       - "3000:8000"
     environment:
