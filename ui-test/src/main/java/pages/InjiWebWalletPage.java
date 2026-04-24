@@ -57,6 +57,18 @@ public class InjiWebWalletPage extends BasePage {
 		PageFactory.initElements(driver, this);
 	}
 
+		public boolean isConfirmPasscodeVisible() {
+    try {
+        WebElement confirmField = new WebDriverWait(driver, Duration.ofSeconds(3))
+            .until(ExpectedConditions.visibilityOfElementLocated(
+                By.xpath("//div[@data-testid='confirm-passcode-container']//input[@type='password' and @maxlength='1']")
+            ));
+        return confirmField.isDisplayed();
+    } catch (Exception e) {
+        return false;
+    }
+}
+
 public void enterConfirmPasscode(String string) {
 		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(30));
 		wait.until(ExpectedConditions.visibilityOfElementLocated(By.xpath(

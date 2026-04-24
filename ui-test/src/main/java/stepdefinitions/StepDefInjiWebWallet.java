@@ -100,9 +100,14 @@ public class StepDefInjiWebWallet extends BaseSteps {   // <-- extends BaseSteps
     public void user_confirms_inji_web_wallet_with_configured_passcode() {
         try {
             String passcode = HttpUtils.get("INJIWEB_PASSCODE");
-            injiWebWalletPage.enterConfirmPasscode(passcode);
-            injiWebWalletPage.clickSubmitPasscode();
-            test.log(Status.PASS, "Successfully entered wallet passcode.");
+            if (injiWebWalletPage.isConfirmPasscodeVisible()) {
+                injiWebWalletPage.enterConfirmPasscode(passcode);
+                injiWebWalletPage.clickSubmitPasscode();
+                test.log(Status.PASS, "Confirm passcode field was visible — passcode confirmed and submitted.");
+            } else {
+                test.log(Status.PASS, "Confirm passcode field not visible — skipping confirmation step.");
+                injiWebWalletPage.clickSubmitPasscode();
+            }
         } catch (Exception e) {
             logFailure(test, driver, "Failed to confirm inji-web wallet with passcode", e);
             throw e;

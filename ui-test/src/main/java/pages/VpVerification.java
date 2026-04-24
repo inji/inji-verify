@@ -104,7 +104,7 @@ public class VpVerification extends BasePage {
 	@FindBy(xpath = "//span[@class='walletName' and text()='Inji Wallet']")
 	WebElement WalletButton;
 
-	@FindBy(xpath = "//button[@class='proceedButton' and text()='Proceed']")
+	@FindBy(id = "wallet-selector-proceed-button")
 	WebElement ProceedButton;
 
 	@FindBy(xpath = "//label[@for='Land Registry']")
