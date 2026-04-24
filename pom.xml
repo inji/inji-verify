@@ -124,7 +124,7 @@
         <java-jwt.version>3.18.1</java-jwt.version>
         <tink.version>1.16.0</tink.version>
         <nimbusds-jiose-jwt.version>9.37.4</nimbusds-jiose-jwt.version>
-        <pixelpass-jar.version>0.8.0-SNAPSHOT</pixelpass-jar.version>
+        <pixelpass-jar.version>0.8.0</pixelpass-jar.version>
     </properties>
 
     <modules>
