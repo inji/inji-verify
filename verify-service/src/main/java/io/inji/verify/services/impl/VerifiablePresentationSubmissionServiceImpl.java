@@ -126,8 +126,16 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     @Override
     public ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
+        log.info("Starting VP submission");
+        log.info("Received VP submission with vpToken: {}", vpToken);
+        log.info("Received VP submission with presentationSubmission: {}", presentationSubmission);
+        log.info("Received VP submission with state: {}", state);
+        log.info("Received VP submission with error: {}", error);
+        log.info("Received VP submission with errorDescription: {}", errorDescription);
+
         // --- Get responseCodeValidationRequired from auth request ---
         AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
+        log.info("authRequest is {}", authRequest);
         boolean responseCodeValidationRequired = false,
                 acceptVPWithoutHolderProof = false;
         String nonce = null, clientId = null;
@@ -137,6 +145,11 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             clientId = authRequest.getAuthorizationDetails().getClientId();
             acceptVPWithoutHolderProof  = authRequest.getAuthorizationDetails().isAcceptVPWithoutHolderProof();
         }
+        log.info("responseCodeValidationRequired: {}", responseCodeValidationRequired);
+        log.info("acceptVPWithoutHolderProof: {}", acceptVPWithoutHolderProof);
+        log.info("nonce from auth request: {}", nonce);
+        log.info("clientId from auth request: {}", clientId);
+
 
         // --- create response redirect_uri for same_device flow ---
         String responseCode = null;
@@ -164,7 +177,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
             }
             VPTokenDto vpTokenDto = extractTokens(vpToken);
-
+            log.info("Validating client_id and nonce from VP token");
             if (!acceptVPWithoutHolderProof) {
                 if (!StringUtils.hasText(nonce)) throw new ClientIdNonceException(ErrorCode.NONCE_VALIDATION_FAILED);
                 if (!StringUtils.hasText(clientId)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
@@ -174,6 +187,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
                     String challenge = proof.optString("challenge", null);
                     String domain = proof.optString("domain", null);
+                    log.info("challenge from VP token: {}, expected nonce: {}", challenge, nonce);
+                    log.info("domain from VP token: {}, expected clientId: {}", domain, clientId);
 
                     if (!StringUtils.hasText(challenge) || !StringUtils.hasText(domain)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_NONCE_VALIDATION_FAILED);
                     if (!nonce.equals(challenge)) throw new ClientIdNonceException(ErrorCode.NONCE_VALIDATION_FAILED);
