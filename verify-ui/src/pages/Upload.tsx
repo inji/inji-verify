@@ -16,7 +16,6 @@ import {checkInternetStatus} from "../utils/misc";
 export const Upload = () => {
   const { t } = useTranslation("Upload");
   const dispatch = useAppDispatch();
-
   const triggerElement = (
       <div>
           <div
@@ -25,30 +24,29 @@ export const Upload = () => {
             <div className="absolute top-[58px] left-[98px] lg:top-[165px] lg:left-[50%] lg:translate-x-[-50%] lg:translate-y-[-50%]">
                 <QrIcon className="w-[78px] lg:w-[100px]" />
             </div>
-            <div
-                className="absolute top-[130px] left-[45px] lg:top-[200px] lg:left-[95px] cursor-pointer"
-                onClick={async (e) => {
-                    e.preventDefault();
-                    e.stopPropagation();
+          <button
+              className="absolute top-[130px] left-[45px] lg:top-[200px] lg:left-[95px] cursor-pointer"
+              onClick={(e) => {
+                  e.preventDefault();
+                  e.stopPropagation();
 
-                    const isOnline = await checkInternetStatus();
+                  document.getElementById("upload-qr")?.click();
 
-                    dispatch(
-                        updateInternetConnectionStatus({
-                            internetConnectionStatus: isOnline ? "ONLINE" : "OFFLINE",
-                        })
-                    );
+                  (async () => {
+                      const isOnline = await checkInternetStatus();
 
-                    if (isOnline) {
-                        document.getElementById("trigger-upload")?.click();
-                    }
-
-                }}
-            >
+                      dispatch(
+                          updateInternetConnectionStatus({
+                              internetConnectionStatus: isOnline ? "ONLINE" : "OFFLINE",
+                          })
+                      );
+                  })();
+              }}
+          >
                 <UploadQrCode
                         className="pointer-events-none"
                         displayMessage={t("Common:Button.upload")} />
-            </div>
+            </button>
             <button
                 id="trigger-upload"
                 className="hidden"
@@ -83,7 +81,7 @@ const handleOnVCProcessed = (data: any[]) => {
         >
           <QRCodeVerification
             triggerElement={triggerElement}
-            verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+            verifyServiceUrl={ window._env_.VERIFY_SERVICE_API_URL}
             isEnableScan={false}
             onVCProcessed={handleOnVCProcessed}
             uploadButtonId={"upload-qr"}
