@@ -12,10 +12,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 public class FinalResultListener implements ITestListener, ISuiteListener {
 
     private static final Logger LOGGER = Logger.getLogger(FinalResultListener.class);
-    private static final AtomicInteger passedCount = new AtomicInteger(0);
-    private static final AtomicInteger failedCount = new AtomicInteger(0);
-    private static final AtomicInteger skippedCount = new AtomicInteger(0);
-    private static final AtomicInteger totalCount = new AtomicInteger(0);
+    private static final AtomicInteger passedCount      = new AtomicInteger(0);
+    private static final AtomicInteger failedCount      = new AtomicInteger(0);
+    private static final AtomicInteger skippedCount     = new AtomicInteger(0);
+    private static final AtomicInteger knownIssueCount  = new AtomicInteger(0); // ← NEW
+    private static final AtomicInteger totalCount       = new AtomicInteger(0);
 
     @Override
     public void onStart(ISuite suite) {
@@ -38,6 +39,11 @@ public class FinalResultListener implements ITestListener, ISuiteListener {
         if (!isCucumberScenario(result)) {
             return;
         }
+        if (isKnownIssue(result)) {
+            knownIssueCount.incrementAndGet();
+            totalCount.incrementAndGet();
+            return;
+        }
         failedCount.incrementAndGet();
         totalCount.incrementAndGet();
         logMismatch(result, "FAILED");
@@ -48,9 +54,27 @@ public class FinalResultListener implements ITestListener, ISuiteListener {
         if (!isCucumberScenario(result)) {
             return;
         }
+        if (isKnownIssue(result)) {
+            knownIssueCount.incrementAndGet();
+            totalCount.incrementAndGet();
+            return;
+        }
         skippedCount.incrementAndGet();
         totalCount.incrementAndGet();
         logMismatch(result, "SKIPPED");
+    }
+
+    // ── Helpers ───────────────────────────────────────────────────────────────────
+
+    /**
+     * Returns true when the scenario name is registered as a known issue in the
+     * Runner's knownIssues map, meaning it was intentionally skipped via
+     * SkipException in the @Before hook.
+     */
+    private boolean isKnownIssue(ITestResult result) {
+        String scenarioName = extractScenarioName(result);
+        return scenarioName != null
+                && runnerfiles.Runner.knownIssues.containsKey(scenarioName);
     }
 
     private void logMismatch(ITestResult result, String finalStatus) {
@@ -58,7 +82,6 @@ public class FinalResultListener implements ITestListener, ISuiteListener {
         if (scenarioName == null) {
             return;
         }
-
         String hookStatus = BaseTest.getScenarioHookStatus(scenarioName);
         if (hookStatus != null && !hookStatus.equalsIgnoreCase(finalStatus)) {
             LOGGER.error("Scenario status mismatch detected. Scenario='" + scenarioName
@@ -88,8 +111,11 @@ public class FinalResultListener implements ITestListener, ISuiteListener {
         passedCount.set(0);
         failedCount.set(0);
         skippedCount.set(0);
+        knownIssueCount.set(0); // ← NEW
         totalCount.set(0);
     }
+
+    // ── Getters ───────────────────────────────────────────────────────────────────
 
     public static boolean hasRecordedResults() {
         return totalCount.get() > 0;
@@ -103,7 +129,15 @@ public class FinalResultListener implements ITestListener, ISuiteListener {
         return failedCount.get();
     }
 
+    public static int getSkippedCount() {
+        return skippedCount.get();
+    }
+
+    public static int getKnownIssueCount() { // ← NEW
+        return knownIssueCount.get();
+    }
+
     public static int getTotalCount() {
-        return totalCount.get();
+        return passedCount.get() + failedCount.get() + skippedCount.get() + knownIssueCount.get(); // ← updated
     }
 }

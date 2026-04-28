@@ -60,5 +60,8 @@ public class UiConstants {
 	public static final String CAMERA_ACCESS_DENIED_DESCRIPTION = "We need your camera to scan the code. Go to your browser settings and allow camera access for this website.";
 	public static final String CAMERA_ACCESS_DENIED_OKAY_BUTTON = "Okay";
 
+	public static final String NO_MATCHING_CREDENTIALS_ERROR = "No matching credentials found";
+	public static final String PARTIAL_SHARING_MESSAGE = "Not Shared";
+	public static final String CONGRATULATIONS_MESSAGE = "Congratulations, the given credential is valid!";
 
 }
