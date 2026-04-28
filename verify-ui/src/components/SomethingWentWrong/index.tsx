@@ -5,11 +5,15 @@ import { updateInternetConnectionStatus } from "../../redux/features/application
 import { UnderConstruction } from "../../utils/theme-utils";
 import { useTranslation } from "react-i18next";
 import { Button } from "../Home/VerificationSection/commons/Button";
+import store from "../../redux/store";
+import {Pages} from "../../utils/config";
 
 function SomethingWentWrong(props: any) {
   const navigate = useNavigate();
   const dispatch = useAppDispatch();
   const { t } = useTranslation("Offline");
+  const { method } = store.getState().verification;
+  const redirectPage = method === "UPLOAD" ? Pages.Home : method === "SCAN" ? Pages.Scan : Pages.VerifyCredentials
   return (
     <div className="grid content-center justify-center rounded-[10px] h-[540px] mx-auto my-7 shadow-lg text-center w-[90%] bg-white bg-no-repeat bg-clip-padding px-6">
       <div className="col-end-13">
@@ -38,7 +42,7 @@ function SomethingWentWrong(props: any) {
                 internetConnectionStatus: "UNKNOWN",
               })
             );
-            navigate("/");
+              navigate(`${redirectPage}`);
           }}
         />
       </div>
