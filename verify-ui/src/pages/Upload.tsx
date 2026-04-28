@@ -10,25 +10,54 @@ import { raiseAlert } from "../redux/features/alerts/alerts.slice";
 import { useAppDispatch } from "../redux/hooks";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
 import { getClientId, isVPSubmissionSupported, vcVerificationV2Request,} from "../utils/commonUtils";
+import {updateInternetConnectionStatus} from "../redux/features/application-state/application-state.slice";
+import {checkInternetStatus} from "../utils/misc";
 
 export const Upload = () => {
   const { t } = useTranslation("Upload");
   const dispatch = useAppDispatch();
 
   const triggerElement = (
-    <div>
-      <div
-        className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[250px] lg:w-[320px] aspect-square content-center justify-center`}
-      ></div>
-      <div className="absolute top-[58px] left-[98px] lg:top-[165px] lg:left-[50%] lg:translate-x-[-50%] lg:translate-y-[-50%]">
-        <QrIcon className="w-[78px] lg:w-[100px]" />
-      </div>
-      <UploadQrCode
-        className="absolute top-[130px] left-[45px] lg:top-[200px] lg:left-[95px]"
-        displayMessage={t("Common:Button.upload")}
-      />
-    </div>
-  );
+      <div>
+          <div
+                className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[250px] lg:w-[320px] aspect-square content-center justify-center`}
+            ></div>
+            <div className="absolute top-[58px] left-[98px] lg:top-[165px] lg:left-[50%] lg:translate-x-[-50%] lg:translate-y-[-50%]">
+                <QrIcon className="w-[78px] lg:w-[100px]" />
+            </div>
+            <div
+                className="absolute top-[130px] left-[45px] lg:top-[200px] lg:left-[95px] cursor-pointer"
+                onClick={async (e) => {
+                    e.preventDefault();
+                    e.stopPropagation();
+
+                    const isOnline = await checkInternetStatus();
+
+                    dispatch(
+                        updateInternetConnectionStatus({
+                            internetConnectionStatus: isOnline ? "ONLINE" : "OFFLINE",
+                        })
+                    );
+
+                    if (isOnline) {
+                        document.getElementById("trigger-upload")?.click();
+                    }
+
+                }}
+            >
+                <UploadQrCode
+                        className="pointer-events-none"
+                        displayMessage={t("Common:Button.upload")} />
+            </div>
+            <button
+                id="trigger-upload"
+                className="hidden"
+                onClick={() => {
+                    document.getElementById("upload-qr")?.click();
+                }}
+            />
+        </div>
+    );
 
 const handleOnVCProcessed = (data: any[]) => {
         const vc = data[0].vc;
