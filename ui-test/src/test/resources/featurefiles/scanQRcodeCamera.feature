@@ -9,8 +9,6 @@ Feature: Inji Verify scan qr code camera testing
   Scenario: Verify the scan for valid qr code
     And click on scan qr code button
     Then validate that QR code is scanned successfully
-    #And validate the step 3 after scanning the QR code
-    #And validate the step 4 after scanning the QR code
 
   @smoke @verifyFirstTimeScanQrCodePermissionPrompt @withoutBrowserstack @scan @qr_valid @needsInsuranceArtifacts
   Scenario: Verify first time scan qr code click triggers camera permission flow

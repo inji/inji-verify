@@ -142,7 +142,7 @@ Scenario: Verify VP verification same device flow
     And User performs token-based login to inji-web wallet
     And User unlocks inji-web wallet with configured passcode
     And User click on submit button
-    And Then Verify error message is displayed
+    And Verify error message is displayed
 	
 	@smoke @verifyingVpVerification @dependsOnVP
     Scenario: Verify multiple VC OVP verification using inji-web wallet 

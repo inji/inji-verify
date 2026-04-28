@@ -64,5 +64,4 @@ public class UiConstants {
 	public static final String PARTIAL_SHARING_MESSAGE = "Not Shared";
 	public static final String CONGRATULATIONS_MESSAGE = "Congratulations, the given credential is valid!";
 
-
 }
