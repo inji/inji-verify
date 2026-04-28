@@ -39,10 +39,6 @@ public class FinalResultListener implements ITestListener, ISuiteListener {
         if (!isCucumberScenario(result)) {
             return;
         }
-        // Cucumber-TestNG reports SkipException thrown from a @Before hook as
-        // FAILED at the TestNG level, not SKIPPED. Known-issue scenarios do
-        // exactly this, so we must intercept them here before they pollute
-        // failedCount.
         if (isKnownIssue(result)) {
             knownIssueCount.incrementAndGet();
             totalCount.incrementAndGet();
@@ -58,13 +54,7 @@ public class FinalResultListener implements ITestListener, ISuiteListener {
         if (!isCucumberScenario(result)) {
             return;
         }
-        // Defensive guard: on some Cucumber-TestNG versions the same known-issue
-        // scenario may arrive here instead of (or in addition to) onTestFailure.
-        // Prevent double-counting by checking before routing to skippedCount.
         if (isKnownIssue(result)) {
-            // Only increment if onTestFailure hasn't already counted it.
-            // We accept a tiny race window; the counts are best-effort for the
-            // filename — the report body is the authoritative source.
             knownIssueCount.incrementAndGet();
             totalCount.incrementAndGet();
             return;
