@@ -120,6 +120,18 @@ public class ExtentReportManager {
     public static synchronized void incrementKnownIssue() {
         knownIssueCount++;
     }
+
+    public static synchronized void updateFinalStats(int passed, int failed, int knownIssues) {
+    if (extent == null) {
+        return;
+    }
+    extent.setSystemInfo("Final: Passed", String.valueOf(passed));
+    extent.setSystemInfo("Final: Failed", String.valueOf(failed));
+    extent.setSystemInfo("Final: Known Issues", String.valueOf(knownIssues));
+    extent.setSystemInfo("Final: Skipped", String.valueOf(skippedCount));
+    extent.setSystemInfo("Final: Total", String.valueOf(passed + failed + skippedCount + knownIssues));
+    extent.flush();
+    }
     // ─────────────────────────────────────────────────────────────────────────────
 
     // ── Counter getters ───────────────────────────────────────────────────────────

@@ -61,13 +61,15 @@ public class BaseTest extends BaseTestUtil {
 
 	public static final AtomicInteger passedCount = new AtomicInteger(0);
 	public static final AtomicInteger failedCount = new AtomicInteger(0);
+	public static final AtomicInteger skippedCount = new AtomicInteger(0);
 	public static final AtomicInteger totalCount = new AtomicInteger(0);
 	private static final ConcurrentMap<String, String> scenarioHookStatuses = new ConcurrentHashMap<>();
 	private static final AtomicBoolean reportsPushed = new AtomicBoolean(false);
 
-	private static final CountDownLatch prerequisiteLatch = new CountDownLatch(1);
+	private static CountDownLatch prerequisiteLatch = new CountDownLatch(1);
 	private static final AtomicBoolean prerequisitePassed = new AtomicBoolean(false);
 	private static volatile String prerequisiteScenarioName = null;
+
 
 	// ── Known Issues
 	// ──────────────────────────────────────────────────────────────
@@ -98,6 +100,7 @@ public class BaseTest extends BaseTestUtil {
 
 	public static final String url = InjiVerifyConfigManager.getInjiVerifyUi();
 	private static final String buildIdentifier = "#" + new SimpleDateFormat("dd-MMM-HH:mm").format(new Date());
+	private static final String timestamp = new SimpleDateFormat("yyyyMMdd_HHmmss").format(new Date());
 
 	private static final ThreadLocal<JavascriptExecutor> jseHolder = new ThreadLocal<>();
 	public String PdfNameForMosip = "MosipVerifiableCredential.pdf";
@@ -198,7 +201,16 @@ public class BaseTest extends BaseTestUtil {
 						bsLocalArgs.put("key", accessKey);
 						bsLocalArgs.put("forceLocal", "true");
 						bsLocal.start(bsLocalArgs);
-						logger.info("BrowserStack Local tunnel started.");
+					int retry = 0;
+					while (!bsLocal.isRunning()) {
+						Thread.sleep(1000);
+						retry++;
+						if (retry > 15) {
+							throw new RuntimeException("BrowserStack Local failed to start.");
+						}
+					}
+
+					logger.info("✅ BrowserStack Local tunnel is fully running.");
 					}
 				} catch (Exception e) {
 					logger.error("Failed to start BrowserStack Local tunnel", e);
@@ -240,7 +252,19 @@ public class BaseTest extends BaseTestUtil {
 
 			capabilities.setCapability("bstack:options", browserstackOptions);
 			logger.info("Final capabilities: {}", capabilities);
-			WebDriver newDriver = new RemoteWebDriver(new URL(URL), capabilities);
+			WebDriver newDriver;
+			try {
+				logger.info("Creating BrowserStack session...");
+
+				newDriver = new RemoteWebDriver(new URL(URL), capabilities);
+				((RemoteWebDriver) newDriver).setFileDetector(new LocalFileDetector());
+
+				logger.info("✅ BrowserStack session created");
+
+			} catch (Exception e) {
+				logger.error("❌ BrowserStack session creation failed", e);
+				throw new RuntimeException("BrowserStack session failed. Stopping execution.", e);
+			}
 			((RemoteWebDriver) newDriver).setFileDetector(new LocalFileDetector());
 			driverHolder.set(newDriver);
 		} else {
@@ -321,6 +345,14 @@ public class BaseTest extends BaseTestUtil {
 		ExtentCucumberAdapter.getCurrentStep().log(Status.INFO, "Step Started: " + stepName);
 	}
 
+	
+	public static void resetPrerequisiteState() {
+		prerequisiteLatch = new CountDownLatch(1);
+		prerequisitePassed.set(false);
+		prerequisiteScenarioName = null;
+		logger.info("Prerequisite state reset for VP tests");
+	}
+
 	@AfterStep
 	public void afterStep(Scenario scenario) {
 		String stepName = getStepName(scenario);
@@ -340,40 +372,52 @@ public class BaseTest extends BaseTestUtil {
 	public void afterScenario(Scenario scenario) {
 
 		// ── Known Issues: handle skipped-due-to-known-issue scenarios ────────────────
-		if (scenario.getStatus().toString().equalsIgnoreCase("SKIPPED")
-				&& runnerfiles.Runner.knownIssues.containsKey(scenario.getName())) {
+	if (Boolean.TRUE.equals(isKnownIssueScenario.get())) {
 
-			String bugId = runnerfiles.Runner.knownIssues.get(scenario.getName());
-			String bugUrl = "https://mosip.atlassian.net/browse/" + bugId;
-			knownIssueCount.incrementAndGet();
+		String bugId = runnerfiles.Runner.knownIssues.get(scenario.getName());
+		String bugUrl = "https://mosip.atlassian.net/browse/" + bugId;
+		knownIssueCount.incrementAndGet();
 
-			ExtentReportManager.getTest().skip(
-					"🟠 Skipped due to Known Issue → <a href='" + bugUrl + "' target='_blank'>" + bugId + "</a>");
+		ExtentReportManager.getTest().skip(
+				"🟠 Skipped due to Known Issue → <a href='" + bugUrl + "' target='_blank'>" + bugId + "</a>");
 
-			ExtentReportManager.flushReport();
-			return; // Skip the rest of the teardown — driver was never started
-		}
+		ExtentReportManager.flushReport();
+		// Clean up ThreadLocals and runtime dir — driver was never started
+		isKnownIssueScenario.remove();
+		cleanupScenarioRuntimeArtifacts();
+		scenarioRuntimeDir.remove();
+		ExtentReportManager.removeTest();
+		return;
+	}
 		// ─────────────────────────────────────────────────────────────────────────────
 
-		if (scenario.isFailed()) {
+		String scenarioStatus = scenario.getStatus().toString();
+		if (scenarioStatus.equalsIgnoreCase("PASSED")) {
+			passedCount.incrementAndGet();
+			ExtentReportManager.incrementPassed();
+			recordScenarioHookStatus(scenario.getName(), "PASSED");
+			ExtentReportManager.getTest().pass("✅ Scenario Passed: " + scenario.getName());
+		} else if (scenarioStatus.equalsIgnoreCase("SKIPPED")) {
+			skippedCount.incrementAndGet();
+			ExtentReportManager.incrementSkipped();
+			recordScenarioHookStatus(scenario.getName(), "SKIPPED");
+			ExtentReportManager.getTest().skip("⏭️ Scenario Skipped: " + scenario.getName());
+		} else {
 			failedCount.incrementAndGet();
+			ExtentReportManager.incrementFailed();
 			recordScenarioHookStatus(scenario.getName(), "FAILED");
 			attachLocalFailureScreenshotIfNeeded();
 			ExtentReportManager.getTest().fail("❌ Scenario Failed: " + scenario.getName());
-		} else {
-			passedCount.incrementAndGet();
-			recordScenarioHookStatus(scenario.getName(), "PASSED");
-			ExtentReportManager.getTest().pass("✅ Scenario Passed: " + scenario.getName());
 		}
 
 		if (scenario.getSourceTagNames().contains("@prerequisiteVP")) {
 
-			if (!scenario.isFailed()) {
+			if (scenarioStatus.equalsIgnoreCase("PASSED")) {
 				prerequisitePassed.set(true);
 				logger.info("Prerequisite PASSED");
 			} else {
 				prerequisitePassed.set(false);
-				logger.error("Prerequisite FAILED");
+				logger.error("Prerequisite FAILED or SKIPPED: " + scenarioStatus);
 			}
 
 			prerequisiteLatch.countDown();
@@ -419,6 +463,7 @@ public class BaseTest extends BaseTestUtil {
 			scenarioRuntimeDir.remove();
 			scenarioTags.remove();
 			failedStepScreenshotCaptured.remove();
+			isKnownIssueScenario.remove();
 		}
 	}
 
@@ -799,15 +844,22 @@ public class BaseTest extends BaseTestUtil {
 
 	public static void pushReportsToS3() {
 
-		String timestamp = new SimpleDateFormat("yyyy-MM-dd-HH-mm").format(new Date());
+	// NEW
 		int finalTotalCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getTotalCount()
 				: totalCount.get();
 		int finalPassedCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getPassedCount()
 				: passedCount.get();
 		int finalFailedCount = FinalResultListener.hasRecordedResults() ? FinalResultListener.getFailedCount()
 				: failedCount.get();
-		String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-" + timestamp + "-T-" + finalTotalCount
-				+ "-P-" + finalPassedCount + "-F-" + finalFailedCount + ".html";
+	// NEW
+	int finalSkippedCount = FinalResultListener.hasRecordedResults()
+			? FinalResultListener.getSkippedCount()
+			: skippedCount.get();
+	int finalKnownIssueCount = FinalResultListener.hasRecordedResults()
+			? FinalResultListener.getKnownIssueCount()
+			: knownIssueCount.get();
+	String name = InjiVerifyConfigManager.getInjiVerifyUiBaseUrl() + "-" + timestamp + "-T-" + finalTotalCount
+			+ "-P-" + finalPassedCount + "-F-" + finalFailedCount + "-S-" + finalSkippedCount + "-KI-" + finalKnownIssueCount + ".html";
 		String newFileName = "InjiVerifyUi-" + name;
 		File originalReportFile = new File(System.getProperty("user.dir") + "/test-output/ExtentReport.html");
 		File newReportFile = new File(System.getProperty("user.dir") + "/test-output/" + newFileName);

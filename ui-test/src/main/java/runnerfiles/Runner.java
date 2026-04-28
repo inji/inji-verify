@@ -91,6 +91,7 @@ public class Runner extends AbstractTestNGCucumberTests{
 
 	public static void suiteSetup(String runType) {
 		BaseTestCase.initialize();
+		utils.BaseTest.resetPrerequisiteState();
 		LOGGER.info("Done with BeforeSuite and test case setup! su TEST EXECUTION!\n\n");
 
 		if (!runType.equalsIgnoreCase("JAR")) {

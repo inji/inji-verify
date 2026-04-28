@@ -2,4 +2,3 @@
 #Ex:bugId------scenario
 INJIVER-1624------Verify the scan for valid qr code when internet is unavailable
 INJIVER-1621------Verify upload qr code when internet is unavailable
-INJIVER-1624------Verify the scan for valid qr code
