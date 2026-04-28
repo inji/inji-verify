@@ -68,7 +68,7 @@ return (
                             })
                         );
                         if (isOnline) {
-                            document.getElementById("trigger-scan")?.click();
+                            document.getElementById("trigger-upload")?.click();
                             dispatch(
                                 raiseAlert({
                                     message: error.message,
