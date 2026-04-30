@@ -662,6 +662,54 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const stopVideoStreamRef = useRef(stopVideoStream);
   stopVideoStreamRef.current = stopVideoStream;
 
+  const pinchCenterRef = useRef<{ x: number; y: number }>({ x: 50, y: 50 });
+  const lastDistanceRef = useRef<number | null>(null);
+
+  const getDistance = (touches: React.TouchList) => {
+    const [t1, t2] = [touches[0], touches[1]];
+    return Math.hypot(t2.clientX - t1.clientX, t2.clientY - t1.clientY);
+  };
+
+  const getCenter = (touches: React.TouchList, element: HTMLElement) => {
+    const rect = element.getBoundingClientRect();
+    const x =
+      ((touches[0].clientX + touches[1].clientX) / 2 - rect.left) / rect.width;
+    const y =
+      ((touches[0].clientY + touches[1].clientY) / 2 - rect.top) / rect.height;
+    return { x: x * 100, y: y * 100 };
+  };
+
+  const handleTouchStart = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && videoRef.current) {
+      lastDistanceRef.current = getDistance(e.touches);
+      pinchCenterRef.current = getCenter(e.touches, videoRef.current);
+    }
+  };
+
+  const handleTouchMove = (e: React.TouchEvent) => {
+    if (e.touches.length === 2 && lastDistanceRef.current && videoRef.current) {
+      e.preventDefault();
+
+      const newDistance = getDistance(e.touches);
+      const delta = newDistance - lastDistanceRef.current;
+
+      // update zoom
+      setZoomLevel((prev) => {
+        const next = prev + delta * 0.02; // sensitivity
+        return Math.max(0, Math.min(10, next));
+      });
+
+      pinchCenterRef.current = getCenter(e.touches, videoRef.current);
+      lastDistanceRef.current = newDistance;
+    }
+  };
+
+  const handleTouchEnd = () => {
+    lastDistanceRef.current = null;
+    pinchCenterRef.current = { x: 50, y: 50 };
+  };
+
+
   useLayoutEffect(() => {
     if (!scannerActive) {
       frameProcessingRef.current = false;
@@ -806,10 +854,17 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
             <video
               ref={videoRef}
               className="qr-video"
+              onTouchStart={handleTouchStart}
+              onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
               style={{
                 transform: shouldEnableZoom
                   ? `scale(${1 + zoomLevel / ZOOM_STEP})`
                   : undefined,
+                transformOrigin: shouldEnableZoom
+                  ? `${pinchCenterRef.current.x}% ${pinchCenterRef.current.y}%`
+                  : "50% 50%",
               }}
               playsInline
               autoPlay
@@ -826,12 +881,12 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                   />
                   <div className="slider-container">
                     <Slider
-                      key={`${zoomLevel}`}
+                      key={`${Math.round(zoomLevel)}`}
                       aria-label="Zoom Level"
                       min={0}
                       max={10}
                       step={1}
-                      value={zoomLevel}
+                      value={Math.round(zoomLevel)}
                       onChange={handleSliderChange}
                       onChangeCommitted={handleSliderChange}
                       marks

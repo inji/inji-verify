@@ -211,3 +211,7 @@
   white-space: nowrap;
   border: 0;
 }
+
+.qr-video {
+  touch-action: none; /* critical for pinch */
+}
