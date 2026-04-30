@@ -9,9 +9,9 @@ Package: HdrHistogram
 
 Version: 2.2.2
 
-License: BSD-2-Clause
+License: CC0-1.0 OR BSD-2-Clause
 
-Homepage: http://creativecommons.org/publicdomain/zero/1.0/
+Homepage: https://github.com/HdrHistogram/HdrHistogram
 
 ================================================================================
 Package: HikariCP
@@ -425,7 +425,7 @@ Version: 0.3.0
 
 License: CC0-1.0
 
-Homepage: https://creativecommons.org/publicdomain/zero/1.0/
+Homepage: https://github.com/str4d/ed25519-java
 
 ================================================================================
 Package: encodings
@@ -837,7 +837,7 @@ Package: json
 
 Version: 20240303
 
-License: JSON License
+License: JSON
 
 Homepage: https://github.com/stleary/JSON-java/blob/master/LICENSE
 
@@ -1144,15 +1144,6 @@ Package: maven-artifact
 Version: 3.8.5
 
 License: Apache-2.0
-
-Homepage: Not Available
-
-================================================================================
-Package: mavenEcjBootstrapAgent
-
-Version: UNKNOWN
-
-License: MIT
 
 Homepage: Not Available
 
