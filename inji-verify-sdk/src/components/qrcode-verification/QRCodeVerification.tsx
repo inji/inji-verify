@@ -704,6 +704,12 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     }
   };
 
+  const handleTouchEnd = () => {
+    lastDistanceRef.current = null;
+    pinchCenterRef.current = { x: 50, y: 50 };
+  };
+
+
   useLayoutEffect(() => {
     if (!scannerActive) {
       frameProcessingRef.current = false;
@@ -850,11 +856,15 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
               className="qr-video"
               onTouchStart={handleTouchStart}
               onTouchMove={handleTouchMove}
+              onTouchEnd={handleTouchEnd}
+              onTouchCancel={handleTouchEnd}
               style={{
                 transform: shouldEnableZoom
                   ? `scale(${1 + zoomLevel / ZOOM_STEP})`
                   : undefined,
-                transformOrigin: `${pinchCenterRef.current.x}% ${pinchCenterRef.current.y}%`,
+                transformOrigin: shouldEnableZoom
+                  ? `${pinchCenterRef.current.x}% ${pinchCenterRef.current.y}%`
+                  : "50% 50%",
               }}
               playsInline
               autoPlay
@@ -871,7 +881,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                   />
                   <div className="slider-container">
                     <Slider
-                      key={`${zoomLevel}`}
+                      key={`${Math.round(zoomLevel)}`}
                       aria-label="Zoom Level"
                       min={0}
                       max={10}
