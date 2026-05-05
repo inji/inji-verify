@@ -7,7 +7,7 @@ if [ $# -ge 1 ] ; then
 fi
 
 NS=uitestrig-injiverify
-CHART_VERSION=0.18.0-develop
+CHART_VERSION=0.18.0
 COPY_UTIL=../copy_cm_func.sh
 
 echo Create $NS namespace
