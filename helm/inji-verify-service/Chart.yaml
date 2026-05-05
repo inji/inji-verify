@@ -2,7 +2,7 @@ apiVersion: v2
 name: inji-verify-service
 description: A Helm chart for Inji's verify service module
 type: application
-version: 0.18.0-develop
+version: 0.18.0
 appVersion: ""
 dependencies:
   - name: common

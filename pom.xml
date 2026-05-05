@@ -13,7 +13,7 @@
     <name>verify-service-parent</name>
     <groupId>io.inji.verify</groupId>
     <artifactId>verify-service-parent</artifactId>
-    <version>0.18.0-SNAPSHOT</version>
+    <version>0.18.0</version>
     <description>Parent project of Inji verify backend service</description>
     <url>https://github.com/inji/inji-verify</url>
     <packaging>pom</packaging>
