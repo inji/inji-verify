@@ -1,7 +1,7 @@
 package io.inji.verify.shared;
 
 import io.inji.verify.dto.client.LdpVp;
-import io.inji.verify.dto.client.VpFormats;
+import io.inji.verify.dto.client.VpFormatsSupported;
 import io.inji.verify.dto.client.SdJwt;
 
 import java.util.Arrays;
