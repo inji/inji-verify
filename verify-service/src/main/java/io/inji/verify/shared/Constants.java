@@ -33,7 +33,7 @@ public final class Constants {
     public static final String RSA_SIGNATURE_2018 = "RsaSignature2018";
     public static final String ED25519_SIGNATURE_2018 = "Ed25519Signature2018";
     public static final String ED25519_SIGNATURE_2020 = "Ed25519Signature2020";
-    public static final VpFormats VP_FORMATS = new VpFormats(new LdpVp(Arrays.asList(
+    public static final VpFormatsSupported VP_FORMATS_SUPPORTED = new VpFormatsSupported(new LdpVp(Arrays.asList(
             ED25519_SIGNATURE_2018,
             ED25519_SIGNATURE_2020,
             RSA_SIGNATURE_2018

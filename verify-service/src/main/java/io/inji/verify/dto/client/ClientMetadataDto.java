@@ -12,7 +12,7 @@ public class ClientMetadataDto {
     @SerializedName("client_name")
     String clientName;
 
-    @JsonProperty("vp_formats")
-    @SerializedName("vp_formats")
-    VpFormats vpFormats;
+    @JsonProperty("vp_formats_supported")
+    @SerializedName("vp_formats_supported")
+    VpFormatsSupported vpFormatsSupported;
 }

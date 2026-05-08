@@ -48,7 +48,7 @@ import java.util.NoSuchElementException;
 import java.util.Date;
 import java.util.UUID;
 import org.springframework.beans.factory.annotation.Value;
-import static io.inji.verify.shared.Constants.VP_FORMATS;
+import static io.inji.verify.shared.Constants.VP_FORMATS_SUPPORTED;
 
 @Service
 @Slf4j
@@ -209,7 +209,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                     .claim("nonce", authorizationRequest.getNonce())
                     .claim("state", state)
                     .claim("response_uri", authorizationRequest.getResponseUri())
-                    .claim("client_metadata", new ClientMetadataDto(verifierDid,VP_FORMATS))
+                    .claim("client_metadata", new ClientMetadataDto(verifierDid,VP_FORMATS_SUPPORTED))
                     .build();
             if (authorizationRequest.getPresentationDefinitionUri() != null) {
                 claimsSet = new JWTClaimsSet.Builder(claimsSet)

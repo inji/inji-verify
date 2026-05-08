@@ -63,7 +63,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
 
   const DEFAULT_PROTOCOL = "openid4vp://";
 
-  const VPFormat = useMemo(
+  const VPFormatsSupported = useMemo(
     () => ({
       ldp_vp: {
         proof_type: [
@@ -125,7 +125,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
           "client_metadata",
           JSON.stringify({
             client_name: clientId,
-            vp_formats: VPFormat,
+            vp_formats_supported: VPFormatsSupported,
           })
         );
       }
