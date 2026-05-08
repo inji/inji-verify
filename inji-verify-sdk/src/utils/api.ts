@@ -105,7 +105,7 @@ export const vpRequest = async (
   };
 
   try {
-    const response = await fetch(url + "v2/vp-request", requestOptions);
+    const response = await fetch(url + "/v2/vp-request", requestOptions);
     if (response.status !== 201) throw new Error("Failed to create VP request");
     const data: QrData = await response.json();
     return data;
