@@ -15,12 +15,12 @@ public class VpFormatsTest {
         List<String> proofTypes = Arrays.asList("LdProof", "JsonWebSignature2020");
         LdpVp ldpVp = new LdpVp(proofTypes);
 
-        VpFormats vpFormats = new VpFormats(ldpVp,null);
+        VpFormatsSupported vpFormatsSupported = new VpFormatsSupported(ldpVp,null,null);
 
-        assertNotNull(vpFormats.getLdpVp(), "The LdpVp object should not be null.");
-        assertEquals(ldpVp, vpFormats.getLdpVp(), "The LdpVp object should match the one set in the constructor.");
+        assertNotNull(vpFormatsSupported.getLdpVp(), "The LdpVp object should not be null.");
+        assertEquals(ldpVp, vpFormatsSupported.getLdpVp(), "The LdpVp object should match the one set in the constructor.");
 
-        List<String> retrievedProofTypes = vpFormats.getLdpVp().getProofType();
+        List<String> retrievedProofTypes = vpFormatsSupported.getLdpVp().getProofType();
         assertNotNull(retrievedProofTypes, "The proofType list should not be null.");
         assertEquals(2, retrievedProofTypes.size(), "The proofType list should contain 2 elements.");
         assertTrue(retrievedProofTypes.contains("LdProof"), "The proofType list should contain 'LdProof'.");
@@ -29,9 +29,9 @@ public class VpFormatsTest {
 
     @Test
     public void testVpFormats_WithNullLdpVp() {
-        VpFormats vpFormats = new VpFormats(null,null);
+        VpFormatsSupported vpFormatsSupported = new VpFormatsSupported(null,null,null);
 
-        assertNull(vpFormats.getLdpVp(), "The LdpVp object should be null when initialized with null.");
+        assertNull(vpFormatsSupported.getLdpVp(), "The LdpVp object should be null when initialized with null.");
     }
 
     @Test
@@ -39,12 +39,12 @@ public class VpFormatsTest {
         List<String> proofTypes = Arrays.asList();
         LdpVp ldpVp = new LdpVp(proofTypes);
 
-        VpFormats vpFormats = new VpFormats(ldpVp,null);
+        VpFormatsSupported vpFormatsSupported = new VpFormatsSupported(ldpVp,null,null);
 
-        assertNotNull(vpFormats.getLdpVp(), "The LdpVp object should not be null.");
-        assertEquals(ldpVp, vpFormats.getLdpVp(), "The LdpVp object should match the one set in the constructor.");
+        assertNotNull(vpFormatsSupported.getLdpVp(), "The LdpVp object should not be null.");
+        assertEquals(ldpVp, vpFormatsSupported.getLdpVp(), "The LdpVp object should match the one set in the constructor.");
 
-        List<String> retrievedProofTypes = vpFormats.getLdpVp().getProofType();
+        List<String> retrievedProofTypes = vpFormatsSupported.getLdpVp().getProofType();
         assertNotNull(retrievedProofTypes, "The proofType list should not be null.");
         assertTrue(retrievedProofTypes.isEmpty(), "The proofType list should be empty.");
     }
@@ -55,9 +55,9 @@ public class VpFormatsTest {
 
         SdJwt sdJwt = new SdJwt(algs, proofTypes);
 
-        VpFormats vpFormats = new VpFormats(null, sdJwt);
+        VpFormatsSupported vpFormatsSupported = new VpFormatsSupported(null, sdJwt, null);
 
-        assertNotNull(vpFormats.getSdJwt(), "The SdJwt object should not be null.");
-        assertEquals(sdJwt, vpFormats.getSdJwt(), "The SdJwt object should match the one set in the constructor.");
+        assertNotNull(vpFormatsSupported.getSdJwt(), "The SdJwt object should not be null.");
+        assertEquals(sdJwt, vpFormatsSupported.getSdJwt(), "The SdJwt object should match the one set in the constructor.");
     }
 }
