@@ -48,7 +48,7 @@ services:
       - VERIFIABLE_CLAIMS_CONFIG_URL=/assets/config.json
       - VP_SUBMISSION_SUPPORTED=false
       - CLIENT_ID=inji-verify-ui
-      - CLIENT_ID_DID=did:web:VERIFY_SERVICE_PROXY_FOR_LOCALHOST:v1:verify
+      - CLIENT_ID_DID=decentralized_identifier:did:web:VERIFY_SERVICE_PROXY_FOR_LOCALHOST:v1:verify
       - DISPLAY_TIMEOUT=120000
     volumes:
       - ./config/config.json:/usr/share/nginx/html/assets/config.json
