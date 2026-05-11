@@ -73,13 +73,13 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         ],
       },
       "dc+sd-jwt": {
-        "sd-jwt_alg_values": ["ES256", "ES384"],
-        "kb-jwt_alg_values": ["ES256", "ES384"]
+        "sd-jwt_alg_values": ["RS256", "ES256", "ES256K", "EdDSA"],
+        "kb-jwt_alg_values": ["RS256", "ES256", "ES256K", "EdDSA"],
       },
       "vc+sd-jwt": {
-        "sd-jwt_alg_values": ["ES256", "ES384"],
-        "kb-jwt_alg_values": ["ES256", "ES384"]
-      }
+        "sd-jwt_alg_values": ["RS256", "ES256", "ES256K", "EdDSA"],
+        "kb-jwt_alg_values": ["RS256", "ES256", "ES256K", "EdDSA"],
+      },
     }),
     []
   );
