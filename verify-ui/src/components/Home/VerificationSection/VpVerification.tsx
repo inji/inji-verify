@@ -106,7 +106,7 @@ const DisplayActiveStep = () => {
   };
 
   const getClientId = () => {
-    return (isSingleVc && selectedCredentials[0]?.clientIdScheme === "pre_registered") ? window._env_.CLIENT_ID : window._env_.CLIENT_ID_DID;
+    return (isSingleVc && selectedCredentials[0]?.clientIdPrefix === "pre_registered") ? window._env_.CLIENT_ID : window._env_.CLIENT_ID_DID;
   }
 
   useEffect(() => {

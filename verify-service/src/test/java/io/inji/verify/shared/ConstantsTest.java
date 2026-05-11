@@ -26,7 +26,7 @@ public class ConstantsTest {
         assertEquals("/vp-submission", Constants.RESPONSE_SUBMISSION_URI_ROOT);
         assertEquals("/direct-post", Constants.RESPONSE_SUBMISSION_URI);
         assertEquals("/vp-definition/", Constants.VP_DEFINITION_URI);
-        assertEquals("/vp-request", Constants.VP_REQUEST_URI);
+        assertEquals("/v2/vp-request", Constants.VP_REQUEST_URI);
     }
 
     @Test
