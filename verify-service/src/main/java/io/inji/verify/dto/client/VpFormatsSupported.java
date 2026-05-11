@@ -15,4 +15,8 @@ public class VpFormatsSupported {
     @JsonProperty("vc+sd-jwt")
     @SerializedName("vc+sd-jwt")
     private SdJwt sdJwt;
+
+    @JsonProperty("dc+sd-jwt")
+    @SerializedName("dc+sd-jwt")
+    private SdJwt dcSdJwt;
 }

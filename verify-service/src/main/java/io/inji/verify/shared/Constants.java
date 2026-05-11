@@ -38,6 +38,8 @@ public final class Constants {
             ED25519_SIGNATURE_2020,
             RSA_SIGNATURE_2018
     )), new SdJwt(SD_JWT_SUPPORTED_ALGORITHMS,
+            SD_JWT_SUPPORTED_ALGORITHMS), 
+        new SdJwt(SD_JWT_SUPPORTED_ALGORITHMS,
             SD_JWT_SUPPORTED_ALGORITHMS));
 
     // JSON KEYS
