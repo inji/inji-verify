@@ -150,16 +150,7 @@ License: GPL-2.0-only
 Homepage: Not Available
 
 ================================================================================
-Package: aspectjweaver
 
-Version: 1.9.24
-
-License:
-sha256:4e2c7d9f5cc62bfe8ca3461be6fd659f744f508af1207bf5d633fd5f4270bb98
-
-Homepage: Not Available
-
-================================================================================
 Package: base45
 
 Version: 0.0.3
