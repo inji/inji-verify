@@ -125,13 +125,15 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
             JSON.stringify(data.authorizationDetails.presentationDefinition)
           );
         }
-        params.set(
-          "client_metadata",
-          JSON.stringify({
-            client_name: clientId,
-            vp_formats_supported: VPFormatsSupported,
-          })
-        );
+        if(clientId.startsWith("decentralized_identifier:")) {
+          params.set(
+            "client_metadata",
+            JSON.stringify({
+              client_name: clientId,
+              vp_formats_supported: VPFormatsSupported,
+            })
+          );
+        }
       }
       return params.toString();
     },
