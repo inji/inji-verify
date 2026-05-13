@@ -58,12 +58,18 @@ describe("OpenID4VPVerification UI Tests", () => {
   const renderComponent = (
     props: Partial<React.ComponentProps<typeof OpenID4VPVerification>>
   ) => {
-    const { onVPReceived: received, onVPProcessed: processed, ...rest } = props;
+    const {
+      onVPReceived: received,
+      onVPProcessed: processed,
+      clientId = "test-client",
+      ...rest
+    } = props;
 
     return render(
       <OpenID4VPVerification
         verifyServiceUrl={verifyServiceUrl}
         protocol={protocol}
+        clientId={clientId}
         onQrCodeExpired={onQrCodeExpired}
         onError={onError}
         {...rest}
