@@ -263,13 +263,6 @@ public class VPSubmissionController {
 		// Validation: vp_token must be a valid JSON object with specific structure if
 		// present
 		try {
-			// First check for duplicate query IDs at the outermost level
-			boolean isValid = validateDuplicateQueryIds(vpToken);
-			if (!isValid) {
-				log.debug("Duplicate query ids found in vp_token: {}", vpToken);
-				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-						.body(new ErrorDto(ErrorCode.DUPLICATE_QUERY_IDS_NOT_ALLOWED));
-			}
 			// Parse the vp_token as a JSON object
 			ObjectMapper objectMapper = new ObjectMapper();
 			JsonNode node = objectMapper.readTree(vpToken);
@@ -319,6 +312,14 @@ public class VPSubmissionController {
 					}
 				}
 			}
+			// check for duplicate query IDs at the outermost level
+			boolean isValid = validateDuplicateQueryIds(vpToken);
+			if (!isValid) {
+				log.debug("Duplicate query ids found in vp_token: {}", vpToken);
+				return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+						.body(new ErrorDto(ErrorCode.DUPLICATE_QUERY_IDS_NOT_ALLOWED));
+			}
+			
 		} catch (IllegalArgumentException | IOException e) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(new ErrorDto(ErrorCode.VP_TOKEN_NOT_VALID_JSON_OBJECT));
