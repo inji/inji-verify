@@ -11,7 +11,7 @@
 -- ------------------------------------------------------------------------------------------
 -- ------------------------------------------------------------------------------------------
 CREATE TABLE vp_submission(
-                            request_id character varying(40) NOT NULL,
+                            request_id character varying(40) NOT NULL PRIMARY KEY,
                             vp_token VARCHAR NULL,
                             presentation_submission text NULL,
                             error character varying(100) NULL,

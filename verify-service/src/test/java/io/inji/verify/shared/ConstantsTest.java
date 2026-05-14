@@ -23,8 +23,7 @@ public class ConstantsTest {
     @Test
     @DisplayName("Verify URI constants")
     void testUriConstants() {
-        assertEquals("/vp-submission", Constants.RESPONSE_SUBMISSION_URI_ROOT);
-        assertEquals("/direct-post", Constants.RESPONSE_SUBMISSION_URI);
+        assertEquals("/v2/vp-submission/direct-post", Constants.VP_RESPONSE_SUBMISSION_URI);
         assertEquals("/vp-definition/", Constants.VP_DEFINITION_URI);
         assertEquals("/v2/vp-request", Constants.VP_REQUEST_URI);
     }
@@ -90,11 +89,8 @@ public class ConstantsTest {
     @Test
     @DisplayName("Verify constants are not null or empty")
     void testConstantsNotNullOrEmpty() {
-        assertNotNull(Constants.RESPONSE_SUBMISSION_URI_ROOT);
-        assertFalse(Constants.RESPONSE_SUBMISSION_URI_ROOT.isEmpty());
-
-        assertNotNull(Constants.RESPONSE_SUBMISSION_URI);
-        assertFalse(Constants.RESPONSE_SUBMISSION_URI.isEmpty());
+        assertNotNull(Constants.VP_RESPONSE_SUBMISSION_URI);
+        assertFalse(Constants.VP_RESPONSE_SUBMISSION_URI.isEmpty());
 
         assertNotNull(Constants.VP_DEFINITION_URI);
         assertFalse(Constants.VP_DEFINITION_URI.isEmpty());
@@ -114,8 +110,6 @@ public class ConstantsTest {
     @Test
     @DisplayName("Verify URI formatting")
     void testUriFormatting() {
-        assertTrue(Constants.RESPONSE_SUBMISSION_URI_ROOT.startsWith("/"));
-        assertTrue(Constants.RESPONSE_SUBMISSION_URI.startsWith("/"));
         assertTrue(Constants.VP_DEFINITION_URI.startsWith("/"));
         assertTrue(Constants.VP_REQUEST_URI.startsWith("/"));
 
