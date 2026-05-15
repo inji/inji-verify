@@ -20,8 +20,7 @@ public final class Constants {
 
     public static final int DEFAULT_EXPIRY = 300;
 
-    public static final String RESPONSE_SUBMISSION_URI_ROOT = "/vp-submission";
-    public static final String RESPONSE_SUBMISSION_URI = "/direct-post";
+    public static final String VP_RESPONSE_SUBMISSION_URI = "/v2/vp-submission/direct-post";
     public static final String VP_DEFINITION_URI = "/vp-definition/";
     public static final String VP_REQUEST_URI = "/v2/vp-request";
     public static final String RESPONSE_TYPE =  "vp_token";
