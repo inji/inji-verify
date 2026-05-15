@@ -123,7 +123,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * @param vpTokenString
      * @return
      */
-    public DcqlVPTokenDto extractDcqlVpTokens(String vpTokenString) {
+    public DcqlVPTokenDto extractDcqlVpTokens(String vpTokenString) throws InvalidVpTokenException {
         Map<String, JSONObject> ldpVpTokens = new HashMap<String, JSONObject>();
         Map<String, String> sdJwtTokens = new HashMap<String, String>();
         log.debug("Extracting VP tokens from input string");
@@ -138,35 +138,49 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 log.debug("Processing query ID: {}", queryId);
                 if (!value.isArray()) {
                     log.warn("Unexpected JSON node type for query ID {}: {}", queryId, value.getNodeType());
-                    continue;
+                    throw new InvalidVpTokenException();
                 }
                 for (JsonNode item : value) {
-                    if (item.isTextual() && isSdJwt(item.asText())) {
-                        log.debug("Identified SD-JWT token");
-                        sdJwtTokens.put(queryId, item.asText());
+                    if (item.isTextual()) {
+                        if (isSdJwt(item.asText())) {
+                            log.debug("Identified SD-JWT token");
+                            sdJwtTokens.put(queryId, item.asText());
+                        } else {
+                            String errorMessage = String.format("Text node is not a valid SD-JWT token for query ID %s: %s", queryId, item.asText());
+                            log.warn(errorMessage);
+                            throw new InvalidVpTokenException(errorMessage);
+                        }
                     } else if (item.isObject()) {
                         log.debug("Identified LDP VP token");
                         boolean isVerifiablePresentation = false;
                         //get array or string type and check if it contains "VerifiablePresentation"
                         JsonNode typeNode = item.get("type");
-                        if (typeNode != null && typeNode.isArray())    {
-                            for (JsonNode typeValue : typeNode) {
-                                if ("VerifiablePresentation".equalsIgnoreCase(typeValue.asText())) {
-                                    isVerifiablePresentation = true;
-                                    break;
+                        if (typeNode != null) {
+                            if (typeNode.isArray()) {
+                                for (JsonNode typeValue : typeNode) {
+                                    if ("VerifiablePresentation".equalsIgnoreCase(typeValue.asText())) {
+                                        isVerifiablePresentation = true;
+                                        break;
+                                    }
                                 }
+                            } else if (typeNode.isTextual()) {
+                                isVerifiablePresentation =
+                                                "VerifiablePresentation".equalsIgnoreCase(typeNode.asText());
                             }
                         }
                         if (!isVerifiablePresentation) {
-                            log.warn("Skipping JSON object for query ID {} due to missing or invalid 'type'", queryId);
-                            continue;
+                            String errorMessage = String.format("JSON object does not contain a valid 'type' field with value 'VerifiablePresentation' for query ID %s: %s", queryId, item.toString());
+                            log.warn(errorMessage);
+                            throw new InvalidVpTokenException(errorMessage);
                         }
                         ldpVpTokens.put(queryId, new JSONObject(item.toString()));
                     }
                 }
             }
-        } catch (JsonProcessingException e) {
-            log.debug("Failed to parse VP Token JSON: {}", e.getMessage());
+        } catch (JsonProcessingException | IllegalArgumentException e) {
+            String errorMessage = String.format("Failed to parse VP token: %s", e.getMessage());
+            log.warn(errorMessage);
+            throw new InvalidVpTokenException(errorMessage);
         }
         return new DcqlVPTokenDto(ldpVpTokens, sdJwtTokens);
     }

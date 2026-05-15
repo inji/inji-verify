@@ -27,7 +27,7 @@ public interface VerifiablePresentationSubmissionService {
     
     AuthorizationRequestCreateResponse getAuthRequest(String state);
 
-    DcqlVPTokenDto extractDcqlVpTokens(String vpTokenString) ;
+    DcqlVPTokenDto extractDcqlVpTokens(String vpTokenString) throws InvalidVpTokenException;
 
     boolean isClientIdValid(AuthorizationRequestResponseDto authRequest, Map<String, JSONObject> ldpVpTokens);
     

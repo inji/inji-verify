@@ -9,6 +9,6 @@ import java.util.Map;
 @AllArgsConstructor
 @Getter
 public class DcqlVPTokenDto {
-    Map<String, JSONObject> ldpVpTokens;
-    Map<String, String> sdJwtTokens;
+    private Map<String, JSONObject> ldpVpTokens;
+    private Map<String, String> sdJwtTokens;
 }

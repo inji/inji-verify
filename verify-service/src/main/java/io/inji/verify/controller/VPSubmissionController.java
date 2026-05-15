@@ -6,6 +6,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import io.inji.verify.dto.result.DcqlVPTokenDto;
+import io.inji.verify.exception.InvalidVpTokenException;
 import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
@@ -107,21 +109,33 @@ public class VPSubmissionController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NO_MATCHING_VP_REQUEST));
 		}
 		log.debug("authRequestCreateResponse is {}", authRequestCreateResponse);
+
 		// ---- 5. Validate against the DCQL if vp_token is present
 
 		// TODO
 
-		// ---- 6. Validate client_id and none if vp_token is present
-		if (StringUtils.hasText(vpToken)) {
-			ResponseEntity<?> clientIdNonceValidation = validateClientIdNonce(vpToken, authRequestCreateResponse);
-			if (clientIdNonceValidation != null) {
-				return clientIdNonceValidation;
-			}
-		}
-
-		// ---- 7. generate response_code and build redirect_uri as required
+		// ---- 6. Extract DCQL VP tokens from the vp_token string
+        DcqlVPTokenDto dcqlVPTokenDto = null;
+        if (StringUtils.hasText(vpToken)) {
+            try {
+                dcqlVPTokenDto = verifiablePresentationSubmissionService.extractDcqlVpTokens(vpToken);
+            } catch (InvalidVpTokenException ex) {
+                log.error("Invalid VP token structure for state {}", state);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ErrorDto("invalid_vp_token", "The vp_token structure is invalid: " + ex.getMessage()));
+            }
+        }
+        // ---- 7. Validate client_id and none if vp_token is present
+        if (dcqlVPTokenDto != null && dcqlVPTokenDto.getLdpVpTokens() != null && !dcqlVPTokenDto.getLdpVpTokens().isEmpty()) {
+            ResponseEntity<?> clientIdNonceValidation = validateClientIdNonce(dcqlVPTokenDto.getLdpVpTokens(), authRequestCreateResponse);
+            if (clientIdNonceValidation != null) {
+                return clientIdNonceValidation;
+            }
+        } else {
+            log.debug("Skipping client_id and nonce validation as no LdpVpTokens extracted for state {}", state);
+        }
+        // ---- 8. generate response_code and build redirect_uri as required
 		Map<String, Object> response = new HashMap<>();
-
 		String responseCode = verifiablePresentationSubmissionService
 				.generateResponseCode(authRequestCreateResponse.getAuthorizationDetails());
 		Timestamp responseCodeExpiryAt = null;
@@ -136,7 +150,7 @@ public class VPSubmissionController {
 			}
 			response.put("redirect_uri", redirectUriWithResponseCode);
 		}
-		// ---- 8. If all validations pass, proceed with VP submission processing
+		// ---- 9. If all validations pass, proceed with VP submission processing
 		try {
 			verifiablePresentationSubmissionService.submitVpToken(authRequestCreateResponse.getAuthorizationDetails(),
 					vpToken, state, error, errorDescription, responseCode, responseCodeExpiryAt);
@@ -145,26 +159,22 @@ public class VPSubmissionController {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
 					.body(new ErrorDto(ErrorCode.VP_ALREADY_SUBMITTED));
 		}
-		// --- 9. Return success response with redirect URI if generated
+		// --- 10. Return success response with redirect URI if generated
 		return ResponseEntity.status(HttpStatus.OK).body(response);
 
 	}
 
-	private ResponseEntity<?> validateClientIdNonce(String vpToken, AuthorizationRequestCreateResponse authRequest) {
-        // Extract DCQL VP tokens from the vp_token string
-        Map<String, JSONObject> ldpVpTokens = verifiablePresentationSubmissionService.extractDcqlVpTokens(vpToken).getLdpVpTokens();
-        if (ldpVpTokens != null && !ldpVpTokens.isEmpty()) {
-            boolean isClientIdValid = verifiablePresentationSubmissionService
-                    .isClientIdValid(authRequest.getAuthorizationDetails(), ldpVpTokens);
-            if (!isClientIdValid) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                        .body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
-            }
-            boolean isNonceValid = verifiablePresentationSubmissionService
-                    .isNonceValid(authRequest.getAuthorizationDetails(), ldpVpTokens);
-            if (!isNonceValid) {
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
-            }
+	private ResponseEntity<?> validateClientIdNonce(Map<String, JSONObject> ldpVpTokens, AuthorizationRequestCreateResponse authRequest) {
+        boolean isClientIdValid = verifiablePresentationSubmissionService
+                .isClientIdValid(authRequest.getAuthorizationDetails(), ldpVpTokens);
+        if (!isClientIdValid) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                    .body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
+        }
+        boolean isNonceValid = verifiablePresentationSubmissionService
+                .isNonceValid(authRequest.getAuthorizationDetails(), ldpVpTokens);
+        if (!isNonceValid) {
+            return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
         }
 		return null; // Return null if both client_id and nonce are valid, indicating the request can
 						// proceed to the next validation steps
