@@ -436,21 +436,20 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     state: string,
     responseUri: string,
     nonce: string,
-    dcqlQuery?: unknown
+    dcqlQuery: unknown
   ) => {
+    if (!dcqlQuery) {
+      throw new Error("Unable to build sharing URL: missing dcqlQuery");
+    }
     const url = new URL(baseRedirectUrl);
     url.hash = "";
-    url.searchParams.delete("presentation_definition");
     url.searchParams.set("client_id", clientId);
     url.searchParams.set("state", state);
     url.searchParams.set("response_mode", "direct_post");
     url.searchParams.set("response_uri", responseUri);
     url.searchParams.set("nonce", nonce);
-    if (dcqlQuery) {
-      url.searchParams.set("dcql_query", JSON.stringify(dcqlQuery));
-    } else {
-      url.searchParams.delete("dcql_query");
-    }
+    url.searchParams.set("dcql_query", JSON.stringify(dcqlQuery));
+    url.searchParams.delete("presentation_definition");
 
     return `${url.toString()}#`;
   };

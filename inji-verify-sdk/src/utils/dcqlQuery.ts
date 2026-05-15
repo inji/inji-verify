@@ -13,7 +13,7 @@ const assertDescriptorFormatSupported = (
   );
   if (unsupported.length > 0) {
     throw new Error(
-      `Input descriptor "${descriptor.id}" format is not supported for DCQL conversion (${unsupported.join(", ")}). Only dc+sd-jwt is supported.`,
+      `Input descriptor "${descriptor.id}" format is not supported for DCQL conversion (${unsupported.join(", ")}). Supported formats: ${[...SUPPORTED_DESCRIPTOR_FORMAT_KEYS].join(", ")}.`,
     );
   }
 };
@@ -26,21 +26,28 @@ export const buildDcqlQueryFromPresentationDefinition = (
       assertDescriptorFormatSupported(descriptor);
 
       const claims =
-        descriptor.constraints?.fields?.map((field, index) => ({
-          id:
-            field.path?.[0]?.replace(/^\$\./, "")?.replace(/\./g, "_") ||
-            `claim_${index}`,
-          path:
-            field.path?.map((path: string) => path.replace(/^\$\./, "")) || [],
-        })) || [];
+        descriptor.constraints?.fields?.map((field, index) => {
+          const firstPath = field.path?.[0]?.replace(/^\$\./, "") ?? "";
+          const segments = firstPath ? firstPath.split(".") : [];
+          return {
+            id: firstPath ? firstPath.replace(/\./g, "_") : `claim_${index}`,
+            path: segments,
+          };
+        }) || [];
 
       const vctField = descriptor.constraints?.fields?.find(
         (field) => field.filter?.pattern,
       );
 
+      const descriptorFormat = descriptor.format
+        ? Object.keys(descriptor.format).find((k) =>
+            SUPPORTED_DESCRIPTOR_FORMAT_KEYS.has(k),
+          )
+        : undefined;
+
       return {
         id: descriptor.id,
-        format: "dc+sd-jwt",
+        format: descriptorFormat ?? "dc+sd-jwt",
         meta: vctField?.filter?.pattern
           ? {
               vct_values: [vctField.filter.pattern],
