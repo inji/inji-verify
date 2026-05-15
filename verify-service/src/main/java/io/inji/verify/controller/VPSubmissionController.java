@@ -6,6 +6,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 
+import org.json.JSONObject;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -77,7 +78,7 @@ public class VPSubmissionController {
 		log.debug("Received VP submission with state: {}, error: {}, error_description: {}", state, error,
 				errorDescription);
 		if (StringUtils.hasText(vpToken)) {
-			log.debug("Received VP submission with vp_token: {}", vpToken.length());
+			log.debug("Received VP submission with vp_token length: {}", vpToken.length());
 		}
 
 		// --- 1. Validate request parameters ---
@@ -105,7 +106,7 @@ public class VPSubmissionController {
 		if (authRequestCreateResponse == null) {
 			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NO_MATCHING_VP_REQUEST));
 		}
-		log.info("authRequestCreateResponse is {}", authRequestCreateResponse);
+		log.debug("authRequestCreateResponse is {}", authRequestCreateResponse);
 		// ---- 5. Validate against the DCQL if vp_token is present
 
 		// TODO
@@ -150,17 +151,21 @@ public class VPSubmissionController {
 	}
 
 	private ResponseEntity<?> validateClientIdNonce(String vpToken, AuthorizationRequestCreateResponse authRequest) {
-		boolean isClientIdValid = verifiablePresentationSubmissionService
-				.isClientIdValid(authRequest.getAuthorizationDetails(), vpToken);
-		if (!isClientIdValid) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-					.body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
-		}
-		boolean isNonceValid = verifiablePresentationSubmissionService
-				.isNonceValid(authRequest.getAuthorizationDetails(), vpToken);
-		if (!isNonceValid) {
-			return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
-		}
+        // Extract DCQL VP tokens from the vp_token string
+        Map<String, JSONObject> ldpVpTokens = verifiablePresentationSubmissionService.extractDcqlVpTokens(vpToken).getLdpVpTokens();
+        if (ldpVpTokens != null && !ldpVpTokens.isEmpty()) {
+            boolean isClientIdValid = verifiablePresentationSubmissionService
+                    .isClientIdValid(authRequest.getAuthorizationDetails(), ldpVpTokens);
+            if (!isClientIdValid) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                        .body(new ErrorDto(ErrorCode.CLIENT_ID_VALIDATION_FAILED));
+            }
+            boolean isNonceValid = verifiablePresentationSubmissionService
+                    .isNonceValid(authRequest.getAuthorizationDetails(), ldpVpTokens);
+            if (!isNonceValid) {
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.NONCE_VALIDATION_FAILED));
+            }
+        }
 		return null; // Return null if both client_id and nonce are valid, indicating the request can
 						// proceed to the next validation steps
 	}

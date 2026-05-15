@@ -2,7 +2,10 @@ package io.inji.verify.services;
 
 import java.sql.Timestamp;
 import java.util.List;
+import java.util.Map;
 
+import io.inji.verify.dto.result.DcqlVPTokenDto;
+import org.json.JSONObject;
 import org.springframework.transaction.annotation.Transactional;
 
 import io.inji.verify.dto.VerificationSessionRequestDto;
@@ -24,15 +27,17 @@ public interface VerifiablePresentationSubmissionService {
     
     AuthorizationRequestCreateResponse getAuthRequest(String state);
 
-    boolean isClientIdValid(AuthorizationRequestResponseDto authRequest, String vpToken);
+    DcqlVPTokenDto extractDcqlVpTokens(String vpTokenString) ;
+
+    boolean isClientIdValid(AuthorizationRequestResponseDto authRequest, Map<String, JSONObject> ldpVpTokens);
     
-    boolean isNonceValid(AuthorizationRequestResponseDto authRequest, String vpToken);
+    boolean isNonceValid(AuthorizationRequestResponseDto authRequest, Map<String, JSONObject> ldpVpTokens);
     
     String generateResponseCode(AuthorizationRequestResponseDto authRequest);
     
-    public Timestamp generateResponseCodeExpiry();
+    Timestamp generateResponseCodeExpiry();
     
-    public  String buildRedirectUri(String responseCode);
+    String buildRedirectUri(String responseCode);
     
     void submitVpToken(AuthorizationRequestResponseDto authRequest, String vpToken, String state, String error, String errorDescription,
    		 String responseCode, Timestamp responseCodeExpiryAt) throws VPAlreadySubmittedException;
