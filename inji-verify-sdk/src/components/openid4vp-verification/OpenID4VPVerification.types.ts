@@ -54,6 +54,16 @@ type ExclusiveCallbacks =
       onVPReceived?: never;
     };
 
+interface FieldFilter {
+  type?: string;
+  pattern?: string;
+}
+
+interface FieldDescriptor {
+  path?: string[];
+  filter?: FieldFilter;
+}
+
 interface InputDescriptor {
   id: string;
   format?: {
@@ -61,16 +71,8 @@ interface InputDescriptor {
       proof_type: string[];
     };
   };
-  constraints: {
-    fields: [
-      {
-        path: string[];
-        filter: {
-          type: string;
-          pattern: string;
-        };
-      }
-    ]
+  constraints?: {
+    fields?: FieldDescriptor[];
   };
 }
 

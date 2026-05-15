@@ -215,7 +215,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                     .claim("state", state)
                     .claim("response_uri", authorizationRequest.getResponseUri());
 
-            if (verifierDid != null && verifierDid.startsWith("decentralized_identifier:")) {
+            if (verifierDid != null && verifierDid.startsWith("decentralized_identifier")) {
                 claimsBuilder.claim(
                         "client_metadata",
                         new ClientMetadataDto(verifierDid, VP_FORMATS_SUPPORTED)

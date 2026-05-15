@@ -8,6 +8,21 @@ import { QrData } from "../types/OVPSchemeQrData";
 import { isCWT } from "./cborUtils";
 import { buildDcqlQueryFromPresentationDefinition } from "./dcqlQuery";
 
+/** Presentation Exchange definition or an OpenID4VP 1.0 DCQL query object. */
+export type VpSessionQueryInput = PresentationDefinition | { credentials: unknown[] };
+
+const resolveDcqlQuery = (input: VpSessionQueryInput): unknown => {
+  if (
+    typeof input === "object" &&
+    input !== null &&
+    "credentials" in input &&
+    Array.isArray((input as { credentials: unknown[] }).credentials)
+  ) {
+    return input;
+  }
+  return buildDcqlQueryFromPresentationDefinition(input as PresentationDefinition);
+};
+
 const generateNonce = (): string => {
   return btoa(Date.now().toString());
 };
@@ -91,6 +106,9 @@ export const vpRequest = async (
   };
 
   if (txnId) requestBody.transactionId = txnId;
+  if (acceptVPWithoutHolderProof) {
+    requestBody.acceptVPWithoutHolderProof = true;
+  }
   const requestOptions = {
     method: "POST",
     headers: {
@@ -142,7 +160,7 @@ const isAppError = (error: unknown): error is AppError => (
 
 export const vpSessionRequest = async (
   url: string,
-  presentationDefinition: PresentationDefinition,
+  queryInput: VpSessionQueryInput,
   clientId: string,
   txnId?: string,
   acceptVPWithoutHolderProof?: boolean,
@@ -151,7 +169,7 @@ export const vpSessionRequest = async (
   const requestBody: VPRequestBody = {
     clientId: clientId,
     nonce: generateNonce(),
-    dcqlQuery: buildDcqlQueryFromPresentationDefinition(presentationDefinition),
+    dcqlQuery: resolveDcqlQuery(queryInput),
   };
   if (txnId) requestBody.transactionId = txnId;
   if (responseCodeValidationRequired) {

@@ -13,6 +13,7 @@ public enum ErrorCode {
     NO_PRESENTATION_DEFINITION("NO_PRESENTATION_DEFINITION","No Presentation Definition found for given Presentation Definition ID."),
     DCQL_QUERY_REQUIRED("dcql_query","dcql_query is required"),
     AMBIGUOUS_QUERY("ambiguous_query","Both dcql_query and presentationDefinition provided"),
+    INVALID_REQUEST_FORMAT("invalid_request_format", "Request body JSON is invalid or cannot be parsed."),
     DCQL_VALIDATION_ERROR("dcql_validation_error","DCQL structure invalid"),
     DCQL_CREDENTIALS_REQUIRED("dcql_query.credentials","Each DCQL credential entry must not be null."),
     DCQL_CREDENTIALS_INVALID("dcql_query.credentials","dcql_query.credentials must be a non-empty array."),

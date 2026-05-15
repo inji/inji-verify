@@ -63,9 +63,9 @@ public class VPRequestController {
         try {
             vpRequestCreate = objectMapper.treeToValue(requestBody, VPRequestCreateDto.class);
         } catch (JsonProcessingException e) {
-            log.warn("Invalid JSON for VP request: {}", e.getMessage());
+            log.warn("Invalid request body format for VP request: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorDto(ErrorCode.DCQL_VALIDATION_ERROR));
+                    .body(new ErrorDto(ErrorCode.INVALID_REQUEST_FORMAT));
         }
         return processCreateVPRequest(requestBody, vpRequestCreate, false);
     }
@@ -76,9 +76,9 @@ public class VPRequestController {
         try {
             vpRequestCreate = objectMapper.treeToValue(requestBody, VPRequestCreateDto.class);
         } catch (JsonProcessingException e) {
-            log.warn("Invalid JSON for VP session request: {}", e.getMessage());
+            log.warn("Invalid request body format for VP session request: {}", e.getMessage());
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
-                    .body(new ErrorDto(ErrorCode.DCQL_VALIDATION_ERROR));
+                    .body(new ErrorDto(ErrorCode.INVALID_REQUEST_FORMAT));
         }
         return processCreateVPRequest(requestBody, vpRequestCreate, true);
     }
