@@ -6,6 +6,8 @@ import com.fasterxml.jackson.databind.JsonNode;
 import io.inji.verify.shared.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
+import lombok.ToString;
+
 import java.time.Instant;
 
 /**
@@ -16,6 +18,7 @@ import java.time.Instant;
 @Getter
 @AllArgsConstructor(onConstructor_ = @JsonCreator)
 @JsonInclude(JsonInclude.Include.NON_NULL)
+@ToString
 public class AuthorizationRequestResponseDto {
 
     private final String responseType = Constants.RESPONSE_TYPE;

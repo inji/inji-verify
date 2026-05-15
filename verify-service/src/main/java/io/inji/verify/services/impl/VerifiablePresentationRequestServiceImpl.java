@@ -46,6 +46,8 @@ import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.factory.annotation.Value;
 import static io.inji.verify.shared.Constants.VP_FORMATS_SUPPORTED;
 
@@ -66,7 +68,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
     @Value("${inji.did.verify.public.key.uri}")
     String verifyPublicKeyURI;
 
-    HashMap<String, DeferredResult<VPRequestStatusDto>> vpRequestStatusListeners = new HashMap<>();
+    ConcurrentHashMap<String, DeferredResult<VPRequestStatusDto>> vpRequestStatusListeners = new ConcurrentHashMap<>();
 
     public VerifiablePresentationRequestServiceImpl(AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository, VPSubmissionRepository vpSubmissionRepository, KeyManagementService<OctetKeyPair> keyManagementService) {
         this.authorizationRequestCreateResponseRepository = authorizationRequestCreateResponseRepository;
@@ -81,7 +83,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         String requestId = Utils.generateID(Constants.REQUEST_ID_PREFIX);
         long expiresAt = Instant.now().plusSeconds(Constants.DEFAULT_EXPIRY).toEpochMilli();
         String nonce = vpRequestCreate.getNonce() != null ? vpRequestCreate.getNonce() : SecurityUtils.generateNonce();
-        String responseUri = verifyServiceBaseUrl + Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI;
+        String responseUri = verifyServiceBaseUrl + Constants.VP_RESPONSE_SUBMISSION_URI;
         boolean acceptVPWithoutHolderProof = vpRequestCreate.isAcceptVPWithoutHolderProof();
         boolean responseCodeValidationRequired = vpRequestCreate.isResponseCodeValidationRequired();
         JsonNode dcqlQuery = vpRequestCreate.getDcqlQuery();
@@ -171,6 +173,17 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                     }
 
                     result.onTimeout(() -> result.setResult(getCurrentRequestStatus(requestId)));
+                    // cleanup on timeout
+                    result.onTimeout(() -> {
+                        vpRequestStatusListeners.remove(requestId);
+                        result.setResult(getCurrentRequestStatus(requestId));
+                    });
+
+                    // cleanup on completion
+                    result.onCompletion(() ->
+                            vpRequestStatusListeners.remove(requestId)
+                    );
+                    
                     registerVpRequestStatusListener(requestId, result);
                     return result;
                 })
