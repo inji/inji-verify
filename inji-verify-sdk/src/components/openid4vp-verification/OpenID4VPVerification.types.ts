@@ -28,9 +28,8 @@ export interface VPRequestBody {
   clientId: string;
   nonce: string;
   transactionId?: string;
-  presentationDefinitionId?: string;
-  presentationDefinition?: PresentationDefinition;
   acceptVPWithoutHolderProof?: boolean;
+  dcqlQuery: unknown;
   /**
    * When true, the verifier backend will generate a short-lived single-use `response_code`
    * and return it via redirect for same-device web-wallet flows.
@@ -39,21 +38,6 @@ export interface VPRequestBody {
    */
   responseCodeValidationRequired?: boolean;
 }
-
-type ExclusivePresentationDefinition =
-  /**
-   * ID of the presentation definition used for verification.
-   * Required for some verification flows.
-   */
-  | { presentationDefinitionId: string; presentationDefinition?: never }
-  /**
-   * The full presentation definition JSON string.
-   * If provided, it will be used instead of fetching from the backend.
-   */
-  | {
-      presentationDefinition?: PresentationDefinition;
-      presentationDefinitionId?: never;
-    };
 
 type ExclusiveCallbacks =
   /**
@@ -70,6 +54,16 @@ type ExclusiveCallbacks =
       onVPReceived?: never;
     };
 
+interface FieldFilter {
+  type?: string;
+  pattern?: string;
+}
+
+interface FieldDescriptor {
+  path?: string[];
+  filter?: FieldFilter;
+}
+
 interface InputDescriptor {
   id: string;
   format?: {
@@ -77,7 +71,9 @@ interface InputDescriptor {
       proof_type: string[];
     };
   };
-  constraints?: {};
+  constraints?: {
+    fields?: FieldDescriptor[];
+  };
 }
 
 export interface PresentationDefinition {
@@ -91,8 +87,12 @@ export interface PresentationDefinition {
   input_descriptors: InputDescriptor[];
 }
 
-export type OpenID4VPVerificationProps = ExclusivePresentationDefinition &
-  ExclusiveCallbacks & {
+export type OpenID4VPVerificationProps = ExclusiveCallbacks & {
+  /**
+   * Presentation Exchange definition used to build a DCQL query for OpenID4VP 1.0.
+   */
+  presentationDefinition: PresentationDefinition;
+
   /**
    React element that triggers the verification process (e.g., a button).
    If not provided, the component may automatically start the process.

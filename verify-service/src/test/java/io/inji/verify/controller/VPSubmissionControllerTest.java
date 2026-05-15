@@ -2,6 +2,7 @@ package io.inji.verify.controller;
 
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
+import io.inji.verify.testsupport.DcqlTestFixtures;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.DcqlVPTokenDto;
 import io.inji.verify.enums.ErrorCode;

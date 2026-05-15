@@ -19,10 +19,12 @@ import {
   THROTTLE_FRAMES_PER_SEC,
   ZOOM_STEP,
 } from "../../utils/constants";
-import {vpSessionRequest,
+import {
+    vpSessionRequest,
     vcSubmission,
     vcVerificationV2,
-    vpSessionResults
+    vpSessionResults,
+    VpSessionQueryInput,
 } from "../../utils/api";
 import {
     decodeQrData,
@@ -380,15 +382,13 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     }
   };
 
-  const createVPRequest = async (presentationDefinition: any) => {
+  const createVPRequest = async (queryInput: VpSessionQueryInput) => {
     try {
-      let presentationDefinitionId;
       const data: QrData = await vpSessionRequest(
         verifyServiceUrl,
+        queryInput,
         clientId,
         transactionId ?? undefined,
-        presentationDefinitionId,
-        presentationDefinition,
         true, // acceptVPWithoutHolderProof is set to true for DataShare VCs
         true // responseCodeValidationRequired is set to true for DataShare VCs
       );
@@ -415,13 +415,32 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     }
   };
 
+  const parseDcqlQuery = (dcqlParams: string) => {
+    try {
+      const decoded = JSON.parse(dcqlParams);
+      if (
+        !decoded ||
+        typeof decoded !== "object" ||
+        !Array.isArray((decoded as { credentials?: unknown }).credentials)
+      ) {
+        throw new Error("Invalid dcql_query structure");
+      }
+      return decoded as { credentials: unknown[] };
+    } catch {
+      throw new Error("Failed to create VP request, due to invalid dcql_query");
+    }
+  };
+
   const buildOnlineSharingUrl = (
     baseRedirectUrl: string,
     state: string,
     responseUri: string,
-    nonce: string
+    nonce: string,
+    dcqlQuery: unknown
   ) => {
-
+    if (!dcqlQuery) {
+      throw new Error("Unable to build sharing URL: missing dcqlQuery");
+    }
     const url = new URL(baseRedirectUrl);
     url.hash = "";
     url.searchParams.set("client_id", clientId);
@@ -429,6 +448,8 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     url.searchParams.set("response_mode", "direct_post");
     url.searchParams.set("response_uri", responseUri);
     url.searchParams.set("nonce", nonce);
+    url.searchParams.set("dcql_query", JSON.stringify(dcqlQuery));
+    url.searchParams.delete("presentation_definition");
 
     return `${url.toString()}#`;
   };
@@ -451,14 +472,24 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         }
 
         const parsedUrl = new URL(redirectUrl);
+        const dcqlQueryParam = parsedUrl.searchParams.get("dcql_query");
         const pdParams = parsedUrl.searchParams.get("presentation_definition");
 
-        if (!pdParams) throw new Error("Missing presentation_definition in redirect URL");
+        if (!dcqlQueryParam && !pdParams) {
+          throw new Error(
+            "Missing dcql_query/presentation_definition in redirect URL"
+          );
+        }
 
-        const presentationDefinition = parsePresentationDefinition(pdParams);
-        //call /v1/verify/vp-request endpoint to get the request_id and
-        // transaction_id to be sent to the redirectUrl
-        const response = await createVPRequest(presentationDefinition);
+        const presentationDefinition = pdParams
+          ? parsePresentationDefinition(pdParams)
+          : undefined;
+
+        const response = await createVPRequest(
+          dcqlQueryParam
+            ? parseDcqlQuery(dcqlQueryParam)
+            : (presentationDefinition as VpSessionQueryInput)
+        );
 
         if (!response) throw new Error("Unable to access the shared VC, due to failure in creating VP request");
 
@@ -469,8 +500,14 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         const { responseUri, nonce } = authorizationDetails;
 
         if (!responseUri || !nonce) throw new Error("Unable to access the shared VC, due to missing responseUri or nonce in authorization details");
-        //call the redirectUrl
-        window.location.href = buildOnlineSharingUrl(parsedUrl.toString(), state, responseUri, nonce);
+
+        window.location.href = buildOnlineSharingUrl(
+          parsedUrl.toString(),
+          state,
+          responseUri,
+          nonce,
+          authorizationDetails.dcqlQuery
+        );
         return;
       }
 

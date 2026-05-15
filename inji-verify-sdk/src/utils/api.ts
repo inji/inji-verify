@@ -6,6 +6,22 @@ import {
 import { vcSubmissionBody, VCVerificationV2Request, VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
 import { QrData } from "../types/OVPSchemeQrData";
 import { isCWT } from "./cborUtils";
+import { buildDcqlQueryFromPresentationDefinition } from "./dcqlQuery";
+
+/** Presentation Exchange definition or an OpenID4VP 1.0 DCQL query object. */
+export type VpSessionQueryInput = PresentationDefinition | { credentials: unknown[] };
+
+const resolveDcqlQuery = (input: VpSessionQueryInput): unknown => {
+  if (
+    typeof input === "object" &&
+    input !== null &&
+    "credentials" in input &&
+    Array.isArray((input as { credentials: unknown[] }).credentials)
+  ) {
+    return input;
+  }
+  return buildDcqlQueryFromPresentationDefinition(input as PresentationDefinition);
+};
 
 const generateNonce = (): string => {
   return btoa(Date.now().toString());
@@ -79,23 +95,20 @@ export const vcSubmission = async (
 export const vpRequest = async (
   url: string,
   clientId: string,
+  presentationDefinition: PresentationDefinition,
   txnId?: string,
-  presentationDefinitionId?: string,
-  presentationDefinition?: PresentationDefinition,
   acceptVPWithoutHolderProof?: boolean
 ) => {
   const requestBody: VPRequestBody = {
     clientId: clientId,
     nonce: generateNonce(),
-    acceptVPWithoutHolderProof: acceptVPWithoutHolderProof
+    dcqlQuery: buildDcqlQueryFromPresentationDefinition(presentationDefinition),
   };
 
   if (txnId) requestBody.transactionId = txnId;
-  if (presentationDefinitionId)
-    requestBody.presentationDefinitionId = presentationDefinitionId;
-  if (presentationDefinition)
-    requestBody.presentationDefinition = presentationDefinition;
-
+  if (acceptVPWithoutHolderProof) {
+    requestBody.acceptVPWithoutHolderProof = true;
+  }
   const requestOptions = {
     method: "POST",
     headers: {
@@ -147,26 +160,23 @@ const isAppError = (error: unknown): error is AppError => (
 
 export const vpSessionRequest = async (
   url: string,
+  queryInput: VpSessionQueryInput,
   clientId: string,
   txnId?: string,
-  presentationDefinitionId?: string,
-  presentationDefinition?: PresentationDefinition,
   acceptVPWithoutHolderProof?: boolean,
   responseCodeValidationRequired?: boolean
 ) => {
   const requestBody: VPRequestBody = {
     clientId: clientId,
     nonce: generateNonce(),
-    acceptVPWithoutHolderProof: acceptVPWithoutHolderProof,
+    dcqlQuery: resolveDcqlQuery(queryInput),
   };
-
   if (txnId) requestBody.transactionId = txnId;
-  if (presentationDefinitionId)
-    requestBody.presentationDefinitionId = presentationDefinitionId;
-  if (presentationDefinition)
-    requestBody.presentationDefinition = presentationDefinition;
   if (responseCodeValidationRequired) {
     requestBody.responseCodeValidationRequired = true;
+  }
+  if (acceptVPWithoutHolderProof) {
+    requestBody.acceptVPWithoutHolderProof = true;
   }
 
   try {
