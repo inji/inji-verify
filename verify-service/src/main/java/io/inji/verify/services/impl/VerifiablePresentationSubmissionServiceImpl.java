@@ -285,7 +285,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * @return
      */
     public  String buildRedirectUri(String responseCode) {
-        if (redirectUri == null || redirectUri.isBlank()) return null;
+        if (redirectUri == null || redirectUri.isBlank() || responseCode == null) return null;
         String redirectUriWithResponseCode = UriComponentsBuilder
                     .fromUriString(redirectUri)
                     .fragment("response_code=" + responseCode)
@@ -314,7 +314,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 			throw new VPAlreadySubmittedException("VP already submitted for request_id: " + state, e);
 		}
         log.debug("VP submission saved successfully for state: {}", state);
-        log.debug(vpSubmissionRepository.getById(state).getVpToken());
+        //log.debug(vpSubmissionRepository.getById(state).getVpToken());
         /// invoke listener to update the status of VP request
 		verifiablePresentationRequestService.invokeVpRequestStatusListener(state);
 

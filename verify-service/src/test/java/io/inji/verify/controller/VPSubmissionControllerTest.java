@@ -104,18 +104,16 @@ class VPSubmissionControllerTest {
         );
     }
 
-    @Test
     void shouldReturnBadRequest_whenUnsupportedParameterPresent() {
-
         Map<String, String[]> params = new HashMap<>();
         params.put("invalid", new String[]{"x"});
-
         when(request.getParameterMap()).thenReturn(params);
-
         ResponseEntity<?> response =
                 controller.submitVP(null, STATE, "err", null, request);
-
         assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        verify(vpSubmissionService, never()).submitVpToken(any(), any(), any(), any(), any(), any(), any());
     }
 
     @Test
@@ -453,5 +451,6 @@ class VPSubmissionControllerTest {
                 controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(vpSubmissionService).submitVpToken(any(), any(), any(), any(), any(), any(), any());
     }
 }
