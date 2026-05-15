@@ -382,13 +382,11 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
   const createVPRequest = async (presentationDefinition: any) => {
     try {
-      let presentationDefinitionId;
       const data: QrData = await vpSessionRequest(
         verifyServiceUrl,
+        presentationDefinition,
         clientId,
         transactionId ?? undefined,
-        presentationDefinitionId,
-        presentationDefinition,
         true, // acceptVPWithoutHolderProof is set to true for DataShare VCs
         true // responseCodeValidationRequired is set to true for DataShare VCs
       );

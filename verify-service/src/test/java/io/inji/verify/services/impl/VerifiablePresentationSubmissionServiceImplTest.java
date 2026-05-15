@@ -20,7 +20,7 @@ import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
-import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
+import io.inji.verify.testsupport.DcqlTestFixtures;
 import io.inji.verify.dto.result.VPVerificationResultDto;
 import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
@@ -182,8 +182,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -229,8 +228,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -273,8 +271,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -317,7 +314,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
 
             AuthorizationRequestResponseDto authDetails =
-                    new AuthorizationRequestResponseDto(clientId, "presentationDefinitionUri", null, nonce, "responseUri", false, false);
+                    new AuthorizationRequestResponseDto(clientId, DcqlTestFixtures.minimalDcql(), nonce, "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     state, "txId", authDetails, System.currentTimeMillis() + 100000);
 
@@ -339,7 +336,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri", false, false);
+                    "my-client", DcqlTestFixtures.minimalDcql(), "my-nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     state, "txId", authDetails, System.currentTimeMillis() + 100000);
 
@@ -358,7 +355,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri", false, false);
+                    "my-client", DcqlTestFixtures.minimalDcql(), "my-nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     state, "txId", authDetails, System.currentTimeMillis() + 100000);
 
@@ -377,7 +374,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri", false, false);
+                    "my-client", DcqlTestFixtures.minimalDcql(), "my-nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     state, "txId", authDetails, System.currentTimeMillis() + 100000);
 
@@ -396,7 +393,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri", false, false);
+                    "my-client", DcqlTestFixtures.minimalDcql(), "my-nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     state, "txId", authDetails, System.currentTimeMillis() + 100000);
 
@@ -415,7 +412,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri", false, false);
+                    "my-client", DcqlTestFixtures.minimalDcql(), "my-nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     state, "txId", authDetails, System.currentTimeMillis() + 100000);
 
@@ -436,7 +433,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri", false, false);
+                    "my-client", DcqlTestFixtures.minimalDcql(), "my-nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     state, "txId", authDetails, System.currentTimeMillis() + 100000);
 
@@ -458,7 +455,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri",
+                    "my-client", DcqlTestFixtures.minimalDcql(), "my-nonce", "responseUri",
                     true,  // acceptVPWithoutHolderProof = true
                     false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
@@ -485,7 +482,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             PresentationSubmissionDto presentationSubmissionDto = new PresentationSubmissionDto("subId", "defId", new ArrayList<>());
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "my-client", "presentationDefinitionUri", null, "my-nonce", "responseUri", false, false);
+                    "my-client", DcqlTestFixtures.minimalDcql(), "my-nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     state, "txId", authDetails, System.currentTimeMillis() + 100000);
 
@@ -519,7 +516,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             );
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -550,7 +547,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                                     "format", "path")))), "", "", "", null, false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -592,7 +589,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             );
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -628,7 +625,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -668,7 +665,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -703,7 +700,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -738,7 +735,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     , false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -767,7 +764,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -815,7 +812,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     , null, null, null, null, false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -841,7 +838,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     null, null, false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -869,7 +866,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -897,7 +894,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -924,7 +921,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -951,7 +948,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -978,7 +975,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     , false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1006,7 +1003,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1034,7 +1031,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1100,7 +1097,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             );
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1142,7 +1139,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1186,7 +1183,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             );
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1208,9 +1205,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         void testProcessSubmission_NoProof_Accepted() {
             String vpToken = "{\"type\":\"VerifiablePresentation\",\"verifiableCredential\":[\"vc1\"]}";
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "respType", new VPDefinitionResponseDto("",
-                    new ArrayList<>(), "", "", null, new ArrayList<>()), "nonce",
-                    "state", true, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "state", true, false);
 
             AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
             when(auth.getAuthorizationDetails()).thenReturn(authDetails);
@@ -1249,7 +1244,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1300,7 +1295,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(mockSummary.getVerificationResult()).thenReturn(mockResult);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1347,7 +1342,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(mockSummary.getVerificationResult()).thenReturn(mockResult);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1371,7 +1366,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             String transactionId = "tx123";
             List<String> requestIds = List.of("req123");
 
-            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", true, true);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1401,7 +1396,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     null, null, null, true);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce",
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce",
                     "responseUri", false, true);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
@@ -1442,7 +1437,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             List<String> requestIds = List.of("req123");
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", true, true);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1459,7 +1454,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             List<String> requestIds = List.of("req123");
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", true, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1483,7 +1478,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     null, null, null, false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", "presentationDefinitionUri", null, "nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1519,7 +1514,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             String transactionId = "tx123";
             List<String> requestIds = List.of("req123");
 
-            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", true, true);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1541,7 +1536,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             String transactionId = "tx123";
             List<String> requestIds = List.of("req123");
 
-            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", true, true);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1564,7 +1559,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             String transactionId = "tx123";
             List<String> requestIds = List.of("req123");
 
-            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", "presentationDefinitionUri", null, "nonce", "responseUri", true, true);
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto("clientId", DcqlTestFixtures.minimalDcql(), "nonce", "responseUri", true, true);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -1632,8 +1627,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -1681,8 +1675,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -1749,8 +1742,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -1802,8 +1794,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -1854,8 +1845,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -1906,8 +1896,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -2029,8 +2018,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -2083,8 +2071,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,
@@ -2133,8 +2120,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
                     "clientId",
-                    "presentationDefinitionUri",
-                    null,
+                    DcqlTestFixtures.minimalDcql(),
                     "nonce",
                     "responseUri",
                     false,

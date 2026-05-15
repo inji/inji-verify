@@ -5,8 +5,7 @@ export interface QrData {
     responseType: string;
     responseMode: string;
     clientId: string;
-    presentationDefinition: Record<string, unknown>;
-    presentationDefinitionUri?: string;
+    dcqlQuery: unknown;
     responseUri: string;
     nonce: string;
     iat: number;

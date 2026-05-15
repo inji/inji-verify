@@ -3,6 +3,7 @@ package io.inji.verify.controller;
 import com.nimbusds.jose.shaded.gson.Gson;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
+import io.inji.verify.testsupport.DcqlTestFixtures;
 import io.inji.verify.dto.submission.PresentationSubmissionDto;
 import io.inji.verify.enums.VPRequestStatus;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
@@ -85,8 +86,7 @@ public class VPSubmissionControllerTest {
 
         AuthorizationRequestResponseDto authorizationRequestResponseDto = new AuthorizationRequestResponseDto(
                 "clientId",
-                "presentationDefinitionUri",
-                null,
+                DcqlTestFixtures.minimalDcql(),
                 "nonce",
                 "responseUri",
                 false,
@@ -280,8 +280,7 @@ public class VPSubmissionControllerTest {
 
         AuthorizationRequestResponseDto authorizationRequestResponseDto = new AuthorizationRequestResponseDto(
                 "clientId",
-                "presentationDefinitionUri",
-                null,
+                DcqlTestFixtures.minimalDcql(),
                 "nonce",
                 "responseUri",
                 false,
@@ -330,8 +329,7 @@ public class VPSubmissionControllerTest {
 
         AuthorizationRequestResponseDto authorizationRequestResponseDto = new AuthorizationRequestResponseDto(
                 "clientId",
-                "presentationDefinitionUri",
-                null,
+                DcqlTestFixtures.minimalDcql(),
                 "nonce",
                 "responseUri",
                 false,
@@ -376,8 +374,7 @@ public class VPSubmissionControllerTest {
 
         AuthorizationRequestResponseDto authorizationRequestResponseDto = new AuthorizationRequestResponseDto(
                 "clientId",
-                "presentationDefinitionUri",
-                null,
+                DcqlTestFixtures.minimalDcql(),
                 "nonce",
                 "responseUri",
                 false,

@@ -11,6 +11,17 @@ public enum ErrorCode {
     NO_AUTH_REQUEST("NO_AUTH_REQUEST","No Authorization request found for given request ID."),
     BOTH_ID_AND_PD_CANNOT_BE_NULL("BOTH_ID_AND_PD_CANNOT_BE_NULL","Both Presentation Definition and Presentation Definition ID cannot be empty."),
     NO_PRESENTATION_DEFINITION("NO_PRESENTATION_DEFINITION","No Presentation Definition found for given Presentation Definition ID."),
+    DCQL_QUERY_REQUIRED("dcql_query","dcql_query is required"),
+    AMBIGUOUS_QUERY("ambiguous_query","Both dcql_query and presentationDefinition provided"),
+    DCQL_VALIDATION_ERROR("dcql_validation_error","DCQL structure invalid"),
+    DCQL_CREDENTIALS_REQUIRED("dcql_query.credentials","Each DCQL credential entry must not be null."),
+    DCQL_CREDENTIALS_INVALID("dcql_query.credentials","dcql_query.credentials must be a non-empty array."),
+    DCQL_CREDENTIAL_ID_REQUIRED("dcql_query.credentials","Each DCQL credential entry must contain id."),
+    DCQL_CREDENTIAL_FORMAT_REQUIRED("dcql_query.credentials","Each DCQL credential entry must contain format."),
+    DCQL_CREDENTIAL_FORMAT_UNSUPPORTED("dcql_query.credentials","Only dc+sd-jwt is supported for DCQL credential format."),
+    PRESENTATION_DEFINITION_NOT_SUPPORTED("presentation_definition","presentation_definition is not supported"),
+    INVALID_CLAIMS_STRUCTURE("dcql_validation_error","dcql_query.credentials[].claims must contain valid claim path definitions."),
+    CLIENT_ID_REQUIRED("invalid_request","client_id is required"),
     DID_CREATION_FAILED("DID_CREATION_FAILED","Error while creating DID document."),
     VP_SUBMISSION_EXCEPTION("VP_SUBMISSION_EXCEPTION","Error while processing VP submission"),
     TOKEN_MATCHING_FAILED("TOKEN_MATCHING_FAILED", "Token matching failed."),
@@ -26,7 +37,8 @@ public enum ErrorCode {
     RESPONSE_CODE_NOT_USED("RESPONSE_CODE_NOT_USED", "Transaction was incomplete, response_code was not used" ),
     NONCE_VALIDATION_FAILED("invalid_request", "Nonce validation failed due to invalid nonce"),
     CLIENT_ID_VALIDATION_FAILED("invalid_request", "Client id validation failed due to invalid client id"),
-    CLIENT_ID_NONCE_VALIDATION_FAILED("invalid_request", "Client id or nonce validation failed");
+    CLIENT_ID_NONCE_VALIDATION_FAILED("invalid_request", "Client id or nonce validation failed"),
+    INTERNAL_SERVER_ERROR("internal_server_error", "Internal server error");
 
     private final String errorCode;
     private final String errorMessage;
