@@ -1,6 +1,6 @@
 CreateVpRequestWithSDJWT:
   InjiVerify_CreateVpRequestWithSDJWT_All_Valid_Smoke_Sid:
-    endPoint: /v1/verify/vp-request
+    endPoint: /v2/verify/vp-request
     description: Create VP request with SD-JWT
     uniqueIdentifier: TC_InjiVerify_CreateVpRequestWithSDJWT_01
     role: noauth

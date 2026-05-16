@@ -1,6 +1,6 @@
 VpRequestForSessionRequest:
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid:
-    endPoint: /v1/verify/vp-session-request
+    endPoint: /v2/verify/vp-session-request
     description: Creates a VP request with a valid data for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_01
     role: noauth
@@ -19,7 +19,7 @@ VpRequestForSessionRequest:
       "responseType": "vp_token"
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withoutClientID_Neg:
-    endPoint: /v1/verify/vp-session-request
+    endPoint: /v2/verify/vp-session-request
     description: Creates a VP request without clientId and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_02
     role: noauth
@@ -36,7 +36,7 @@ VpRequestForSessionRequest:
       "status": "400"
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withoutResponseCodeValidationRequired_Neg:
-    endPoint: /v1/verify/vp-session-request
+    endPoint: /v2/verify/vp-session-request
     description: Creates a VP request with responseCodeValidationRequired present but no value and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_03
     role: noauth
@@ -50,7 +50,7 @@ VpRequestForSessionRequest:
       "status": "400"
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withMalformedJSONRequest_Neg:
-    endPoint: /v1/verify/vp-session-request
+    endPoint: /v2/verify/vp-session-request
     description: Creates a VP request with empty presentationDefinition fields and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_04
     role: noauth
@@ -62,7 +62,7 @@ VpRequestForSessionRequest:
       "status": "400"
 }'
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid:
-    endPoint: /v1/verify/vp-session-request
+    endPoint: /v2/verify/vp-session-request
     description: Creates a VP request with valid data and response Code Validation Required is false for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_05
     role: noauth
@@ -80,3 +80,22 @@ VpRequestForSessionRequest:
       "responseCodeValidationRequired": "false",
       "responseType": "vp_token"
 }'
+  Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_V1_endpoint_Neg:
+    endPoint: /v1/verify/vp-session-request
+    description: Creates a VP request with a valid data for VP Session result API using V1 endpoint
+    uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_with_v1_endpoint_06
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
+    outputTemplate: injiverify/responseCode
+    input: '{
+       "clientId": "injiverify.mosip.net",
+       "nonce": "Mi0vDP17DlFcu/8m+OcP9A==",
+       "acceptVPWithoutHolderProof": true,
+       "responseCodeValidationRequired": true,
+       "id": "$PRESENTATIONDEFINITIONID$"
+     }'
+    output: '{
+       "responseCode": "404"
+ }'

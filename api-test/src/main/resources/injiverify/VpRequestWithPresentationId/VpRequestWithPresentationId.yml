@@ -1,6 +1,6 @@
 VpRequestWithPresentationId:
   Injiverify_CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
+      endPoint: /v2/verify/vp-request
       description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details.
       uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_01
       role: noauth
@@ -18,7 +18,7 @@ VpRequestWithPresentationId:
 }'
 
   Injiverify_CreateNewVerificationRequest_With_Invalid_PresentationId_Neg:
-      endPoint: /v1/verify/vp-request
+      endPoint: /v2/verify/vp-request
       description: Creates a VP request with a invalid presentationDefinitionId
       uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_02
       role: noauth
@@ -35,7 +35,7 @@ VpRequestWithPresentationId:
 }'
 
   Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_All_Valid_Smoke_Sid:
-    endPoint: /v1/verify/vp-request
+    endPoint: /v2/verify/vp-request
     description: Creates a VP request with a valid presentationDefinitionId for VP session result
     uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_03
     role: noauth
@@ -55,7 +55,7 @@ VpRequestWithPresentationId:
 }'
 
   Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_withoutResponseCodeValidationRequired_Neg:
-    endPoint: /v1/verify/vp-request
+    endPoint: /v2/verify/vp-request
     description: Creates a VP request with responseCodeValidationRequired present but no value and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_04
     role: noauth
@@ -73,7 +73,7 @@ VpRequestWithPresentationId:
       "status": "400"
 }'
   Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_invalidResponseCodeValidationRequired_Neg:
-    endPoint: /v1/verify/vp-request
+    endPoint: /v2/verify/vp-request
     description: Creates a VP request with invalid Response Code Validation Required parameter
     uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_05
     role: noauth

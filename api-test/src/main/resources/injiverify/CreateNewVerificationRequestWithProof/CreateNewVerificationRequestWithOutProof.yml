@@ -1,6 +1,6 @@
 CreateNewVerificationRequestWithProof:
   Injiverify_CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
+      endPoint: /v2/verify/vp-request
       description: Submitting the authorization response with proof
       uniqueIdentifier: TC_InjiVerify_VcRevocationStatus_WithProof_01
       role: noauth
@@ -16,7 +16,7 @@ CreateNewVerificationRequestWithProof:
 }'
 
   Injiverify_CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
+      endPoint: /v2/verify/vp-request
       description: Submitting the authorization response with out proof
       uniqueIdentifier: TC_InjiVerify_VcRevocationStatus_WithProof_02
       role: noauth

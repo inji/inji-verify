@@ -1,6 +1,6 @@
 CreateNewVerificationRequestWithDID:
   Injiverify_CreateNewVerificationRequest_DID_ClientId_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
+      endPoint: /v2/verify/vp-request
       description: Creating a new verification request with DID-based client id
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequestWithDID_01
       role: noauth
@@ -9,7 +9,7 @@ CreateNewVerificationRequestWithDID:
       inputTemplate: injiverify/CreateNewVerificationRequestWithDID/CreateNewVerificationRequestWithDID
       outputTemplate: injiverify/responseCode
       input: '{
-      "clientId":"did:client123",
+      "clientId":"decentralized_identifier:client123",
       "id":"$PRESENTATIONDEFINITIONID$"
       }'
       output: '{
