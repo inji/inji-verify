@@ -1,7 +1,7 @@
 package io.inji.verify.dto.authorizationrequest;
 
-import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
-import jakarta.validation.Valid;
+import com.fasterxml.jackson.annotation.JsonAlias;
+import com.fasterxml.jackson.databind.JsonNode;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotNull;
 import lombok.AllArgsConstructor;
@@ -15,10 +15,11 @@ public class VPRequestCreateDto {
     @NotBlank(message = "Client Id must not be empty")
     String clientId;
     String transactionId;
-    String presentationDefinitionId;
+    @JsonAlias("presentationDefinitionId")
+    String scope;
     String nonce;
-    @Valid
-    VPDefinitionResponseDto presentationDefinition;
+    @JsonAlias("presentationDefinition")
+    JsonNode dcqlQuery;
     boolean acceptVPWithoutHolderProof;
     boolean responseCodeValidationRequired;
 }

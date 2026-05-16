@@ -1,7 +1,7 @@
 VpRequestWithPresentationId:
   Injiverify_CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid:
       endPoint: /v1/verify/vp-request
-      description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details.
+      description: Creates a VP request with a valid scope and returns vp_token details.
       uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_01
       role: noauth
       restMethod: post
@@ -11,7 +11,7 @@ VpRequestWithPresentationId:
       input: '{
       "clientId": "did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
       "nonce": "MTc2Mzk1NTY5NDI5NQ==",
-      "presentationDefinitionId": "200"
+      "scope": "200"
       }'
       output: '{
       "responseCode": "201"
@@ -19,7 +19,7 @@ VpRequestWithPresentationId:
 
   Injiverify_CreateNewVerificationRequest_With_Invalid_PresentationId_Neg:
       endPoint: /v1/verify/vp-request
-      description: Creates a VP request with a invalid presentationDefinitionId
+      description: Creates a VP request with an invalid scope
       uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_02
       role: noauth
       restMethod: post
@@ -27,16 +27,16 @@ VpRequestWithPresentationId:
       outputTemplate: injiverify/VpRequestWithPresentationId/presentationDefinitionIdNegResult
       input: '{
       "clientId":"client123",
-      "presentationDefinitionId":"automationTestPresentationDefinitionId"
+      "scope":"automationTestScope"
       }'
       output: '{
-    "errorCode": "NO_PRESENTATION_DEFINITION",
-    "errorMessage": "No Presentation Definition found for given Presentation Definition ID."
+    "errorCode": "NO_DCQL_QUERY_FOR_SCOPE",
+    "errorMessage": "No DCQL query found for the given scope."
 }'
 
   Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_All_Valid_Smoke_Sid:
     endPoint: /v1/verify/vp-request
-    description: Creates a VP request with a valid presentationDefinitionId for VP session result
+    description: Creates a VP request with a valid scope for VP session result
     uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_03
     role: noauth
     restMethod: post
@@ -47,7 +47,7 @@ VpRequestWithPresentationId:
       "nonce": "MTc2Mzk1NTY5NDI5NQ==",
       "acceptVPWithoutHolderProof": true,
       "responseCodeValidationRequired": true,
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "scope": "$SCOPE$"
     }'
     output: '{
       "responseCodeValidationRequired": "true",
@@ -67,7 +67,7 @@ VpRequestWithPresentationId:
       "nonce": "MTc2Mzk1NTY5NDI5NQ==",
       "acceptVPWithoutHolderProof": true,
       "responseCodeValidationRequired": "$IGNORE$",
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "scope": "$SCOPE$"
     }'
     output: '{
       "status": "400"
@@ -85,7 +85,7 @@ VpRequestWithPresentationId:
       "nonce": "MTc2Mzk1NTY5NDI5NQ==",
       "acceptVPWithoutHolderProof": true,
       "responseCodeValidationRequired": "$IGNORE$",
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "scope": "$SCOPE$"
     }'
     output: '{
       "status": "400"

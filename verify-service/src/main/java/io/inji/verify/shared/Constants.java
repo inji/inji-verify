@@ -21,7 +21,7 @@ public final class Constants {
     public static final int DEFAULT_EXPIRY = 300;
 
     public static final String VP_RESPONSE_SUBMISSION_URI = "/v2/vp-submission/direct-post";
-    public static final String VP_DEFINITION_URI = "/vp-definition/";
+    public static final String DCQL_QUERY_URI = "/dcql-query/";
     public static final String VP_REQUEST_URI = "/v2/vp-request";
     public static final String RESPONSE_TYPE =  "vp_token";
     public static final String RESPONSE_MODE =  "direct_post";

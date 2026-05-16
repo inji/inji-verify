@@ -1,8 +1,9 @@
 package io.inji.verify.repository;
 
-import io.inji.verify.models.PresentationDefinition;
+import io.inji.verify.models.DcqlQueryScope;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.stereotype.Repository;
 
 @Repository
-public interface PresentationDefinitionRepository extends JpaRepository<PresentationDefinition, String> { }
+public interface DcqlQueryScopeRepository extends JpaRepository<DcqlQueryScope, String> {
+}

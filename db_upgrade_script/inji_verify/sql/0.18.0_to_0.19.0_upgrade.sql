@@ -16,3 +16,15 @@
 ALTER TABLE vp_submission
 ADD CONSTRAINT pk_vp_submission_request_id
 PRIMARY KEY (request_id);
+
+-- -------------------------------------------------------------------------------------------------
+-- SECTION 2: Replace presentation_definition with dcql_query_scope
+-- -------------------------------------------------------------------------------------------------
+DROP TABLE IF EXISTS verify.presentation_definition;
+
+CREATE TABLE IF NOT EXISTS verify.dcql_query_scope(
+    scope character varying(255) NOT NULL,
+    dcql_query text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT dcql_query_scope_pkey PRIMARY KEY (scope)
+);

@@ -1,1 +1,1 @@
-delete from verify.presentation_definition where id='200';
+delete from verify.dcql_query_scope where scope='200';
