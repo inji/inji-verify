@@ -47,8 +47,10 @@ import java.util.HashMap;
 import java.util.NoSuchElementException;
 import java.util.Date;
 import java.util.UUID;
+import java.util.concurrent.ConcurrentHashMap;
+
 import org.springframework.beans.factory.annotation.Value;
-import static io.inji.verify.shared.Constants.VP_FORMATS;
+import static io.inji.verify.shared.Constants.VP_FORMATS_SUPPORTED;
 
 @Service
 @Slf4j
@@ -68,7 +70,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
     @Value("${inji.did.verify.public.key.uri}")
     String verifyPublicKeyURI;
 
-    HashMap<String, DeferredResult<VPRequestStatusDto>> vpRequestStatusListeners = new HashMap<>();
+    ConcurrentHashMap<String, DeferredResult<VPRequestStatusDto>> vpRequestStatusListeners = new ConcurrentHashMap<>();
 
     public VerifiablePresentationRequestServiceImpl(PresentationDefinitionRepository presentationDefinitionRepository, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository, VPSubmissionRepository vpSubmissionRepository, KeyManagementService<OctetKeyPair> keyManagementService) {
         this.presentationDefinitionRepository = presentationDefinitionRepository;
@@ -84,7 +86,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         String requestId = Utils.generateID(Constants.REQUEST_ID_PREFIX);
         long expiresAt = Instant.now().plusSeconds(Constants.DEFAULT_EXPIRY).toEpochMilli();
         String nonce = vpRequestCreate.getNonce() != null ? vpRequestCreate.getNonce() : SecurityUtils.generateNonce();
-        String responseUri = verifyServiceBaseUrl + Constants.RESPONSE_SUBMISSION_URI_ROOT + Constants.RESPONSE_SUBMISSION_URI;
+        String responseUri = verifyServiceBaseUrl + Constants.VP_RESPONSE_SUBMISSION_URI;
         boolean acceptVPWithoutHolderProof = vpRequestCreate.isAcceptVPWithoutHolderProof();
         boolean responseCodeValidationRequired = vpRequestCreate.isResponseCodeValidationRequired();
 
@@ -100,7 +102,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         AuthorizationRequestCreateResponse authorizationRequestCreateResponse = new AuthorizationRequestCreateResponse(requestId, transactionId, authorizationRequestResponseDto, expiresAt);
         authorizationRequestCreateResponseRepository.save(authorizationRequestCreateResponse);
         log.info("Authorization request created");
-        if (vpRequestCreate.getClientId().startsWith("did")) {
+        if (vpRequestCreate.getClientId().startsWith("decentralized_identifier")) {
             String requestUri = verifyServiceBaseUrl + Constants.VP_REQUEST_URI;
             return new VPRequestResponseDto(authorizationRequestCreateResponse.getTransactionId(), authorizationRequestCreateResponse.getRequestId(), null, authorizationRequestCreateResponse.getExpiresAt(), "%s/%s".formatted(requestUri, authorizationRequestCreateResponse.getRequestId()));
         }
@@ -173,6 +175,17 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                     }
 
                     result.onTimeout(() -> result.setResult(getCurrentRequestStatus(requestId)));
+                    // cleanup on timeout
+                    result.onTimeout(() -> {
+                        vpRequestStatusListeners.remove(requestId);
+                        result.setResult(getCurrentRequestStatus(requestId));
+                    });
+
+                    // cleanup on completion
+                    result.onCompletion(() ->
+                            vpRequestStatusListeners.remove(requestId)
+                    );
+                    
                     registerVpRequestStatusListener(requestId, result);
                     return result;
                 })
@@ -209,7 +222,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                     .claim("nonce", authorizationRequest.getNonce())
                     .claim("state", state)
                     .claim("response_uri", authorizationRequest.getResponseUri())
-                    .claim("client_metadata", new ClientMetadataDto(verifierDid,VP_FORMATS))
+                    .claim("client_metadata", new ClientMetadataDto(verifierDid,VP_FORMATS_SUPPORTED))
                     .build();
             if (authorizationRequest.getPresentationDefinitionUri() != null) {
                 claimsSet = new JWTClaimsSet.Builder(claimsSet)

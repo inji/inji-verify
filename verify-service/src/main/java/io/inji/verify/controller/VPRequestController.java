@@ -58,7 +58,7 @@ public class VPRequestController {
         return processCreateVPRequest(vpRequestCreate, false);
     }
 
-    @PostMapping(path = "/vp-session-request", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = "/v2/vp-session-request", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> createVPSessionRequest(@Valid @RequestBody VPRequestCreateDto vpRequestCreate) {
         return processCreateVPRequest(vpRequestCreate, true);
     }
@@ -98,7 +98,7 @@ public class VPRequestController {
         return verifiablePresentationRequestService.getStatus(requestId);
     }
 
-    @GetMapping(path = "/vp-request/{requestId}" , produces = "application/oauth-authz-req+jwt")
+    @GetMapping(path = "/v2/vp-request/{requestId}" , produces = "application/oauth-authz-req+jwt")
     public ResponseEntity<Object> getVPRequest(@PathVariable String requestId) {
         try {
             return ResponseEntity.status(HttpStatus.OK).body(verifiablePresentationRequestService.getVPRequestJwt(requestId));

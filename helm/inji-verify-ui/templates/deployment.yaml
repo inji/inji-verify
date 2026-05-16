@@ -97,7 +97,7 @@ spec:
             - name: CLIENT_ID
               value: "{{ index .Values.istio.hosts 0 }}/"
             - name: CLIENT_ID_DID
-              value: "did:web:{{ index .Values.istio.hosts 0 }}:v1:verify"
+              value: "decentralized_identifier:did:web:{{ index .Values.istio.hosts 0 }}:v1:verify"
             {{- if .Values.extraEnvVars }}
             {{- include "common.tplvalues.render" (dict "value" .Values.extraEnvVars "context" $) | nindent 12 }}
             {{- end }}

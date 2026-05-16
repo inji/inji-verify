@@ -1,35 +1,54 @@
 package io.inji.verify.services.impl;
 
+import static io.inji.verify.utils.Utils.extractClaims;
+import static io.inji.verify.utils.Utils.isSdJwt;
+import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
+import static io.inji.verify.utils.Utils.populateExpiryCheck;
+import static io.inji.verify.utils.Utils.populateSchemaAndSignature;
+import static io.inji.verify.utils.Utils.populateStatusCheckDtoList;
+
+import java.sql.Timestamp;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
+import java.util.*;
+import java.util.stream.IntStream;
+
+import com.fasterxml.jackson.core.JsonProcessingException;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import io.inji.verify.dto.result.*;
+import org.json.JSONArray;
+import org.json.JSONException;
+import org.json.JSONObject;
+import org.json.JSONTokener;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
+import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import org.springframework.util.StringUtils;
+import org.springframework.web.util.UriComponentsBuilder;
+
 import com.nimbusds.jose.shaded.gson.Gson;
+
 import io.inji.verify.dto.VerificationSessionRequestDto;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.core.ErrorDto;
-import io.inji.verify.dto.result.VPTokenDto;
-import io.inji.verify.dto.result.VCResultDto;
-import io.inji.verify.dto.result.VPVerificationResultDto;
-import io.inji.verify.dto.result.VerificationRequestDto;
-import io.inji.verify.dto.result.CredentialResultsDto;
-import io.inji.verify.dto.result.HolderProofCheckDto;
-import io.inji.verify.dto.submission.DescriptorMapDto;
-import io.inji.verify.dto.submission.PresentationSubmissionDto;
-import io.inji.verify.dto.submission.VPSubmissionDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
-import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
+import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
-import io.inji.verify.exception.RedirectUriNotFoundException;
-import io.inji.verify.exception.InvalidVpTokenException;
-import io.inji.verify.exception.VPWithoutProofException;
-import io.inji.verify.exception.VPSubmissionWalletError;
 import io.inji.verify.exception.CredentialStatusCheckException;
-import io.inji.verify.exception.TokenMatchingFailedException;
-import io.inji.verify.exception.VPSubmissionNotFoundException;
+import io.inji.verify.exception.InvalidVpTokenException;
 import io.inji.verify.exception.ResponseCodeException;
-import io.inji.verify.exception.ClientIdNonceException;
+import io.inji.verify.exception.TokenMatchingFailedException;
+import io.inji.verify.exception.VPAlreadySubmittedException;
+import io.inji.verify.exception.VPSubmissionNotFoundException;
+import io.inji.verify.exception.VPSubmissionWalletError;
+import io.inji.verify.exception.VPWithoutProofException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
@@ -41,48 +60,18 @@ import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
-import io.mosip.vercred.vcverifier.data.VPVerificationStatus;
+import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.PresentationResultWithCredentialStatus;
-import io.mosip.vercred.vcverifier.data.VCResultWithCredentialStatusV2;
-import io.mosip.vercred.vcverifier.data.VCResultWithCredentialStatus;
-import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import io.mosip.vercred.vcverifier.data.PresentationResultWithCredentialStatusV2;
 import io.mosip.vercred.vcverifier.data.PresentationVerificationResultV2;
-import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VCResultV2;
-import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
-import jakarta.validation.ConstraintViolation;
+import io.mosip.vercred.vcverifier.data.VCResultWithCredentialStatus;
+import io.mosip.vercred.vcverifier.data.VCResultWithCredentialStatusV2;
+import io.mosip.vercred.vcverifier.data.VPVerificationStatus;
+import io.mosip.vercred.vcverifier.data.VerificationResult;
+import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
-import org.json.JSONArray;
-import org.json.JSONException;
-import org.json.JSONObject;
-import org.json.JSONTokener;
-import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
-import org.springframework.stereotype.Service;
-import org.springframework.transaction.annotation.Transactional;
-import org.springframework.util.StringUtils;
-import org.springframework.web.util.UriComponentsBuilder;
-import java.sql.Timestamp;
-import java.time.Instant;
-import java.time.temporal.ChronoUnit;
-import java.util.List;
-import java.util.Map;
-import java.util.ArrayList;
-import java.util.Optional;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.UUID;
-import java.util.Set;
-import java.util.stream.IntStream;
-import static io.inji.verify.utils.Utils.populateSchemaAndSignature;
-import static io.inji.verify.utils.Utils.populateExpiryCheck;
-import static io.inji.verify.utils.Utils.populateAllChecksSuccessful;
-import static io.inji.verify.utils.Utils.populateStatusCheckDtoList;
-import static io.inji.verify.utils.Utils.extractClaims;
-import static io.inji.verify.utils.Utils.isSdJwt;
 
 @Service
 @Slf4j
@@ -94,7 +83,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Value("${inji.verify.response-code-expiry-time-in-mins:#{5}}")
     int responseCodeExpiryTimeInMins;
 
-    @Value("${inji.verify.redirect-uri:#{null}}")
+    @Value("${inji.verify.redirect-uri}")
     String redirectUri;
 
     final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
@@ -119,102 +108,217 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         this.validator = validator;
     }
 
-    private void saveVPSubmissionDto(VPSubmissionDto vpSubmissionDto) {
-        vpSubmissionRepository.save(new VPSubmission(vpSubmissionDto.getState(), vpSubmissionDto.getVpToken(), vpSubmissionDto.getPresentationSubmission(), vpSubmissionDto.getError(), vpSubmissionDto.getErrorDescription(), vpSubmissionDto.getResponseCode(), vpSubmissionDto.getResponseCodeExpiryAt(), vpSubmissionDto.isResponseCodeUsed()));
-        verifiablePresentationRequestService.invokeVpRequestStatusListener(vpSubmissionDto.getState());
-    }
+    /**
+     * This method retrieves the authorization request details from the database using the provided state parameter.
+     * @param state
+     * @return
+     */
+    public AuthorizationRequestCreateResponse getAuthRequest(String state) {
+		return authorizationRequestCreateResponseRepository.findById(state).orElse(null);
+	}
 
-    @Override
-    public ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
-        log.info("Starting VP submission");
-        log.info("Received VP submission with vpToken: {}", vpToken);
-        log.info("Received VP submission with presentationSubmission: {}", presentationSubmission);
-        log.info("Received VP submission with state: {}", state);
-        log.info("Received VP submission with error: {}", error);
-        log.info("Received VP submission with errorDescription: {}", errorDescription);
-
-        // --- Get responseCodeValidationRequired from auth request ---
-        AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
-        log.info("authRequest is {}", authRequest);
-        boolean responseCodeValidationRequired = false,
-                acceptVPWithoutHolderProof = false;
-        String nonce = null, clientId = null;
-        if (authRequest != null && authRequest.getAuthorizationDetails() != null) {
-            responseCodeValidationRequired = isResponseCodeValidationRequired(authRequest);
-            nonce = authRequest.getAuthorizationDetails().getNonce();
-            clientId = authRequest.getAuthorizationDetails().getClientId();
-            acceptVPWithoutHolderProof  = authRequest.getAuthorizationDetails().isAcceptVPWithoutHolderProof();
-        }
-        log.info("responseCodeValidationRequired: {}", responseCodeValidationRequired);
-        log.info("acceptVPWithoutHolderProof: {}", acceptVPWithoutHolderProof);
-        log.info("nonce from auth request: {}", nonce);
-        log.info("clientId from auth request: {}", clientId);
-
-
-        // --- create response redirect_uri for same_device flow ---
-        String responseCode = null;
-        Timestamp responseCodeExpiryAt = null;
-        Map<String, Object> response = new HashMap<>();
-        if (responseCodeValidationRequired) {
-            responseCode = UUID.randomUUID().toString();
-            responseCodeExpiryAt = Timestamp.from(Instant.now().plus(responseCodeExpiryTimeInMins, ChronoUnit.MINUTES));
-            String redirectUriWithResponseCode = buildRedirectWithResponseCode(responseCode);
-            response.put("redirect_uri", redirectUriWithResponseCode);
-        }
-
-        VPSubmissionDto vpSubmissionDto = new VPSubmissionDto();
-        // --- Check if error present ---
-        if (error != null) {
-            vpSubmissionDto.setState(state);
-            vpSubmissionDto.setError(error);
-            vpSubmissionDto.setErrorDescription(errorDescription);
-        } else {
-            // --- Presentation Submission Validation ---
-            PresentationSubmissionDto presentationSubmissionDto = gson.fromJson(presentationSubmission, PresentationSubmissionDto.class);
-            Set<ConstraintViolation<PresentationSubmissionDto>> violations = validator.validate(presentationSubmissionDto);
-            if (!violations.isEmpty()) {
-                String violationMessage = violations.iterator().next().getMessage();
-                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(violationMessage);
-            }
-            VPTokenDto vpTokenDto = extractTokens(vpToken);
-            log.info("Validating client_id and nonce from VP token");
-            if (!acceptVPWithoutHolderProof) {
-                if (!StringUtils.hasText(nonce)) throw new ClientIdNonceException(ErrorCode.NONCE_VALIDATION_FAILED);
-                if (!StringUtils.hasText(clientId)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
-                for (JSONObject jsonVPToken : vpTokenDto.getJsonVpTokens()) {
-                    JSONObject proof = jsonVPToken.optJSONObject("proof");
-                    if (proof == null) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_NONCE_VALIDATION_FAILED);
-
-                    String challenge = proof.optString("challenge", null);
-                    String domain = proof.optString("domain", null);
-                    log.info("challenge from VP token: {}, expected nonce: {}", challenge, nonce);
-                    log.info("domain from VP token: {}, expected clientId: {}", domain, clientId);
-
-                    if (!StringUtils.hasText(challenge) || !StringUtils.hasText(domain)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_NONCE_VALIDATION_FAILED);
-                    if (!nonce.equals(challenge)) throw new ClientIdNonceException(ErrorCode.NONCE_VALIDATION_FAILED);
-                    if (!clientId.equals(domain)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
+    /**
+     * This method extracts the VP tokens from the input VP token string.
+     * It distinguishes between LDP VP tokens and SD-JWT tokens based on their structure.
+     * @param vpTokenString
+     * @return
+     */
+    public DcqlVPTokenDto extractDcqlVpTokens(String vpTokenString) throws InvalidVpTokenException {
+        Map<String, JSONObject> ldpVpTokens = new HashMap<String, JSONObject>();
+        Map<String, String> sdJwtTokens = new HashMap<String, String>();
+        log.debug("Extracting VP tokens from input string");
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode root = mapper.readTree(vpTokenString);
+            Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
+            while (fields.hasNext()) {
+                Map.Entry<String, JsonNode> entry = fields.next();
+                String queryId = entry.getKey();
+                JsonNode value = entry.getValue();
+                log.debug("Processing query ID: {}", queryId);
+                if (!value.isArray()) {
+                    log.warn("Unexpected JSON node type for query ID {}: {}", queryId, value.getNodeType());
+                    throw new InvalidVpTokenException();
+                }
+                for (JsonNode item : value) {
+                    if (item.isTextual()) {
+                        if (isSdJwt(item.asText())) {
+                            log.debug("Identified SD-JWT token");
+                            sdJwtTokens.put(queryId, item.asText());
+                        } else {
+                            String errorMessage = String.format("Text node is not a valid SD-JWT token for query ID %s: %s", queryId, item.asText());
+                            log.warn(errorMessage);
+                            throw new InvalidVpTokenException(errorMessage);
+                        }
+                    } else if (item.isObject()) {
+                        log.debug("Identified LDP VP token");
+                        boolean isVerifiablePresentation = false;
+                        //get array or string type and check if it contains "VerifiablePresentation"
+                        JsonNode typeNode = item.get("type");
+                        if (typeNode != null) {
+                            if (typeNode.isArray()) {
+                                for (JsonNode typeValue : typeNode) {
+                                    if ("VerifiablePresentation".equalsIgnoreCase(typeValue.asText())) {
+                                        isVerifiablePresentation = true;
+                                        break;
+                                    }
+                                }
+                            } else if (typeNode.isTextual()) {
+                                isVerifiablePresentation =
+                                                "VerifiablePresentation".equalsIgnoreCase(typeNode.asText());
+                            }
+                        }
+                        if (!isVerifiablePresentation) {
+                            String errorMessage = String.format("JSON object does not contain a valid 'type' field with value 'VerifiablePresentation' for query ID %s: %s", queryId, item.toString());
+                            log.warn(errorMessage);
+                            throw new InvalidVpTokenException(errorMessage);
+                        }
+                        ldpVpTokens.put(queryId, new JSONObject(item.toString()));
+                    }
                 }
             }
-
-            vpSubmissionDto.setState(state);
-            vpSubmissionDto.setVpToken(vpToken);
-            vpSubmissionDto.setPresentationSubmission(presentationSubmissionDto);
+        } catch (JsonProcessingException | IllegalArgumentException e) {
+            String errorMessage = String.format("Failed to parse VP token: %s", e.getMessage());
+            log.warn(errorMessage);
+            throw new InvalidVpTokenException(errorMessage);
         }
-        vpSubmissionDto.setResponseCode(responseCode);
-        vpSubmissionDto.setResponseCodeExpiryAt(responseCodeExpiryAt);
-        vpSubmissionDto.setResponseCodeUsed(false);
-        saveVPSubmissionDto(vpSubmissionDto);
-        return ResponseEntity.status(HttpStatus.OK).body(response);
+        return new DcqlVPTokenDto(ldpVpTokens, sdJwtTokens);
     }
 
-    private String buildRedirectWithResponseCode(String responseCode) {
-        if (redirectUri == null || redirectUri.isBlank()) throw new RedirectUriNotFoundException();
-        return UriComponentsBuilder
-                .fromUriString(redirectUri)
-                .fragment("response_code=" + responseCode)
-                .build()
-                .toUriString();
+    /**
+     * This method validates the client_id from the VP token against the client_id in the authorization request.
+     * @param authRequest
+     * @param ldpVpTokens
+     * @return
+     */
+    public boolean isClientIdValid(AuthorizationRequestResponseDto authRequest, Map<String, JSONObject> ldpVpTokens) {
+        log.info("Validating client_id from VP token");
+        //skip client_id validation if acceptVPWithoutHolderProof is true
+        if (authRequest.isAcceptVPWithoutHolderProof()) {
+            return true;
+        }
+        String clientId = authRequest.getClientId();
+        if (!StringUtils.hasText(clientId)) {
+            log.error("clientId is missing");
+            return false;
+        }
+        //clien_id validation is done only for LDP VP tokens since SD-JWT tokens are self-contained and do not have a proof with domain claim.
+        for (Map.Entry<String, JSONObject> entry : ldpVpTokens.entrySet()) {
+            log.debug("Processing query ID: {}", entry.getKey());
+            JSONObject jsonVPToken = entry.getValue();
+            JSONObject proof = jsonVPToken.optJSONObject("proof");
+            String domain = proof != null ? proof.optString("domain", null) : null;
+            log.debug("domain: {}, expected clientId: {}", domain, clientId);
+            if (!clientId.equals(domain)) {
+                log.error("clientId validation failed for query ID: {}", entry.getKey());
+                return false;
+            }
+        }
+        return true;
     }
+
+    /**
+     *  This method validates the nonce from the VP token against the nonce in the authorization request.
+     *  If the authorization request allows accepting VP without holder proof, it skips nonce validation and returns true.
+     *  If nonce validation is required, it checks if the nonce in the proof's challenge claim of each LDP VP token matches the nonce in the authorization request.
+     *  If any of the tokens fail this validation, it returns false.
+     *  For SD-JWT tokens, since they are self-contained and do not have a proof with a challenge claim, nonce validation is not performed on them.
+     *
+     * @param authRequest
+     * @param ldpVpTokens
+     * @return
+     */
+    public boolean isNonceValid(AuthorizationRequestResponseDto authRequest, Map<String, JSONObject> ldpVpTokens) {
+        log.info("Validating nonce from VP token");
+        if (authRequest.isAcceptVPWithoutHolderProof()) {
+            return true;
+        }
+        String nonce = authRequest.getNonce();
+        if (!StringUtils.hasText(nonce)) {
+            log.error("nonce is missing");
+            return false;
+        }
+        //nonce validation is done only for LDP VP tokens since SD-JWT tokens are self-contained and do not have a proof with challenge claim.
+        for (Map.Entry<String, JSONObject> entry : ldpVpTokens.entrySet()) {
+            log.debug("Processing query ID: {}", entry.getKey());
+            JSONObject jsonVPToken = entry.getValue();
+            JSONObject proof = jsonVPToken.optJSONObject("proof");
+            String challenge = proof != null ? proof.optString("challenge", null) : null;
+            log.debug("challenge: {}, expected nonce: {}", challenge, nonce);
+            if (!nonce.equals(challenge)) {
+                log.error("nonce validation failed");
+                return false;
+            }
+        }
+        return true;
+    }
+
+    /**
+     * This method generates a unique response code using UUID if the authorization request requires response code validation. If response code validation is not required, it returns null.
+     * @param authRequest
+     * @return
+     */
+    public String generateResponseCode(AuthorizationRequestResponseDto authRequest) {
+    	String responseCode = null;
+    	boolean responseCodeValidationRequired = false;
+        responseCodeValidationRequired = authRequest.isResponseCodeValidationRequired();
+        if (responseCodeValidationRequired) {
+        	log.debug("Generating response code since response code validation is required");
+            responseCode = UUID.randomUUID().toString();
+        }    
+        return responseCode;
+    }
+
+    /**
+     * This method generates the response code expiry time by adding the configured expiry duration (in minutes) to the current time.
+     * @return
+     */
+	public Timestamp generateResponseCodeExpiry() {
+		log.debug("Generating response code expiry time since response code validation is required");
+		Timestamp responseCodeExpiryAt = Timestamp.from(Instant.now().plus(responseCodeExpiryTimeInMins, ChronoUnit.MINUTES));
+		return responseCodeExpiryAt;
+	}
+
+    /**
+     * This method builds the redirect URI by appending the response code as a fragment to the base redirect URI.
+     * @param responseCode
+     * @return
+     */
+    public  String buildRedirectUri(String responseCode) {
+        if (redirectUri == null || redirectUri.isBlank() || responseCode == null) return null;
+        String redirectUriWithResponseCode = UriComponentsBuilder
+                    .fromUriString(redirectUri)
+                    .fragment("response_code=" + responseCode)
+                    .build()
+                    .toUriString();
+        return redirectUriWithResponseCode;
+    }
+  
+    /**
+     * This method is used to persist the VP submission details along with the response code and 
+     * its expiry time. 
+     * It also invokes the listener to update the status of VP request.
+     */
+	@Transactional
+	public void submitVpToken(AuthorizationRequestResponseDto authRequest, String vpToken, String state, String error,
+			String errorDescription, String responseCode, Timestamp responseCodeExpiryAt)
+			throws VPAlreadySubmittedException {
+
+		/// --- persist VP submission with response code and other details ---
+		VPSubmission vpSubmission = new VPSubmission(state, vpToken, null, error, errorDescription, responseCode,
+				responseCodeExpiryAt, false);
+
+		try {
+			vpSubmissionRepository.save(vpSubmission);
+		} catch (DataIntegrityViolationException e) {
+			throw new VPAlreadySubmittedException("VP already submitted for request_id: " + state, e);
+		}
+        log.debug("VP submission saved successfully for state: {}", state);
+        //log.debug(vpSubmissionRepository.getById(state).getVpToken());
+        /// invoke listener to update the status of VP request
+		verifiablePresentationRequestService.invokeVpRequestStatusListener(state);
+
+	}
 
     private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId, AuthorizationRequestCreateResponse authRequest) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException {
         log.info("Processing VP submission");
@@ -416,6 +520,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return proof != null;
     }
 
+
+
+
+
     public VPTokenDto extractTokens(String vpTokenString) {
         if (vpTokenString == null || vpTokenString.isEmpty()) throw new InvalidVpTokenException();
         List<JSONObject> jsonVpTokens = new ArrayList<>();
@@ -489,13 +597,13 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private boolean isVPTokenNotMatching(VPSubmission vpSubmission, AuthorizationRequestCreateResponse request) {
-        Object vpTokenRaw = new JSONTokener(vpSubmission.getVpToken()).nextValue();
-        List<DescriptorMapDto> descriptorMap = vpSubmission.getPresentationSubmission().getDescriptorMap();
-
-        if (vpTokenRaw == null || request == null || descriptorMap == null || descriptorMap.isEmpty()) {
-            log.info("Unable to perform token matching");
-            return true;
-        }
+//        Object vpTokenRaw = new JSONTokener(vpSubmission.getVpToken()).nextValue();
+//        List<DescriptorMapDto> descriptorMap = vpSubmission.getPresentationSubmission().getDescriptorMap();
+//
+//        if (vpTokenRaw == null || request == null || descriptorMap == null || descriptorMap.isEmpty()) {
+//            log.info("Unable to perform token matching");
+//            return true;
+//        }
 
         log.info("VP token matching done");
         return false;
@@ -554,7 +662,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 .findFirst()
                 .orElseThrow(VPSubmissionNotFoundException::new);
 
-        boolean responseCodeValidationRequired = isResponseCodeValidationRequired(authRequest);
+        boolean responseCodeValidationRequired = false;
+		if (authRequest != null && authRequest.getAuthorizationDetails() != null) {
+			responseCodeValidationRequired = authRequest.getAuthorizationDetails().isResponseCodeValidationRequired();
+		}
         if (responseCodeValidationRequired) validateResponseCode(responseCode, submission, isResponseCodeMandatory);
 
         if (submission.getError() != null && !submission.getError().isEmpty())
@@ -588,13 +699,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
     }
 
-    private boolean isResponseCodeValidationRequired(AuthorizationRequestCreateResponse authRequest) {
-        boolean responseCodeValidationRequired = false;
-        if (authRequest != null && authRequest.getAuthorizationDetails() != null) {
-            responseCodeValidationRequired = authRequest.getAuthorizationDetails().isResponseCodeValidationRequired();
-        }
-        return responseCodeValidationRequired;
-    }
+    
 
     private static HolderProofCheckDto populateHolderProofDto(VerificationResult verificationResult) {
         boolean isValid = verificationResult.getVerificationStatus();

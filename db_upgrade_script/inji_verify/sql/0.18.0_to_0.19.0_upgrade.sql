@@ -5,11 +5,14 @@
 -- -------------------------------------------------------------------------------------------------
 -- Upgrade Script : v0.18.0 to v0.19.0
 -- Database       : inji_verify
--- Purpose        : Remove the presentation_definition table (no longer maintained server-side).
+-- Purpose        : Apply schema changes introduced in version 0.19.0
 -- -------------------------------------------------------------------------------------------------
 \c inji_verify
 
 -- -------------------------------------------------------------------------------------------------
--- SECTION 1: Drop presentation_definition table
+-- SECTION 1: Update vp_submission table
 -- -------------------------------------------------------------------------------------------------
-DROP TABLE IF EXISTS verify.presentation_definition;
+-- Add primary key constraint on request_id column
+ALTER TABLE vp_submission
+ADD CONSTRAINT pk_vp_submission_request_id
+PRIMARY KEY (request_id);

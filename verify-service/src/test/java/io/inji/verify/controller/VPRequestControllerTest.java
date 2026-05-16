@@ -57,7 +57,7 @@ public class VPRequestControllerTest {
 
         when(verifiablePresentationRequestService.createAuthorizationRequest(any())).thenReturn(responseDto);
 
-        mockMvc.perform(post("/vp-request")
+        mockMvc.perform(post("/v2/vp-request")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated())
@@ -77,7 +77,7 @@ public class VPRequestControllerTest {
         VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId",
                 null, "nonce", null, false, false);
 
-        mockMvc.perform(post("/vp-request")
+        mockMvc.perform(post("/v2/vp-request")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isBadRequest())
@@ -96,7 +96,7 @@ public class VPRequestControllerTest {
         when(verifiablePresentationRequestService.createAuthorizationRequest(any()))
                 .thenThrow(new PresentationDefinitionNotFoundException());
 
-        mockMvc.perform(post("/vp-request")
+        mockMvc.perform(post("/v2/vp-request")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isNotFound())
@@ -130,7 +130,7 @@ public class VPRequestControllerTest {
 
         when(verifiablePresentationRequestService.getVPRequestJwt(requestId)).thenReturn(jwt);
 
-        mockMvc.perform(get("/vp-request/{requestId}", requestId))
+        mockMvc.perform(get("/v2/vp-request/{requestId}", requestId))
                 .andExpect(status().isOk())
                 .andExpect(content().contentTypeCompatibleWith("application/oauth-authz-req+jwt"))
                 .andExpect(content().string(jwt));
@@ -149,7 +149,7 @@ public class VPRequestControllerTest {
 
         String expectedCookieValue = Base64.getEncoder().encodeToString("tId".getBytes(StandardCharsets.UTF_8));
 
-        mockMvc.perform(post("/vp-session-request")
+        mockMvc.perform(post("/v2/vp-session-request")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isCreated())

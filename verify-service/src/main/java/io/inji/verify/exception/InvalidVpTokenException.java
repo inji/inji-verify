@@ -6,4 +6,8 @@ public class InvalidVpTokenException extends RuntimeException {
     public InvalidVpTokenException() {
         super(message);
     }
+
+    public InvalidVpTokenException(String customMessage) {
+        super(customMessage);
+    }
 }

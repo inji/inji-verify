@@ -1,7 +1,7 @@
 package io.inji.verify.shared;
 
 import io.inji.verify.dto.client.LdpVp;
-import io.inji.verify.dto.client.VpFormats;
+import io.inji.verify.dto.client.VpFormatsSupported;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.function.Executable;
@@ -23,10 +23,9 @@ public class ConstantsTest {
     @Test
     @DisplayName("Verify URI constants")
     void testUriConstants() {
-        assertEquals("/vp-submission", Constants.RESPONSE_SUBMISSION_URI_ROOT);
-        assertEquals("/direct-post", Constants.RESPONSE_SUBMISSION_URI);
+        assertEquals("/v2/vp-submission/direct-post", Constants.VP_RESPONSE_SUBMISSION_URI);
         assertEquals("/vp-definition/", Constants.VP_DEFINITION_URI);
-        assertEquals("/vp-request", Constants.VP_REQUEST_URI);
+        assertEquals("/v2/vp-request", Constants.VP_REQUEST_URI);
     }
 
     @Test
@@ -62,12 +61,12 @@ public class ConstantsTest {
     }
 
     @Test
-    @DisplayName("Verify VP_FORMATS configuration")
-    void testVpFormatsConstant() {
-        assertNotNull(Constants.VP_FORMATS);
-        assertInstanceOf(VpFormats.class, Constants.VP_FORMATS);
+    @DisplayName("Verify VP_FORMATS_SUPPORTED configuration")
+    void testVpFormatsSupportedConstant() {
+        assertNotNull(Constants.VP_FORMATS_SUPPORTED);
+        assertInstanceOf(VpFormatsSupported.class, Constants.VP_FORMATS_SUPPORTED);
 
-        LdpVp ldpVp = Constants.VP_FORMATS.getLdpVp();
+        LdpVp ldpVp = Constants.VP_FORMATS_SUPPORTED.getLdpVp();
         assertNotNull(ldpVp);
 
         List<String> proofTypes = ldpVp.getProofType();
@@ -90,11 +89,8 @@ public class ConstantsTest {
     @Test
     @DisplayName("Verify constants are not null or empty")
     void testConstantsNotNullOrEmpty() {
-        assertNotNull(Constants.RESPONSE_SUBMISSION_URI_ROOT);
-        assertFalse(Constants.RESPONSE_SUBMISSION_URI_ROOT.isEmpty());
-
-        assertNotNull(Constants.RESPONSE_SUBMISSION_URI);
-        assertFalse(Constants.RESPONSE_SUBMISSION_URI.isEmpty());
+        assertNotNull(Constants.VP_RESPONSE_SUBMISSION_URI);
+        assertFalse(Constants.VP_RESPONSE_SUBMISSION_URI.isEmpty());
 
         assertNotNull(Constants.VP_DEFINITION_URI);
         assertFalse(Constants.VP_DEFINITION_URI.isEmpty());
@@ -108,14 +104,12 @@ public class ConstantsTest {
         assertNotNull(Constants.TRANSACTION_ID_PREFIX);
         assertNotNull(Constants.REQUEST_ID_PREFIX);
 
-        assertNotNull(Constants.VP_FORMATS);
+        assertNotNull(Constants.VP_FORMATS_SUPPORTED);
     }
 
     @Test
     @DisplayName("Verify URI formatting")
     void testUriFormatting() {
-        assertTrue(Constants.RESPONSE_SUBMISSION_URI_ROOT.startsWith("/"));
-        assertTrue(Constants.RESPONSE_SUBMISSION_URI.startsWith("/"));
         assertTrue(Constants.VP_DEFINITION_URI.startsWith("/"));
         assertTrue(Constants.VP_REQUEST_URI.startsWith("/"));
 
