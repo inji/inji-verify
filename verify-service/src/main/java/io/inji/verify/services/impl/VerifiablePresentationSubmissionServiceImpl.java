@@ -387,7 +387,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     private static void populateCredentialResultsWhenHolderBindingCheckFails(List<CredentialResultsDto> credentialResults, HolderBindingException hpe) {
         CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
         credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto(hpe.getErrorCode(), hpe.getErrorMessage())));
-        log.info("VP submission failed holder binding check for state: {}", state);
+        log.info("VP submission failed holder binding check: {}", hpe.getMessage());
         credentialResultsDto.setAllChecksSuccessful(false); // explicitly set overall result to failed if holder proof check fails, as without holder proof, the VP cannot be trusted
         credentialResults.add(credentialResultsDto);
     }
