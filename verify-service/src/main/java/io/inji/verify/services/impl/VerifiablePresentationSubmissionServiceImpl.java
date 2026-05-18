@@ -118,6 +118,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     @Override
     public ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
+        log.info("Received VP submission for state: {}", state);
+        log.info(vpToken);
         // --- Get responseCodeValidationRequired from auth request ---
         AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
         boolean responseCodeValidationRequired = false,

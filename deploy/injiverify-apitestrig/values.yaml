@@ -11,8 +11,8 @@ modules:
   injiverify:
     enabled: true
     image:
-      repository: injistack/apitest-inji-verify
-      tag: 0.18.0
+      repository: injistackqa/apitest-inji-verify
+      tag: 0.18.x
       pullPolicy: Always
 
 apitestrig:
