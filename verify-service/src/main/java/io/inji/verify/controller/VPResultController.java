@@ -144,6 +144,12 @@ public class VPResultController {
         return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.INVALID_VP_TOKEN));
     }
 
+    @ExceptionHandler(VPHolderBindingException.class)
+    public ResponseEntity<ErrorDto> invalidVpHolderBindingToken(VPHolderBindingException e) {
+        log.error(e.getMessage());
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(e.getErrorCode(), e.getErrorDescription()));
+    }
+
     @ExceptionHandler(ResponseCodeException.class)
     public ResponseEntity<ErrorDto> handleResponseCodeException(ResponseCodeException e) {
         log.error("Response Code Error: {}", e.getMessage());

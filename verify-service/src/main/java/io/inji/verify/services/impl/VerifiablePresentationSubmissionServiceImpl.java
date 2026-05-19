@@ -43,6 +43,7 @@ import io.mosip.vercred.vcverifier.data.PresentationVerificationResultV2;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VCResultV2;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
+import io.mosip.vercred.vcverifier.exception.HolderBindingException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
@@ -119,7 +120,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Override
     public ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription) {
         log.info("Received VP submission for state: {}", state);
-        log.info(vpToken);
+        if (vpToken != null) {
+            log.info("VP submission length: {}", vpToken.length());
+        }
+
         // --- Get responseCodeValidationRequired from auth request ---
         AuthorizationRequestCreateResponse authRequest = authorizationRequestCreateResponseRepository.findById(state).orElse(null);
         boolean responseCodeValidationRequired = false,
@@ -174,8 +178,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                     if (!clientId.equals(domain)) throw new ClientIdNonceException(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
                 }
             }
-
-
             vpSubmissionDto.setState(state);
             vpSubmissionDto.setVpToken(vpToken);
             vpSubmissionDto.setPresentationSubmission(presentationSubmissionDto);
@@ -184,6 +186,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         vpSubmissionDto.setResponseCodeExpiryAt(responseCodeExpiryAt);
         vpSubmissionDto.setResponseCodeUsed(false);
         saveVPSubmissionDto(vpSubmissionDto);
+        log.info("VP submission saved for state: {}", state);
         return ResponseEntity.status(HttpStatus.OK).body(response);
     }
 
@@ -196,7 +199,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 .toUriString();
     }
 
-    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId, AuthorizationRequestCreateResponse authRequest) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException {
+    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId, AuthorizationRequestCreateResponse authRequest) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPHolderBindingException {
         log.info("Processing VP submission");
         List<VCResultDto> verificationResults = new ArrayList<>();
         List<VPVerificationStatus> vpVerificationStatuses = new ArrayList<>();
@@ -254,7 +257,11 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         } catch (VPWithoutProofException e) {
             log.error("Received Invalid VP: ", e);
             throw e;
-        } catch (Exception e) {
+        } catch (HolderBindingException hbe) {
+            log.error("Holder binding check failed during VP verification: {}", hbe.getMessage());
+            throw new VPHolderBindingException(hbe.getErrorCode(), hbe.getErrorMessage());
+        }
+        catch (Exception e) {
             log.error("Failed to verify VP submission", e);
             return new VPTokenResultDto(transactionId, VPResultStatus.FAILED, verificationResults);
         }
@@ -319,8 +326,16 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     private void verifyPresentationWithCredentialStatusChecks(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
         List<String> filters = request.getStatusCheckFilters();
-        PresentationResultWithCredentialStatusV2 result = presentationVerifier.verifyAndGetCredentialStatusV2(vpToken.toString(), filters);
-        List<VCResultWithCredentialStatusV2> vcResults = result.getVcResults();
+        PresentationResultWithCredentialStatusV2 result = null;
+        List<VCResultWithCredentialStatusV2> vcResults = new ArrayList<>();
+        try {
+            result = presentationVerifier.verifyAndGetCredentialStatusV2(vpToken.toString(), filters);
+            vcResults = result.getVcResults();
+        } catch (HolderBindingException hpe) {
+            log.error("Holder binding check failed during VP verification: {}", hpe.getMessage());
+            populateCredentialResultsWhenHolderBindingCheckFails(credentialResults, hpe);
+            return;
+        }
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
         for (VCResultWithCredentialStatusV2 vcResWithStatus : vcResults) {
             CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
@@ -341,8 +356,16 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private void verifyPresentation(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
-        PresentationVerificationResultV2 result = presentationVerifier.verifyV2(vpToken.toString());
-        List<VCResultV2> vcResults = result.getVcResults();
+        PresentationVerificationResultV2 result = null;
+        List<VCResultV2> vcResults = new ArrayList<>();
+        try {
+            result = presentationVerifier.verifyV2(vpToken.toString());
+            vcResults = result.getVcResults();
+        } catch (HolderBindingException hpe) {
+            log.error("Holder binding check failed during VP verification: {}", hpe.getMessage());
+            populateCredentialResultsWhenHolderBindingCheckFails(credentialResults, hpe);
+            return;
+        }
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
         for (VCResultV2 vcRes : vcResults) {
             CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
@@ -359,6 +382,14 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             credentialResultsDto.setAllChecksSuccessful(allChecksSuccessful);
             credentialResults.add(credentialResultsDto);
         }
+    }
+
+    private static void populateCredentialResultsWhenHolderBindingCheckFails(List<CredentialResultsDto> credentialResults, HolderBindingException hpe) {
+        CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
+        credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto(hpe.getErrorCode(), hpe.getErrorMessage())));
+        log.info("VP submission failed holder binding check: {}", hpe.getMessage());
+        credentialResultsDto.setAllChecksSuccessful(false); // explicitly set overall result to failed if holder proof check fails, as without holder proof, the VP cannot be trusted
+        credentialResults.add(credentialResultsDto);
     }
 
     private boolean isAcceptVPWithoutHolderProof(AuthorizationRequestCreateResponse request) {
@@ -448,7 +479,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
+    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException, VPHolderBindingException {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
         VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
         return processSubmission(vpSubmission, transactionId, authRequest);
