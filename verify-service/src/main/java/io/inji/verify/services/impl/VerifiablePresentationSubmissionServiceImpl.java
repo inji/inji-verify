@@ -331,9 +331,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         try {
             result = presentationVerifier.verifyAndGetCredentialStatusV2(vpToken.toString(), filters);
             vcResults = result.getVcResults();
-        } catch (HolderBindingException hpe) {
-            log.error("Holder binding check failed during VP verification: {}", hpe.getMessage());
-            populateCredentialResultsWhenHolderBindingCheckFails(credentialResults, hpe);
+        } catch (Exception ex) {
+            populateResultsWhenPresentationVerificationsFails(credentialResults, ex);
             return;
         }
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
@@ -361,9 +360,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         try {
             result = presentationVerifier.verifyV2(vpToken.toString());
             vcResults = result.getVcResults();
-        } catch (HolderBindingException hpe) {
-            log.error("Holder binding check failed during VP verification: {}", hpe.getMessage());
-            populateCredentialResultsWhenHolderBindingCheckFails(credentialResults, hpe);
+        } catch (Exception ex) {
+            populateResultsWhenPresentationVerificationsFails(credentialResults, ex);
             return;
         }
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
@@ -384,11 +382,16 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
     }
 
-    private static void populateCredentialResultsWhenHolderBindingCheckFails(List<CredentialResultsDto> credentialResults, HolderBindingException hpe) {
+    private static void populateResultsWhenPresentationVerificationsFails(List<CredentialResultsDto> credentialResults, Exception ex) {
+        log.error("VP verification failed due to : {}", ex.getMessage());
         CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
-        credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto(hpe.getErrorCode(), hpe.getErrorMessage())));
-        log.info("VP submission failed holder binding check: {}", hpe.getMessage());
-        credentialResultsDto.setAllChecksSuccessful(false); // explicitly set overall result to failed if holder proof check fails, as without holder proof, the VP cannot be trusted
+        if (ex instanceof HolderBindingException) {
+            credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto(((HolderBindingException) ex).getErrorCode(), ((HolderBindingException) ex).getErrorMessage())));
+        } else {
+            credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto("VP_VERIFICATION_FAILED", ex.getMessage())));
+        }
+        credentialResultsDto.setAllChecksSuccessful(false);
+        // explicitly set overall result to failed if holder proof check fails, as without holder proof, the VP cannot be trusted
         credentialResults.add(credentialResultsDto);
     }
 
