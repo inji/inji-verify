@@ -243,7 +243,7 @@ export type OverallVPStatus = "SUCCESS" | "INVALID";
 
 export interface VpSummarisedVerificationResponse {
   vcResults: {
-      vc: Record<string, unknown>;
+      vc: string  | Record<string, unknown>;
       vcStatus: VcStatus;
   }[];
   vpResultStatus: OverallVPStatus;
