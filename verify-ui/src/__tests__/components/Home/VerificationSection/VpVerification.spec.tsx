@@ -61,7 +61,20 @@ jest.mock("@injistack/react-inji-verify-sdk", () => {
                 {
                     "data-testid": "openid-verification-sdk",
                     onClick: () => {
-                        props.onVPProcessed?.([]);
+                        props.onVPProcessed?.([
+                            {
+                                vc: { type: ["VerifiableCredential", "TestCredential"] },
+                                verificationResponse: {
+                                    vcResults: [
+                                        {
+                                            vc: { type: ["VerifiableCredential", "TestCredential"] },
+                                            vcStatus: "SUCCESS",
+                                        },
+                                    ],
+                                    vpResultStatus: "SUCCESS",
+                                },
+                            },
+                        ]);
                     },
                 },
                 "SDK MOCK"
