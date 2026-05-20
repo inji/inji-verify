@@ -332,7 +332,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             result = presentationVerifier.verifyAndGetCredentialStatusV2(vpToken.toString(), filters);
             vcResults = result.getVcResults();
         } catch (Exception ex) {
-            populateResultsWhenPresentationVerificationsFails(credentialResults, ex);
+            populateResultsWhenPresentationVerificationHasRuntimeExceptions(credentialResults, ex);
             return;
         }
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
@@ -361,7 +361,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             result = presentationVerifier.verifyV2(vpToken.toString());
             vcResults = result.getVcResults();
         } catch (Exception ex) {
-            populateResultsWhenPresentationVerificationsFails(credentialResults, ex);
+            populateResultsWhenPresentationVerificationHasRuntimeExceptions(credentialResults, ex);
             return;
         }
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
@@ -382,16 +382,18 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
     }
 
-    private static void populateResultsWhenPresentationVerificationsFails(List<CredentialResultsDto> credentialResults, Exception ex) {
+    private static void populateResultsWhenPresentationVerificationHasRuntimeExceptions(List<CredentialResultsDto> credentialResults, Exception ex) {
         log.error("VP verification failed due to : {}", ex.getMessage());
+        //since VP Verification has runtime exception, we are not sure about the credentials present in the VP,
+        //hence we are populating credentialResults with a single entry with holder proof check failure and skipping other checks.
         CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
+        credentialResultsDto.setAllChecksSuccessful(false);
         if (ex instanceof HolderBindingException) {
             credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto(((HolderBindingException) ex).getErrorCode(), ((HolderBindingException) ex).getErrorMessage())));
         } else {
+            //for any other runtime exception during VP verification, we can populate with a generic error message.
             credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto("VP_VERIFICATION_FAILED", ex.getMessage())));
         }
-        credentialResultsDto.setAllChecksSuccessful(false);
-        // explicitly set overall result to failed if holder proof check fails, as without holder proof, the VP cannot be trusted
         credentialResults.add(credentialResultsDto);
     }
 
