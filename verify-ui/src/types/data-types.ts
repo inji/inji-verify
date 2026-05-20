@@ -238,3 +238,8 @@ export interface CredentialResult {
     }[];
     claims?: Record<string, any>;
 }
+
+export type MatchingVc = {
+  vc: LdpVc | object;
+  vcStatus: VcStatus;
+};

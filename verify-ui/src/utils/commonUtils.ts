@@ -1,4 +1,4 @@
-import { claim, LdpVc, VcStatus} from "../types/data-types";
+import { claim, LdpVc, MatchingVc, VcStatus} from "../types/data-types";
 import { EXCLUDE_KEYS_SD_JWT_VC, getVCRenderOrders } from "./config";
 import { getLanguageCodes } from "./i18n";
 
@@ -222,13 +222,47 @@ export const getDetailsOrder = (vc: any, currentLanguage: string): { key: string
   }
 };
 
+const groupCredentialsByType = (matching: MatchingVc[]) => {
+  const groupedCredentials = new Map<string, MatchingVc[]>();
+
+  for (const credential of matching) {
+    const credentialType = getCredentialType(credential.vc);
+
+    if (!groupedCredentials.has(credentialType)) {
+      groupedCredentials.set(credentialType, []);
+    }
+
+    groupedCredentials.get(credentialType)!.push(credential);
+  }
+
+  return groupedCredentials;
+};
+
+const selectPreferredCredential = (credentials: MatchingVc[]) => {
+  const successfulCredential = credentials.find(
+    (credential) => credential.vcStatus === "SUCCESS"
+  );
+
+  return successfulCredential ?? credentials[0];
+};
+
+const filterPreferredCredentials = (matching: MatchingVc[]) => {
+  const groupedCredentials = groupCredentialsByType(matching);
+
+  return Array.from(groupedCredentials.values()).map(selectPreferredCredential);
+};
+
 export const calculateVerifiedClaims = (
   selectedClaims: claim[],
-  verificationSubmissionResult: { vc: LdpVc | object; vcStatus: VcStatus }[]
+  verificationSubmissionResult: MatchingVc[]
 ) => {
-  return verificationSubmissionResult.filter((vc) =>
-    selectedClaims.some((claim) => getCredentialType(vc.vc) === claim.type)
+  const matching = verificationSubmissionResult.filter((credential) =>
+    selectedClaims.some(
+      (claim) => getCredentialType(credential.vc) === claim.type
+    )
   );
+
+  return filterPreferredCredentials(matching);
 };
 
 export const calculateUnverifiedClaims = (
