@@ -17,7 +17,6 @@ import { AlertMessages } from "../../../utils/config";
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 import { Button } from "./commons/Button";
 import { useTranslation } from "react-i18next";
-import { VerificationResults } from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
 import {decodeSdJwtToken} from "../../../utils/decodeSdJwt";
 import {vpVerificationRequest} from "../../../utils/commonUtils";
 
@@ -58,14 +57,17 @@ const DisplayActiveStep = () => {
     dispatch(resetVpRequest());
   };
 
-    const handleOnVpProcessed = async (vpResults: VerificationResults) => {
+    const handleOnVpProcessed = async (vpResults: { verificationResponse: unknown }[]) => {
         try {
             const summarisedResponse = vpResults
                 .map((vpResult) => vpResult.verificationResponse)
                 .find(
-                    (response): response is VpSummarisedVerificationResponse =>
-                        "vcResults" in response && Array.isArray(response.vcResults)
-                );
+                    (response) =>
+                        typeof response === "object" &&
+                        response !== null &&
+                        "vcResults" in response &&
+                        Array.isArray((response as VpSummarisedVerificationResponse).vcResults)
+                ) as VpSummarisedVerificationResponse | undefined;
 
             if (!summarisedResponse) {
                 throw new Error("Expected summarised VP response with vcResults");
@@ -73,10 +75,10 @@ const DisplayActiveStep = () => {
 
             const flattenedResults = await Promise.all(
                 summarisedResponse.vcResults.map(async (item) => {
-                    let vc = item.vc;
-                    if (typeof vc === "string") {
-                        vc = await decodeSdJwtToken(vc);
-                    }
+                    const vc =
+                        typeof item.vc === "string"
+                            ? await decodeSdJwtToken(item.vc)
+                            : item.vc;
                     return { vc, vcStatus: item.vcStatus };
                 })
             );
@@ -178,7 +180,7 @@ const DisplayActiveStep = () => {
                 <OpenID4VPVerification
                   key={`${flowType}-${sdkInstanceKey}`}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                  verifyServiceUrl={"http://localhost:8080" + window._env_.VERIFY_SERVICE_API_URL}
                   presentationDefinition={presentationDefinition}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}
@@ -216,7 +218,7 @@ const DisplayActiveStep = () => {
                 <OpenID4VPVerification
                   key={`${flowType}-${sdkInstanceKey}`}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={presentationDefinition.input_descriptors.length === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                  verifyServiceUrl={"http://localhost:8080" + window._env_.VERIFY_SERVICE_API_URL}
                   presentationDefinition={presentationDefinition}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}
