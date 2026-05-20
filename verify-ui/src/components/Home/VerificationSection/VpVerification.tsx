@@ -11,16 +11,13 @@ import {
   verificationSubmissionComplete,
   OVP_SESSION_SELECTED_CREDENTIALS_KEY,
 } from "../../../redux/features/verify/vpVerificationState";
-import { VCShareType, VpSubmissionResultInt } from "../../../types/data-types";
+import { VCShareType, VpSubmissionResultInt, VpSummarisedVerificationResponse } from "../../../types/data-types";
 import { closeAlert, raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { AlertMessages } from "../../../utils/config";
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 import { Button } from "./commons/Button";
 import { useTranslation } from "react-i18next";
-import {
-  VerificationResults,
-  VpSummarisedVerificationResponse,
-} from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
+import { VerificationResults } from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
 import {decodeSdJwtToken} from "../../../utils/decodeSdJwt";
 import {vpVerificationRequest} from "../../../utils/commonUtils";
 
