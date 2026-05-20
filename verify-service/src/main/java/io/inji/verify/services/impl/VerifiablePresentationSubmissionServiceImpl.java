@@ -122,6 +122,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         log.info("Received VP submission for state: {}", state);
         if (vpToken != null) {
             log.info("VP submission length: {}", vpToken.length());
+            log.info(vpToken.toString());
         }
 
         // --- Get responseCodeValidationRequired from auth request ---
