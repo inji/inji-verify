@@ -14,7 +14,7 @@ import java.util.List;
 public interface VerifiablePresentationSubmissionService {
     ResponseEntity<?> submit(String vpToken, String presentationSubmission, String state, String error, String errorDescription);
 
-    VPTokenResultDto getVPResult(List<String> requestId, String transactionId) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException, VPHolderBindingException;
+    VPTokenResultDto getVPResult(List<String> requestId, String transactionId) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException;
 
     VPVerificationResultDto getVPResultV2(@Valid VerificationRequestDto request, List<String> requestIds, String transactionId);
 
