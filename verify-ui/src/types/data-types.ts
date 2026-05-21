@@ -238,3 +238,18 @@ export interface CredentialResult {
     }[];
     claims?: Record<string, any>;
 }
+
+export type OverallVPStatus = "SUCCESS" | "INVALID";
+
+export interface VpSummarisedVerificationResponse {
+  vcResults: {
+      vc: string  | Record<string, unknown>;
+      vcStatus: VcStatus;
+  }[];
+  vpResultStatus: OverallVPStatus;
+}
+
+export type MatchingVc = {
+  vc: LdpVc | object;
+  vcStatus: VcStatus;
+};
