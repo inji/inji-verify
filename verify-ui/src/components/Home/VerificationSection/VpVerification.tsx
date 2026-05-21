@@ -11,13 +11,12 @@ import {
   verificationSubmissionComplete,
   OVP_SESSION_SELECTED_CREDENTIALS_KEY,
 } from "../../../redux/features/verify/vpVerificationState";
-import { VCShareType, VpSubmissionResultInt } from "../../../types/data-types";
+import { VCShareType, VpSubmissionResultInt, VpSummarisedVerificationResponse } from "../../../types/data-types";
 import { closeAlert, raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { AlertMessages } from "../../../utils/config";
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 import { Button } from "./commons/Button";
 import { useTranslation } from "react-i18next";
-import {VerificationResults} from "@injistack/react-inji-verify-sdk/dist/components/openid4vp-verification/OpenID4VPVerification.types";
 import {decodeSdJwtToken} from "../../../utils/decodeSdJwt";
 import {vpVerificationRequest} from "../../../utils/commonUtils";
 
@@ -58,30 +57,31 @@ const DisplayActiveStep = () => {
     dispatch(resetVpRequest());
   };
 
-    const handleOnVpProcessed = async (vpResults: VerificationResults) => {
+    const handleOnVpProcessed = async (vpResults: { verificationResponse: unknown }[]) => {
         try {
-            const processedResults = await Promise.all(
-                vpResults.flatMap(async (vpResult) => {
-                    const response = vpResult.verificationResponse;
-                    if ("vcResults" in response && Array.isArray(response.vcResults)) {
+            const summarisedResponse = vpResults
+                .map((vpResult) => vpResult.verificationResponse)
+                .find(
+                    (response) =>
+                        typeof response === "object" &&
+                        response !== null &&
+                        "vcResults" in response &&
+                        Array.isArray((response as VpSummarisedVerificationResponse).vcResults)
+                ) as VpSummarisedVerificationResponse | undefined;
 
-                        return Promise.all(
-                            response.vcResults.map(async (item, i) => {
-                                let vc = item.vc;
-                                if (typeof vc === "string") {
-                                    vc = await decodeSdJwtToken(vc);
-                                }
+            if (!summarisedResponse) {
+                throw new Error("Expected summarised VP response with vcResults");
+            }
 
-                                return {vc, vcStatus: item.vcStatus,
-                                };
-                            })
-                        );
-                    }
-                    throw new Error("Expected summarised VP response with vcResults");
+            const flattenedResults = await Promise.all(
+                summarisedResponse.vcResults.map(async (item) => {
+                    const vc =
+                        typeof item.vc === "string"
+                            ? await decodeSdJwtToken(item.vc)
+                            : item.vc;
+                    return { vc, vcStatus: item.vcStatus };
                 })
             );
-
-            const flattenedResults = processedResults.flat();
             localStorage.removeItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
             dispatch(verificationSubmissionComplete({verificationResult: flattenedResults,
                 })
