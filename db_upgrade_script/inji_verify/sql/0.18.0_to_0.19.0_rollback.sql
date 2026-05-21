@@ -14,7 +14,7 @@
 -- SECTION 1: Update vp_submission table
 -- -------------------------------------------------------------------------------------------------
 -- Drop primary key constraint on request_id column
-ALTER TABLE vp_submission
+ALTER TABLE verify.vp_submission
 DROP CONSTRAINT IF EXISTS pk_vp_submission_request_id;
 
 -- -------------------------------------------------------------------------------------------------
@@ -22,6 +22,7 @@ DROP CONSTRAINT IF EXISTS pk_vp_submission_request_id;
 -- -------------------------------------------------------------------------------------------------
 DROP TABLE IF EXISTS verify.dcql_query_scope;
 
+-- Recreate presentation_definition only when the upgrade retained the legacy table.
 CREATE TABLE IF NOT EXISTS verify.presentation_definition (
     id character varying(255) NOT NULL,
     input_descriptors text,

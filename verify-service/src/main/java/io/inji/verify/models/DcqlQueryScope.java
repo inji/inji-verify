@@ -16,16 +16,16 @@ import java.time.Instant;
 @Getter
 @Entity
 @AllArgsConstructor
-@NoArgsConstructor(force = true)
+@NoArgsConstructor
 public class DcqlQueryScope {
     @Id
-    private final String scope;
+    private String scope;
 
     @Column(name = "dcql_query", nullable = false)
-    private final String dcqlQuery;
+    private String dcqlQuery;
 
     @Column(name = "created_at")
-    private final Instant createdAt;
+    private Instant createdAt;
 
     @JsonIgnore
     public String getURL() {

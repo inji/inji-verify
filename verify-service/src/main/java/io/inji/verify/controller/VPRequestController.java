@@ -65,7 +65,8 @@ public class VPRequestController {
 
     @NotNull
     private ResponseEntity<Object> processCreateVPRequest(VPRequestCreateDto vpRequestCreate, boolean createCookie) {
-        if (vpRequestCreate.getScope() == null
+        String scope = vpRequestCreate.getScope();
+        if ((scope == null || scope.trim().isEmpty())
                 && (vpRequestCreate.getDcqlQuery() == null || vpRequestCreate.getDcqlQuery().isNull())) {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(ErrorCode.BOTH_SCOPE_AND_DCQL_CANNOT_BE_NULL));
         }

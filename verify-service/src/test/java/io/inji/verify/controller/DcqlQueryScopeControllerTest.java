@@ -78,4 +78,26 @@ public class DcqlQueryScopeControllerTest {
         assertEquals(HttpStatus.NOT_FOUND, responseEntity.getStatusCode());
         assertNull(responseEntity.getBody());
     }
+
+    @Test
+    public void testGetDcqlQueryForMalformedDcqlQuery() throws Exception {
+        String scope = "age_verification";
+        when(dcqlQueryScopeService.getDcqlQuery(scope)).thenReturn("{invalid-json");
+
+        mockMvc.perform(get("/dcql-query/{scope}", scope)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError());
+
+        verify(dcqlQueryScopeService, times(1)).getDcqlQuery(scope);
+    }
+
+    @Test
+    public void testGetDcqlQueryForControllerLogicMalformedDcqlQuery() throws Exception {
+        String scope = "age_verification";
+        when(dcqlQueryScopeService.getDcqlQuery(scope)).thenReturn("{invalid-json");
+
+        ResponseEntity<?> responseEntity = dcqlQueryScopeController.getDcqlQueryFor(scope);
+
+        assertEquals(HttpStatus.INTERNAL_SERVER_ERROR, responseEntity.getStatusCode());
+    }
 }

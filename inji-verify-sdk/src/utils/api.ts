@@ -92,9 +92,9 @@ export const vpRequest = async (
 
   if (txnId) requestBody.transactionId = txnId;
   if (presentationDefinitionId)
-    requestBody.presentationDefinitionId = presentationDefinitionId;
+    requestBody.scope = presentationDefinitionId;
   if (presentationDefinition)
-    requestBody.presentationDefinition = presentationDefinition;
+    requestBody.dcqlQuery = presentationDefinition;
 
   const requestOptions = {
     method: "POST",
@@ -162,9 +162,9 @@ export const vpSessionRequest = async (
 
   if (txnId) requestBody.transactionId = txnId;
   if (presentationDefinitionId)
-    requestBody.presentationDefinitionId = presentationDefinitionId;
+    requestBody.scope = presentationDefinitionId;
   if (presentationDefinition)
-    requestBody.presentationDefinition = presentationDefinition;
+    requestBody.dcqlQuery = presentationDefinition;
   if (responseCodeValidationRequired) {
     requestBody.responseCodeValidationRequired = true;
   }

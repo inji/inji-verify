@@ -81,6 +81,19 @@ public class VPRequestControllerTest {
     }
 
     @Test
+    public void testCreateVPRequest_BadRequest_BlankScope() throws Exception {
+        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", "   ", "nonce", null, false, false);
+
+        mockMvc.perform(post("/v2/vp-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.BOTH_SCOPE_AND_DCQL_CANNOT_BE_NULL))));
+
+        verify(verifiablePresentationRequestService, never()).createAuthorizationRequest(any());
+    }
+
+    @Test
     public void testCreateVPRequest_NotFound() throws Exception {
         JsonNode dcqlQuery = objectMapper.readTree("{\"credentials\":[]}");
         VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", "unknown_scope", "nonce", dcqlQuery, false, false);
