@@ -43,7 +43,6 @@ import io.mosip.vercred.vcverifier.data.PresentationVerificationResultV2;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VCResultV2;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
-import io.mosip.vercred.vcverifier.exception.HolderBindingException;
 import jakarta.validation.ConstraintViolation;
 import jakarta.validation.Validator;
 import lombok.extern.slf4j.Slf4j;
@@ -122,7 +121,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         log.info("Received VP submission for state: {}", state);
         if (vpToken != null) {
             log.info("VP submission length: {}", vpToken.length());
-            log.info(vpToken.toString());
         }
 
         // --- Get responseCodeValidationRequired from auth request ---
@@ -200,7 +198,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 .toUriString();
     }
 
-    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId, AuthorizationRequestCreateResponse authRequest) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPHolderBindingException {
+    private VPTokenResultDto processSubmission(VPSubmission vpSubmission, String transactionId, AuthorizationRequestCreateResponse authRequest) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException {
         log.info("Processing VP submission");
         List<VCResultDto> verificationResults = new ArrayList<>();
         List<VPVerificationStatus> vpVerificationStatuses = new ArrayList<>();
@@ -258,11 +256,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         } catch (VPWithoutProofException e) {
             log.error("Received Invalid VP: ", e);
             throw e;
-        } catch (HolderBindingException hbe) {
-            log.error("Holder binding check failed during VP verification: {}", hbe.getMessage());
-            throw new VPHolderBindingException(hbe.getErrorCode(), hbe.getErrorMessage());
-        }
-        catch (Exception e) {
+        } catch (Exception e) {
             log.error("Failed to verify VP submission", e);
             return new VPTokenResultDto(transactionId, VPResultStatus.FAILED, verificationResults);
         }
@@ -389,12 +383,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         //hence we are populating credentialResults with a single entry with holder proof check failure and skipping other checks.
         CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
         credentialResultsDto.setAllChecksSuccessful(false);
-        if (ex instanceof HolderBindingException) {
-            credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto(((HolderBindingException) ex).getErrorCode(), ((HolderBindingException) ex).getErrorMessage())));
-        } else {
-            //for any other runtime exception during VP verification, we can populate with a generic error message.
-            credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto("VP_VERIFICATION_FAILED", ex.getMessage())));
-        }
+        //for any runtime exception during VP verification, we can populate with a generic error message.
+        credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto("VP_VERIFICATION_FAILED", "VP verification failed due to an unexpected error")));
         credentialResults.add(credentialResultsDto);
     }
 
@@ -485,7 +475,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     @Override
-    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException, VPHolderBindingException {
+    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError, InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
         VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
         return processSubmission(vpSubmission, transactionId, authRequest);
