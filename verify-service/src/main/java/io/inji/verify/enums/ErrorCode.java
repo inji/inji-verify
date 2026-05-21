@@ -16,6 +16,7 @@ public enum ErrorCode {
     TOKEN_MATCHING_FAILED("TOKEN_MATCHING_FAILED", "Token matching failed."),
     INVALID_VP_TOKEN("INVALID_VP_TOKEN","Verifiable presentation failed due to invalid VP token"),
     VP_WITHOUT_PROOF("VP_WITHOUT_PROOF", "Invalid VP Submission since VP is without proof"),
+    VP_VERIFICATION_FAILED("VP_VERIFICATION_FAILED", "VP verification failed due to runtime exception during VP verification"),
     RESPONSE_CODE_NOT_MATCHING("RESPONSE_CODE_NOT_MATCHING", "Response code is not matching the VP Submission response"),
     RESPONSE_CODE_EXPIRED("RESPONSE_CODE_EXPIRED", "Response code has expired"),
     RESPONSE_CODE_USED("RESPONSE_CODE_USED", "Response code has been used"),

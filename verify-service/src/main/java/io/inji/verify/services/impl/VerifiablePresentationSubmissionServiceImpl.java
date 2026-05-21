@@ -263,46 +263,51 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private VPVerificationResultDto processSubmissionV2(VerificationRequestDto request, String transactionId, VPSubmission vpSubmission, AuthorizationRequestCreateResponse authRequest) {
-        log.info("Processing VP submission V2");
-        List<CredentialResultsDto> credentialResults = new ArrayList<>();
+        try {
+            log.info("Processing VP submission V2");
+            List<CredentialResultsDto> credentialResults = new ArrayList<>();
 
-        log.info("Processing VP token matching V2");
-        if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
+            log.info("Processing VP token matching V2");
+            if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
 
-        VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
+            VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
 
-        log.info("Processing VP verification V2");
-        boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(authRequest);
-        for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
-            if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
-            boolean isSigned = isVerifiablePresentationSigned(vpToken);
+            log.info("Processing VP verification V2");
+            boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(authRequest);
+            for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
+                if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
+                boolean isSigned = isVerifiablePresentationSigned(vpToken);
 
-            if (isSigned) {
-                if (request.isSkipStatusChecks()) {
-                    verifyPresentation(request, vpToken, credentialResults);
+                if (isSigned) {
+                    if (request.isSkipStatusChecks()) {
+                        verifyPresentation(request, vpToken, credentialResults);
+                    } else {
+                        verifyPresentationWithCredentialStatusChecks(request, vpToken, credentialResults);
+                    }
+                } else if (acceptVPWithoutHolderProof) {
+                    // for a VPToken without proof, do verification for all credentials
+                    Object verifiableCredential = vpToken.opt("verifiableCredential");
+                    List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
+                    for (Object credential : listOfVerifiableCredentials) {
+                        credentialResults.add(verifySingleCredential(request, credential, false));
+                    }
                 } else {
-                    verifyPresentationWithCredentialStatusChecks(request, vpToken, credentialResults);
+                    throw new VPWithoutProofException();
                 }
-            } else if (acceptVPWithoutHolderProof) {
-                // for a VPToken without proof, do verification for all credentials
-                Object verifiableCredential = vpToken.opt("verifiableCredential");
-                List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
-                for (Object credential : listOfVerifiableCredentials) {
-                    credentialResults.add(verifySingleCredential(request, credential, false));
-                }
-            } else {
-                throw new VPWithoutProofException();
             }
+
+            for (String sdJwtVpToken : vpTokenDto.getSdJwtVpTokens()) {
+                credentialResults.add(verifySingleCredential(request, sdJwtVpToken, true));
+            }
+
+            boolean allChecksSuccessful = credentialResults.stream().allMatch(CredentialResultsDto::isAllChecksSuccessful);
+
+            log.info("VP submission processing done V2");
+            return new VPVerificationResultDto(transactionId, allChecksSuccessful, credentialResults);
+        } catch (Exception ex) {
+            log.error("Failed to process VP submission V2", ex.getMessage());
+            throw new VPVerificationException();
         }
-
-        for (String sdJwtVpToken : vpTokenDto.getSdJwtVpTokens()) {
-            credentialResults.add(verifySingleCredential(request, sdJwtVpToken, true));
-        }
-
-        boolean allChecksSuccessful = credentialResults.stream().allMatch(CredentialResultsDto::isAllChecksSuccessful);
-
-        log.info("VP submission processing done V2");
-        return new VPVerificationResultDto(transactionId, allChecksSuccessful, credentialResults);
     }
 
     private List<Object> getListOfVerifiableCredentials(Object verifiableCredential) {
@@ -321,15 +326,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     private void verifyPresentationWithCredentialStatusChecks(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
         List<String> filters = request.getStatusCheckFilters();
-        PresentationResultWithCredentialStatusV2 result = null;
-        List<VCResultWithCredentialStatusV2> vcResults = new ArrayList<>();
-        try {
-            result = presentationVerifier.verifyAndGetCredentialStatusV2(vpToken.toString(), filters);
-            vcResults = result.getVcResults();
-        } catch (Exception ex) {
-            populateResultsWhenPresentationVerificationHasRuntimeExceptions(credentialResults, ex);
-            return;
-        }
+        PresentationResultWithCredentialStatusV2 result = presentationVerifier.verifyAndGetCredentialStatusV2(vpToken.toString(), filters);
+        List<VCResultWithCredentialStatusV2> vcResults = result.getVcResults();
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
         for (VCResultWithCredentialStatusV2 vcResWithStatus : vcResults) {
             CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
@@ -350,15 +348,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private void verifyPresentation(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
-        PresentationVerificationResultV2 result = null;
-        List<VCResultV2> vcResults = new ArrayList<>();
-        try {
-            result = presentationVerifier.verifyV2(vpToken.toString());
-            vcResults = result.getVcResults();
-        } catch (Exception ex) {
-            populateResultsWhenPresentationVerificationHasRuntimeExceptions(credentialResults, ex);
-            return;
-        }
+        PresentationVerificationResultV2 result = presentationVerifier.verifyV2(vpToken.toString());
+        List<VCResultV2> vcResults = result.getVcResults();
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
         for (VCResultV2 vcRes : vcResults) {
             CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
@@ -375,17 +366,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             credentialResultsDto.setAllChecksSuccessful(allChecksSuccessful);
             credentialResults.add(credentialResultsDto);
         }
-    }
-
-    private static void populateResultsWhenPresentationVerificationHasRuntimeExceptions(List<CredentialResultsDto> credentialResults, Exception ex) {
-        log.error("VP verification failed due to : {}", ex.getMessage());
-        //since VP Verification has runtime exception, we are not sure about the credentials present in the VP,
-        //hence we are populating credentialResults with a single entry with holder proof check failure and skipping other checks.
-        CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
-        credentialResultsDto.setAllChecksSuccessful(false);
-        //for any runtime exception during VP verification, we can populate with a generic error message.
-        credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto("VP_VERIFICATION_FAILED", "VP verification failed due to an unexpected error")));
-        credentialResults.add(credentialResultsDto);
     }
 
     private boolean isAcceptVPWithoutHolderProof(AuthorizationRequestCreateResponse request) {
