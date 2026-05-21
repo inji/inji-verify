@@ -24,7 +24,7 @@ public class ConstantsTest {
     @DisplayName("Verify URI constants")
     void testUriConstants() {
         assertEquals("/v2/vp-submission/direct-post", Constants.VP_RESPONSE_SUBMISSION_URI);
-        assertEquals("/vp-definition/", Constants.VP_DEFINITION_URI);
+        assertEquals("/dcql-query/", Constants.DCQL_QUERY_URI);
         assertEquals("/v2/vp-request", Constants.VP_REQUEST_URI);
     }
 
@@ -92,8 +92,8 @@ public class ConstantsTest {
         assertNotNull(Constants.VP_RESPONSE_SUBMISSION_URI);
         assertFalse(Constants.VP_RESPONSE_SUBMISSION_URI.isEmpty());
 
-        assertNotNull(Constants.VP_DEFINITION_URI);
-        assertFalse(Constants.VP_DEFINITION_URI.isEmpty());
+        assertNotNull(Constants.DCQL_QUERY_URI);
+        assertFalse(Constants.DCQL_QUERY_URI.isEmpty());
 
         assertNotNull(Constants.VP_REQUEST_URI);
         assertFalse(Constants.VP_REQUEST_URI.isEmpty());
@@ -110,10 +110,10 @@ public class ConstantsTest {
     @Test
     @DisplayName("Verify URI formatting")
     void testUriFormatting() {
-        assertTrue(Constants.VP_DEFINITION_URI.startsWith("/"));
+        assertTrue(Constants.DCQL_QUERY_URI.startsWith("/"));
         assertTrue(Constants.VP_REQUEST_URI.startsWith("/"));
 
-        assertTrue(Constants.VP_DEFINITION_URI.endsWith("/"));
+        assertTrue(Constants.DCQL_QUERY_URI.endsWith("/"));
     }
 
     @Test

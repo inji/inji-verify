@@ -6,11 +6,9 @@ import io.inji.verify.dto.authorizationrequest.VPRequestCreateDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.core.ErrorDto;
-import io.inji.verify.dto.presentation.FormatDto;
-import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPRequestStatus;
-import io.inji.verify.exception.PresentationDefinitionNotFoundException;
+import io.inji.verify.exception.DcqlQueryScopeNotFoundException;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
@@ -22,7 +20,6 @@ import org.springframework.test.web.servlet.setup.MockMvcBuilders;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import java.nio.charset.StandardCharsets;
-import java.util.ArrayList;
 import java.util.Base64;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
@@ -49,10 +46,8 @@ public class VPRequestControllerTest {
 
     @Test
     public void testCreateVPRequest_Success() throws Exception {
-        FormatDto formatDto = new FormatDto(null, null, null);
-        VPDefinitionResponseDto vpDefinitionResponseDto = new VPDefinitionResponseDto("id", new ArrayList<>(), "name", "purposr", formatDto, new ArrayList<>());
-        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId",
-                "pdId", "nonce", vpDefinitionResponseDto, false, false);
+        JsonNode dcqlQuery = objectMapper.readTree("{\"credentials\":[]}");
+        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", null, "nonce", dcqlQuery, false, false);
         VPRequestResponseDto responseDto = new VPRequestResponseDto("tId", "rId", mock(), 0L, "");
 
         when(verifiablePresentationRequestService.createAuthorizationRequest(any())).thenReturn(responseDto);
@@ -74,33 +69,42 @@ public class VPRequestControllerTest {
 
     @Test
     public void testCreateVPRequest_BadRequest_NoDefinition() throws Exception {
-        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId",
-                null, "nonce", null, false, false);
+        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", null, "nonce", null, false, false);
 
         mockMvc.perform(post("/v2/vp-request")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isBadRequest())
-                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.BOTH_ID_AND_PD_CANNOT_BE_NULL))));
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.BOTH_SCOPE_AND_DCQL_CANNOT_BE_NULL))));
+
+        verify(verifiablePresentationRequestService, never()).createAuthorizationRequest(any());
+    }
+
+    @Test
+    public void testCreateVPRequest_BadRequest_BlankScope() throws Exception {
+        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", "   ", "nonce", null, false, false);
+
+        mockMvc.perform(post("/v2/vp-request")
+                .contentType(MediaType.APPLICATION_JSON)
+                .content(objectMapper.writeValueAsString(createDto)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.BOTH_SCOPE_AND_DCQL_CANNOT_BE_NULL))));
 
         verify(verifiablePresentationRequestService, never()).createAuthorizationRequest(any());
     }
 
     @Test
     public void testCreateVPRequest_NotFound() throws Exception {
-        FormatDto formatDto = new FormatDto(null, null, null);
-        VPDefinitionResponseDto vpDefinitionResponseDto = new VPDefinitionResponseDto("id", new ArrayList<>(), "name", "purposr", formatDto, new ArrayList<>());
-
-        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId",
-                "pdId", "nonce", vpDefinitionResponseDto, false, false);
+        JsonNode dcqlQuery = objectMapper.readTree("{\"credentials\":[]}");
+        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", "unknown_scope", "nonce", dcqlQuery, false, false);
         when(verifiablePresentationRequestService.createAuthorizationRequest(any()))
-                .thenThrow(new PresentationDefinitionNotFoundException());
+                .thenThrow(new DcqlQueryScopeNotFoundException());
 
         mockMvc.perform(post("/v2/vp-request")
                 .contentType(MediaType.APPLICATION_JSON)
                 .content(objectMapper.writeValueAsString(createDto)))
                 .andExpect(status().isNotFound())
-                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.NO_PRESENTATION_DEFINITION))));
+                .andExpect(content().string(objectMapper.writeValueAsString(new ErrorDto(ErrorCode.NO_DCQL_QUERY_FOR_SCOPE))));
     }
 
     @Test
@@ -140,9 +144,8 @@ public class VPRequestControllerTest {
 
     @Test
     public void testCreateVPSessionRequest_SetsCookie() throws Exception {
-        FormatDto formatDto = new FormatDto(null, null, null);
-        VPDefinitionResponseDto vpDefinitionResponseDto = new VPDefinitionResponseDto("id", new ArrayList<>(), "name", "purpose", formatDto, new ArrayList<>());
-        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", "pdId", "nonce", vpDefinitionResponseDto, false, true);
+        JsonNode dcqlQuery = objectMapper.readTree("{\"credentials\":[]}");
+        VPRequestCreateDto createDto = new VPRequestCreateDto("cId", "tId", null, "nonce", dcqlQuery, false, true);
         VPRequestResponseDto responseDto = new VPRequestResponseDto("tId", "rId", mock(), 0L, "");
 
         when(verifiablePresentationRequestService.createAuthorizationRequest(any())).thenReturn(responseDto);

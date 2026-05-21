@@ -1,36 +1,28 @@
 package io.inji.verify.dto.authorizationrequest;
 
-import io.inji.verify.dto.presentation.FormatDto;
-import io.inji.verify.dto.presentation.InputDescriptorDto;
-import io.inji.verify.dto.presentation.SubmissionRequirementDto;
-import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import org.junit.jupiter.api.Test;
-import java.util.List;
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
+
+import static org.junit.jupiter.api.Assertions.assertEquals;
 
 public class VPRequestCreateDtoTest {
-    @Test
-    public void testConstructor() {
-        String clientId = "client123";
-        String transactionId = "tx123";
-        String presentationDefinitionId = "pd123";
-        String nonce = "nonce123";
-        List<InputDescriptorDto> mockInputDescriptors = mock();
-        List<SubmissionRequirementDto> mockSubmissionRequirements = mock();
-        FormatDto mockFormatDto = mock();
-        VPDefinitionResponseDto presentationDefinition = new VPDefinitionResponseDto("pd123",mockInputDescriptors,"name","purpose" ,mockFormatDto ,mockSubmissionRequirements);
 
-        VPRequestCreateDto vpRequestCreateDto =
-                new VPRequestCreateDto(clientId, transactionId,
-                        presentationDefinitionId, nonce,
-                        presentationDefinition, false, false);
+    @Test
+    public void testVPRequestCreateDto() throws Exception {
+        String clientId = "client123";
+        String transactionId = "txn123";
+        String scope = "age_verification";
+        String nonce = "nonce123";
+        ObjectMapper objectMapper = new ObjectMapper();
+        var dcqlQuery = objectMapper.readTree("{\"credentials\":[]}");
+
+        VPRequestCreateDto vpRequestCreateDto = new VPRequestCreateDto(
+                clientId, transactionId, scope, nonce, dcqlQuery, false, false);
 
         assertEquals(clientId, vpRequestCreateDto.getClientId());
         assertEquals(transactionId, vpRequestCreateDto.getTransactionId());
-        assertEquals(presentationDefinitionId, vpRequestCreateDto.getPresentationDefinitionId());
+        assertEquals(scope, vpRequestCreateDto.getScope());
         assertEquals(nonce, vpRequestCreateDto.getNonce());
-        assertEquals(presentationDefinition, vpRequestCreateDto.getPresentationDefinition());
-        assertFalse(vpRequestCreateDto.isAcceptVPWithoutHolderProof());
+        assertEquals(dcqlQuery, vpRequestCreateDto.getDcqlQuery());
     }
 }

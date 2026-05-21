@@ -1,11 +1,11 @@
 InsertDBData:
-   InjiVerify_InsertDBData_For_PresentationDefinitionId_Valid_smoke:
+   InjiVerify_InsertDBData_For_DcqlQueryScope_Valid_smoke:
       endPoint: no endpoint
       uniqueIdentifier: TC_DBDependent_InsertQuery_01
-      description: Inserting data in verify.presentation_definition table to authenticate and get PresentationDefinitionId
+      description: Inserting data in verify.dcql_query_scope table for scope-based DCQL lookup
       role: idrepo
       restMethod: post
-      inputTemplate: injiverify/InsertDBData/InsertpresentationDefinitionIdData
+      inputTemplate: injiverify/InsertDBData/InsertDcqlQueryScopeData
       outputTemplate: injiverify/InsertDBData/InsertDBDataResult
       input: '{
 }'

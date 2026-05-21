@@ -28,8 +28,8 @@ export interface VPRequestBody {
   clientId: string;
   nonce: string;
   transactionId?: string;
-  presentationDefinitionId?: string;
-  presentationDefinition?: PresentationDefinition;
+  scope?: string;
+  dcqlQuery?: PresentationDefinition;
   acceptVPWithoutHolderProof?: boolean;
   /**
    * When true, the verifier backend will generate a short-lived single-use `response_code`

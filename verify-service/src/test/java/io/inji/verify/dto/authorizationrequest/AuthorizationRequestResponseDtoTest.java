@@ -1,34 +1,39 @@
 package io.inji.verify.dto.authorizationrequest;
 
-import static org.junit.jupiter.api.Assertions.*;
-import static org.mockito.Mockito.mock;
-
-import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
-import io.inji.verify.models.PresentationDefinition;
-import io.inji.verify.shared.Constants;
+import io.inji.verify.models.DcqlQueryScope;
 import org.junit.jupiter.api.Test;
 
-import java.time.Instant;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class AuthorizationRequestResponseDtoTest {
 
     @Test
-    public void ShouldTestConstructorSetsFieldsCorrectly() {
-        String clientId = "testClientId";
-        PresentationDefinition presentationDefinition = mock(PresentationDefinition.class);
-        String nonce = "testNonce";
-        String responseUri = "testUri";
+    public void testAuthorizationRequestResponseDto() {
+        DcqlQueryScope dcqlQueryScope = mock(DcqlQueryScope.class);
+        when(dcqlQueryScope.getScope()).thenReturn("age_verification");
+        when(dcqlQueryScope.getURL()).thenReturn("/dcql-query/age_verification");
 
-        AuthorizationRequestResponseDto responseDto =
-                new AuthorizationRequestResponseDto(clientId, null,
-                        new VPDefinitionResponseDto(presentationDefinition.getId(),presentationDefinition.getInputDescriptors(),presentationDefinition.getName(),presentationDefinition.getPurpose(),presentationDefinition.getFormat(),presentationDefinition.getSubmissionRequirements()),nonce,responseUri, true, false);
+        String nonce = "nonce123";
+        String responseUri = "https://example.com/response";
 
-        assertEquals(Constants.RESPONSE_TYPE, responseDto.getResponseType());
-        assertEquals(clientId, responseDto.getClientId());
-        assertEquals(presentationDefinition.getURL(), responseDto.getPresentationDefinitionUri());
-        assertEquals(responseUri, responseDto.getResponseUri());
+        AuthorizationRequestResponseDto responseDto = new AuthorizationRequestResponseDto(
+                "client123",
+                dcqlQueryScope.getScope(),
+                "https://verify.example.com" + dcqlQueryScope.getURL(),
+                null,
+                nonce,
+                responseUri,
+                true,
+                false);
+
+        assertEquals("client123", responseDto.getClientId());
+        assertEquals("age_verification", responseDto.getScope());
+        assertEquals("https://verify.example.com/dcql-query/age_verification", responseDto.getDcqlQueryUri());
         assertEquals(nonce, responseDto.getNonce());
-        assertTrue(Instant.now().toEpochMilli() >= responseDto.getIssuedAt()); // Ensure issuedAt is in the past
-        assertTrue(responseDto.isAcceptVPWithoutHolderProof());
+        assertEquals(responseUri, responseDto.getResponseUri());
+        assertEquals(true, responseDto.isAcceptVPWithoutHolderProof());
+        assertEquals(false, responseDto.isResponseCodeValidationRequired());
     }
 }

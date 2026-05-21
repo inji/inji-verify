@@ -7,15 +7,6 @@ CREATE TABLE IF NOT EXISTS verify.authorization_request_details (
     expires_at bigint NOT NULL
 );
 
-CREATE TABLE IF NOT EXISTS verify.presentation_definition(
-    id character varying(36) NOT NULL,
-    input_descriptors jsonb NOT NULL,
-    name character varying(500),
-    purpose character varying(500),
-    vp_format text,
-    submission_requirements text
-);
-
 CREATE TABLE IF NOT EXISTS verify.vc_submission(
     transaction_id character varying(40) NOT NULL,
     vc text NOT NULL
@@ -27,4 +18,11 @@ CREATE TABLE IF NOT EXISTS verify.vp_submission(
     presentation_submission text NOT NULL,
     error character varying(100) NULL,
     error_description character varying(200) NULL
+);
+
+CREATE TABLE IF NOT EXISTS verify.dcql_query_scope(
+    scope character varying(255) NOT NULL,
+    dcql_query text NOT NULL,
+    created_at timestamp without time zone DEFAULT CURRENT_TIMESTAMP,
+    CONSTRAINT dcql_query_scope_pkey PRIMARY KEY (scope)
 );
