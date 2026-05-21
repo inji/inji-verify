@@ -384,7 +384,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         CredentialResultsDto credentialResultsDto = new CredentialResultsDto();
         credentialResultsDto.setAllChecksSuccessful(false);
         //for any runtime exception during VP verification, we can populate with a generic error message.
-        credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto("VP_VERIFICATION_FAILED", ex.getMessage())));
+        credentialResultsDto.setHolderProofCheck(new HolderProofCheckDto(false, new ErrorDto("VP_VERIFICATION_FAILED", "VP verification failed due to an unexpected error")));
         credentialResults.add(credentialResultsDto);
     }
 
