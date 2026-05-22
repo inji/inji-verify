@@ -93,6 +93,3 @@ GetVpTokenForRequest:
     "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$",
     "vpResultStatus": "SUCCESS"
 }'
-
-
-

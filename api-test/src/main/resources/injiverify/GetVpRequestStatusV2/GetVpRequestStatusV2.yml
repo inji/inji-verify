@@ -132,7 +132,7 @@ GetVpRequestStatusV2.yml:
 
   Injiverify_GetVpRequestStatus_V2_Withinvalid_vp_Neg:
       endPoint: /v1/verify/v2/vp-results/{transactionId}
-      description: Verify VP results in V2 end point without status
+      description: Verify VP results in V2 end point with invalid holder binding
       uniqueIdentifier: TC_InjiVerify_GetVpRequestStatus_V2_04
       role: noauth
       restMethod: post
