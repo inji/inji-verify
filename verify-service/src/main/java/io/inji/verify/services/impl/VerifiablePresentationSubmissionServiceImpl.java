@@ -306,10 +306,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             return new VPVerificationResultDto(transactionId, allChecksSuccessful, credentialResults);
         }
         catch (TokenMatchingFailedException | InvalidVpTokenException | VPWithoutProofException ex) {
-            log.error("Failed to process VP submission V2: {}", ex.getMessage());
+            log.error("Failed to process VP submission V2", ex);
             throw ex;
         } catch (Exception ex) {
-            log.error("Failed to process VP submission V2: {}", ex.getMessage());
+            log.error("Failed to process VP submission V2", ex);
             throw new VPVerificationException();
         }
     }
