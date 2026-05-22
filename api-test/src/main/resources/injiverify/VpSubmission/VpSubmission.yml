@@ -303,3 +303,35 @@ VpSubmission:
       output: '{
       "errorCode": "invalid_request"
 }'
+  Injiverify_VpSubmissionForSessionRequest2_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting VC to VP Session Request with valid data
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_17
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission2
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_requestId$",
+      "definition_id": "$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+  Injiverify_VpSubmissionForSessionRequest3_Invalid_vp_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vp-submission/direct-post
+      description: Submitting VC to VP Session Request with valid data
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_18
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission3_invalid
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid_requestId$",
+      "definition_id": "$PRESENTATIONDEFINITIONID$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
