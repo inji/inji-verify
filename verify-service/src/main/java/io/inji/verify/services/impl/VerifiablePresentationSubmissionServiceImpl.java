@@ -17,6 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.result.*;
+import io.inji.verify.exception.*;
 import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
@@ -41,14 +42,6 @@ import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
-import io.inji.verify.exception.CredentialStatusCheckException;
-import io.inji.verify.exception.InvalidVpTokenException;
-import io.inji.verify.exception.ResponseCodeException;
-import io.inji.verify.exception.TokenMatchingFailedException;
-import io.inji.verify.exception.VPAlreadySubmittedException;
-import io.inji.verify.exception.VPSubmissionNotFoundException;
-import io.inji.verify.exception.VPSubmissionWalletError;
-import io.inji.verify.exception.VPWithoutProofException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
@@ -385,46 +378,54 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private VPVerificationResultDto processSubmissionV2(VerificationRequestDto request, String transactionId, VPSubmission vpSubmission, AuthorizationRequestCreateResponse authRequest) {
-        log.info("Processing VP submission V2");
-        List<CredentialResultsDto> credentialResults = new ArrayList<>();
+        try {
+            log.info("Processing VP submission V2");
+            List<CredentialResultsDto> credentialResults = new ArrayList<>();
 
-        log.info("Processing VP token matching V2");
-        if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
+            log.info("Processing VP token matching V2");
+            if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
 
-        VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
+            VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
 
-        log.info("Processing VP verification V2");
-        boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(authRequest);
-        for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
-            if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
-            boolean isSigned = isVerifiablePresentationSigned(vpToken);
+            log.info("Processing VP verification V2");
+            boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(authRequest);
+            for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
+                if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
+                boolean isSigned = isVerifiablePresentationSigned(vpToken);
 
-            if (isSigned) {
-                if (request.isSkipStatusChecks()) {
-                    verifyPresentation(request, vpToken, credentialResults);
+                if (isSigned) {
+                    if (request.isSkipStatusChecks()) {
+                        verifyPresentation(request, vpToken, credentialResults);
+                    } else {
+                        verifyPresentationWithCredentialStatusChecks(request, vpToken, credentialResults);
+                    }
+                } else if (acceptVPWithoutHolderProof) {
+                    // for a VPToken without proof, do verification for all credentials
+                    Object verifiableCredential = vpToken.opt("verifiableCredential");
+                    List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
+                    for (Object credential : listOfVerifiableCredentials) {
+                        credentialResults.add(verifySingleCredential(request, credential, false));
+                    }
                 } else {
-                    verifyPresentationWithCredentialStatusChecks(request, vpToken, credentialResults);
+                    throw new VPWithoutProofException();
                 }
-            } else if (acceptVPWithoutHolderProof) {
-                // for a VPToken without proof, do verification for all credentials
-                Object verifiableCredential = vpToken.opt("verifiableCredential");
-                List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
-                for (Object credential : listOfVerifiableCredentials) {
-                    credentialResults.add(verifySingleCredential(request, credential, false));
-                }
-            } else {
-                throw new VPWithoutProofException();
             }
+
+            for (String sdJwtVpToken : vpTokenDto.getSdJwtVpTokens()) {
+                credentialResults.add(verifySingleCredential(request, sdJwtVpToken, true));
+            }
+
+            boolean allChecksSuccessful = credentialResults.stream().allMatch(CredentialResultsDto::isAllChecksSuccessful);
+
+            log.info("VP submission processing done V2");
+            return new VPVerificationResultDto(transactionId, allChecksSuccessful, credentialResults);
+        }  catch (TokenMatchingFailedException | InvalidVpTokenException | VPWithoutProofException ex) {
+            log.error("Failed to process VP submission V2", ex);
+            throw ex;
+        } catch (Exception ex) {
+            log.error("Failed to process VP submission V2", ex);
+            throw new VPVerificationException();
         }
-
-        for (String sdJwtVpToken : vpTokenDto.getSdJwtVpTokens()) {
-            credentialResults.add(verifySingleCredential(request, sdJwtVpToken, true));
-        }
-
-        boolean allChecksSuccessful = credentialResults.stream().allMatch(CredentialResultsDto::isAllChecksSuccessful);
-
-        log.info("VP submission processing done V2");
-        return new VPVerificationResultDto(transactionId, allChecksSuccessful, credentialResults);
     }
 
     private List<Object> getListOfVerifiableCredentials(Object verifiableCredential) {
