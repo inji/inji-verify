@@ -158,6 +158,7 @@ GetVpRequestStatusV2.yml:
         "valid": true
       },
       "statusCheck": [],
+      "claims": {},
       "holderProofCheck": {
         "valid": false,
         "error": {
