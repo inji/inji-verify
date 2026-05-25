@@ -9,17 +9,16 @@ Package: HdrHistogram
 
 Version: 2.2.2
 
-License: http://creativecommons.org/publicdomain/zero/1.0/,
-https://opensource.org/licenses/BSD-2-Clause
+License: CC0-1.0 OR BSD-2-Clause
 
-Homepage: http://creativecommons.org/publicdomain/zero/1.0/
+Homepage: https://github.com/HdrHistogram/HdrHistogram
 
 ================================================================================
 Package: HikariCP
 
 Version: 5.1.0
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -28,7 +27,7 @@ Package: LatencyUtils
 
 Version: 2.0.3
 
-License: Public Domain, per Creative Commons CC0
+License: CC0-1.0
 
 Homepage: Not Available
 
@@ -91,7 +90,7 @@ Package: analysis-markdown
 
 Version: 1.9.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -100,7 +99,7 @@ Package: angus-activation
 
 Version: 2.0.2
 
-License: http://www.eclipse.org/org/documents/edl-v10.php
+License: EDL-1.0
 
 Homepage: http://www.eclipse.org/org/documents/edl-v10.php
 
@@ -109,7 +108,7 @@ Package: annotation
 
 Version: 1.5.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -118,7 +117,7 @@ Package: annotation-jvm
 
 Version: 1.9.1
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -127,7 +126,7 @@ Package: annotations
 
 Version: 13.0
 
-License: The Apache Software License, Version 2.0
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -136,7 +135,7 @@ Package: antlr4-runtime
 
 Version: 4.13.0
 
-License: https://www.antlr.org/license.html
+License: BSD-3-Clause
 
 Homepage: https://www.antlr.org/license.html
 
@@ -150,12 +149,20 @@ License: GPL-2.0-only
 Homepage: Not Available
 
 ================================================================================
+Package: aspectjweaver
 
+Version: 1.9.24
+
+License: EPL-2.0
+
+Homepage: Not Available
+
+================================================================================
 Package: base45
 
 Version: 0.0.3
 
-License: SPDX-License-Identifier: EUPL-1.2
+License: EUPL-1.2
 
 Homepage: Not Available
 
@@ -164,7 +171,7 @@ Package: bcpkix-jdk15on
 
 Version: 1.69
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -173,7 +180,7 @@ Package: bcpkix-jdk18on
 
 Version: 1.78
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -182,7 +189,7 @@ Package: bcprov-jdk15on
 
 Version: 1.69
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -191,7 +198,7 @@ Package: bcprov-jdk15to18
 
 Version: 1.70
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -200,7 +207,7 @@ Package: bcprov-jdk18on
 
 Version: 1.78
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -209,7 +216,7 @@ Package: bcutil-jdk15on
 
 Version: 1.69
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -218,7 +225,7 @@ Package: bcutil-jdk18on
 
 Version: 1.78
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -227,7 +234,7 @@ Package: bitcoinj-core
 
 Version: 0.16.2
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -263,7 +270,7 @@ Package: byte-buddy
 
 Version: 1.15.11
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -290,7 +297,7 @@ Package: cbor
 
 Version: 0.9
 
-License: The Apache Software License, Version 2.0
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -299,7 +306,7 @@ Package: cbor
 
 Version: 1.19
 
-License: The Apache Software License, Version 2.0
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -326,7 +333,7 @@ Package: classmate
 
 Version: 1.7.0
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -335,7 +342,7 @@ Package: commons-codec
 
 Version: 1.17.2
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -344,7 +351,7 @@ Package: commons-lang3
 
 Version: 3.17.0
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -407,7 +414,7 @@ Package: dokka-base
 
 Version: 1.9.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -416,16 +423,16 @@ Package: eddsa
 
 Version: 0.3.0
 
-License: https://creativecommons.org/publicdomain/zero/1.0/
+License: CC0-1.0
 
-Homepage: https://creativecommons.org/publicdomain/zero/1.0/
+Homepage: https://github.com/str4d/ed25519-java
 
 ================================================================================
 Package: encodings
 
 Version: 1.0.7-r1
 
-License: Domain
+License: CC0-1.0
 
 Homepage: Not Available
 
@@ -434,8 +441,7 @@ Package: error_prone_annotations
 
 Version: 2.22.0
 
-License: “Apache
-2.0”;link=“http://www.apache.org/licenses/LICENSE-2.0.txt”
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -444,7 +450,7 @@ Package: failureaccess
 
 Version: 1.0.2
 
-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -471,8 +477,7 @@ Package: freemarker
 
 Version: 2.3.34
 
-License: Apache License, Version 2.0; see:
-http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -499,8 +504,7 @@ Package: gson
 
 Version: 2.11.0
 
-License:
-“Apache-2.0”;link=“https://www.apache.org/licenses/LICENSE-2.0.txt”
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -509,7 +513,7 @@ Package: guava
 
 Version: 33.1.0-jre
 
-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -518,7 +522,7 @@ Package: hibernate-commons-annotations
 
 Version: 7.0.3.Final
 
-License: UNKNOWN
+License: LGPL-2.1-or-later
 
 Homepage: Not Available
 
@@ -527,7 +531,7 @@ Package: hibernate-core
 
 Version: 6.6.29.Final
 
-License: UNKNOWN
+License: LGPL-2.1-or-later
 
 Homepage: Not Available
 
@@ -536,7 +540,7 @@ Package: hibernate-validator
 
 Version: 8.0.3.Final
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -545,7 +549,7 @@ Package: hsqldb
 
 Version: 2.7.4
 
-License: UNKNOWN
+License: BSD-3-Clause
 
 Homepage: Not Available
 
@@ -554,7 +558,7 @@ Package: identity-credential
 
 Version: 20231002
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -563,7 +567,7 @@ Package: istack-commons-runtime
 
 Version: 4.1.2
 
-License: http://www.eclipse.org/org/documents/edl-v10.php
+License: EDL-1.0
 
 Homepage: http://www.eclipse.org/org/documents/edl-v10.php
 
@@ -572,7 +576,7 @@ Package: j2objc-annotations
 
 Version: 3.0.0
 
-License: Apache License, Version 2.0
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -581,7 +585,7 @@ Package: jackson-annotations
 
 Version: 2.18.4
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -590,7 +594,7 @@ Package: jackson-core
 
 Version: 2.18.4.1
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -599,7 +603,7 @@ Package: jackson-databind
 
 Version: 2.18.4
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -608,7 +612,7 @@ Package: jackson-dataformat-yaml
 
 Version: 2.18.4
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -617,7 +621,7 @@ Package: jackson-datatype-jdk8
 
 Version: 2.18.4
 
-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -626,7 +630,7 @@ Package: jackson-datatype-jsr310
 
 Version: 2.18.4
 
-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -635,7 +639,7 @@ Package: jackson-module-kotlin
 
 Version: 2.18.4
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -644,7 +648,7 @@ Package: jackson-module-parameter-names
 
 Version: 2.18.4
 
-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -653,7 +657,7 @@ Package: jakarta.activation-api
 
 Version: 2.1.4
 
-License: http://www.eclipse.org/org/documents/edl-v10.php
+License: EDL-1.0
 
 Homepage: http://www.eclipse.org/org/documents/edl-v10.php
 
@@ -662,8 +666,7 @@ Package: jakarta.annotation-api
 
 Version: 2.1.1
 
-License: http://www.eclipse.org/legal/epl-2.0,
-https://www.gnu.org/software/classpath/license.html
+License: EPL-2.0 OR GPL-2.0-with-classpath-exception
 
 Homepage: http://www.eclipse.org/legal/epl-2.0
 
@@ -672,7 +675,7 @@ Package: jakarta.inject-api
 
 Version: 2.0.1
 
-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -681,8 +684,7 @@ Package: jakarta.json
 
 Version: 2.0.1
 
-License: https://projects.eclipse.org/license/epl-2.0,
-https://projects.eclipse.org/license/secondary-gpl-2.0-cp
+License: EPL-2.0 OR GPL-2.0-with-classpath-exception
 
 Homepage: https://projects.eclipse.org/license/epl-2.0
 
@@ -691,8 +693,7 @@ Package: jakarta.persistence-api
 
 Version: 3.1.0
 
-License: http://www.eclipse.org/legal/epl-2.0,
-http://www.eclipse.org/org/documents/edl-v10.php
+License: EPL-2.0 OR EDL-1.0
 
 Homepage: http://www.eclipse.org/legal/epl-2.0
 
@@ -701,8 +702,7 @@ Package: jakarta.servlet-api
 
 Version: 6.0.0
 
-License: http://www.eclipse.org/legal/epl-2.0,
-https://www.gnu.org/software/classpath/license.html
+License: EPL-2.0 OR GPL-2.0-with-classpath-exception
 
 Homepage: http://www.eclipse.org/legal/epl-2.0
 
@@ -711,8 +711,7 @@ Package: jakarta.transaction-api
 
 Version: 2.0.1
 
-License: http://www.eclipse.org/legal/epl-2.0,
-https://www.gnu.org/software/classpath/license.html
+License: EPL-2.0 OR GPL-2.0-with-classpath-exception
 
 Homepage: http://www.eclipse.org/legal/epl-2.0
 
@@ -721,7 +720,7 @@ Package: jakarta.validation-api
 
 Version: 3.0.2
 
-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -730,7 +729,7 @@ Package: jakarta.xml.bind-api
 
 Version: 4.0.2
 
-License: http://www.eclipse.org/org/documents/edl-v10.php
+License: EDL-1.0
 
 Homepage: http://www.eclipse.org/org/documents/edl-v10.php
 
@@ -739,7 +738,7 @@ Package: jandex
 
 Version: 3.2.0
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -748,7 +747,7 @@ Package: java-json-canonicalization
 
 Version: 1.1
 
-License: Apache License, Version 2.0
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -757,7 +756,7 @@ Package: java-jwt
 
 Version: 3.18.1
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -766,7 +765,7 @@ Package: java-multibase
 
 Version: v1.1.1
 
-License: MIT License
+License: MIT
 
 Homepage: Not Available
 
@@ -775,7 +774,7 @@ Package: jaxb-core
 
 Version: 4.0.5
 
-License: http://www.eclipse.org/org/documents/edl-v10.php
+License: EDL-1.0
 
 Homepage: http://www.eclipse.org/org/documents/edl-v10.php
 
@@ -784,7 +783,7 @@ Package: jaxb-runtime
 
 Version: 4.0.5
 
-License: http://www.eclipse.org/org/documents/edl-v10.php
+License: EDL-1.0
 
 Homepage: http://www.eclipse.org/org/documents/edl-v10.php
 
@@ -793,7 +792,7 @@ Package: jboss-logging
 
 Version: 3.6.1.Final
 
-License: https://repository.jboss.org/licenses/apache-2.0.txt
+License: Apache-2.0
 
 Homepage: https://repository.jboss.org/licenses/apache-2.0.txt
 
@@ -802,7 +801,7 @@ Package: jcip-annotations
 
 Version: 1.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -811,7 +810,7 @@ Package: jcip-annotations
 
 Version: 1.0-1
 
-License: Apache License, Version 2.0
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -829,7 +828,7 @@ Package: jrt-fs
 
 Version: 25.0.1
 
-License: UNKNOWN
+License: GPL-2.0-with-classpath-exception
 
 Homepage: Not Available
 
@@ -838,7 +837,7 @@ Package: json
 
 Version: 20240303
 
-License: https://github.com/stleary/JSON-java/blob/master/LICENSE
+License: JSON
 
 Homepage: https://github.com/stleary/JSON-java/blob/master/LICENSE
 
@@ -847,7 +846,7 @@ Package: jsonld-common-java
 
 Version: 1.8.0
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -856,7 +855,7 @@ Package: jsoup
 
 Version: 1.15.3
 
-License: https://jsoup.org/license
+License: MIT
 
 Homepage: https://jsoup.org/license
 
@@ -865,7 +864,7 @@ Package: jspecify
 
 Version: 1.0.0
 
-License: https://www.apache.org/licenses/LICENSE-2.0
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0
 
@@ -874,7 +873,7 @@ Package: jsr305
 
 Version: 3.0.2
 
-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -883,7 +882,7 @@ Package: jul-to-slf4j
 
 Version: 2.0.17
 
-License: https://opensource.org/license/mit
+License: MIT
 
 Homepage: https://opensource.org/license/mit
 
@@ -892,7 +891,7 @@ Package: key-formats-java
 
 Version: 1.20.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -901,7 +900,7 @@ Package: kotlin-reflect
 
 Version: 1.9.25
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -910,7 +909,7 @@ Package: kotlin-stdlib
 
 Version: 1.9.25
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -919,7 +918,7 @@ Package: kotlin-stdlib-common
 
 Version: 1.9.25
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -928,7 +927,7 @@ Package: kotlin-stdlib-jdk7
 
 Version: 1.9.25
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -937,7 +936,7 @@ Package: kotlin-stdlib-jdk8
 
 Version: 1.9.25
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -946,7 +945,7 @@ Package: kotlinx-coroutines-core-jvm
 
 Version: 1.8.1
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -955,7 +954,7 @@ Package: kotlinx-html-jvm
 
 Version: 0.7.5
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -964,7 +963,7 @@ Package: lazysodium-java
 
 Version: 5.1.4
 
-License: UNKNOWN
+License: MPL-2.0
 
 Homepage: Not Available
 
@@ -973,7 +972,7 @@ Package: ld-signatures-java
 
 Version: 1.11.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1081,7 +1080,7 @@ Package: listenablefuture
 
 Version: 9999.0-empty-to-avoid-conflict-with-guava
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1090,8 +1089,7 @@ Package: log4j-api
 
 Version: 2.24.3
 
-License:
-“Apache-2.0”;link=“https://www.apache.org/licenses/LICENSE-2.0.txt”
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1100,8 +1098,7 @@ Package: log4j-to-slf4j
 
 Version: 2.24.3
 
-License:
-“Apache-2.0”;link=“https://www.apache.org/licenses/LICENSE-2.0.txt”
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1110,8 +1107,7 @@ Package: logback-classic
 
 Version: 1.5.18
 
-License: http://www.eclipse.org/legal/epl-v10.html,
-http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+License: EPL-1.0 OR LGPL-2.1-or-later
 
 Homepage: http://www.eclipse.org/legal/epl-v10.html
 
@@ -1120,8 +1116,7 @@ Package: logback-core
 
 Version: 1.5.18
 
-License: http://www.eclipse.org/legal/epl-v10.html,
-http://www.gnu.org/licenses/old-licenses/lgpl-2.1.html
+License: EPL-1.0 OR LGPL-2.1-or-later
 
 Homepage: http://www.eclipse.org/legal/epl-v10.html
 
@@ -1139,7 +1134,7 @@ Package: markdown-jvm
 
 Version: 0.3.1
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1149,15 +1144,6 @@ Package: maven-artifact
 Version: 3.8.5
 
 License: Apache-2.0
-
-Homepage: Not Available
-
-================================================================================
-Package: mavenEcjBootstrapAgent
-
-Version: UNKNOWN
-
-License: UNKNOWN
 
 Homepage: Not Available
 
@@ -1247,7 +1233,7 @@ Package: nimbus-jose-jwt
 
 Version: 9.37.2
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -1265,7 +1251,7 @@ Package: okhttp
 
 Version: 4.1.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1274,7 +1260,7 @@ Package: okio
 
 Version: 2.2.2
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1283,7 +1269,7 @@ Package: openjdk
 
 Version: 25.0.1+8-LTS
 
-License: UNKNOWN
+License: GPL-2.0-with-classpath-exception
 
 Homepage: Not Available
 
@@ -1319,7 +1305,7 @@ Package: pixelpass-jar
 
 Version: 0.8.0-SNAPSHOT
 
-License: UNKNOWN
+License: MPL-2.0
 
 Homepage: Not Available
 
@@ -1346,7 +1332,7 @@ Package: protobuf-java
 
 Version: 4.28.2
 
-License: https://opensource.org/licenses/BSD-3-Clause
+License: BSD-3-Clause
 
 Homepage: https://opensource.org/licenses/BSD-3-Clause
 
@@ -1355,7 +1341,7 @@ Package: qrcodegen
 
 Version: 1.8.0
 
-License: The MIT License
+License: MIT
 
 Homepage: Not Available
 
@@ -1364,7 +1350,7 @@ Package: rdf-urdna
 
 Version: 1.2
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1373,7 +1359,7 @@ Package: resource-loader
 
 Version: 2.0.2
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1382,7 +1368,7 @@ Package: rlp
 
 Version: 5.0.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1400,7 +1386,7 @@ Package: sd-jwt
 
 Version: 1.5
 
-License: The Apache Software License, Version 2.0
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1418,7 +1404,7 @@ Package: slf4j-api
 
 Version: 2.0.17
 
-License: https://opensource.org/license/mit
+License: MIT
 
 Homepage: https://opensource.org/license/mit
 
@@ -1427,7 +1413,7 @@ Package: snakeyaml
 
 Version: 2.3
 
-License: http://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: http://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -1652,8 +1638,7 @@ Package: swagger-annotations-jakarta
 
 Version: 2.2.36
 
-License: “Apache License
-2.0”;link=“http://www.apache.org/licenses/LICENSE-2.0.html”
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1662,8 +1647,7 @@ Package: swagger-core-jakarta
 
 Version: 2.2.36
 
-License: “Apache License
-2.0”;link=“http://www.apache.org/licenses/LICENSE-2.0.html”
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1672,8 +1656,7 @@ Package: swagger-models-jakarta
 
 Version: 2.2.36
 
-License: “Apache License
-2.0”;link=“http://www.apache.org/licenses/LICENSE-2.0.html”
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1691,7 +1674,7 @@ Package: templating-plugin
 
 Version: 1.9.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1700,19 +1683,16 @@ Package: threetenbp
 
 Version: 1.7.0
 
-License:
-https://raw.githubusercontent.com/ThreeTen/threetenbp/main/LICENSE.txt
+License: BSD-3-Clause
 
-Homepage:
-https://raw.githubusercontent.com/ThreeTen/threetenbp/main/LICENSE.txt
-================================================================================
+Homepage: https://raw.githubusercontent.com/ThreeTen/threetenbp/main/LICENSE.txt
 
 ================================================================================
 Package: tink
 
 Version: 1.16.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1721,7 +1701,7 @@ Package: titanium-json-ld
 
 Version: 1.3.2
 
-License: Apache License, Version 2.0
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1730,7 +1710,7 @@ Package: titanium-json-ld-jre8
 
 Version: 1.3.1
 
-License: Apache License, Version 2.0
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1739,7 +1719,7 @@ Package: tomcat-embed-core
 
 Version: 10.1.46
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -1748,7 +1728,7 @@ Package: tomcat-embed-el
 
 Version: 10.1.46
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -1757,7 +1737,7 @@ Package: tomcat-embed-websocket
 
 Version: 10.1.46
 
-License: https://www.apache.org/licenses/LICENSE-2.0.txt
+License: Apache-2.0
 
 Homepage: https://www.apache.org/licenses/LICENSE-2.0.txt
 
@@ -1775,7 +1755,7 @@ Package: tzdata
 
 Version: 2025c-r0
 
-License: Public-Domain
+License: CC0-1.0
 
 Homepage: Not Available
 
@@ -1802,7 +1782,7 @@ Package: vcverifier-jar
 
 Version: 1.7.0-SNAPSHOT
 
-License: UNKNOWN
+License: MIT
 
 Homepage: Not Available
 
@@ -1820,7 +1800,7 @@ Package: versioning-plugin
 
 Version: 1.9.0
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
 
@@ -1847,6 +1827,6 @@ Package: zt-zip
 
 Version: 1.17
 
-License: UNKNOWN
+License: Apache-2.0
 
 Homepage: Not Available
