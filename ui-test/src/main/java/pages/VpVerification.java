@@ -107,7 +107,7 @@ public class VpVerification extends BasePage {
 	@FindBy(id = "wallet-selector-proceed-button")
 	WebElement ProceedButton;
 
-	@FindBy(xpath = "//label[@for='Land Registry']")
+	@FindBy((id = "Land Registry - RegistrationReceiptCredential-ItemBox"))
 	WebElement LandRegistryChecklist;
 
 	@FindBy(xpath = "//button[contains(@class,'text-sortByText') and contains(text(),'Sort (A-Z)')]")
