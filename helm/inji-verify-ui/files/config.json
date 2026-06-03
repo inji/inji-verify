@@ -116,13 +116,13 @@
     {
       "logo": "/assets/cert.png",
       "name": "Mock Identity (SD JWT)",
-      "type": "SD_JWT",
+      "type": "MockVerifiableCredential_SD_JWT",
       "clientIdScheme":"did",
       "definition": {
         "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
         "format": {
           "vc+sd-jwt": {
-            "sd-jwt_alg_values": ["EdDSA"]
+            "sd-jwt_alg_values": ["ES256"]
           }
         },
         "input_descriptors": [
@@ -130,7 +130,7 @@
             "id": "Mock Identity card credential",
             "format": {
               "vc+sd-jwt": {
-                "sd-jwt_alg_values": ["EdDSA"]
+                "sd-jwt_alg_values": ["ES256"]
               }
             },
             "constraints": {
@@ -139,7 +139,7 @@
                   "path": ["$.vct"],
                   "filter": {
                     "type": "string",
-                    "pattern": "SD_JWT"
+                    "pattern": "MockVerifiableCredential_SD_JWT"
                   }
                 }
               ]
