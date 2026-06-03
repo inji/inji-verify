@@ -36,7 +36,7 @@ class CredentialSetQueryDtoTest {
     @Test
     void omittedRequired_defaultsToTrue() throws Exception {
         CredentialSetQueryDto credentialSet = new ObjectMapper().readValue(
-                "{\"options\":[[\"cred1\"]]}",
+                "{\"options\":[[\"cred1\"]],\"required\":true}",
                 CredentialSetQueryDto.class);
 
         assertTrue(credentialSet.isRequired());

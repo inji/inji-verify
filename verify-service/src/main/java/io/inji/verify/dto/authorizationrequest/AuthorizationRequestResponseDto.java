@@ -11,9 +11,7 @@ import lombok.ToString;
 import java.time.Instant;
 
 /**
- * Authorization request details aligned with the verifier API / SDK shape (camelCase JSON),
- * matching {@code VPRequestBody} for the overlapping fields. JWT issuance still maps
- * {@link #getDcqlQuery()} to the {@code dcql_query} claim per OpenID4VP.
+ * DTO representing the response to an authorization request, containing details about the request and its parameters.
  */
 @Getter
 @AllArgsConstructor(onConstructor_ = @JsonCreator)

@@ -1,9 +1,6 @@
 package io.inji.verify.validator;
 
-import io.inji.verify.dto.dcql.ClaimQueryDto;
-import io.inji.verify.dto.dcql.CredentialQueryDto;
-import io.inji.verify.dto.dcql.CredentialSetQueryDto;
-import io.inji.verify.dto.dcql.DCQLQueryDto;
+import io.inji.verify.dto.dcql.*;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.exception.VPRequestValidationException;
 import org.springframework.stereotype.Component;
@@ -29,6 +26,8 @@ public class DcqlValidator {
 
         for (CredentialQueryDto credential : query.getCredentials()) {
             validateCredentialFormat(credential);
+            validateCredentialMeta(credential);
+            validateMetaValues(credential.getMeta());
             validateClaimIds(credential);
             validateClaimSets(credential);
         }
@@ -58,7 +57,22 @@ public class DcqlValidator {
             for (List<String> option : credentialSet.getOptions()) {
                 for (String credentialId : option) {
                     if (!credentialIds.contains(credentialId)) {
-                        throw new VPRequestValidationException(ErrorCode.DCQL_INVALID_CREDENTIAL_SET);
+                        throw new VPRequestValidationException(
+                                ErrorCode.DCQL_INVALID_CREDENTIAL_SET);
+                    }
+                }
+            }
+        }
+
+        for (CredentialSetQueryDto credentialSet : query.getCredentialSets()) {
+            for (List<String> option : credentialSet.getOptions()) {
+
+                Set<String> uniqueIds = new HashSet<>();
+
+                for (String credentialId : option) {
+                    if (!uniqueIds.add(credentialId)) {
+                        throw new VPRequestValidationException(
+                                ErrorCode.DCQL_DUPLICATE_CREDENTIAL_ID);
                     }
                 }
             }
@@ -71,6 +85,15 @@ public class DcqlValidator {
         }
 
         Set<String> claimIds = new HashSet<>();
+
+        if (credential.getClaimSets() != null) {
+            for (ClaimQueryDto claim : credential.getClaims()) {
+                if (claim.getId() == null || claim.getId().isBlank()) {
+                    throw new VPRequestValidationException(
+                            ErrorCode.DCQL_MISSING_CLAIM_ID);
+                }
+            }
+        }
 
         for (ClaimQueryDto claim : credential.getClaims()) {
             String claimId = claim.getId();
@@ -94,7 +117,7 @@ public class DcqlValidator {
             throw new VPRequestValidationException(ErrorCode.DCQL_INVALID_CLAIM_SET);
         }
 
-        Set<String> claimIds = credential.getClaims()
+       Set<String> claimIds = credential.getClaims()
                 .stream()
                 .map(ClaimQueryDto::getId)
                 .filter(Objects::nonNull)
@@ -108,11 +131,57 @@ public class DcqlValidator {
                 }
             }
         }
+        // find if claim ids are duplicated between claim sets, if yes, throw exception since it is not allowed
+        for (List<String> claimSet : credential.getClaimSets()) {
+            Set<String> uniqueIds = new HashSet<>();
+
+            for (String claimId : claimSet) {
+                if (!uniqueIds.add(claimId)) {
+                    throw new VPRequestValidationException(
+                            ErrorCode.DCQL_DUPLICATE_CLAIM_ID);
+                }
+            }
+        }
     }
 
     private void validateCredentialFormat(CredentialQueryDto credential) {
         if (!SUPPORTED_FORMATS.contains(credential.getFormat())) {
             throw new VPRequestValidationException(ErrorCode.DCQL_CREDENTIAL_FORMAT_INVALID);
+        }
+    }
+
+    private void validateCredentialMeta(CredentialQueryDto credential) {
+        CredentialMetaDto meta = credential.getMeta();
+
+        switch (credential.getFormat()) {
+            case "dc+sd-jwt":
+            case "vc+sd-jwt":
+                if (meta.getTypeValues() != null) {
+                    throw new VPRequestValidationException(
+                            ErrorCode.DCQL_META_NOT_MATCHING_FORMAT);
+                }
+                break;
+
+            case "ldp_vc":
+                if (meta.getVctValues() != null) {
+                    throw new VPRequestValidationException(
+                            ErrorCode.DCQL_META_NOT_MATCHING_FORMAT);
+                }
+                break;
+        }
+    }
+
+    private void validateMetaValues(CredentialMetaDto meta) {
+        if (meta.getVctValues() != null &&
+                meta.getVctValues().size() != new HashSet<>(meta.getVctValues()).size()) {
+            throw new VPRequestValidationException(
+                    ErrorCode.DCQL_META_DUPLICATES);
+        }
+
+        if (meta.getTypeValues() != null &&
+                meta.getTypeValues().size() != new HashSet<>(meta.getTypeValues()).size()) {
+            throw new VPRequestValidationException(
+                    ErrorCode.DCQL_META_DUPLICATES);
         }
     }
 }
