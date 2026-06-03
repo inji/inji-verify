@@ -6,7 +6,6 @@ import io.inji.verify.dto.dcql.CredentialMetaDto;
 import io.inji.verify.dto.dcql.CredentialQueryDto;
 import io.inji.verify.dto.dcql.DCQLQueryDto;
 
-import java.util.ArrayList;
 import java.util.List;
 
 public final class DcqlTestFixtures {
@@ -16,7 +15,7 @@ public final class DcqlTestFixtures {
             List.of(new CredentialQueryDto(
                     "cred1",
                     "dc+sd-jwt",
-                    new CredentialMetaDto(new ArrayList<>(), List.of("cred1")),
+                    new CredentialMetaDto(List.of("cred1"), null),
                     null,
                     null)),
             null);

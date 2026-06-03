@@ -131,7 +131,7 @@ public class DcqlValidator {
                 }
             }
         }
-        // find if claim ids are duplicated between claim sets, if yes, throw exception since it is not allowed
+        //reject claim ids that are duplicated within a single claim set
         for (List<String> claimSet : credential.getClaimSets()) {
             Set<String> uniqueIds = new HashSet<>();
 

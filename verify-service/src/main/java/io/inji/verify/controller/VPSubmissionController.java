@@ -376,8 +376,8 @@ public class VPSubmissionController {
             Set<String> seenKeys = new java.util.HashSet<>();
             while (parser.nextToken() == JsonToken.FIELD_NAME) {
                 String fieldName = parser.currentName();
-                if (!seenKeys.add(fieldName.trim().toLowerCase())) {
-                    return false; // Duplicate key found
+                if (!seenKeys.add(fieldName.trim())) {
+                    return false;
                 }
                 parser.nextToken(); // Move to value
                 parser.skipChildren();
