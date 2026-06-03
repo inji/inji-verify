@@ -9,6 +9,7 @@ import io.inji.verify.dto.authorizationrequest.VPRequestCreateDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.core.ErrorDto;
+import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.exception.VPRequestNotFoundException;
 import io.inji.verify.exception.VPRequestValidationException;
@@ -16,6 +17,8 @@ import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.validator.DcqlValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
+import io.swagger.v3.oas.annotations.media.Content;
+import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.validation.Valid;
@@ -62,7 +65,11 @@ public class VPRequestController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
-                    description = "VP request created successfully. The response body contains the details of the created request, including the transaction ID and other relevant information."
+                    description = "VP request created successfully. The response body contains the details of the created request, including the transaction ID and other relevant information.",
+                    content = @Content(
+                            mediaType = "application/json",
+                            schema = @Schema(implementation = VPRequestResponseDto.class)
+                    )
             )
     })
     public ResponseEntity<Object> createVPRequest(
@@ -77,7 +84,11 @@ public class VPRequestController {
     @ApiResponses({
             @ApiResponse(
                     responseCode = "201",
-                    description = "VP session request created successfully. The response body contains the details of the created request, including the transaction ID and other relevant information. A cookie is set for session tracking."
+                    description = "VP session request created successfully. The response body contains the details of the created request, including the transaction ID and other relevant information. A cookie is set for session tracking.",
+                    content = @Content(
+                        mediaType = "application/json",
+                        schema = @Schema(implementation = VPRequestResponseDto.class)
+                )
             )
     })
     public ResponseEntity<Object> createVPSessionRequest(
