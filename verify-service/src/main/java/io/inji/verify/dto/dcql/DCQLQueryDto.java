@@ -20,7 +20,7 @@ import java.util.List;
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Represents a DCQL query, specifying the credentials and credential sets for matching against credentials in the wallet.")
 public class DcqlQueryDto {
-
+    // credential query and credential set query are mutually exclusive, but at least one of them must be present. This is validated in the service layer.
     @Valid
     @NotNull(message = "DCQL_CREDENTIALS_REQUIRED")
     @NotEmpty(message = "DCQL_CREDENTIALS_INVALID")
