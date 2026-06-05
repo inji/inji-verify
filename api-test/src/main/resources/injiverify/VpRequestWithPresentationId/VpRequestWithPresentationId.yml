@@ -90,3 +90,39 @@ VpRequestWithPresentationId:
     output: '{
       "status": "400"
 }'
+
+  Injiverify_CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid:
+    endPoint: /v1/verify/vp-request
+    description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details 2.
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_06
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "MTc3OTI2OTc3ODcyNw==",
+      "presentationDefinitionId": "200"
+      }'
+    output: '{
+      "responseCode": "201"
+}'
+
+  Injiverify_CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid:
+    endPoint: /v1/verify/vp-request
+    description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details 3.
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_07
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "redirect_uri:https://faceb18cd424.ngrok-free.app/verifier/vp-response",
+      "nonce": "oNjl1LmAXj6pqygwQnMBFQ==",
+      "presentationDefinitionId": "200"
+      }'
+    output: '{
+      "responseCode": "201"
+}'

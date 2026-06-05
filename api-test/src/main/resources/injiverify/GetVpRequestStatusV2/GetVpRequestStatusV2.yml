@@ -11,10 +11,10 @@ GetVpRequestStatusV2.yml:
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
       "includeClaims": true,
-      "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-  "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$",
+  "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$",
   "allChecksSuccessful": true,
   "credentialResults": [
     {
@@ -29,13 +29,13 @@ GetVpRequestStatusV2.yml:
       "statusCheck": [],
       "claims": {
         "gender": "Male",
-        "policyName": "wallet",
+        "policyName": "wallettest14",
         "dob": "2025-01-01",
-        "policyNumber": "5555",
+        "policyNumber": "55555569",
         "mobile": "0123456789",
-        "fullName": "wallet",
-        "policyIssuedOn": "2023-04-20",
-        "policyExpiresOn": "2033-04-20",
+        "fullName": "wallettest14",
+        "policyIssuedOn": "2026-05-19",
+        "policyExpiresOn": "2035-04-20",
         "email": "abcd@gmail.com"
       },
       "holderProofCheck": {
@@ -58,10 +58,10 @@ GetVpRequestStatusV2.yml:
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
       "includeClaims": false,
-      "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-  "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$",
+  "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$",
   "allChecksSuccessful": true,
   "credentialResults": [
     {
@@ -95,10 +95,10 @@ GetVpRequestStatusV2.yml:
       "skipStatusChecks": true,
       "statusCheckFilters": ["revocation", "suspension"],
       "includeClaims": true,
-      "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-  "transactionId": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_transactionId$",
+  "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$",
   "allChecksSuccessful": true,
   "credentialResults": [
     {
@@ -113,18 +113,57 @@ GetVpRequestStatusV2.yml:
       "statusCheck": [],
       "claims": {
         "gender": "Male",
-        "policyName": "wallet",
+        "policyName": "wallettest14",
         "dob": "2025-01-01",
-        "policyNumber": "5555",
+        "policyNumber": "55555569",
         "mobile": "0123456789",
-        "fullName": "wallet",
-        "policyIssuedOn": "2023-04-20",
-        "policyExpiresOn": "2033-04-20",
+        "fullName": "wallettest14",
+        "policyIssuedOn": "2026-05-19",
+        "policyExpiresOn": "2035-04-20",
         "email": "abcd@gmail.com"
       },
       "holderProofCheck": {
         "valid": true,
         "error": null
+      }
+    }
+  ]
+}'
+
+  Injiverify_GetVpRequestStatus_V2_Withinvalid_vp_Neg:
+      endPoint: /v1/verify/v2/vp-results/{transactionId}
+      description: Verify VP results in V2 end point with invalid holder binding
+      uniqueIdentifier: TC_InjiVerify_GetVpRequestStatus_V2_04
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2
+      outputTemplate: injiverify/GetVpRequestStatusV2/GetVpRequestStatusV2Result
+      input: '{
+      "skipStatusChecks": true,
+      "statusCheckFilters": ["revocation", "suspension"],
+      "includeClaims": true,
+      "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+  "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid_transactionId$",
+  "allChecksSuccessful": false,
+  "credentialResults": [
+    {
+      "allChecksSuccessful": false,
+      "schemaAndSignatureCheck": {
+        "valid": true,
+        "error": null
+      },
+      "expiryCheck": {
+        "valid": true
+      },
+      "statusCheck": [],
+      "claims": {},
+      "holderProofCheck": {
+        "valid": false,
+        "error": {
+          "errorCode": "ERR_HOLDER_BINDING_CHECK_FAILED"
+        }
       }
     }
   ]
