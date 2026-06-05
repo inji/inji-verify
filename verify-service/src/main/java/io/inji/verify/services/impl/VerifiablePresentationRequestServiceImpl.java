@@ -91,6 +91,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         AuthorizationRequestResponseDto authorizationRequestResponseDto = new AuthorizationRequestResponseDto(
                 vpRequestCreate.getClientId(),
                 vpRequestCreate.getDcqlQuery(),
+                null, // presentationDefinition is deprecated and should not be used, set to null for backward compatibility
                 nonce,
                 responseUri,
                 acceptVPWithoutHolderProof,

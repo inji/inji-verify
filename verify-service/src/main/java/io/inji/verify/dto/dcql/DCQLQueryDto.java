@@ -19,7 +19,7 @@ import java.util.List;
 @AllArgsConstructor
 @JsonInclude(JsonInclude.Include.NON_NULL)
 @Schema(description = "Represents a DCQL query, specifying the credentials and credential sets for matching against credentials in the wallet.")
-public class DCQLQueryDto {
+public class DcqlQueryDto {
 
     @Valid
     @NotNull(message = "DCQL_CREDENTIALS_REQUIRED")

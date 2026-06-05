@@ -22,7 +22,9 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 
 import java.sql.Timestamp;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -70,7 +72,7 @@ class VPSubmissionControllerTest {
 
     private DcqlVPTokenDto mockDcqlTokens() {
 
-        Map<String, JSONObject> ldpVpTokens = new HashMap<>();
+        Map<String, List<JSONObject>> ldpVpTokens = new HashMap<>();
 
         JSONObject vp = new JSONObject();
         vp.put("type", "VerifiablePresentation");
@@ -81,7 +83,7 @@ class VPSubmissionControllerTest {
 
         vp.put("proof", proof);
 
-        ldpVpTokens.put("query1", vp);
+        ldpVpTokens.put("query1", Collections.singletonList(vp));
 
         return new DcqlVPTokenDto(ldpVpTokens, new HashMap<>());
     }

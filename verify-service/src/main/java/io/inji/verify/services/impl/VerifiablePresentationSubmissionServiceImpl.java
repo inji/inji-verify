@@ -17,6 +17,7 @@ import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.result.*;
+import io.inji.verify.dto.submission.DescriptorMapDto;
 import io.inji.verify.exception.*;
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -88,8 +89,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     final PixelPass pixelPass;
     final Gson gson;
     final Validator validator;
+    final ObjectMapper objectMapper;
 
-    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService, PixelPass pixelPass, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository, Gson gson, Validator validator) {
+    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService, PixelPass pixelPass, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository, Gson gson, Validator validator, ObjectMapper objectMapper) {
         this.vpSubmissionRepository = vpSubmissionRepository;
         this.credentialsVerifier = credentialsVerifier;
         this.presentationVerifier = presentationVerifier;
@@ -99,6 +101,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         this.authorizationRequestCreateResponseRepository = authorizationRequestCreateResponseRepository;
         this.gson = gson;
         this.validator = validator;
+        this.objectMapper = objectMapper;
     }
 
     /**
@@ -117,12 +120,11 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * @return
      */
     public DcqlVPTokenDto extractDcqlVpTokens(String vpTokenString) throws InvalidVpTokenException {
-        Map<String, JSONObject> ldpVpTokens = new HashMap<String, JSONObject>();
-        Map<String, String> sdJwtTokens = new HashMap<String, String>();
+        Map<String, List<JSONObject>> ldpVpTokens = new HashMap<String, List<JSONObject>>();
+        Map<String, List<String>> sdJwtTokens = new HashMap<String, List<String>>();
         log.debug("Extracting VP tokens from input string");
         try {
-            ObjectMapper mapper = new ObjectMapper();
-            JsonNode root = mapper.readTree(vpTokenString);
+            JsonNode root = objectMapper.readTree(vpTokenString);
             Iterator<Map.Entry<String, JsonNode>> fields = root.fields();
             while (fields.hasNext()) {
                 Map.Entry<String, JsonNode> entry = fields.next();
@@ -137,16 +139,19 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                     if (item.isTextual()) {
                         if (isSdJwt(item.asText())) {
                             log.debug("Identified SD-JWT token");
-                            sdJwtTokens.put(queryId, item.asText());
+                            sdJwtTokens.computeIfAbsent(queryId, k -> new ArrayList<>())
+                                    .add(item.asText());
                         } else {
-                            String errorMessage = String.format("Text node is not a valid SD-JWT token for query ID %s: %s", queryId, item.asText());
+                            String errorMessage = String.format(
+                                    "Text node is not a valid SD-JWT token for query ID %s: %s",
+                                    queryId,
+                                    item.asText());
                             log.warn(errorMessage);
                             throw new InvalidVpTokenException(errorMessage);
                         }
                     } else if (item.isObject()) {
                         log.debug("Identified LDP VP token");
                         boolean isVerifiablePresentation = false;
-                        //get array or string type and check if it contains "VerifiablePresentation"
                         JsonNode typeNode = item.get("type");
                         if (typeNode != null) {
                             if (typeNode.isArray()) {
@@ -158,15 +163,20 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                                 }
                             } else if (typeNode.isTextual()) {
                                 isVerifiablePresentation =
-                                                "VerifiablePresentation".equalsIgnoreCase(typeNode.asText());
+                                        "VerifiablePresentation".equalsIgnoreCase(typeNode.asText());
                             }
                         }
                         if (!isVerifiablePresentation) {
-                            String errorMessage = String.format("JSON object does not contain a valid 'type' field with value 'VerifiablePresentation' for query ID %s: %s", queryId, item.toString());
+                            String errorMessage = String.format(
+                                    "JSON object does not contain a valid 'type' field with value 'VerifiablePresentation' for query ID %s: %s",
+                                    queryId,
+                                    item);
+
                             log.warn(errorMessage);
                             throw new InvalidVpTokenException(errorMessage);
                         }
-                        ldpVpTokens.put(queryId, new JSONObject(item.toString()));
+                        ldpVpTokens.computeIfAbsent(queryId, k -> new ArrayList<>())
+                                .add(new JSONObject(item.toString()));
                     }
                 }
             }
@@ -184,7 +194,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * @param ldpVpTokens
      * @return
      */
-    public boolean isClientIdValid(AuthorizationRequestResponseDto authRequest, Map<String, JSONObject> ldpVpTokens) {
+    public boolean isClientIdValid(AuthorizationRequestResponseDto authRequest, Map<String, List<JSONObject>> ldpVpTokens) {
         log.info("Validating client_id from VP token");
         //skip client_id validation if acceptVPWithoutHolderProof is true
         if (authRequest.isAcceptVPWithoutHolderProof()) {
@@ -195,16 +205,24 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             log.error("clientId is missing");
             return false;
         }
-        //clien_id validation is done only for LDP VP tokens since SD-JWT tokens are self-contained and do not have a proof with domain claim.
-        for (Map.Entry<String, JSONObject> entry : ldpVpTokens.entrySet()) {
-            log.debug("Processing query ID: {}", entry.getKey());
-            JSONObject jsonVPToken = entry.getValue();
-            JSONObject proof = jsonVPToken.optJSONObject("proof");
-            String domain = proof != null ? proof.optString("domain", null) : null;
-            log.debug("domain: {}, expected clientId: {}", domain, clientId);
-            if (!clientId.equals(domain)) {
-                log.error("clientId validation failed for query ID: {}", entry.getKey());
-                return false;
+        // client_id validation is done only for LDP VP tokens since SD-JWT tokens
+        // are self-contained and do not have a proof with a domain claim.
+        for (Map.Entry<String, List<JSONObject>> entry : ldpVpTokens.entrySet()) {
+            String queryId = entry.getKey();
+            for (JSONObject jsonVPToken : entry.getValue()) {
+                log.debug("Processing query ID: {}", queryId);
+                JSONObject proof = jsonVPToken.optJSONObject("proof");
+                String domain = proof != null ? proof.optString("domain", null) : null;
+                log.debug("domain: {}, expected clientId: {}", domain, clientId);
+                if (!Objects.equals(clientId, domain)) {
+                    log.error(
+                            "clientId validation failed for query ID: {}, expected: {}, actual: {}",
+                            queryId,
+                            clientId,
+                            domain
+                    );
+                    return false;
+                }
             }
         }
         return true;
@@ -221,7 +239,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * @param ldpVpTokens
      * @return
      */
-    public boolean isNonceValid(AuthorizationRequestResponseDto authRequest, Map<String, JSONObject> ldpVpTokens) {
+    public boolean isNonceValid(AuthorizationRequestResponseDto authRequest, Map<String, List<JSONObject>> ldpVpTokens) {
         log.info("Validating nonce from VP token");
         if (authRequest.isAcceptVPWithoutHolderProof()) {
             return true;
@@ -231,16 +249,24 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             log.error("nonce is missing");
             return false;
         }
-        //nonce validation is done only for LDP VP tokens since SD-JWT tokens are self-contained and do not have a proof with challenge claim.
-        for (Map.Entry<String, JSONObject> entry : ldpVpTokens.entrySet()) {
-            log.debug("Processing query ID: {}", entry.getKey());
-            JSONObject jsonVPToken = entry.getValue();
-            JSONObject proof = jsonVPToken.optJSONObject("proof");
-            String challenge = proof != null ? proof.optString("challenge", null) : null;
-            log.debug("challenge: {}, expected nonce: {}", challenge, nonce);
-            if (!nonce.equals(challenge)) {
-                log.error("nonce validation failed");
-                return false;
+        // nonce validation is done only for LDP VP tokens since SD-JWT tokens
+        // are self-contained and do not have a proof with challenge claim.
+        for (Map.Entry<String, List<JSONObject>> entry : ldpVpTokens.entrySet()) {
+            String queryId = entry.getKey();
+            for (JSONObject jsonVPToken : entry.getValue()) {
+                log.debug("Processing query ID: {}", queryId);
+                JSONObject proof = jsonVPToken.optJSONObject("proof");
+                String challenge = proof != null ? proof.optString("challenge", null) : null;
+                log.debug("challenge: {}, expected nonce: {}", challenge, nonce);
+                if (!Objects.equals(nonce, challenge)) {
+                    log.error(
+                            "nonce validation failed for query ID: {}, expected: {}, actual: {}",
+                            queryId,
+                            nonce,
+                            challenge
+                    );
+                    return false;
+                }
             }
         }
         return true;
@@ -317,49 +343,41 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         log.info("Processing VP submission");
         List<VCResultDto> verificationResults = new ArrayList<>();
         List<VPVerificationStatus> vpVerificationStatuses = new ArrayList<>();
-
         try {
-            log.info("Processing VP token matching");
-            if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
-
-            VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
-
-            log.info("Processing VP verification");
+            boolean isAuthRequestWithPresentationExchange = isAuthRequestWithPresentationExchange(authRequest);
+            log.info("Is authorization request with presentation exchange: {}", isAuthRequestWithPresentationExchange);
             boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(authRequest);
-            for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
-                if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
-                boolean isSigned = isVerifiablePresentationSigned(vpToken);
-
-                if (isSigned) {
-                    List<String> statusPurposeList = new ArrayList<>();
-                    statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
-                    PresentationResultWithCredentialStatus presentationResultWithCredentialStatus = presentationVerifier.verifyAndGetCredentialStatus(vpToken.toString(), statusPurposeList);
-                    VPVerificationStatus proofVerificationStatus = presentationResultWithCredentialStatus.getProofVerificationStatus();
-                    vpVerificationStatuses.add(proofVerificationStatus);
-
-                    List<VCResultWithCredentialStatus> vcResultsWithStatus = presentationResultWithCredentialStatus.getVcResults();
-                    if (vcResultsWithStatus.isEmpty()) throw new InvalidVpTokenException();
-                    List<VCResultDto> vcResults = new ArrayList<>();
-                    for (var vcResult : vcResultsWithStatus) {
-                        VerificationStatus vcStatus = Utils.applyRevocationStatus(vcResult.getStatus(), vcResult.getCredentialStatus());
-                        vcResults.add(new VCResultDto(vcResult.getVc(), vcStatus));
+            log.info("Is authorization request accept VP without holder proof: {}", acceptVPWithoutHolderProof);
+            if (isAuthRequestWithPresentationExchange) {
+               log.info("Authorization request contains presentation exchange, validating VP token against authorization request");
+                if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
+                VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
+                for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
+                    processLdpVpToken(vpToken, vpVerificationStatuses, verificationResults, acceptVPWithoutHolderProof);
+                }
+                for (String sdJwtVpToken : vpTokenDto.getSdJwtVpTokens()) {
+                    addVerificationResults(sdJwtVpToken, verificationResults, CredentialFormat.VC_SD_JWT);
+                }
+            } else {
+                log.info("Authorization request does not contain presentation exchange, processing VP token as DCQL query response");
+                DcqlVPTokenDto dcqlVPTokenDto = extractDcqlVpTokens(vpSubmission.getVpToken());
+                Map<String, List<JSONObject>> ldpVpTokens = dcqlVPTokenDto.getLdpVpTokens();
+                for (Map.Entry<String, List<JSONObject>> entry : ldpVpTokens.entrySet()) {
+                    String queryId = entry.getKey();
+                    log.info("Processing LDP VP tokens for query ID: {}", queryId);
+                    for (JSONObject ldpVpToken : entry.getValue()) {
+                        processLdpVpToken(ldpVpToken, vpVerificationStatuses, verificationResults, acceptVPWithoutHolderProof);
                     }
-                    verificationResults.addAll(vcResults);
-                } else if (acceptVPWithoutHolderProof) {
-                    Object verifiableCredential = vpToken.opt("verifiableCredential");
-                    List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
-                    for (Object credential : listOfVerifiableCredentials) {
-                        addVerificationResults(credential.toString(), verificationResults, CredentialFormat.LDP_VC);
+                }
+                Map<String, List<String>> sdJwtVpTokens = dcqlVPTokenDto.getSdJwtTokens();
+                for (Map.Entry<String, List<String>> entry : sdJwtVpTokens.entrySet()) {
+                    String queryId = entry.getKey();
+                    log.info("Processing SD-JWT VP tokens for query ID: {}", queryId);
+                    for (String sdJwtVpToken : entry.getValue()) {
+                        addVerificationResults(sdJwtVpToken, verificationResults, CredentialFormat.VC_SD_JWT);
                     }
-                } else {
-                    throw new VPWithoutProofException();
                 }
             }
-
-            for (String sdJwtVpToken : vpTokenDto.getSdJwtVpTokens()) {
-                addVerificationResults(sdJwtVpToken, verificationResults, CredentialFormat.VC_SD_JWT);
-            }
-
             log.info("VP submission processing done");
             return new VPTokenResultDto(transactionId, getCombinedVerificationStatus(vpVerificationStatuses, verificationResults), verificationResults);
         } catch (VPSubmissionWalletError e) {
@@ -381,42 +399,37 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         try {
             log.info("Processing VP submission V2");
             List<CredentialResultsDto> credentialResults = new ArrayList<>();
-
-            log.info("Processing VP token matching V2");
-            if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
-
-            VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
-
-            log.info("Processing VP verification V2");
+            boolean isAuthRequestWithPresentationExchange = isAuthRequestWithPresentationExchange(authRequest);
+            log.info("Is authorization request with presentation exchange: {}", isAuthRequestWithPresentationExchange);
             boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(authRequest);
-            for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
-                if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
-                boolean isSigned = isVerifiablePresentationSigned(vpToken);
-
-                if (isSigned) {
-                    if (request.isSkipStatusChecks()) {
-                        verifyPresentation(request, vpToken, credentialResults);
-                    } else {
-                        verifyPresentationWithCredentialStatusChecks(request, vpToken, credentialResults);
+            log.info("Is authorization request accept VP without holder proof: {}", acceptVPWithoutHolderProof);
+            if (isAuthRequestWithPresentationExchange) {
+                log.info("Authorization request contains presentation exchange, validating VP token against authorization request");
+                if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
+                VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
+                for (JSONObject ldpVpToken : vpTokenDto.getJsonVpTokens()) {
+                    processLdpVpTokenV2(request, ldpVpToken, credentialResults, acceptVPWithoutHolderProof);
+                }
+                for (String sdJwtVpToken : vpTokenDto.getSdJwtVpTokens()) {
+                    processSdJwtVpTokens(credentialResults, verifySingleCredential(request, sdJwtVpToken, true));
+                }
+            } else {
+                log.info("Authorization request does not contain presentation exchange, processing VP token as DCQL query response");
+                DcqlVPTokenDto dcqlVPTokenDto = extractDcqlVpTokens(vpSubmission.getVpToken());
+                Map<String, List<JSONObject>> ldpVpTokens = dcqlVPTokenDto.getLdpVpTokens();
+                for (Map.Entry<String, List<JSONObject>> entry : ldpVpTokens.entrySet()) {
+                    for (JSONObject ldpVpToken : entry.getValue()) {
+                        processLdpVpTokenV2(request, ldpVpToken, credentialResults, acceptVPWithoutHolderProof);
                     }
-                } else if (acceptVPWithoutHolderProof) {
-                    // for a VPToken without proof, do verification for all credentials
-                    Object verifiableCredential = vpToken.opt("verifiableCredential");
-                    List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
-                    for (Object credential : listOfVerifiableCredentials) {
-                        credentialResults.add(verifySingleCredential(request, credential, false));
+                }
+                Map<String, List<String>> sdJwtVpTokens = dcqlVPTokenDto.getSdJwtTokens();
+                for (Map.Entry<String, List<String>> entry : sdJwtVpTokens.entrySet()) {
+                    for (String sdJwtVpToken : entry.getValue()) {
+                        processSdJwtVpTokens(credentialResults, verifySingleCredential(request, sdJwtVpToken, true));
                     }
-                } else {
-                    throw new VPWithoutProofException();
                 }
             }
-
-            for (String sdJwtVpToken : vpTokenDto.getSdJwtVpTokens()) {
-                credentialResults.add(verifySingleCredential(request, sdJwtVpToken, true));
-            }
-
             boolean allChecksSuccessful = credentialResults.stream().allMatch(CredentialResultsDto::isAllChecksSuccessful);
-
             log.info("VP submission processing done V2");
             return new VPVerificationResultDto(transactionId, allChecksSuccessful, credentialResults);
         }  catch (TokenMatchingFailedException | InvalidVpTokenException | VPWithoutProofException ex) {
@@ -425,6 +438,62 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         } catch (Exception ex) {
             log.error("Failed to process VP submission V2", ex);
             throw new VPVerificationException();
+        }
+    }
+
+    private void processSdJwtVpTokens(List<CredentialResultsDto> credentialResults, CredentialResultsDto request) {
+        credentialResults.add(request);
+    }
+
+    private void processLdpVpToken(JSONObject vpToken, List<VPVerificationStatus> vpVerificationStatuses, List<VCResultDto> verificationResults, boolean acceptVPWithoutHolderProof) {
+        if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
+        boolean isSigned = isVerifiablePresentationSigned(vpToken);
+
+        if (isSigned) {
+            List<String> statusPurposeList = new ArrayList<>();
+            statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
+            PresentationResultWithCredentialStatus presentationResultWithCredentialStatus = presentationVerifier.verifyAndGetCredentialStatus(vpToken.toString(), statusPurposeList);
+            VPVerificationStatus proofVerificationStatus = presentationResultWithCredentialStatus.getProofVerificationStatus();
+            vpVerificationStatuses.add(proofVerificationStatus);
+
+            List<VCResultWithCredentialStatus> vcResultsWithStatus = presentationResultWithCredentialStatus.getVcResults();
+            if (vcResultsWithStatus.isEmpty()) throw new InvalidVpTokenException();
+            List<VCResultDto> vcResults = new ArrayList<>();
+            for (var vcResult : vcResultsWithStatus) {
+                VerificationStatus vcStatus = Utils.applyRevocationStatus(vcResult.getStatus(), vcResult.getCredentialStatus());
+                vcResults.add(new VCResultDto(vcResult.getVc(), vcStatus));
+            }
+            verificationResults.addAll(vcResults);
+        } else if (acceptVPWithoutHolderProof) {
+            Object verifiableCredential = vpToken.opt("verifiableCredential");
+            List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
+            for (Object credential : listOfVerifiableCredentials) {
+                addVerificationResults(credential.toString(), verificationResults, CredentialFormat.LDP_VC);
+            }
+        } else {
+            throw new VPWithoutProofException();
+        }
+    }
+
+    private void processLdpVpTokenV2(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults, boolean acceptVPWithoutHolderProof) {
+        if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
+        boolean isSigned = isVerifiablePresentationSigned(vpToken);
+
+        if (isSigned) {
+            if (request.isSkipStatusChecks()) {
+                verifyPresentationV2(request, vpToken, credentialResults);
+            } else {
+                verifyPresentationWithCredentialStatusChecksV2(request, vpToken, credentialResults);
+            }
+        } else if (acceptVPWithoutHolderProof) {
+            // for a VPToken without proof, do verification for all credentials
+            Object verifiableCredential = vpToken.opt("verifiableCredential");
+            List<Object> listOfVerifiableCredentials = getListOfVerifiableCredentials(verifiableCredential);
+            for (Object credential : listOfVerifiableCredentials) {
+                processSdJwtVpTokens(credentialResults, verifySingleCredential(request, credential, false));
+            }
+        } else {
+            throw new VPWithoutProofException();
         }
     }
 
@@ -442,7 +511,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         throw new InvalidVpTokenException();
     }
 
-    private void verifyPresentationWithCredentialStatusChecks(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
+    private void verifyPresentationWithCredentialStatusChecksV2(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
         List<String> filters = request.getStatusCheckFilters();
         PresentationResultWithCredentialStatusV2 result = presentationVerifier.verifyAndGetCredentialStatusV2(vpToken.toString(), filters);
         List<VCResultWithCredentialStatusV2> vcResults = result.getVcResults();
@@ -461,11 +530,11 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             credentialResultsDto.setStatusCheck(populateStatusCheckDtoList(vcResWithStatus.getCredentialStatus()));
             boolean allChecksSuccessful = populateAllChecksSuccessful(credentialResultsDto.getSchemaAndSignatureCheck(), credentialResultsDto.getExpiryCheck(), credentialResultsDto.getStatusCheck(), credentialResultsDto.getHolderProofCheck());
             credentialResultsDto.setAllChecksSuccessful(allChecksSuccessful);
-            credentialResults.add(credentialResultsDto);
+            processSdJwtVpTokens(credentialResults, credentialResultsDto);
         }
     }
 
-    private void verifyPresentation(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
+    private void verifyPresentationV2(VerificationRequestDto request, JSONObject vpToken, List<CredentialResultsDto> credentialResults) {
         PresentationVerificationResultV2 result = presentationVerifier.verifyV2(vpToken.toString());
         List<VCResultV2> vcResults = result.getVcResults();
         if (vcResults.isEmpty()) throw new InvalidVpTokenException();
@@ -482,7 +551,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             credentialResultsDto.setClaims(claims);
             boolean allChecksSuccessful = populateAllChecksSuccessful(credentialResultsDto.getSchemaAndSignatureCheck(), credentialResultsDto.getExpiryCheck(), credentialResultsDto.getStatusCheck(), credentialResultsDto.getHolderProofCheck());
             credentialResultsDto.setAllChecksSuccessful(allChecksSuccessful);
-            credentialResults.add(credentialResultsDto);
+            processSdJwtVpTokens(credentialResults, credentialResultsDto);
         }
     }
 
@@ -520,10 +589,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         Object proof = vpToken.opt("proof");
         return proof != null;
     }
-
-
-
-
 
     public VPTokenDto extractTokens(String vpTokenString) {
         if (vpTokenString == null || vpTokenString.isEmpty()) throw new InvalidVpTokenException();
@@ -575,10 +640,22 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     }
 
+    private boolean isAuthRequestWithPresentationExchange(AuthorizationRequestCreateResponse authRequest) {
+        boolean isAuthRequestWithPresentationExchange = false;
+        log.info("Checking if authorization request is for presentation exchange");
+        log.info("authRequest: {}", authRequest);
+        if (authRequest != null && authRequest.getAuthorizationDetails() != null && authRequest.getAuthorizationDetails().getPresentationDefinition() !=null
+                && authRequest.getAuthorizationDetails().getDcqlQuery() == null) {
+            isAuthRequestWithPresentationExchange = true;
+            log.info("Authorization request is for presentation exchange");
+        }
+        return isAuthRequestWithPresentationExchange;
+    }
+
     @Override
     public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
-        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
+            VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
         return processSubmission(vpSubmission, transactionId, authRequest);
     }
 
@@ -598,17 +675,18 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private boolean isVPTokenNotMatching(VPSubmission vpSubmission, AuthorizationRequestCreateResponse request) {
-//        Object vpTokenRaw = new JSONTokener(vpSubmission.getVpToken()).nextValue();
-//        List<DescriptorMapDto> descriptorMap = vpSubmission.getPresentationSubmission().getDescriptorMap();
-//
-//        if (vpTokenRaw == null || request == null || descriptorMap == null || descriptorMap.isEmpty()) {
-//            log.info("Unable to perform token matching");
-//            return true;
-//        }
+        Object vpTokenRaw = new JSONTokener(vpSubmission.getVpToken()).nextValue();
+        List<DescriptorMapDto> descriptorMap = vpSubmission.getPresentationSubmission().getDescriptorMap();
+
+        if (vpTokenRaw == null || request == null || descriptorMap == null || descriptorMap.isEmpty()) {
+            log.info("Unable to perform token matching");
+            return true;
+        }
 
         log.info("VP token matching done");
         return false;
     }
+
 
     private VPResultStatus getCombinedVerificationStatus(List<VPVerificationStatus> vpVerificationStatuses, List<VCResultDto> verificationResults) {
         boolean combinedVerificationStatus = true;

@@ -35,6 +35,7 @@ import org.springframework.web.bind.annotation.RestController;
 import java.io.IOException;
 import java.sql.Timestamp;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
@@ -177,7 +178,7 @@ public class VPSubmissionController {
 
     }
 
-    private ResponseEntity<?> validateClientIdNonce(Map<String, JSONObject> ldpVpTokens, AuthorizationRequestCreateResponse authRequest) {
+    private ResponseEntity<?> validateClientIdNonce(Map<String, List<JSONObject>> ldpVpTokens, AuthorizationRequestCreateResponse authRequest) {
         boolean isClientIdValid = verifiablePresentationSubmissionService
                 .isClientIdValid(authRequest.getAuthorizationDetails(), ldpVpTokens);
         if (!isClientIdValid) {

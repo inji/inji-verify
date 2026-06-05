@@ -4,14 +4,14 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.dcql.CredentialMetaDto;
 import io.inji.verify.dto.dcql.CredentialQueryDto;
-import io.inji.verify.dto.dcql.DCQLQueryDto;
+import io.inji.verify.dto.dcql.DcqlQueryDto;
 
 import java.util.List;
 
 public final class DcqlTestFixtures {
 
     public static final JsonNode MINIMAL_DCQL;
-    public static final DCQLQueryDto MINIMAL_DCQL_DTO = new DCQLQueryDto(
+    public static final DcqlQueryDto MINIMAL_DCQL_DTO = new DcqlQueryDto(
             List.of(new CredentialQueryDto(
                     "cred1",
                     "dc+sd-jwt",
@@ -24,7 +24,7 @@ public final class DcqlTestFixtures {
     static {
         try {
             MINIMAL_DCQL = MAPPER.readTree(
-                    "{\"credentials\":[{\"id\":\"cred1\",\"format\":\"dc+sd-jwt\",\"meta\":{\"vct_values\":[\"cred1\"]}}]}");
+                    "{\"credentials\":[{\"id\":\"age_credential\",\"format\":\"ldp_vc\",\"meta\":{}}]}");
         } catch (Exception e) {
             throw new ExceptionInInitializerError(e);
         }
@@ -37,7 +37,7 @@ public final class DcqlTestFixtures {
         return MINIMAL_DCQL;
     }
 
-    public static DCQLQueryDto minimalDcqlDto() {
+    public static DcqlQueryDto minimalDcqlDto() {
         return MINIMAL_DCQL_DTO;
     }
 }

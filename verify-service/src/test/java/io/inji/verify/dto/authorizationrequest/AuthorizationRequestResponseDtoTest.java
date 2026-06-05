@@ -25,7 +25,7 @@ public class AuthorizationRequestResponseDtoTest {
 
         AuthorizationRequestResponseDto responseDto =
                 new AuthorizationRequestResponseDto(
-                        clientId, DcqlTestFixtures.minimalDcqlDto(), nonce, responseUri, true, false);
+                        clientId, DcqlTestFixtures.minimalDcqlDto(), null, nonce, responseUri, true, false);
 
         assertEquals(Constants.RESPONSE_TYPE, responseDto.getResponseType());
         assertEquals(clientId, responseDto.getClientId());
@@ -40,7 +40,7 @@ public class AuthorizationRequestResponseDtoTest {
     void serializedOutputOmitsLegacyPresentationDefinitionKeys() throws Exception {
         AuthorizationRequestResponseDto dto =
                 new AuthorizationRequestResponseDto(
-                        "c1", DcqlTestFixtures.minimalDcqlDto(), "n", "u", false, false);
+                        "c1", DcqlTestFixtures.minimalDcqlDto(), null, "n", "u", false, false);
 
         JsonNode out = MAPPER.valueToTree(dto);
         assertFalse(out.has("presentation_definition"));

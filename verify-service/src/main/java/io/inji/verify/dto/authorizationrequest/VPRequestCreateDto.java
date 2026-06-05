@@ -1,6 +1,6 @@
 package io.inji.verify.dto.authorizationrequest;
 
-import io.inji.verify.dto.dcql.DCQLQueryDto;
+import io.inji.verify.dto.dcql.DcqlQueryDto;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
 import jakarta.validation.constraints.NotBlank;
@@ -23,7 +23,7 @@ public class VPRequestCreateDto {
     @Valid
     @NotNull(message = "DCQL_QUERY_REQUIRED")
     @Schema(description = "DCQL query defining the criteria for credential matching in the VP request.")
-    private DCQLQueryDto dcqlQuery;
+    private DcqlQueryDto dcqlQuery;
     @Schema(description = "Indicates whether to accept VP without holder proof.")
     boolean acceptVPWithoutHolderProof;
     @Schema(description = "Indicates whether response code validation is required.")

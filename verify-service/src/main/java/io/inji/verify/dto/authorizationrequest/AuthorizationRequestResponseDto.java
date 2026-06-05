@@ -2,7 +2,8 @@ package io.inji.verify.dto.authorizationrequest;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
 import com.fasterxml.jackson.annotation.JsonInclude;
-import io.inji.verify.dto.dcql.DCQLQueryDto;
+import io.inji.verify.dto.dcql.DcqlQueryDto;
+import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import io.inji.verify.shared.Constants;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
@@ -23,7 +24,9 @@ public class AuthorizationRequestResponseDto {
     private final String responseMode = Constants.RESPONSE_MODE;
     private final long issuedAt = Instant.now().toEpochMilli();
     private final String clientId;
-    private final DCQLQueryDto dcqlQuery;
+    private final DcqlQueryDto dcqlQuery;
+    //This is for backward compatibility, as the presentation definition for VP results.
+    private final VPDefinitionResponseDto presentationDefinition;
     private final String nonce;
     private final String responseUri;
     private final boolean acceptVPWithoutHolderProof;
