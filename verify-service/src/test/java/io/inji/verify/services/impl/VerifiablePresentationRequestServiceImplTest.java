@@ -4,11 +4,11 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.jwk.Curve;
 import com.nimbusds.jose.jwk.OctetKeyPair;
 import com.nimbusds.jose.jwk.gen.OctetKeyPairGenerator;
-import io.inji.verify.dto.dcql.DcqlQueryDto;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestCreateDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
+import io.inji.verify.dto.dcql.DCQLQueryDto;
 import io.inji.verify.exception.VPRequestNotFoundException;
 import com.nimbusds.jwt.SignedJWT;
 import io.inji.verify.testsupport.DcqlTestFixtures;
@@ -43,10 +43,10 @@ class VerifiablePresentationRequestServiceImplTest {
     static VPSubmissionRepository mockVPSubmissionRepository;
     static KeyManagementService<OctetKeyPair> mockKeyManagementService;
 
-    private static DcqlQueryDto minimalDcqlQuery() throws Exception {
+    private static DCQLQueryDto minimalDcqlQuery() throws Exception {
         return OBJECT_MAPPER.readValue(
                 "{\"credentials\":[{\"id\":\"cred1\",\"format\":\"dc+sd-jwt\",\"meta\":{\"vct_values\":[\"cred1\"]}}]}",
-                DcqlQueryDto.class);
+                DCQLQueryDto.class);
     }
 
     @BeforeAll

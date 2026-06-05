@@ -1,6 +1,6 @@
 package io.inji.verify.dto.authorizationrequest;
 
-import io.inji.verify.dto.dcql.DcqlQueryDto;
+import io.inji.verify.dto.dcql.DCQLQueryDto;
 import io.inji.verify.testsupport.DcqlTestFixtures;
 import org.junit.jupiter.api.Test;
 
@@ -13,7 +13,7 @@ public class VPRequestCreateDtoTest {
         String clientId = "client123";
         String transactionId = "tx123";
         String nonce = "nonce123";
-        DcqlQueryDto dcqlQuery = DcqlTestFixtures.minimalDcqlDto();
+        DCQLQueryDto dcqlQuery = DcqlTestFixtures.minimalDcqlDto();
 
         VPRequestCreateDto vpRequestCreateDto =
                 new VPRequestCreateDto(clientId, transactionId, nonce, dcqlQuery, true, false);

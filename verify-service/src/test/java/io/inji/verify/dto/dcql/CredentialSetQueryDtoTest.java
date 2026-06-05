@@ -25,7 +25,7 @@ class CredentialSetQueryDtoTest {
 
     @Test
     void validCredentialSet_passesValidation() {
-        DcqlQueryDto query = new DcqlQueryDto(
+        DCQLQueryDto query = new DCQLQueryDto(
                 List.of(new CredentialQueryDto(
                         "cred1", "dc+sd-jwt", new CredentialMetaDto(List.of("cred1"), null), null, null)),
                 List.of(new CredentialSetQueryDto(List.of(List.of("cred1")), true)));

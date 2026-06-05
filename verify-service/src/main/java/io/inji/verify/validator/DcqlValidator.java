@@ -20,7 +20,7 @@ public class DcqlValidator {
             "ldp_vc"
     );
 
-    public void validate(DcqlQueryDto query) {
+    public void validate(DCQLQueryDto query) {
         validateCredentialIds(query);
         validateCredentialSets(query);
 
@@ -33,7 +33,7 @@ public class DcqlValidator {
         }
     }
 
-    private void validateCredentialIds(DcqlQueryDto query) {
+    private void validateCredentialIds(DCQLQueryDto query) {
         Set<String> credentialIds = new HashSet<>();
 
         for (CredentialQueryDto credential : query.getCredentials()) {
@@ -43,7 +43,7 @@ public class DcqlValidator {
         }
     }
 
-    private void validateCredentialSets(DcqlQueryDto query) {
+    private void validateCredentialSets(DCQLQueryDto query) {
         if (query.getCredentialSets() == null) {
             return;
         }
