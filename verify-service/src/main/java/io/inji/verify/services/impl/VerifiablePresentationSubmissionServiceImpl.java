@@ -676,14 +676,12 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     private boolean isVPTokenNotMatching(VPSubmission vpSubmission, AuthorizationRequestCreateResponse request) {
         Object vpTokenRaw = new JSONTokener(vpSubmission.getVpToken()).nextValue();
-        List<DescriptorMapDto> descriptorMap = vpSubmission.getPresentationSubmission().getDescriptorMap();
-
-        if (vpTokenRaw == null || request == null || descriptorMap == null || descriptorMap.isEmpty()) {
-            log.info("Unable to perform token matching");
+        List < DescriptorMapDto > descriptorMap = vpSubmission.getPresentationSubmission() != null ? vpSubmission.getPresentationSubmission().getDescriptorMap() : null;
+        if(vpTokenRaw == null || request == null || descriptorMap == null || descriptorMap.isEmpty()) {
+            log.info("VP token matching failed due to missing VP token, authorization request or descriptor map");
             return true;
         }
-
-        log.info("VP token matching done");
+        log.info("VP token matching done based on presentation submission.");
         return false;
     }
 

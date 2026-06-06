@@ -806,14 +806,13 @@
             "method": "GET",
             "header": [],
             "url": {
-              "raw": "{{base_url}}/v1/verify/v2/vp-result/{{txnIdForJSON_Ld}}",
+              "raw": "{{base_url}}/v1/verify/vp-result/{{txnIdForJSON_Ld}}",
               "host": [
                 "{{base_url}}"
               ],
               "path": [
                 "v1",
                 "verify",
-                "v2",
                 "vp-result",
                 "{{txnIdForJSON_Ld}}"
               ]
