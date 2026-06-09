@@ -10,17 +10,11 @@
       "dcqlQuery": {
         "credentials": [
           {
-            "id": "mosip_verifiable_credential_id_card",
-            "format": "dc+sd-jwt",
+            "id": "mosip_verifiable_credential_id",
+            "format": "ldp_vc",
             "meta": {
-              "vct_values": ["MOSIPVerifiableCredential"]
-            },
-            "claims": [
-              {
-                "id": "type",
-                "path": ["type"]
-              }
-            ]
+              "type_values": ["MOSIPVerifiableCredential"]
+            }
           }
         ]
       }
@@ -34,17 +28,11 @@
       "dcqlQuery": {
         "credentials": [
           {
-            "id": "life_insurance_id_card",
-            "format": "vc+sd-jwt",
+            "id": "life_insurance_credential_id",
+            "format": "ldp_vc",
             "meta": {
-              "vct_values": ["LifeInsuranceCredential"]
-            },
-            "claims": [
-              {
-                "id": "type",
-                "path": ["type"]
-              }
-            ]
+              "type_values": ["LifeInsuranceCredential"]
+            }
           }
         ]
       }
@@ -58,17 +46,11 @@
       "dcqlQuery": {
         "credentials": [
           {
-            "id": "health_insurance_id_card",
-            "format": "vc+sd-jwt",
+            "id": "health_insurance_credential_id",
+            "format": "ldp_vc",
             "meta": {
-              "vct_values": ["InsuranceCredential"]
-            },
-            "claims": [
-              {
-                "id": "type",
-                "path": ["type"]
-              }
-            ]
+              "type_values": ["InsuranceCredential"]
+            }
           }
         ]
       }
@@ -82,17 +64,11 @@
       "dcqlQuery": {
         "credentials": [
           {
-            "id": "mock_identity_sd_jwt",
+            "id": "mock_identity_sd_jwt_credential_id",
             "format": "vc+sd-jwt",
             "meta": {
               "vct_values": ["MockVerifiableCredential_SD_JWT"]
-            },
-            "claims": [
-              {
-                "id": "vct",
-                "path": ["vct"]
-              }
-            ]
+            }
           }
         ]
       }
@@ -106,10 +82,10 @@
       "dcqlQuery": {
         "credentials": [
           {
-            "id": "land_statement_id_card",
-            "format": "vc+sd-jwt",
+            "id": "land_statement_credential_id",
+            "format": "ldp_vc",
             "meta": {
-              "vct_values": ["LandStatementCredential"]
+              "type_values": ["LandStatementCredential"]
             },
             "claims": [
               {
