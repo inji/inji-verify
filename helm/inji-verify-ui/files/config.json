@@ -65,7 +65,7 @@
         "credentials": [
           {
             "id": "mock_identity_sd_jwt_credential_id",
-            "format": "vc_sd-jwt",
+            "format": "vc+sd-jwt",
             "meta": {
               "vct_values": ["MockVerifiableCredential_SD_JWT"]
             }
