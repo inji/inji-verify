@@ -38,7 +38,7 @@ public class CredentialQueryDto {
     @Schema(description = "Metadata for the credential being queried, used for matching against the credential's metadata.")
     private CredentialMetaDto meta;
 
-    @Valid
+    @NotNull(message = "DCQL_REQUIRE_CRYPTOGRAPHIC_HOLDER_BINDING_REQUIRED")
     @Schema(description = "Indicates whether cryptographic holder binding is required for the credential, which means that the credential must be cryptographically bound to the holder's proof of possession, such as a signature or proof of key ownership, to ensure that only the rightful holder can present the credential.")
     private Boolean require_cryptographic_holder_binding = true;
 
