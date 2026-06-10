@@ -1,6 +1,6 @@
 package io.inji.verify.shared;
 
-import io.inji.verify.dto.client.LdpVp;
+import io.inji.verify.dto.client.LdpVc;
 import io.inji.verify.dto.client.VpFormatsSupported;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
@@ -65,10 +65,10 @@ public class ConstantsTest {
         assertNotNull(Constants.VP_FORMATS_SUPPORTED);
         assertInstanceOf(VpFormatsSupported.class, Constants.VP_FORMATS_SUPPORTED);
 
-        LdpVp ldpVp = Constants.VP_FORMATS_SUPPORTED.getLdpVp();
-        assertNotNull(ldpVp);
+        LdpVc ldpVc = Constants.VP_FORMATS_SUPPORTED.getLdpVc();
+        assertNotNull(ldpVc);
 
-        List<String> proofTypes = ldpVp.getProofType();
+        List<String> proofTypes = ldpVc.getProofType();
         assertNotNull(proofTypes);
         assertEquals(3, proofTypes.size());
 

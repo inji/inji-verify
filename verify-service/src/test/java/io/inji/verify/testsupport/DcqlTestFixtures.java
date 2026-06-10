@@ -16,6 +16,7 @@ public final class DcqlTestFixtures {
                     "cred1",
                     "dc+sd-jwt",
                     new CredentialMetaDto(List.of("cred1"), null),
+                    true,
                     null,
                     null)),
             null);

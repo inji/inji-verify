@@ -1,6 +1,6 @@
 package io.inji.verify.shared;
 
-import io.inji.verify.dto.client.LdpVp;
+import io.inji.verify.dto.client.LdpVc;
 import io.inji.verify.dto.client.VpFormatsSupported;
 import io.inji.verify.dto.client.SdJwt;
 
@@ -31,7 +31,7 @@ public final class Constants {
     public static final String RSA_SIGNATURE_2018 = "RsaSignature2018";
     public static final String ED25519_SIGNATURE_2018 = "Ed25519Signature2018";
     public static final String ED25519_SIGNATURE_2020 = "Ed25519Signature2020";
-    public static final VpFormatsSupported VP_FORMATS_SUPPORTED = new VpFormatsSupported(new LdpVp(Arrays.asList(
+    public static final VpFormatsSupported VP_FORMATS_SUPPORTED = new VpFormatsSupported(new LdpVc(Arrays.asList(
             ED25519_SIGNATURE_2018,
             ED25519_SIGNATURE_2020,
             RSA_SIGNATURE_2018

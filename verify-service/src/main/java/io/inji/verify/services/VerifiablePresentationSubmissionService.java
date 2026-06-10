@@ -4,7 +4,7 @@ import java.sql.Timestamp;
 import java.util.List;
 import java.util.Map;
 
-import io.inji.verify.dto.result.DcqlVPTokenDto;
+import io.inji.verify.dto.result.DcqlTokensDto;
 import org.json.JSONObject;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,7 +27,7 @@ public interface VerifiablePresentationSubmissionService {
     
     AuthorizationRequestCreateResponse getAuthRequest(String state);
 
-    DcqlVPTokenDto extractDcqlVpTokens(String vpTokenString) throws InvalidVpTokenException;
+    DcqlTokensDto extractDcqlTokens(String vpTokenString, AuthorizationRequestResponseDto authRequest) throws InvalidVpTokenException;
 
     boolean isClientIdValid(AuthorizationRequestResponseDto authRequest, Map<String, List<JSONObject>> ldpVpTokens);
     

@@ -33,7 +33,6 @@ public class AuthorizationRequestResponseDtoTest {
         assertEquals(responseUri, responseDto.getResponseUri());
         assertEquals(nonce, responseDto.getNonce());
         assertTrue(Instant.now().toEpochMilli() >= responseDto.getIssuedAt());
-        assertTrue(responseDto.isAcceptVPWithoutHolderProof());
     }
 
     @Test

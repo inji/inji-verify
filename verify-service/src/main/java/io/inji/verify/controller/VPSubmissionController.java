@@ -8,7 +8,7 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.core.ErrorDto;
-import io.inji.verify.dto.result.DcqlVPTokenDto;
+import io.inji.verify.dto.result.DcqlTokensDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPRequestStatus;
 import io.inji.verify.exception.InvalidVpTokenException;
@@ -129,19 +129,20 @@ public class VPSubmissionController {
         // TODO
 
         // ---- 6. Extract DCQL VP tokens from the vp_token string
-        DcqlVPTokenDto dcqlVPTokenDto = null;
+        DcqlTokensDto dcqlTokensDto = null;
         if (StringUtils.hasText(vpToken)) {
             try {
-                dcqlVPTokenDto = verifiablePresentationSubmissionService.extractDcqlVpTokens(vpToken);
+                dcqlTokensDto = verifiablePresentationSubmissionService.extractDcqlTokens(vpToken, authRequestCreateResponse.getAuthorizationDetails());
             } catch (InvalidVpTokenException ex) {
                 log.error("Invalid VP token structure for state {}", state);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                         .body(new ErrorDto("invalid_vp_token", "The vp_token structure is invalid: " + ex.getMessage()));
             }
         }
-        // ---- 7. Validate client_id and none if vp_token is present
-        if (dcqlVPTokenDto != null && dcqlVPTokenDto.getLdpVpTokens() != null && !dcqlVPTokenDto.getLdpVpTokens().isEmpty()) {
-            ResponseEntity<?> clientIdNonceValidation = validateClientIdNonce(dcqlVPTokenDto.getLdpVpTokens(), authRequestCreateResponse);
+
+        // ---- 7. Validate client_id and none if Verifiable Presentation is present
+        if (dcqlTokensDto != null && dcqlTokensDto.getLdpVpTokens() != null && !dcqlTokensDto.getLdpVpTokens().isEmpty()) {
+            ResponseEntity<?> clientIdNonceValidation = validateClientIdNonce(dcqlTokensDto.getLdpVpTokens(), authRequestCreateResponse);
             if (clientIdNonceValidation != null) {
                 return clientIdNonceValidation;
             }

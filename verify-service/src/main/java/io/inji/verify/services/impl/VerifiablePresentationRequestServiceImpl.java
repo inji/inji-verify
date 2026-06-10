@@ -86,7 +86,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         long expiresAt = Instant.now().plusSeconds(Constants.DEFAULT_EXPIRY).toEpochMilli();
         String nonce = vpRequestCreate.getNonce() != null ? vpRequestCreate.getNonce() : SecurityUtils.generateNonce();
         String responseUri = verifyServiceBaseUrl + Constants.VP_RESPONSE_SUBMISSION_URI;
-        boolean acceptVPWithoutHolderProof = vpRequestCreate.isAcceptVPWithoutHolderProof();
+
         boolean responseCodeValidationRequired = vpRequestCreate.isResponseCodeValidationRequired();
         AuthorizationRequestResponseDto authorizationRequestResponseDto = new AuthorizationRequestResponseDto(
                 vpRequestCreate.getClientId(),
@@ -94,7 +94,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                 null, // presentationDefinition is deprecated and should not be used, set to null for backward compatibility
                 nonce,
                 responseUri,
-                acceptVPWithoutHolderProof,
+                false, //acceptVPWithoutHolderProof is deprecated and should not be used, set to false for backward compatibility
                 responseCodeValidationRequired
         );
 
@@ -227,7 +227,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
             if (verifierDid != null && verifierDid.startsWith("decentralized_identifier")) {
                 claimsBuilder.claim(
                         "client_metadata",
-                        new ClientMetadataDto(verifierDid, VP_FORMATS_SUPPORTED)
+                        new ClientMetadataDto(VP_FORMATS_SUPPORTED)
                 );
             }
 

@@ -9,7 +9,8 @@ import java.util.Map;
 
 @AllArgsConstructor
 @Getter
-public class DcqlVPTokenDto {
+public class DcqlTokensDto {
     private Map<String, List<JSONObject>> ldpVpTokens;
+    private Map<String, List<JSONObject>> ldpVcTokens;
     private Map<String, List<String>> sdJwtTokens;
 }

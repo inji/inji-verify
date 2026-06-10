@@ -9,7 +9,7 @@ import java.util.List;
 
 @AllArgsConstructor
 @Getter
-public class LdpVp {
+public class LdpVc {
     @JsonProperty("proof_type")
     @SerializedName("proof_type")
     private List<String> proofType;

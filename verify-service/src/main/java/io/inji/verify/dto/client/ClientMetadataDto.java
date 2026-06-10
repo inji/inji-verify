@@ -8,9 +8,6 @@ import lombok.Getter;
 @AllArgsConstructor
 @Getter
 public class ClientMetadataDto {
-    @JsonProperty("client_name")
-    @SerializedName("client_name")
-    String clientName;
 
     @JsonProperty("vp_formats_supported")
     @SerializedName("vp_formats_supported")

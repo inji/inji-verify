@@ -3,7 +3,7 @@ package io.inji.verify.controller;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.core.ErrorDto;
-import io.inji.verify.dto.result.DcqlVPTokenDto;
+import io.inji.verify.dto.result.DcqlTokensDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPRequestStatus;
 import io.inji.verify.exception.VPAlreadySubmittedException;
@@ -70,7 +70,7 @@ class VPSubmissionControllerTest {
         when(request.getParameterMap()).thenReturn(params);
     }
 
-    private DcqlVPTokenDto mockDcqlTokens() {
+    private DcqlTokensDto mockDcqlTokens() {
 
         Map<String, List<JSONObject>> ldpVpTokens = new HashMap<>();
 
@@ -85,7 +85,7 @@ class VPSubmissionControllerTest {
 
         ldpVpTokens.put("query1", Collections.singletonList(vp));
 
-        return new DcqlVPTokenDto(ldpVpTokens, new HashMap<>());
+        return new DcqlTokensDto(ldpVpTokens, new HashMap<>(), new HashMap<>());
     }
 
     @Test
@@ -265,7 +265,7 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.getAuthRequest(STATE))
                 .thenReturn(auth);
 
-        when(vpSubmissionService.extractDcqlVpTokens(any()))
+        when(vpSubmissionService.extractDcqlTokens(any(),any()))
                 .thenReturn(mockDcqlTokens());
 
         when(vpSubmissionService.isClientIdValid(any(), any()))
@@ -305,7 +305,7 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.getAuthRequest(STATE))
                 .thenReturn(auth);
 
-        when(vpSubmissionService.extractDcqlVpTokens(any()))
+        when(vpSubmissionService.extractDcqlTokens(any(), any()))
                 .thenReturn(mockDcqlTokens());
 
         when(vpSubmissionService.isClientIdValid(any(), any()))
@@ -348,7 +348,7 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.getAuthRequest(STATE))
                 .thenReturn(auth);
 
-        when(vpSubmissionService.extractDcqlVpTokens(any()))
+        when(vpSubmissionService.extractDcqlTokens(any(), any()))
                 .thenReturn(mockDcqlTokens());
 
         when(vpSubmissionService.isClientIdValid(any(), any()))
@@ -393,7 +393,7 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.getAuthRequest(STATE))
                 .thenReturn(auth);
 
-        when(vpSubmissionService.extractDcqlVpTokens(any()))
+        when(vpSubmissionService.extractDcqlTokens(any(), any()))
                 .thenReturn(mockDcqlTokens());
 
         when(vpSubmissionService.isClientIdValid(any(), any()))
@@ -440,7 +440,7 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.getAuthRequest(STATE))
                 .thenReturn(auth);
 
-        when(vpSubmissionService.extractDcqlVpTokens(any()))
+        when(vpSubmissionService.extractDcqlTokens(any(),any()))
                 .thenReturn(mockDcqlTokens());
 
         when(vpSubmissionService.isClientIdValid(any(), any()))
