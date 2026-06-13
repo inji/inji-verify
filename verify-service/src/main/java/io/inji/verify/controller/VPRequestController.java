@@ -142,7 +142,8 @@ public class VPRequestController {
     public ResponseEntity<ErrorDto> handleVPRequestValidationException(VPRequestValidationException e) {
         log.error("VP request validation error: {}", e.getMessage());
         ErrorCode errorCode = e.getErrorCode();
-        return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(errorCode));
+        return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                .body(new ErrorDto(errorCode.getErrorCode(), e.getMessage()));
     }
 
     @NotNull
@@ -193,6 +194,24 @@ public class VPRequestController {
                     ));
         }
         if (cause instanceof MismatchedInputException mie) {
+            String field = mie.getPath().stream()
+                    .map(JsonMappingException.Reference::getFieldName)
+                    .filter(Objects::nonNull)
+                    .collect(Collectors.joining("."));
+            if (field.contains("type_values")) {
+                return ResponseEntity.badRequest()
+                        .body(new ErrorDto(
+                                ErrorCode.DCQL_META_INVALID.getErrorCode(),
+                                "type_values must be an array of arrays."
+                        ));
+            }
+            if (field.contains("vct_values")) {
+                return ResponseEntity.badRequest()
+                        .body(new ErrorDto(
+                                ErrorCode.DCQL_META_INVALID.getErrorCode(),
+                                "vct_values must be an array of strings."
+                        ));
+            }
             return ResponseEntity.badRequest()
                     .body(new ErrorDto(
                             "MALFORMED_REQUEST",

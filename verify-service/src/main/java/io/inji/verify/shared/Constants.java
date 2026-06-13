@@ -40,6 +40,15 @@ public final class Constants {
         new SdJwt(SD_JWT_SUPPORTED_ALGORITHMS,
             SD_JWT_SUPPORTED_ALGORITHMS));
 
+    // Credential formats
+    public static final String FORMAT_LDP_VC = "ldp_vc";
+    public static final String FORMAT_DC_SD_JWT = "dc+sd-jwt";
+    public static final String FORMAT_VC_SD_JWT = "vc+sd-jwt";
+
+    // LDP VC type values
+    public static final String LDP_TYPE_VERIFIABLE_PRESENTATION = "VerifiablePresentation";
+    public static final String LDP_TYPE_VERIFIABLE_CREDENTIAL = "VerifiableCredential";
+
     // JSON KEYS
     public static final String KEY_PROOF = "proof";
     public static final String KEY_TYPE = "type";
@@ -47,6 +56,7 @@ public final class Constants {
     public static final String KEY_VERIFICATION_METHOD = "verificationMethod";
     public static final String KEY_VERIFIABLE_CREDENTIAL = "verifiableCredential";
     public static final String KEY_CREDENTIAL = "credential";
+    public static final String KEY_CREDENTIAL_SUBJECT = "credentialSubject";
 
     // STATUS PURPOSE
     public static final String STATUS_PURPOSE_REVOKED = "revocation";

@@ -3,6 +3,9 @@ package io.inji.verify.controller;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.core.ErrorDto;
+import io.inji.verify.dto.dcql.CredentialMetaDto;
+import io.inji.verify.dto.dcql.CredentialQueryDto;
+import io.inji.verify.dto.dcql.DCQLQueryDto;
 import io.inji.verify.dto.result.DcqlTokensDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPRequestStatus;
@@ -10,6 +13,7 @@ import io.inji.verify.exception.VPAlreadySubmittedException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
+import io.inji.verify.validator.DcqlValidator;
 import jakarta.servlet.http.HttpServletRequest;
 import org.json.JSONObject;
 import org.junit.jupiter.api.BeforeEach;
@@ -39,6 +43,9 @@ class VPSubmissionControllerTest {
 
     @Mock
     private VerifiablePresentationSubmissionService vpSubmissionService;
+
+    @Mock
+    private DcqlValidator dcqlValidator;
 
     @Mock
     private HttpServletRequest request;
@@ -417,6 +424,76 @@ class VPSubmissionControllerTest {
                 ErrorCode.VP_ALREADY_SUBMITTED.getErrorCode(),
                 body.getErrorCode()
         );
+    }
+
+    private AuthorizationRequestCreateResponse mockAuthWithDcql(String credentialId) {
+        AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+        AuthorizationRequestResponseDto authDetails = mock(AuthorizationRequestResponseDto.class);
+
+        DCQLQueryDto dcqlQuery = new DCQLQueryDto(
+                List.of(new CredentialQueryDto(credentialId, "ldp_vc", new CredentialMetaDto(null, null), true, false, null, null)),
+                null
+        );
+
+        when(auth.getAuthorizationDetails()).thenReturn(authDetails);
+        when(authDetails.getDcqlQuery()).thenReturn(dcqlQuery);
+        return auth;
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenContainsUnknownCredentialId() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        // Create the auth mock first to avoid Mockito stub-recording interference
+        // caused by nested when() calls inside thenReturn().
+        AuthorizationRequestCreateResponse authMock = mockAuthWithDcql("query1");
+        when(vpSubmissionService.getAuthRequest(STATE)).thenReturn(authMock);
+
+        // Auth request expects "query1", but vp_token has "unknown_id"
+        String vpTokenWithUnknownId = """
+                {
+                  "unknown_id": [{ "type": "VerifiablePresentation" }]
+                }
+                """;
+
+        doThrow(new io.inji.verify.exception.VPRequestValidationException(ErrorCode.VP_TOKEN_UNKNOWN_CREDENTIAL_ID))
+                .when(dcqlValidator).validateVpTokenAgainstDcql(any(), any());
+
+        ResponseEntity<?> response = controller.submitVP(vpTokenWithUnknownId, STATE, null, null, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_UNKNOWN_CREDENTIAL_ID.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenDoesNotSatisfyDcqlCredentialSets() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        // Create the auth mock first to avoid Mockito stub-recording interference
+        // caused by nested when() calls inside thenReturn().
+        AuthorizationRequestCreateResponse authMock = mockAuthWithDcql("query1");
+        when(vpSubmissionService.getAuthRequest(STATE)).thenReturn(authMock);
+
+        // Auth request expects "query1", but vp_token has "query2" which is unknown
+        String vpTokenMissingRequired = """
+                {
+                  "query2": [{ "type": "VerifiablePresentation" }]
+                }
+                """;
+
+        doThrow(new io.inji.verify.exception.VPRequestValidationException(ErrorCode.VP_TOKEN_DCQL_NOT_SATISFIED))
+                .when(dcqlValidator).validateVpTokenAgainstDcql(any(), any());
+
+        ResponseEntity<?> response = controller.submitVP(vpTokenMissingRequired, STATE, null, null, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_DCQL_NOT_SATISFIED.getErrorCode(), body.getErrorCode());
     }
 
     @Test

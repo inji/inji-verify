@@ -27,10 +27,10 @@ public class CredentialQueryDto {
     private String id;
 
     /**
-     * vc+sd-jwt, dc+sd-jwt etc.
+     * Supported formats: dc+sd-jwt, vc+sd-jwt, ldp_vc.
      */
     @NotBlank(message = "DCQL_CREDENTIAL_FORMAT_REQUIRED")
-    @Schema(description = "Format of the credential being queried, such as 'vc+sd-jwt' for SD-JWT verifiable credentials or 'dc+sd-jwt' for data credentials, used to determine how to process and match the credential against the query criteria.")
+    @Schema(description = "Format of the credential being queried. Supported values: 'dc+sd-jwt' (SD-JWT VC per draft-ietf-oauth-sd-jwt-vc-10), 'vc+sd-jwt' (legacy SD-JWT VC format), and 'ldp_vc' (JSON-LD Verifiable Credential).")
     private String format;
 
     @Valid
@@ -38,9 +38,11 @@ public class CredentialQueryDto {
     @Schema(description = "Metadata for the credential being queried, used for matching against the credential's metadata.")
     private CredentialMetaDto meta;
 
-    @NotNull(message = "DCQL_REQUIRE_CRYPTOGRAPHIC_HOLDER_BINDING_REQUIRED")
-    @Schema(description = "Indicates whether cryptographic holder binding is required for the credential, which means that the credential must be cryptographically bound to the holder's proof of possession, such as a signature or proof of key ownership, to ensure that only the rightful holder can present the credential.")
+    @Schema(description = "Indicates whether cryptographic holder binding is required for the credential, which means that the credential must be cryptographically bound to the holder's proof of possession, such as a signature or proof of key ownership, to ensure that only the rightful holder can present the credential. Defaults to true per the spec.")
     private Boolean require_cryptographic_holder_binding = true;
+
+    @Schema(description = "Indicates whether the Wallet is allowed to return multiple credentials matching this query. Defaults to false, meaning only one credential per query is expected.")
+    private Boolean multiple = false;
 
     @Valid
     @Schema(description = "List of claims to be matched against the credential.")

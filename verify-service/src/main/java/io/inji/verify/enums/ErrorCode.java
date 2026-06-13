@@ -21,6 +21,8 @@ public enum ErrorCode {
     DCQL_META_INVALID("dcql_query.credentials","DCQL meta must not contain null/blank values."),
     DCQL_META_DUPLICATES("dcql_query.credentials","DCQL meta must not contain duplicate values."),
     DCQL_META_NOT_MATCHING_FORMAT("dcql_query.credentials","DCQL meta fields must match the specified credential format."),
+    DCQL_CLAIM_ID_INVALID("dcql_query.credentials","Claim id must contain only alphanumeric characters, underscores, and hyphens."),
+    DCQL_DUPLICATE_CLAIM_PATH("dcql_query.credentials","Duplicate claim paths are not allowed within a single credential query."),
     DCQL_CLAIM_PATH_REQUIRED("dcql_query.credentials","Each claim must contain path."),
     DCQL_CLAIM_VALUES_INVALID("dcql_query.credentials","DCQL claim values must be a non-empty array if claim values field is present."),
     DCQL_CREDENTIAL_SETS_REQUIRED("dcql_query.credentials","Each credential_set entry must contain options."),
@@ -32,6 +34,7 @@ public enum ErrorCode {
     DCQL_MISSING_CLAIM_ID("dcql_query.credentials","claim_sets contains missing claim id reference."),
     DCQL_EMPTY_CLAIM_SET("dcql_query.credentials","claim_sets must not be empty if claim_sets field is present."),
     DCQL_CLAIM_PATH_INVALID("dcql_query.credentials","DCQL claim path must be a valid path."),
+    DCQL_ALL_CREDENTIAL_SETS_OPTIONAL("dcql_query.credential_sets","credential_sets must contain at least one required entry."),
     CLIENT_ID_REQUIRED("invalid_request","client_id is required"),
     DID_CREATION_FAILED("DID_CREATION_FAILED","Error while creating DID document."),
     VP_SUBMISSION_EXCEPTION("VP_SUBMISSION_EXCEPTION","Error while processing VP submission"),
@@ -66,7 +69,21 @@ public enum ErrorCode {
     VP_TOKEN_ARRAY_ELEMENTS_INVALID("invalid_request", "invalid_vp_token: array elements must be non-empty JSON objects or non-empty SD-JWT strings"),
     VP_TOKEN_ALL_ELEMENTS_MUST_BE_OBJECTS("invalid_request", "invalid_vp_token: all elements must be non-empty JSON objects"),
     VP_TOKEN_ALL_ELEMENTS_MUST_BE_SD_JWT("invalid_request", "invalid_vp_token: all elements must be non-empty SD-JWT strings"),
-    VP_TOKEN_NOT_VALID_JSON_OBJECT("invalid_request", "invalid_vp_token, not a valid JSON object");
+    VP_TOKEN_NOT_VALID_JSON_OBJECT("invalid_request", "invalid_vp_token, not a valid JSON object"),
+    VP_TOKEN_UNKNOWN_CREDENTIAL_ID("invalid_request", "vp_token contains credential id(s) not present in the DCQL query."),
+    VP_TOKEN_MISSING_CREDENTIAL_ID("invalid_request", "vp_token is missing one or more required credential ids from the DCQL query."),
+    VP_TOKEN_DCQL_NOT_SATISFIED("invalid_request", "vp_token does not satisfy the DCQL credential_sets requirements."),
+    VP_TOKEN_CREDENTIAL_FORMAT_MISMATCH("invalid_request", "vp_token credential format does not match the format declared in the DCQL query."),
+    VP_TOKEN_MULTIPLE_CREDENTIALS_NOT_ALLOWED("invalid_request", "vp_token contains multiple credentials for a query that does not allow multiple."),
+    VP_TOKEN_EXPECTED_VERIFIABLE_PRESENTATION("invalid_request", "vp_token ldp_vc credential must be a VerifiablePresentation when require_cryptographic_holder_binding is true."),
+    VP_TOKEN_EXPECTED_VERIFIABLE_CREDENTIAL("invalid_request", "vp_token ldp_vc credential must be a VerifiableCredential when require_cryptographic_holder_binding is false."),
+    VP_TOKEN_SD_JWT_MISSING_CNF("invalid_request", "vp_token SD-JWT credential does not contain a cnf claim and therefore does not support Holder Binding, which is required when require_cryptographic_holder_binding is true."),
+    VP_TOKEN_SD_JWT_MISSING_KEY_BINDING("invalid_request", "vp_token SD-JWT credential must include a Key Binding JWT when require_cryptographic_holder_binding is true."),
+    VP_TOKEN_META_TYPE_VALUES_MISMATCH("invalid_request", "vp_token ldp_vc credential type values do not satisfy any of the type_values options in the DCQL query."),
+    VP_TOKEN_SD_JWT_VCT_MISMATCH("invalid_request", "vp_token SD-JWT credential vct claim does not match any of the vct_values in the DCQL query."),
+    VP_TOKEN_CLAIM_NOT_FOUND("invalid_request", "vp_token ldp_vc credential does not contain a required claim path declared in the DCQL query."),
+    VP_TOKEN_CLAIM_VALUE_MISMATCH("invalid_request", "vp_token ldp_vc credential claim value does not match any of the declared values in the DCQL query."),
+    VP_TOKEN_CLAIM_SETS_NOT_SATISFIED("invalid_request", "vp_token credential does not satisfy any of the claim_sets options declared in the DCQL query.");
 
     private final String errorCode;
     private final String errorMessage;

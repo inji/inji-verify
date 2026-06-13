@@ -143,6 +143,21 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                     if (item.isTextual()) {
                         if (isSdJwt(item.asText())) {
                             log.debug("Identified SD-JWT token");
+                            // When require_cryptographic_holder_binding=true, the SD-JWT must have a cnf claim and a KB-JWT.
+                            if (requireCryptographicHolderBinding && !Utils.hasSdJwtCnfClaim(item.asText())) {
+                                String errorMessage = String.format(
+                                        "SD-JWT token is missing cnf claim for query ID %s",
+                                        queryId);
+                                log.warn(errorMessage);
+                                throw new InvalidVpTokenException(errorMessage);
+                            }
+                            if (requireCryptographicHolderBinding && !Utils.hasSdJwtKeyBinding(item.asText())) {
+                                String errorMessage = String.format(
+                                        "SD-JWT token is missing required Key Binding JWT for query ID %s",
+                                        queryId);
+                                log.warn(errorMessage);
+                                throw new InvalidVpTokenException(errorMessage);
+                            }
                             sdJwtTokens.computeIfAbsent(queryId, k -> new ArrayList<>())
                                     .add(item.asText());
                         } else {
@@ -155,8 +170,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                         }
                     } else if (item.isObject()) {
                         log.debug("Identified JSON LD Proof token");
-                        boolean isLdpVpFormat = isLdpFormatMatching(item, "VerifiablePresentation");
-                        boolean isLdpVcFormat = isLdpFormatMatching(item, "VerifiableCredential");
+                        boolean isLdpVpFormat = Utils.isLdpFormat(item, Constants.LDP_TYPE_VERIFIABLE_PRESENTATION);
+                        boolean isLdpVcFormat = Utils.isLdpFormat(item, Constants.LDP_TYPE_VERIFIABLE_CREDENTIAL);
+                        // Safety net for result-processing paths that bypass DcqlValidator (Validation E).
                         if (requireCryptographicHolderBinding && !isLdpVpFormat) {
                             String errorMessage = String.format(
                                     "JSON node does not match expected 'VerifiablePresentation' format for query ID %s: %s",
@@ -190,24 +206,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             throw new InvalidVpTokenException(errorMessage);
         }
         return new DcqlTokensDto(ldpVpTokens, ldpVcTokens, sdJwtTokens);
-    }
-
-    private boolean isLdpFormatMatching(JsonNode item, String formatType) {
-        JsonNode typeNode = item.get("type");
-        if (typeNode != null) {
-            if (typeNode.isArray()) {
-                for (JsonNode typeValue : typeNode) {
-                    if (formatType.equalsIgnoreCase(typeValue.asText())) {
-                       return true;
-                    }
-                }
-            } else if (typeNode.isTextual()) {
-                if (formatType.equalsIgnoreCase(typeNode.asText())) {
-                    return true;
-                }
-            }
-        }
-        return false;
     }
 
     private boolean isCryptographicHolderBindingRequired(AuthorizationRequestResponseDto authRequest, String queryId) {
@@ -381,7 +379,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 boolean acceptVPWithoutHolderProof = isAcceptVPWithoutHolderProof(authRequest);
                 log.info("Is authorization request accept VP without holder proof: {}", acceptVPWithoutHolderProof);
                 for (JSONObject vpToken : vpTokenDto.getJsonVpTokens()) {
-                    if (isInvalidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
+                    if (!isValidVerifiablePresentation(vpToken)) throw new InvalidVpTokenException();
                     boolean isSigned = isVerifiablePresentationSigned(vpToken);
                     if (isSigned) {
                         verifyPresentationWithCredentialStatusChecks(vpToken, vpVerificationStatuses, verificationResults);
@@ -423,7 +421,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                     String queryId = entry.getKey();
                     log.info("Processing SD-JWT tokens for query ID: {}", queryId);
                     for (String sdJwtToken : entry.getValue()) {
-                        verifyAndGetCredentialStatus(sdJwtToken, verificationResults, CredentialFormat.VC_SD_JWT);
+                        verifyAndGetCredentialStatus(sdJwtToken, verificationResults, CredentialFormat.DC_SD_JWT);
                     }
                 }
             }
@@ -458,7 +456,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 if (isVPTokenNotMatching(vpSubmission, authRequest)) throw new TokenMatchingFailedException();
                 VPTokenDto vpTokenDto = extractTokens(vpSubmission.getVpToken());
                 for (JSONObject ldpVpToken : vpTokenDto.getJsonVpTokens()) {
-                    if (isInvalidVerifiablePresentation(ldpVpToken)) throw new InvalidVpTokenException();
+                    if (!isValidVerifiablePresentation(ldpVpToken)) throw new InvalidVpTokenException();
                     boolean isSigned = isVerifiablePresentationSigned(ldpVpToken);
                     if (isSigned) {
                         if (request.isSkipStatusChecks()) {
@@ -618,17 +616,12 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         verificationResults.add(new VCResultDto(vc, status));
     }
 
-    private boolean isInvalidVerifiablePresentation(JSONObject vpToken) {
-        Object types = vpToken.opt("type");
-        if (types == null) return true;
-
-        return !switch (types) {
-            case JSONArray jsonTypes -> jsonTypes.toList().stream()
-                    .anyMatch(type -> "VerifiablePresentation".equalsIgnoreCase(type.toString()));
-            case String typeString ->
-                    "VerifiablePresentation".equalsIgnoreCase(typeString);
-            default -> false;
-        };
+    private boolean isValidVerifiablePresentation(JSONObject jsonObject) {
+        try {
+            return Utils.isLdpFormat(objectMapper.readTree(jsonObject.toString()), Constants.LDP_TYPE_VERIFIABLE_PRESENTATION);
+        } catch (JsonProcessingException e) {
+            return false;
+        }
     }
 
     private boolean isVerifiablePresentationSigned(JSONObject vpToken) {

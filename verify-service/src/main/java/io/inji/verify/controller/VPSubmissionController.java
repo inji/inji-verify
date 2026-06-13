@@ -8,15 +8,18 @@ import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.core.ErrorDto;
+import io.inji.verify.dto.dcql.DCQLQueryDto;
 import io.inji.verify.dto.result.DcqlTokensDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPRequestStatus;
 import io.inji.verify.exception.InvalidVpTokenException;
 import io.inji.verify.exception.VPAlreadySubmittedException;
+import io.inji.verify.exception.VPRequestValidationException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
 import io.inji.verify.shared.Constants;
+import io.inji.verify.validator.DcqlValidator;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
@@ -47,12 +50,15 @@ public class VPSubmissionController {
     // Services for handling VP requests and submissions
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
     final VerifiablePresentationSubmissionService verifiablePresentationSubmissionService;
+    final DcqlValidator dcqlValidator;
 
     // Constructor injection for services
     public VPSubmissionController(VerifiablePresentationRequestService verifiablePresentationRequestService,
-                                  VerifiablePresentationSubmissionService verifiablePresentationSubmissionService) {
+                                  VerifiablePresentationSubmissionService verifiablePresentationSubmissionService,
+                                  DcqlValidator dcqlValidator) {
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
         this.verifiablePresentationSubmissionService = verifiablePresentationSubmissionService;
+        this.dcqlValidator = dcqlValidator;
     }
 
     /**
@@ -125,8 +131,21 @@ public class VPSubmissionController {
         log.debug("authRequestCreateResponse is {}", authRequestCreateResponse);
 
         // ---- 5. Validate against the DCQL if vp_token is present
-
-        // TODO
+        if (StringUtils.hasText(vpToken)) {
+            DCQLQueryDto dcqlQuery = authRequestCreateResponse.getAuthorizationDetails().getDcqlQuery();
+            if (dcqlQuery != null) {
+                try {
+                    ObjectMapper objectMapper = new ObjectMapper();
+                    dcqlValidator.validateVpTokenAgainstDcql(dcqlQuery, objectMapper.readTree(vpToken));
+                } catch (VPRequestValidationException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new ErrorDto(e.getErrorCode().getErrorCode(), e.getMessage()));
+                } catch (IOException e) {
+                    return ResponseEntity.status(HttpStatus.BAD_REQUEST)
+                            .body(new ErrorDto(ErrorCode.VP_TOKEN_NOT_VALID_JSON_OBJECT));
+                }
+            }
+        }
 
         // ---- 6. Extract DCQL VP tokens from the vp_token string
         DcqlTokensDto dcqlTokensDto = null;

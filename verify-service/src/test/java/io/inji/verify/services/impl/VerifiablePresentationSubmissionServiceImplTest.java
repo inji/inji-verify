@@ -4,15 +4,16 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.nimbusds.jose.shaded.gson.Gson;
 import io.inji.verify.dto.VerificationSessionRequestDto;
 import io.inji.verify.dto.core.ErrorDto;
-import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
 import io.inji.verify.dto.result.CredentialResultsDto;
 import io.inji.verify.dto.result.VPTokenDto;
-import io.inji.verify.dto.submission.DescriptorMapDto;
-import io.inji.verify.dto.submission.PathNestedDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.dto.verification.VCVerificationResultDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
 import io.inji.verify.dto.verification.VCVerificationRequestDto;
+import io.inji.verify.dto.dcql.CredentialMetaDto;
+import io.inji.verify.dto.dcql.CredentialQueryDto;
+import io.inji.verify.dto.dcql.DCQLQueryDto;
+import io.inji.verify.dto.result.DcqlTokensDto;
 import io.inji.verify.enums.KBJwtErrorCodes;
 import io.inji.verify.enums.VPResultStatus;
 import io.inji.verify.exception.*;
@@ -364,6 +365,26 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         }
 
         @Test
+        public void testGetVPResult_TokenMatchingFailedException() {
+            List<String> requestIds = List.of("req123");
+            String transactionId = "tx123";
+
+            VPSubmission vpSubmission = vpSubmission("state123",
+                    "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
+                    null, null, null, null,
+                    false);
+
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(null);
+
+            VPTokenResultDto resultDto =
+                    verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
+
+            assertNotNull(resultDto);
+            assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
+        }
+
+        @Test
         public void testGetVPResult_TokenMatchingFailed_EmptyDescriptorMap() {
             List<String> requestIds = List.of("req123");
             String transactionId = "tx123";
@@ -395,11 +416,10 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             VPSubmission vpSubmission = vpSubmission("state123",
                     "{\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}",
-                    null, null,
-                    null, null, false);
+                    null, null, null, null, false);
 
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
-                    "clientId", DcqlTestFixtures.minimalDcqlDto(), null,"nonce", "responseUri", false, false);
+                    "clientId", DcqlTestFixtures.minimalDcqlDto(),null, "nonce", "responseUri", false, false);
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
@@ -432,7 +452,8 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                     .thenReturn(authResponse);
-            when(presentationVerifier.verify(anyString())).thenThrow(new RuntimeException("Verification error"));
+            when(presentationVerifier.verify(anyString()))
+                    .thenThrow(new RuntimeException("Verification error"));
 
             VPTokenResultDto resultDto =
                     verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
@@ -492,26 +513,6 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                     new VCResultWithCredentialStatus("", VerificationStatus.INVALID, new HashMap<>()));
             when(presentationVerifier.verifyAndGetCredentialStatus(anyString(), anyList()))
                     .thenReturn(new PresentationResultWithCredentialStatus(VPVerificationStatus.VALID, vcResults));
-
-            VPTokenResultDto resultDto =
-                    verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
-
-            assertNotNull(resultDto);
-            assertEquals(VPResultStatus.FAILED, resultDto.getVpResultStatus());
-        }
-
-        @Test
-        public void testGetVPResult_TokenMatchingFailedException() {
-            List<String> requestIds = List.of("req123");
-            String transactionId = "tx123";
-
-            VPSubmission vpSubmission = vpSubmission("state123",
-                    "{\"age_credential\":[{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"},\"verifiableCredential\":[]}]}",
-                    null, null, null, null,
-                    false);
-
-            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
-            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId)).thenReturn(null);
 
             VPTokenResultDto resultDto =
                     verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
@@ -747,10 +748,16 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
         @Test
         public void testProcessSdJwtVpTokens_Success() {
-            String header = Base64.getUrlEncoder().encodeToString("{\"typ\":\"vc+sd-jwt\"}".getBytes());
-            String payload = Base64.getUrlEncoder().encodeToString("{\"sub\":\"123\"}".getBytes());
-            String signature = Base64.getUrlEncoder().encodeToString("signature".getBytes());
-            String sdJwtToken = header + "." + payload + "." + signature;
+            String header = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"typ\":\"dc+sd-jwt\"}".getBytes());
+            // cnf claim is required when require_cryptographic_holder_binding=true (default for unknown query IDs)
+            String payload = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"sub\":\"123\",\"cnf\":{\"kid\":\"k1\"}}".getBytes());
+            String signature = Base64.getUrlEncoder().withoutPadding().encodeToString("signature".getBytes());
+            String kbHeader = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"typ\":\"kb+jwt\"}".getBytes());
+            String kbPayload = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"nonce\":\"abc\"}".getBytes());
+            String kbSig = Base64.getUrlEncoder().withoutPadding().encodeToString("kbsig".getBytes());
+            // SD-JWT with cnf and KB-JWT: header.payload.sig~disclosure~kb-header.kb-payload.kb-sig
+            String sdJwtToken = header + "." + payload + "." + signature
+                    + "~disclosure~" + kbHeader + "." + kbPayload + "." + kbSig;
             VPSubmission vpSubmission = vpSubmission(
                     "state123",
                     "{\"age_credential\":[\"" + sdJwtToken + "\"]}",
@@ -776,7 +783,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
-            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.VC_SD_JWT), anyList()))
+            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.DC_SD_JWT), anyList()))
                     .thenReturn(mockSummary);
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                     .thenReturn(authResponse);
@@ -1717,7 +1724,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         public void testExtractTokens_MixedArray() {
             String vcJson = "{\"type\":[\"VerifiableCredential\"]}";
             String base64Token = Base64.getUrlEncoder().encodeToString(vcJson.getBytes());
-            String header = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"typ\":\"vc+sd-jwt\"}".getBytes());
+            String header = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"typ\":\"dc+sd-jwt\"}".getBytes());
             String payload = Base64.getUrlEncoder().withoutPadding().encodeToString("{\"sub\":\"123\"}".getBytes());
             String signature = Base64.getUrlEncoder().withoutPadding().encodeToString("sig".getBytes());
             String sdJwtToken = header + "." + payload + "." + signature;
@@ -1772,6 +1779,89 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         public void testExtractTokens_InvalidBase64InArray() {
             String arrayToken = "[\"valid-base64-first\", \"invalid!!!base64\"]";
             assertThrows(InvalidVpTokenException.class, () -> verifiablePresentationSubmissionService.extractTokens(arrayToken));
+        }
+    }
+
+    @Nested
+    class ExtractDcqlTokens {
+
+        private static final String H = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("{\"typ\":\"dc+sd-jwt\"}".getBytes());
+        private static final String PAYLOAD_NO_CNF = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("{\"sub\":\"123\"}".getBytes());
+        private static final String PAYLOAD_WITH_CNF = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("{\"sub\":\"123\",\"cnf\":{\"kid\":\"k1\"}}".getBytes());
+        private static final String SIG = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("sig".getBytes());
+        private static final String KB_HEADER = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("{\"typ\":\"kb+jwt\"}".getBytes());
+        private static final String KB_PAYLOAD = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("{\"cnf\":\"abc\"}".getBytes());
+        private static final String KB_SIG = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString("kbsig".getBytes());
+
+        /** dc+sd-jwt with cnf claim and KB-JWT appended */
+        private static final String SD_JWT_WITH_CNF_AND_KB =
+                H + "." + PAYLOAD_WITH_CNF + "." + SIG + "~" + KB_HEADER + "." + KB_PAYLOAD + "." + KB_SIG;
+
+        /** dc+sd-jwt with cnf claim but no KB-JWT (trailing ~) */
+        private static final String SD_JWT_WITH_CNF_NO_KB =
+                H + "." + PAYLOAD_WITH_CNF + "." + SIG + "~disclosure~";
+
+        /** dc+sd-jwt without cnf claim */
+        private static final String SD_JWT_WITHOUT_CNF =
+                H + "." + PAYLOAD_NO_CNF + "." + SIG + "~";
+
+        private AuthorizationRequestResponseDto buildAuthRequest(boolean holderBinding) {
+            DCQLQueryDto dcql = new DCQLQueryDto(
+                    List.of(new CredentialQueryDto(
+                            "cred1", "dc+sd-jwt",
+                            new CredentialMetaDto(List.of("cred1"), null),
+                            holderBinding, false, null, null)),
+                    null);
+            return new AuthorizationRequestResponseDto("clientId", dcql, null, "nonce", "responseUri", false, false);
+        }
+
+        @Test
+        void shouldThrow_whenSdJwtMissingCnf_andHolderBindingRequired() {
+            String vpToken = "{\"cred1\":[\"" + SD_JWT_WITHOUT_CNF + "\"]}";
+            AuthorizationRequestResponseDto authRequest = buildAuthRequest(true);
+
+            InvalidVpTokenException ex = assertThrows(InvalidVpTokenException.class,
+                    () -> verifiablePresentationSubmissionService.extractDcqlTokens(vpToken, authRequest));
+            assertTrue(ex.getMessage().contains("missing cnf claim"));
+        }
+
+        @Test
+        void shouldThrow_whenSdJwtHasCnf_butMissingKbJwt_andHolderBindingRequired() {
+            String vpToken = "{\"cred1\":[\"" + SD_JWT_WITH_CNF_NO_KB + "\"]}";
+            AuthorizationRequestResponseDto authRequest = buildAuthRequest(true);
+
+            InvalidVpTokenException ex = assertThrows(InvalidVpTokenException.class,
+                    () -> verifiablePresentationSubmissionService.extractDcqlTokens(vpToken, authRequest));
+            assertTrue(ex.getMessage().contains("missing required Key Binding JWT"));
+        }
+
+        @Test
+        void shouldSucceed_whenSdJwtHasCnfAndKbJwt_andHolderBindingRequired() throws InvalidVpTokenException {
+            String vpToken = "{\"cred1\":[\"" + SD_JWT_WITH_CNF_AND_KB + "\"]}";
+            AuthorizationRequestResponseDto authRequest = buildAuthRequest(true);
+
+            DcqlTokensDto result = verifiablePresentationSubmissionService.extractDcqlTokens(vpToken, authRequest);
+            assertNotNull(result);
+            assertTrue(result.getSdJwtTokens().containsKey("cred1"));
+            assertEquals(1, result.getSdJwtTokens().get("cred1").size());
+        }
+
+        @Test
+        void shouldSucceed_whenSdJwtMissingCnf_andHolderBindingNotRequired() throws InvalidVpTokenException {
+            String vpToken = "{\"cred1\":[\"" + SD_JWT_WITHOUT_CNF + "\"]}";
+            AuthorizationRequestResponseDto authRequest = buildAuthRequest(false);
+
+            DcqlTokensDto result = verifiablePresentationSubmissionService.extractDcqlTokens(vpToken, authRequest);
+            assertNotNull(result);
+            assertTrue(result.getSdJwtTokens().containsKey("cred1"));
+            assertEquals(1, result.getSdJwtTokens().get("cred1").size());
         }
     }
 }

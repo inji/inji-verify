@@ -1,5 +1,6 @@
 package io.inji.verify.utils;
 
+import com.fasterxml.jackson.databind.JsonNode;
 import com.authlete.cbor.CBORDecoder;
 import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORTaggedItem;
@@ -46,20 +47,135 @@ import static io.ipfs.multibase.Base16.bytesToHex;
 @Component
 public final class Utils {
 
-    private static final Set<String> VALID_SD_JWT_TYPES = Set.of("vc+sd-jwt", "dc+sd-jwt");
+    private static final Set<String> VALID_SD_JWT_TYPES = Set.of(Constants.FORMAT_DC_SD_JWT, Constants.FORMAT_VC_SD_JWT);
 
     public static String generateID(String prefix) {
         return prefix + "_" + UUID.randomUUID();
     }
 
     public static boolean isSdJwt(String vpToken) {
-        String[] jwtParts = vpToken.split("~")[0].split("\\.");
-        if (jwtParts.length != 3) {
+        try {
+            return VALID_SD_JWT_TYPES.contains(extractSdJwtTyp(vpToken));
+        } catch (Exception e) {
             return false;
         }
-        String header = decodeBase64Json(jwtParts[0]);
-        String typ = new JSONObject(header).optString("typ", "");
-        return VALID_SD_JWT_TYPES.contains(typ);
+    }
+
+    /**
+     * Extracts the {@code typ} header claim from an SD-JWT (or any JWT-like token).
+     * Splits on {@code ~} to get the credential JWT, then decodes the base64url header.
+     * Returns an empty string if the token is malformed or the header cannot be decoded.
+     */
+    private static String extractSdJwtTyp(String token) {
+        try {
+            String[] jwtParts = token.split("~")[0].split("\\.");
+            if (jwtParts.length != 3) {
+                return "";
+            }
+            String header = decodeBase64Json(jwtParts[0]);
+            return new JSONObject(header).optString("typ", "");
+        } catch (Exception e) {
+            return "";
+        }
+    }
+
+    /**
+     * Returns true if the SD-JWT payload contains a non-null, non-empty {@code cnf} claim,
+     * indicating the credential supports Holder Binding. Per OpenID4VP §6.4.2: SD-JWTs without a
+     * {@code cnf} claim cannot be returned when {@code require_cryptographic_holder_binding} is true.
+     * A {@code cnf} value that is null or an empty object does not carry key material and is treated
+     * as absent.
+     * Returns false if the payload cannot be decoded, the cnf claim is absent, null, or empty.
+     */
+    public static boolean hasSdJwtCnfClaim(String sdJwt) {
+        try {
+            String[] jwtParts = sdJwt.split("~")[0].split("\\.");
+            String payloadJson = decodeBase64Json(jwtParts[1]);
+            JSONObject payload = new JSONObject(payloadJson);
+            if (!payload.has("cnf") || payload.isNull("cnf")) {
+                return false;
+            }
+            Object cnf = payload.get("cnf");
+            if (cnf instanceof JSONObject) {
+                return !((JSONObject) cnf).isEmpty();
+            }
+            // cnf can also be a string (JWK thumbprint form) — non-empty string is valid
+            if (cnf instanceof String) {
+                return !((String) cnf).isBlank();
+            }
+            return true;
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    /**
+     * Checks whether an SD-JWT string contains a Key Binding JWT (KB-JWT).
+     * Per the IETF SD-JWT spec, the KB-JWT is the last ~-delimited part and is itself a full JWT
+     * (three Base64url segments separated by dots). An SD-JWT without a KB-JWT ends with a trailing ~
+     * (the last part after splitting on ~ is empty).
+     */
+    public static boolean hasSdJwtKeyBinding(String sdJwt) {
+        String[] parts = sdJwt.split("~", -1); // -1 preserves trailing empty string
+        String lastPart = parts[parts.length - 1];
+        return !lastPart.isEmpty() && lastPart.split("\\.").length == 3;
+    }
+
+    /**
+     * Extracts the vct claim directly from the SD-JWT's JWT payload.
+     * Per the SD-JWT VC spec, vct is always in the unsecured payload and is never selectively disclosable.
+     * Returns null if the payload cannot be decoded or the vct claim is absent.
+     */
+    public static String extractSdJwtVct(String sdJwt) {
+        try {
+            String[] jwtParts = sdJwt.split("~")[0].split("\\.");
+            String payloadJson = decodeBase64Json(jwtParts[1]);
+            return new JSONObject(payloadJson).optString("vct", null);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
+     * Returns true if a credential's type value satisfies a required type from type_values.
+     * Supports both exact match and fragment match:
+     *   "VerifiableCredential" matches "https://www.w3.org/2018/credentials#VerifiableCredential"
+     * Per DCQL spec: if a type is not defined in any @context it remains a relative IRI,
+     * so JSON-LD processing may be skipped and the fragment is treated as the expanded type.
+     */
+    public static boolean ldpTypeMatches(String credentialType, String requiredType) {
+        if (credentialType.equals(requiredType)) return true;
+        int fragmentIndex = requiredType.lastIndexOf('#');
+        return fragmentIndex >= 0 && credentialType.equals(requiredType.substring(fragmentIndex + 1));
+    }
+
+    /**
+     * Extracts all values from the "type" field of an ldp_vc JSON node into a Set.
+     * Handles both single string and array forms.
+     */
+    public static Set<String> extractLdpTypes(JsonNode item) {
+        Set<String> types = new HashSet<>();
+        JsonNode typeNode = item.get("type");
+        if (typeNode == null || !typeNode.isArray()) return types;
+        typeNode.forEach(t -> types.add(t.asText()));
+        return types;
+    }
+
+    public static boolean isLdpFormat(JsonNode item, String formatType) {
+        JsonNode typeNode = item.get("type");
+        if (typeNode == null) {
+            return false;
+        }
+        if (typeNode.isArray()) {
+            for (JsonNode typeValue : typeNode) {
+                if (formatType.equalsIgnoreCase(typeValue.asText())) {
+                    return true;
+                }
+            }
+        } else if (typeNode.isTextual()) {
+            return formatType.equalsIgnoreCase(typeNode.asText());
+        }
+        return false;
     }
 
     public static boolean isCwt(String credential) {
@@ -223,27 +339,28 @@ public final class Utils {
     private static Map<String, Object> extractLdpClaims(String verifiableCredential) {
         try {
             JSONObject vcObject = new JSONObject(verifiableCredential);
-            JSONObject credentialSubject = vcObject.optJSONObject("credentialSubject");
+            JSONObject credentialSubject = vcObject.optJSONObject(Constants.KEY_CREDENTIAL_SUBJECT);
             return credentialSubject != null ? credentialSubject.toMap() : Map.of();
         } catch (Exception e) {
             throw new InvalidCredentialException("Failed to extract JSON claims", e);
         }
     }
 
+    /** Returns all claims from an SD-JWT (payload + disclosures decoded), minus any meta claims. */
     private static Map<String, Object> extractSdJwtClaims(String verifiableCredential, List<String> metaClaims) {
         try {
             SDJWT sdjwt = SDJWT.parse(verifiableCredential);
             String payloadJson = decodeBase64Json(sdjwt.getCredentialJwt().split("\\.")[1]);
             Map<String, Object> payloadClaims = new JSONObject(payloadJson).toMap();
             List<Disclosure> disclosures = sdjwt.getDisclosures();
-            SDObjectDecoder decoder = new SDObjectDecoder();
-            Map<String, Object> claims = new HashMap<>(decoder.decode(payloadClaims, disclosures));
+            Map<String, Object> claims = new HashMap<>(new SDObjectDecoder().decode(payloadClaims, disclosures));
             excludeMetaClaims(metaClaims, claims);
             return claims;
         } catch (Exception e) {
             throw new InvalidCredentialException("Failed to extract SD-JWT claims", e);
         }
     }
+
 
     private static void excludeMetaClaims(List<String> metaClaims, Map<String, Object> claims) {
         for (String metaClaim : Optional.ofNullable(metaClaims).orElseGet(List::of)) {
@@ -260,7 +377,9 @@ public final class Utils {
             }
 
             if (Utils.isSdJwt(verifiableCredential)) {
-                return CredentialFormat.VC_SD_JWT;
+                return Constants.FORMAT_VC_SD_JWT.equals(extractSdJwtTyp(verifiableCredential))
+                        ? CredentialFormat.VC_SD_JWT
+                        : CredentialFormat.DC_SD_JWT;
             }
 
             return CredentialFormat.LDP_VC;

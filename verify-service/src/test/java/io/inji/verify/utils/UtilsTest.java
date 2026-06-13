@@ -118,9 +118,10 @@ public class UtilsTest {
 
     @Test
     void shouldReturnSdJwtFormatForValidSdJwtString() {
-        String sdJwt = "eyJ0eXAiOiJ2YytzZC1qd3QifQ.payload.signature~disclosure";
+        // eyJ0eXAiOiJkYytzZC1qd3QifQ = {"typ":"dc+sd-jwt"}
+        String sdJwt = "eyJ0eXAiOiJkYytzZC1qd3QifQ.payload.signature~disclosure";
         CredentialFormat format = Utils.getCredentialFormat(sdJwt);
-        assertEquals(CredentialFormat.VC_SD_JWT, format);
+        assertEquals(CredentialFormat.DC_SD_JWT, format);
     }
 
     @Test

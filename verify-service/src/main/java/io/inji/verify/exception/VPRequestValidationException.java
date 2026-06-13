@@ -10,9 +10,26 @@ public class VPRequestValidationException extends RuntimeException {
 
     private final ErrorCode errorCode;
 
+    /** Short constructor — message is the enum's fixed error message. */
     public VPRequestValidationException(ErrorCode errorCode) {
         super(errorCode.getErrorMessage());
         this.errorCode = errorCode;
+    }
+
+    /** Detailed constructor — message is used verbatim. */
+    public VPRequestValidationException(ErrorCode errorCode, String detailedMessage) {
+        super(detailedMessage);
+        this.errorCode = errorCode;
+    }
+
+    /**
+     * Returns a new exception with the credential query ID prepended to the message, e.g.:
+     * {@code [credential_id: my_cred] <original message>}
+     */
+    public VPRequestValidationException withCredentialId(String credentialId) {
+        return new VPRequestValidationException(
+                this.errorCode,
+                "[credential_id: " + credentialId + "] " + this.getMessage());
     }
 
     public static VPRequestValidationException from(MethodArgumentNotValidException ex) {

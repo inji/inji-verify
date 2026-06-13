@@ -222,6 +222,49 @@ public class VPRequestControllerTest {
     }
 
     @Test
+    void shouldReturnBadRequest_whenTypeValuesIsAFlatArrayInsteadOfArrayOfArrays() throws Exception {
+        // type_values must be [[...],[...]] — a flat array like ["TypeA","TypeB"] is invalid.
+        String body = "{\"clientId\":\"c1\",\"nonce\":\"n\","
+                + "\"dcqlQuery\":{\"credentials\":[{\"id\":\"x\",\"format\":\"ldp_vc\","
+                + "\"meta\":{\"type_values\":"
+                + "[\"https://www.w3.org/2018/credentials#VerifiableCredential\","
+                + "\"https://example.org/credentials#AgeCredential\"]"
+                + "}}]},"
+                + "\"acceptVPWithoutHolderProof\":false,\"responseCodeValidationRequired\":false}";
+
+        MvcResult result = mockMvc.perform(post("/v2/vp-request")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        com.fasterxml.jackson.databind.JsonNode responseNode =
+                objectMapper.readTree(result.getResponse().getContentAsString());
+        String errorMessage = responseNode.path("errorMessage").asText("");
+        assertEquals("type_values must be an array of arrays.", errorMessage);
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVctValuesIsAStringInsteadOfArray() throws Exception {
+        // vct_values must be ["uri1","uri2"] — a plain string is invalid.
+        String body = "{\"clientId\":\"c1\",\"nonce\":\"n\","
+                + "\"dcqlQuery\":{\"credentials\":[{\"id\":\"x\",\"format\":\"dc+sd-jwt\","
+                + "\"meta\":{\"vct_values\":\"https://example.com/AgeCredential\"}}]},"
+                + "\"acceptVPWithoutHolderProof\":false,\"responseCodeValidationRequired\":false}";
+
+        MvcResult result = mockMvc.perform(post("/v2/vp-request")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content(body))
+                .andExpect(status().isBadRequest())
+                .andReturn();
+
+        com.fasterxml.jackson.databind.JsonNode responseNode =
+                objectMapper.readTree(result.getResponse().getContentAsString());
+        assertEquals("vct_values must be an array of strings.",
+                responseNode.path("errorMessage").asText(""));
+    }
+
+    @Test
     void handleVPRequestValidationException_returnsErrorDto() throws Exception {
         BeanPropertyBindingResult bindingResult =
                 new BeanPropertyBindingResult(new Object(), "VPRequestCreateDto");
