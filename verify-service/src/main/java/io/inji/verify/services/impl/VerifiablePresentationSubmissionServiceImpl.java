@@ -209,15 +209,17 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     private boolean isCryptographicHolderBindingRequired(AuthorizationRequestResponseDto authRequest, String queryId) {
-        boolean isCryptographicHolderBindingRequired = authRequest
+        return authRequest
                 .getDcqlQuery()
                 .getCredentials()
                 .stream()
                 .filter(cq -> cq.getId().equals(queryId))
                 .findFirst()
-                .map(cq -> cq.getRequire_cryptographic_holder_binding())
-                .orElse(true);
-        return isCryptographicHolderBindingRequired;
+                .map(cq -> cq.isRequire_cryptographic_holder_binding())
+                .orElseGet(() -> {
+                    log.warn("No DCQL credential entry found for queryId '{}' in stored VP token; defaulting require_cryptographic_holder_binding to true", queryId);
+                    return true;
+                });
     }
 
     /**

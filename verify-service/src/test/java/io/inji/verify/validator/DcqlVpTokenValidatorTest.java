@@ -1189,6 +1189,26 @@ class DcqlVpTokenValidatorTest {
         assertEquals(ErrorCode.VP_TOKEN_CLAIM_NOT_FOUND, ex.getErrorCode());
     }
 
+    @Test
+    void shouldFail_whenVpMissingVerifiableCredentialArray_holderBindingRequired() {
+        // VP has no "verifiableCredential" array — claim validation must not be silently skipped.
+        // Even when typeValues is absent (so validateTypeValues returns early without catching this),
+        // validateLdpClaims must throw VP_TOKEN_MISSING_VERIFIABLE_CREDENTIAL.
+        List<ClaimQueryDto> claims = List.of(claimPath("name"));
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithClaims("cred1", true, claims)), null);
+
+        ObjectNode vp = MAPPER.createObjectNode();
+        vp.putArray("type").add("VerifiablePresentation");
+        // intentionally no "verifiableCredential" array
+        ObjectNode token = MAPPER.createObjectNode();
+        token.putArray("cred1").add(vp);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query, token));
+
+        assertEquals(ErrorCode.VP_TOKEN_MISSING_VERIFIABLE_CREDENTIAL, ex.getErrorCode());
+    }
+
     // -------------------------------------------------------------------------
     // Validation H: claim value matching
     // -------------------------------------------------------------------------

@@ -29,7 +29,7 @@ public class AuthorizationRequestResponseDto {
     private final VPDefinitionResponseDto presentationDefinition;
     private final String nonce;
     private final String responseUri;
-    // This is for backward compatibility, as the presentation definition for VP results.
+    // This is deprecated and for backward compatibility to support older VP submissions without holder proof.
     private final boolean acceptVPWithoutHolderProof;
     private final boolean responseCodeValidationRequired;
 }

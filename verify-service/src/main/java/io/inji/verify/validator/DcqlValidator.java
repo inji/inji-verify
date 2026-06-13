@@ -415,15 +415,14 @@ public class DcqlValidator {
 
     /** D: if multiple=false (default), each credential array must contain exactly one element. */
     private static void validateMultipleConstraint(CredentialQueryDto matchingQuery, JsonNode submittedCredentials) {
-        if (!matchingQuery.getMultiple() && submittedCredentials.size() > 1) {
+        if (!matchingQuery.isMultiple() && submittedCredentials.size() > 1) {
             throw new VPRequestValidationException(ErrorCode.VP_TOKEN_MULTIPLE_CREDENTIALS_NOT_ALLOWED);
         }
     }
 
-    /** Returns true if require_cryptographic_holder_binding is unset (defaults to true) or explicitly true. */
+    /** Returns true if require_cryptographic_holder_binding is true (defaults to true per spec). */
     private static boolean isHolderBindingRequired(CredentialQueryDto matchingQuery) {
-        Boolean requireCryptographicHolderBinding = matchingQuery.getRequire_cryptographic_holder_binding();
-        return requireCryptographicHolderBinding == null || requireCryptographicHolderBinding;
+        return matchingQuery.isRequire_cryptographic_holder_binding();
     }
 
     /**
@@ -546,7 +545,7 @@ public class DcqlValidator {
             if (holderBindingRequired) {
                 JsonNode vcArray = submittedCredential.get(Constants.KEY_VERIFIABLE_CREDENTIAL);
                 if (vcArray == null || !vcArray.isArray()) {
-                    return; // already caught by validateHolderBinding / validateTypeValues
+                    throw new VPRequestValidationException(ErrorCode.VP_TOKEN_MISSING_VERIFIABLE_CREDENTIAL);
                 }
                 for (JsonNode innerVc : vcArray) {
                     JsonNode subject = innerVc.path(Constants.KEY_CREDENTIAL_SUBJECT);

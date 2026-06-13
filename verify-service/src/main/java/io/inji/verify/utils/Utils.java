@@ -151,13 +151,20 @@ public final class Utils {
 
     /**
      * Extracts all values from the "type" field of an ldp_vc JSON node into a Set.
-     * Handles both single string and array forms.
+     * Supports both forms allowed by the VC Data Model:
+     *   - a single string:  "type": "VerifiableCredential"
+     *   - an array of strings: "type": ["VerifiableCredential", "UniversityDegreeCredential"]
+     * Returns an empty set for null or any other node type.
      */
     public static Set<String> extractLdpTypes(JsonNode item) {
         Set<String> types = new HashSet<>();
         JsonNode typeNode = item.get("type");
-        if (typeNode == null || !typeNode.isArray()) return types;
-        typeNode.forEach(t -> types.add(t.asText()));
+        if (typeNode == null) return types;
+        if (typeNode.isTextual()) {
+            types.add(typeNode.asText());
+        } else if (typeNode.isArray()) {
+            typeNode.forEach(t -> types.add(t.asText()));
+        }
         return types;
     }
 

@@ -452,7 +452,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                     .thenReturn(authResponse);
-            when(presentationVerifier.verify(anyString()))
+            when(presentationVerifier.verifyAndGetCredentialStatus(anyString(), any()))
                     .thenThrow(new RuntimeException("Verification error"));
 
             VPTokenResultDto resultDto =

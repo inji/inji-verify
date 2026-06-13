@@ -77,6 +77,7 @@ public enum ErrorCode {
     VP_TOKEN_MULTIPLE_CREDENTIALS_NOT_ALLOWED("invalid_request", "vp_token contains multiple credentials for a query that does not allow multiple."),
     VP_TOKEN_EXPECTED_VERIFIABLE_PRESENTATION("invalid_request", "vp_token ldp_vc credential must be a VerifiablePresentation when require_cryptographic_holder_binding is true."),
     VP_TOKEN_EXPECTED_VERIFIABLE_CREDENTIAL("invalid_request", "vp_token ldp_vc credential must be a VerifiableCredential when require_cryptographic_holder_binding is false."),
+    VP_TOKEN_MISSING_VERIFIABLE_CREDENTIAL("invalid_request", "vp_token VerifiablePresentation is missing a verifiableCredential array, which is required when require_cryptographic_holder_binding is true."),
     VP_TOKEN_SD_JWT_MISSING_CNF("invalid_request", "vp_token SD-JWT credential does not contain a cnf claim and therefore does not support Holder Binding, which is required when require_cryptographic_holder_binding is true."),
     VP_TOKEN_SD_JWT_MISSING_KEY_BINDING("invalid_request", "vp_token SD-JWT credential must include a Key Binding JWT when require_cryptographic_holder_binding is true."),
     VP_TOKEN_META_TYPE_VALUES_MISMATCH("invalid_request", "vp_token ldp_vc credential type values do not satisfy any of the type_values options in the DCQL query."),
