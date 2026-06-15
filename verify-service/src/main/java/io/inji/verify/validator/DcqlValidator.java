@@ -218,9 +218,15 @@ public class DcqlValidator {
     }
 
     private static void validateMetaValues(CredentialMetaDto meta) {
-        if (meta.getVctValues() != null &&
-                meta.getVctValues().size() != new HashSet<>(meta.getVctValues()).size()) {
-            throw new VPRequestValidationException(ErrorCode.DCQL_META_DUPLICATES);
+        if (meta.getVctValues() != null) {
+            for (String vctValue : meta.getVctValues()) {
+                if (vctValue == null || vctValue.isBlank()) {
+                    throw new VPRequestValidationException(ErrorCode.DCQL_META_INVALID);
+                }
+            }
+            if (meta.getVctValues().size() != new HashSet<>(meta.getVctValues()).size()) {
+                throw new VPRequestValidationException(ErrorCode.DCQL_META_DUPLICATES);
+            }
         }
 
         if (meta.getTypeValues() != null) {
@@ -233,16 +239,18 @@ public class DcqlValidator {
                 throw new VPRequestValidationException(ErrorCode.DCQL_META_DUPLICATES);
             }
             for (List<String> option : meta.getTypeValues()) {
-                // Each inner array must be non-empty (it is a set of types that must ALL be present)
-                if (option.isEmpty()) {
+                // Each inner array must be non-null and non-empty
+                if (option == null || option.isEmpty()) {
                     throw new VPRequestValidationException(ErrorCode.DCQL_META_INVALID);
                 }
                 // Duplicate types within a single inner array are not allowed
-                // (inner array is a type set — duplicates are meaningless and indicate a malformed query)
                 if (option.size() != new HashSet<>(option).size()) {
                     throw new VPRequestValidationException(ErrorCode.DCQL_META_DUPLICATES);
                 }
                 for (String typeValue : option) {
+                    if (typeValue == null || typeValue.isBlank()) {
+                        throw new VPRequestValidationException(ErrorCode.DCQL_META_INVALID);
+                    }
                     if (!isValidIri(typeValue)) {
                         throw new VPRequestValidationException(ErrorCode.DCQL_META_TYPE_VALUE_INVALID_IRI);
                     }

@@ -11,6 +11,7 @@ import io.inji.verify.shared.Constants;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 
@@ -322,6 +323,61 @@ class DcqlQueryValidatorTest {
                 () -> validator.validate(query));
 
         assertEquals(ErrorCode.DCQL_META_DUPLICATES, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenTypeValuesInnerArrayContainsNullEntry() {
+        List<String> option = new ArrayList<>();
+        option.add("VerifiableCredential");
+        option.add(null);
+        CredentialMetaDto meta = new CredentialMetaDto(null, List.of(option));
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(credWithMeta("c", Constants.FORMAT_LDP_VC, meta)), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validate(query));
+
+        assertEquals(ErrorCode.DCQL_META_INVALID, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenTypeValuesInnerArrayContainsBlankEntry() {
+        CredentialMetaDto meta = new CredentialMetaDto(null,
+                List.of(List.of("VerifiableCredential", "   ")));
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(credWithMeta("c", Constants.FORMAT_LDP_VC, meta)), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validate(query));
+
+        assertEquals(ErrorCode.DCQL_META_INVALID, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenVctValuesContainsNullEntry() {
+        List<String> vctValues = new ArrayList<>();
+        vctValues.add("https://example.org/vct/MyCredential");
+        vctValues.add(null);
+        CredentialMetaDto meta = new CredentialMetaDto(vctValues, null);
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(credWithMeta("c", Constants.FORMAT_DC_SD_JWT, meta)), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validate(query));
+
+        assertEquals(ErrorCode.DCQL_META_INVALID, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenVctValuesContainsBlankEntry() {
+        CredentialMetaDto meta = new CredentialMetaDto(List.of("https://example.org/vct/MyCredential", "  "), null);
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(credWithMeta("c", Constants.FORMAT_DC_SD_JWT, meta)), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validate(query));
+
+        assertEquals(ErrorCode.DCQL_META_INVALID, ex.getErrorCode());
     }
 
     @Test
