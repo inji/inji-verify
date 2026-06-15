@@ -711,7 +711,7 @@ class DcqlVpTokenValidatorTest {
 
     @Test
     void shouldPass_whenCredentialTypesMatchFullIriOption() {
-        // DCQL uses full IRIs; credential uses relative type names — fragment match must succeed.
+        // DCQL uses full IRIs with # separator; credential uses relative type names — fragment match must succeed.
         // e.g. "https://example.org/examples#UniversityDegreeCredential" must match "UniversityDegreeCredential".
         DCQLQueryDto query = new DCQLQueryDto(List.of(credWithTypeValues("cred1", List.of(
                 List.of(
@@ -721,6 +721,34 @@ class DcqlVpTokenValidatorTest {
         ))), null);
         assertDoesNotThrow(() -> validator.validateVpTokenAgainstDcql(query,
                 ldpVcTokenWithTypes("cred1", "UniversityDegreeCredential")));
+    }
+
+    @Test
+    void shouldPass_whenCredentialTypesMatchFullIriWithSlashSeparator() {
+        // DCQL uses full IRIs with / path separator; credential uses relative type name — path match must succeed.
+        // e.g. "https://example.org/types/DriversLicense" must match "DriversLicense".
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithTypeValues("cred1", List.of(
+                List.of(
+                        "https://www.w3.org/2018/credentials#VerifiableCredential",
+                        "https://example.org/types/DriversLicense"
+                )
+        ))), null);
+        assertDoesNotThrow(() -> validator.validateVpTokenAgainstDcql(query,
+                ldpVcTokenWithTypes("cred1", "VerifiableCredential", "DriversLicense")));
+    }
+
+    @Test
+    void shouldFail_whenCredentialTypeMatchesNeitherHashNorSlashSeparator() {
+        // Credential has "Other" but query requires "DriversLicense" via / path — must not match.
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithTypeValues("cred1", List.of(
+                List.of("https://example.org/types/DriversLicense")
+        ))), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query,
+                        ldpVcTokenWithTypes("cred1", "Other")));
+
+        assertEquals(ErrorCode.VP_TOKEN_META_TYPE_VALUES_MISMATCH, ex.getErrorCode());
     }
 
     @Test

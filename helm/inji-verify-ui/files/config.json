@@ -15,7 +15,7 @@
             "meta": {
               "type_values": [
                 [
-                  "MOSIPVerifiableCredential"
+                  "https://inji.github.io/inji-config/contexts/mosip-identity-context.json#MOSIPVerifiableCredential"
                 ]
               ]
             }
@@ -26,7 +26,7 @@
     {
       "logo": "/assets/cert.png",
       "name": "Life Insurance",
-      "type": "LifeInsuranceCredential",
+      "type": "InsuranceCredential",
       "clientIdPrefix": "decentralized_identifier",
       "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
       "dcqlQuery": {
@@ -37,10 +37,11 @@
             "meta": {
               "type_values": [
                 [
-                  "LifeInsuranceCredential"
+                  "https://inji.github.io/inji-config/contexts/insurance-context.json#InsuranceCredential"
                 ]
               ]
-            }
+            },
+            "multiple": true
           }
         ]
       }
@@ -48,7 +49,7 @@
     {
       "logo": "/assets/cert.png",
       "name": "Health Insurance",
-      "type": "InsuranceCredential",
+      "type": "HealthCredential",
       "clientIdPrefix": "pre_registered",
       "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
       "dcqlQuery": {
@@ -59,10 +60,11 @@
             "meta": {
               "type_values": [
                 [
-                  "InsuranceCredential"
+                  "https://inji.github.io/inji-config/contexts/insurance-context.json#InsuranceCredential"
                 ]
               ]
-            }
+            },
+            "multiple": true
           }
         ]
       }
@@ -77,7 +79,7 @@
         "credentials": [
           {
             "id": "mock_identity_sd_jwt_credential_id",
-            "format": "dc+sd-jwt",
+            "format": "vc+sd-jwt",
             "meta": {
               "vct_values": [
                 "MockVerifiableCredential_SD_JWT"
@@ -90,7 +92,7 @@
     {
       "logo": "/assets/cert.png",
       "name": "Land Registry",
-      "type": "LandStatementCredential",
+      "type": "RegistrationReceiptCredential",
       "clientIdPrefix": "decentralized_identifier",
       "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
       "dcqlQuery": {
@@ -101,7 +103,7 @@
             "meta": {
               "type_values": [
                 [
-                  "LandStatementCredential"
+                  "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json#RegistrationReceiptCredential"
                 ]
               ]
             }
@@ -188,11 +190,11 @@
   },
   "WebWallets": [
     {
-      "_note": "Replace walletBaseUrl with your own Inji Web Wallet URL. Accepts absolute URLs (https://wallet.example.org) or same-env relative paths (/wallet). Empty string disables the entry.",
+      "_note": "EXTERNAL DEPENDENCY: walletBaseUrl points to a shared dev/integration host. Replace with your own URL before use. Accepts absolute URLs (https://wallet.example.org) or same-env relative paths (/wallet). Empty string disables the entry. See docker-compose/README.md \u00a7 WebWallets Configuration.",
       "id": "inji-wallet",
       "name": "Inji Wallet",
       "iconUrl": "/assets/inji-web-wallet-icon.svg",
-      "walletBaseUrl": "https://from-install.sh"
+      "walletBaseUrl": "https://injiweb.dev.mosip.net"
     }
   ]
 }

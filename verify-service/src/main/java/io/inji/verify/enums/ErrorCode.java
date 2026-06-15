@@ -19,6 +19,7 @@ public enum ErrorCode {
     DCQL_CREDENTIAL_FORMAT_INVALID("dcql_query.credentials","DCQL credential format must be a valid format."),
     DCQL_META_REQUIRED("dcql_query.credentials","Each DCQL credential entry must contain meta."),
     DCQL_META_INVALID("dcql_query.credentials","DCQL meta must not contain null/blank values."),
+    DCQL_META_TYPE_VALUE_INVALID_IRI("dcql_query.credentials","Each value in type_values must be a valid IRI (absolute or relative)."),
     DCQL_META_DUPLICATES("dcql_query.credentials","DCQL meta must not contain duplicate values."),
     DCQL_META_NOT_MATCHING_FORMAT("dcql_query.credentials","DCQL meta fields must match the specified credential format."),
     DCQL_CLAIM_ID_INVALID("dcql_query.credentials","Claim id must contain only alphanumeric characters, underscores, and hyphens."),

@@ -138,15 +138,21 @@ public final class Utils {
 
     /**
      * Returns true if a credential's type value satisfies a required type from type_values.
-     * Supports both exact match and fragment match:
-     *   "VerifiableCredential" matches "https://www.w3.org/2018/credentials#VerifiableCredential"
+     * Supports exact match and local-name extraction via two IRI separators:
+     *   '#' fragment:  "VerifiableCredential" matches "https://www.w3.org/2018/credentials#VerifiableCredential"
+     *   '/' path:      "DriversLicense"       matches "https://example.org/types/DriversLicense"
      * Per DCQL spec: if a type is not defined in any @context it remains a relative IRI,
-     * so JSON-LD processing may be skipped and the fragment is treated as the expanded type.
+     * so JSON-LD processing may be skipped and the local name is treated as the expanded type.
+     * '#' is tried before '/' because fragment identifiers are the more common IRI pattern in VC contexts.
      */
     public static boolean ldpTypeMatches(String credentialType, String requiredType) {
         if (credentialType.equals(requiredType)) return true;
-        int fragmentIndex = requiredType.lastIndexOf('#');
-        return fragmentIndex >= 0 && credentialType.equals(requiredType.substring(fragmentIndex + 1));
+        int hashIndex = requiredType.lastIndexOf('#');
+        if (hashIndex >= 0) {
+            return credentialType.equals(requiredType.substring(hashIndex + 1));
+        }
+        int slashIndex = requiredType.lastIndexOf('/');
+        return slashIndex >= 0 && credentialType.equals(requiredType.substring(slashIndex + 1));
     }
 
     /**

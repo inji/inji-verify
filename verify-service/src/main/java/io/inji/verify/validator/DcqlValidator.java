@@ -13,6 +13,8 @@ import com.authlete.sd.Disclosure;
 import com.authlete.sd.SDJWT;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -218,14 +220,50 @@ public class DcqlValidator {
     private static void validateMetaValues(CredentialMetaDto meta) {
         if (meta.getVctValues() != null &&
                 meta.getVctValues().size() != new HashSet<>(meta.getVctValues()).size()) {
-            throw new VPRequestValidationException(
-                    ErrorCode.DCQL_META_DUPLICATES);
+            throw new VPRequestValidationException(ErrorCode.DCQL_META_DUPLICATES);
         }
 
-        if (meta.getTypeValues() != null &&
-                meta.getTypeValues().size() != new HashSet<>(meta.getTypeValues()).size()) {
-            throw new VPRequestValidationException(
-                    ErrorCode.DCQL_META_DUPLICATES);
+        if (meta.getTypeValues() != null) {
+            // Outer array must be non-empty
+            if (meta.getTypeValues().isEmpty()) {
+                throw new VPRequestValidationException(ErrorCode.DCQL_META_INVALID);
+            }
+            // Duplicate outer options not allowed
+            if (meta.getTypeValues().size() != new HashSet<>(meta.getTypeValues()).size()) {
+                throw new VPRequestValidationException(ErrorCode.DCQL_META_DUPLICATES);
+            }
+            for (List<String> option : meta.getTypeValues()) {
+                // Each inner array must be non-empty (it is a set of types that must ALL be present)
+                if (option.isEmpty()) {
+                    throw new VPRequestValidationException(ErrorCode.DCQL_META_INVALID);
+                }
+                // Duplicate types within a single inner array are not allowed
+                // (inner array is a type set — duplicates are meaningless and indicate a malformed query)
+                if (option.size() != new HashSet<>(option).size()) {
+                    throw new VPRequestValidationException(ErrorCode.DCQL_META_DUPLICATES);
+                }
+                for (String typeValue : option) {
+                    if (!isValidIri(typeValue)) {
+                        throw new VPRequestValidationException(ErrorCode.DCQL_META_TYPE_VALUE_INVALID_IRI);
+                    }
+                }
+            }
+        }
+    }
+
+    /**
+     * Returns true if the string is a valid IRI reference (absolute or relative).
+     * Per the DCQL spec, if a type is not defined in any @context it remains unchanged
+     * after JSON-LD processing — i.e. relative IRIs like "VerifiableCredential" or
+     * "MockVerifiableCredential" are fully expanded types and are valid type_values entries.
+     * Only rejects strings with characters illegal in an IRI (e.g. unencoded spaces).
+     */
+    private static boolean isValidIri(String value) {
+        try {
+            new URI(value);
+            return true;
+        } catch (URISyntaxException e) {
+            return false;
         }
     }
 
