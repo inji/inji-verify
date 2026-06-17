@@ -37,6 +37,7 @@ public enum ErrorCode {
     DCQL_CLAIM_PATH_INVALID("dcql_query.credentials","DCQL claim path must be a valid path."),
     DCQL_ALL_CREDENTIAL_SETS_OPTIONAL("dcql_query.credential_sets","credential_sets must contain at least one required entry."),
     CLIENT_ID_REQUIRED("invalid_request","client_id is required"),
+    NONCE_INVALID("invalid_request", "Nonce must contain only ASCII URL-safe characters (A-Z, a-z, 0-9, -, ., _, ~) and be at least 16 characters."),
     DID_CREATION_FAILED("DID_CREATION_FAILED","Error while creating DID document."),
     VP_SUBMISSION_EXCEPTION("VP_SUBMISSION_EXCEPTION","Error while processing VP submission"),
     TOKEN_MATCHING_FAILED("TOKEN_MATCHING_FAILED", "Token matching failed."),

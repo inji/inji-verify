@@ -22,6 +22,7 @@ import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPRequestStatus;
 import io.inji.verify.exception.JWTCreationException;
 import io.inji.verify.exception.VPRequestNotFoundException;
+import io.inji.verify.exception.VPRequestValidationException;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
@@ -35,8 +36,10 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
+import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.async.DeferredResult;
 import java.text.ParseException;
+import java.util.regex.Pattern;
 import java.time.Instant;
 import java.util.List;
 import java.util.Optional;
@@ -67,6 +70,8 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
 
     ConcurrentHashMap<String, DeferredResult<VPRequestStatusDto>> vpRequestStatusListeners = new ConcurrentHashMap<>();
 
+    private static final Pattern NONCE_PATTERN = Pattern.compile("^[A-Za-z0-9\\-._~]{16,}$");
+
     public VerifiablePresentationRequestServiceImpl(
             AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository,
             VPSubmissionRepository vpSubmissionRepository,
@@ -84,7 +89,15 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         String transactionId = vpRequestCreate.getTransactionId() != null ? vpRequestCreate.getTransactionId() : Utils.generateID(Constants.TRANSACTION_ID_PREFIX);
         String requestId = Utils.generateID(Constants.REQUEST_ID_PREFIX);
         long expiresAt = Instant.now().plusSeconds(Constants.DEFAULT_EXPIRY).toEpochMilli();
-        String nonce = vpRequestCreate.getNonce() != null ? vpRequestCreate.getNonce() : SecurityUtils.generateNonce();
+        String nonce;
+        if (StringUtils.hasText(vpRequestCreate.getNonce())) {
+            if (!NONCE_PATTERN.matcher(vpRequestCreate.getNonce()).matches()) {
+                throw new VPRequestValidationException(ErrorCode.NONCE_INVALID);
+            }
+            nonce = vpRequestCreate.getNonce();
+        } else {
+            nonce = SecurityUtils.generateNonce();
+        }
         String responseUri = verifyServiceBaseUrl + Constants.VP_RESPONSE_SUBMISSION_URI;
 
         boolean responseCodeValidationRequired = vpRequestCreate.isResponseCodeValidationRequired();

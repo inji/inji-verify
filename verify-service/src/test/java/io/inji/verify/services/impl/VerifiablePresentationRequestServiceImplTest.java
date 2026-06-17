@@ -9,7 +9,9 @@ import io.inji.verify.dto.authorizationrequest.VPRequestCreateDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.dcql.DCQLQueryDto;
+import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.exception.VPRequestNotFoundException;
+import io.inji.verify.exception.VPRequestValidationException;
 import com.nimbusds.jwt.SignedJWT;
 import io.inji.verify.testsupport.DcqlTestFixtures;
 import io.inji.verify.enums.VPRequestStatus;
@@ -304,6 +306,67 @@ class VerifiablePresentationRequestServiceImplTest {
         assertNotNull(responseDto.getAuthorizationDetails());
         assertTrue(responseDto.getAuthorizationDetails().isResponseCodeValidationRequired());
         assertTrue(responseDto.getExpiresAt() > Instant.now().toEpochMilli());
+    }
+
+    @Test
+    void shouldUseProvidedNonce_whenValidNonceSupplied() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+        String validNonce = "abcABC123-._~valid";  // 18 chars, all URL-safe
+
+        VPRequestCreateDto dto = new VPRequestCreateDto("client", "tx", validNonce, minimalDcqlQuery(), false);
+
+        VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+        assertEquals(validNonce, response.getAuthorizationDetails().getNonce());
+    }
+
+    @Test
+    void shouldGenerateNonce_whenNonceIsNull() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+
+        VPRequestCreateDto dto = new VPRequestCreateDto("client", "tx", null, minimalDcqlQuery(), false);
+
+        VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+        assertNotNull(response.getAuthorizationDetails().getNonce());
+        assertFalse(response.getAuthorizationDetails().getNonce().isBlank());
+    }
+
+    @Test
+    void shouldGenerateNonce_whenNonceIsBlank() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+
+        VPRequestCreateDto dto = new VPRequestCreateDto("client", "tx", "   ", minimalDcqlQuery(), false);
+
+        VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+        // blank nonce must NOT be used — a generated nonce must replace it
+        assertNotNull(response.getAuthorizationDetails().getNonce());
+        assertFalse(response.getAuthorizationDetails().getNonce().isBlank());
+        assertNotEquals("   ", response.getAuthorizationDetails().getNonce());
+    }
+
+    @Test
+    void shouldFail_whenNonceContainsDisallowedCharacters() throws Exception {
+        VPRequestCreateDto dto = new VPRequestCreateDto("client", "tx", "invalid nonce value!", minimalDcqlQuery(), false);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> service.createAuthorizationRequest(dto));
+
+        assertEquals(ErrorCode.NONCE_INVALID, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenNonceIsTooShort() throws Exception {
+        VPRequestCreateDto dto = new VPRequestCreateDto("client", "tx", "short", minimalDcqlQuery(), false);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> service.createAuthorizationRequest(dto));
+
+        assertEquals(ErrorCode.NONCE_INVALID, ex.getErrorCode());
     }
 
     @Test

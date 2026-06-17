@@ -18,7 +18,7 @@ public class VPRequestCreateDto {
     String clientId;
     @Schema(description = "Transaction identifier for the VP request.")
     String transactionId;
-    @Schema(description = "Nonce for the VP request.")
+    @Schema(description = "Optional nonce for the VP request. If omitted, a cryptographically random nonce is generated. When provided, must contain only ASCII URL-safe characters (A-Z, a-z, 0-9, -, ., _, ~) and be at least 16 characters.")
     String nonce;
     @Valid
     @NotNull(message = "DCQL_QUERY_REQUIRED")

@@ -15,9 +15,11 @@ class SecurityUtilsTest {
     void testGenerateNonce_LengthAndFormat() {
         String nonce = SecurityUtils.generateNonce();
 
-        assertEquals(32, nonce.length());
+        assertEquals(22, nonce.length());
 
-        assertTrue(Pattern.matches("^[0-9a-f]+$", nonce));
+        // Base64URL without padding: [A-Za-z0-9\-_], no '=' padding
+        assertTrue(Pattern.matches("^[A-Za-z0-9\\-_]+$", nonce));
+        assertFalse(nonce.contains("="), "Nonce must not contain Base64 padding");
 
         Set<String> nonces = new HashSet<>();
         for (int i = 0; i < 5; i++) {

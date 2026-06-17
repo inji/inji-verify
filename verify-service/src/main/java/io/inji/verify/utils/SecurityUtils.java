@@ -8,24 +8,16 @@ import java.security.KeyFactory;
 import java.security.SecureRandom;
 import java.security.interfaces.RSAPublicKey;
 import java.security.spec.X509EncodedKeySpec;
+import java.util.Base64;
 
 public class SecurityUtils {
 
     private static final SecureRandom random = new SecureRandom();
 
-    public static String generateNonce()
-    {
+    public static String generateNonce() {
         byte[] randomBytes = new byte[16];
         random.nextBytes(randomBytes);
-        StringBuilder hexString = new StringBuilder();
-        for (byte b : randomBytes) {
-            String hex = Integer.toHexString(0xff & b);
-            if (hex.length() == 1) {
-                hexString.append('0');
-            }
-            hexString.append(hex);
-        }
-        return hexString.toString();
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }
 
     public static RSAPublicKey readX509PublicKey(String pem) throws Exception {
