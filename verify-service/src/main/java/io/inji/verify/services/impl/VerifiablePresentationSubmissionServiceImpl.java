@@ -537,7 +537,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             log.error("Failed to process VP submission V2", ex);
             throw ex;
         } catch (Exception ex) {
-            log.error("Failed to process VP submission V2", ex.toString());
+            log.error("Failed to process VP submission V2", ex);
             throw new VPVerificationException(ex);
         }
     }
@@ -724,7 +724,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId) {
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
         VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
-        log.info(vpSubmission.getVpToken().toString());
+        log.debug("Processing VP submission, token length: {}", vpSubmission.getVpToken() != null ? vpSubmission.getVpToken().toString().length() : 0);
         return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
     }
 
