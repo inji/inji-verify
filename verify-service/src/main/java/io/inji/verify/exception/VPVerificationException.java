@@ -8,4 +8,8 @@ public class VPVerificationException extends RuntimeException {
     public VPVerificationException() {
         super(message);
     }
+
+    public VPVerificationException(Throwable cause) {
+        super(message, cause);
+    }
 }

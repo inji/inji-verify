@@ -47,7 +47,8 @@ public class VCSubmissionServiceImpl implements VCSubmissionService {
             CredentialFormat credentialFormat = Utils.getCredentialFormat(vc);
             List<String> statusPurposeList = new ArrayList<>();
             statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
-            CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList);
+            // Plain VC flow — no VP session context, KB-JWT validation not applicable.
+            CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList, false);
             VerificationStatus vcVerificationStatus = Utils.getVcVerificationStatus(credentialVerificationSummary);
 
             return new VCSubmissionVerificationStatusDto(vc, vcVerificationStatus);

@@ -9,5 +9,5 @@ public interface VCVerificationService {
 
     VCVerificationStatusDto verify(String vc, String contentType) throws CredentialStatusCheckException;
 
-    VCVerificationResultDto verifyV2(VCVerificationRequestDto request);
+    VCVerificationResultDto verifyV2(VCVerificationRequestDto request, boolean validateKeyBindingJwt);
 }

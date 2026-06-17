@@ -210,7 +210,9 @@ public class VPResultController {
 
     @ExceptionHandler(VPVerificationException.class)
     public ResponseEntity<ErrorDto> handleVPVerificationException(VPVerificationException e) {
-        log.warn("VP verification failed: {}", e.getMessage());
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(new ErrorDto(ErrorCode.VP_VERIFICATION_FAILED));
+        String rootCause = e.getCause() != null ? e.getCause().getMessage() : e.getMessage();
+        log.warn("VP verification failed: {}", rootCause);
+        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
+                .body(new ErrorDto(ErrorCode.VP_VERIFICATION_FAILED.getErrorCode(), rootCause));
     }
 }

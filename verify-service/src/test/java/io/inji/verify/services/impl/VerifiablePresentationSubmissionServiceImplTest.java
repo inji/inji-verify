@@ -661,7 +661,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(summary.getVerificationResult()).thenReturn(vResult);
             when(vResult.getVerificationStatus()).thenReturn(true);
 
-            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(), anyList()))
+            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(), anyList(), anyBoolean()))
                     .thenReturn(summary);
 
             assertDoesNotThrow(() -> verifiablePresentationSubmissionService.getVPResult(List.of("id"), "tx"));
@@ -733,7 +733,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
-            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.LDP_VC), anyList()))
+            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.LDP_VC), anyList(), anyBoolean()))
                     .thenReturn(mockSummary);
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                     .thenReturn(authResponse);
@@ -783,7 +783,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
-            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.DC_SD_JWT), anyList()))
+            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.DC_SD_JWT), anyList(), anyBoolean()))
                     .thenReturn(mockSummary);
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                     .thenReturn(authResponse);
@@ -1662,12 +1662,12 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             mockResult.setAllChecksSuccessful(true);
             mockResult.setSchemaAndSignatureCheck(new SchemaAndSignatureCheckDto(true, null));
 
-            when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class))).thenReturn(mockResult);
+            when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class), anyBoolean())).thenReturn(mockResult);
 
             CredentialResultsDto results = ReflectionTestUtils.invokeMethod(
                     verifiablePresentationSubmissionService,
                     "verifyAndGetCredentialStatusV2",
-                    request, vcData, false);
+                    request, vcData, false, false);
 
             assertNotNull(results);
             assertNull(results.getHolderProofCheck(), "HolderProof should be null for non-SD-JWT");
@@ -1681,12 +1681,12 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             VCVerificationResultDto mockResult = new VCVerificationResultDto();
             mockResult.setSchemaAndSignatureCheck(new SchemaAndSignatureCheckDto(true, null));
 
-            when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class))).thenReturn(mockResult);
+            when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class), anyBoolean())).thenReturn(mockResult);
 
             CredentialResultsDto results = ReflectionTestUtils.invokeMethod(
                     verifiablePresentationSubmissionService,
                     "verifyAndGetCredentialStatusV2",
-                    request, "sd-jwt-content", true);
+                    request, "sd-jwt-content", true, true);
 
             assertNotNull(results);
             assertTrue(results.getHolderProofCheck().isValid());
@@ -1704,12 +1704,12 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             VCVerificationResultDto mockResult = new VCVerificationResultDto();
             mockResult.setSchemaAndSignatureCheck(signatureCheck);
 
-            when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class))).thenReturn(mockResult);
+            when(vcVerificationService.verifyV2(any(VCVerificationRequestDto.class), anyBoolean())).thenReturn(mockResult);
 
             CredentialResultsDto results = ReflectionTestUtils.invokeMethod(
                     verifiablePresentationSubmissionService,
                     "verifyAndGetCredentialStatusV2",
-                    request, "sd-jwt-content", true);
+                    request, "sd-jwt-content", true, true);
 
             assertNotNull(results);
             assertNotNull(results.getHolderProofCheck(), "HolderProofCheck should not be null if the error code matched an enum");
@@ -1862,6 +1862,108 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             assertNotNull(result);
             assertTrue(result.getSdJwtTokens().containsKey("cred1"));
             assertEquals(1, result.getSdJwtTokens().get("cred1").size());
+        }
+    }
+
+    @Nested
+    class ProcessSdJwtClientIdAndNonce {
+
+        private static final String EXPECTED_NONCE = "test-nonce-value";
+        private static final String EXPECTED_CLIENT_ID = "https://verifier.example.com";
+
+        private static String b64(String json) {
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes());
+        }
+
+        private static final String CRED_HEADER = b64("{\"typ\":\"dc+sd-jwt\"}");
+        private static final String CRED_PAYLOAD = b64("{\"sub\":\"123\",\"cnf\":{\"kid\":\"k1\"}}");
+        private static final String CRED_SIG = b64("sig");
+        private static final String KB_HEADER = b64("{\"typ\":\"kb+jwt\"}");
+        private static final String KB_SIG = b64("kbsig");
+
+        private static final String SD_JWT_VALID_KB =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\"}") + "." + KB_SIG;
+
+        private static final String SD_JWT_WRONG_NONCE =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
+                + KB_HEADER + "." + b64("{\"nonce\":\"wrong-nonce\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\"}") + "." + KB_SIG;
+
+        private static final String SD_JWT_WRONG_AUD =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"https://wrong.example.com\"}") + "." + KB_SIG;
+
+        /** SD-JWT without a KB-JWT (trailing ~ only — KB-JWT payload will be undecodable). */
+        private static final String SD_JWT_NO_KB =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~";
+
+        /** Builds an auth request with require_cryptographic_holder_binding=true for "cred1". */
+        private AuthorizationRequestResponseDto buildAuthRequest() {
+            DCQLQueryDto dcql = new DCQLQueryDto(
+                    List.of(new CredentialQueryDto(
+                            "cred1", "dc+sd-jwt",
+                            new CredentialMetaDto(List.of("cred1"), null),
+                            true, false, null, null)),
+                    null);
+            return new AuthorizationRequestResponseDto(EXPECTED_CLIENT_ID, dcql, null, EXPECTED_NONCE, "responseUri", false, false);
+        }
+
+        private Map<String, List<String>> tokens(String sdJwt) {
+            Map<String, List<String>> map = new HashMap<>();
+            map.put("cred1", List.of(sdJwt));
+            return map;
+        }
+
+        @Test
+        void shouldReturnNull_whenKbJwtHasValidNonceAndAud() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtClientIdAndNonce(buildAuthRequest(), tokens(SD_JWT_VALID_KB));
+            assertNull(result);
+        }
+
+        @Test
+        void shouldReturnNull_whenSdJwtTokensMapIsEmpty() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtClientIdAndNonce(buildAuthRequest(), new HashMap<>());
+            assertNull(result);
+        }
+
+        @Test
+        void shouldReturnClientIdValidationFailed_whenKbJwtAudMismatch() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtClientIdAndNonce(buildAuthRequest(), tokens(SD_JWT_WRONG_AUD));
+            assertEquals(ErrorCode.CLIENT_ID_VALIDATION_FAILED, result);
+        }
+
+        @Test
+        void shouldReturnClientIdValidationFailed_whenKbJwtIsAbsent() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtClientIdAndNonce(buildAuthRequest(), tokens(SD_JWT_NO_KB));
+            assertEquals(ErrorCode.CLIENT_ID_VALIDATION_FAILED, result);
+        }
+
+        @Test
+        void shouldReturnNonceValidationFailed_whenKbJwtNonceMismatch() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtClientIdAndNonce(buildAuthRequest(), tokens(SD_JWT_WRONG_NONCE));
+            assertEquals(ErrorCode.NONCE_VALIDATION_FAILED, result);
+        }
+
+        @Test
+        void shouldReturnNull_whenHolderBindingNotRequired() {
+            DCQLQueryDto dcql = new DCQLQueryDto(
+                    List.of(new CredentialQueryDto(
+                            "cred1", "dc+sd-jwt",
+                            new CredentialMetaDto(List.of("cred1"), null),
+                            false, false, null, null)),
+                    null);
+            AuthorizationRequestResponseDto authRequest = new AuthorizationRequestResponseDto(
+                    EXPECTED_CLIENT_ID, dcql, null, EXPECTED_NONCE, "responseUri", false, false);
+
+            // Even a token with wrong aud/nonce passes when binding is not required
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtClientIdAndNonce(authRequest, tokens(SD_JWT_WRONG_AUD));
+            assertNull(result);
         }
     }
 }

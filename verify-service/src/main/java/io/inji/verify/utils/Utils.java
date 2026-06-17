@@ -110,6 +110,25 @@ public final class Utils {
     }
 
     /**
+     * Decodes and returns the payload of the Key Binding JWT (KB-JWT) from an SD-JWT string.
+     * The KB-JWT is the last '~'-delimited segment and must itself be a three-part JWT.
+     * Returns null if the KB-JWT is absent, malformed, or its payload cannot be decoded.
+     */
+    public static JSONObject extractKbJwtPayload(String sdJwt) {
+        String[] parts = sdJwt.split("~", -1);
+        String kbJwt = parts[parts.length - 1];
+        if (kbJwt.isEmpty()) return null;
+        String[] jwtParts = kbJwt.split("\\.");
+        if (jwtParts.length != 3) return null;
+        try {
+            String payloadJson = decodeBase64Json(jwtParts[1]);
+            return new JSONObject(payloadJson);
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    /**
      * Checks whether an SD-JWT string contains a Key Binding JWT (KB-JWT).
      * Per the IETF SD-JWT spec, the KB-JWT is the last ~-delimited part and is itself a full JWT
      * (three Base64url segments separated by dots). An SD-JWT without a KB-JWT ends with a trailing ~

@@ -275,8 +275,8 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.extractDcqlTokens(any(),any()))
                 .thenReturn(mockDcqlTokens());
 
-        when(vpSubmissionService.isClientIdValid(any(), any()))
-                .thenReturn(false);
+        when(vpSubmissionService.processLdpVpClientIdAndNonce(any(), any()))
+                .thenReturn(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
 
         ResponseEntity<?> response =
                 controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
@@ -315,11 +315,8 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.extractDcqlTokens(any(), any()))
                 .thenReturn(mockDcqlTokens());
 
-        when(vpSubmissionService.isClientIdValid(any(), any()))
-                .thenReturn(true);
-
-        when(vpSubmissionService.isNonceValid(any(), any()))
-                .thenReturn(false);
+        when(vpSubmissionService.processLdpVpClientIdAndNonce(any(), any()))
+                .thenReturn(ErrorCode.NONCE_VALIDATION_FAILED);
 
         ResponseEntity<?> response =
                 controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
@@ -358,11 +355,8 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.extractDcqlTokens(any(), any()))
                 .thenReturn(mockDcqlTokens());
 
-        when(vpSubmissionService.isClientIdValid(any(), any()))
-                .thenReturn(true);
-
-        when(vpSubmissionService.isNonceValid(any(), any()))
-                .thenReturn(true);
+        when(vpSubmissionService.processLdpVpClientIdAndNonce(any(), any()))
+                .thenReturn(null);
 
         when(vpSubmissionService.generateResponseCode(any()))
                 .thenReturn("resp-code");
@@ -403,11 +397,8 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.extractDcqlTokens(any(), any()))
                 .thenReturn(mockDcqlTokens());
 
-        when(vpSubmissionService.isClientIdValid(any(), any()))
-                .thenReturn(true);
-
-        when(vpSubmissionService.isNonceValid(any(), any()))
-                .thenReturn(true);
+        when(vpSubmissionService.processLdpVpClientIdAndNonce(any(), any()))
+                .thenReturn(null);
 
         doThrow(new VPAlreadySubmittedException())
                 .when(vpSubmissionService)
@@ -520,14 +511,73 @@ class VPSubmissionControllerTest {
         when(vpSubmissionService.extractDcqlTokens(any(),any()))
                 .thenReturn(mockDcqlTokens());
 
-        when(vpSubmissionService.isClientIdValid(any(), any()))
-                .thenReturn(true);
-
-        when(vpSubmissionService.isNonceValid(any(), any()))
-                .thenReturn(true);
+        when(vpSubmissionService.processLdpVpClientIdAndNonce(any(), any()))
+                .thenReturn(null);
 
         ResponseEntity<?> response =
                 controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
+
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(vpSubmissionService).submitVpToken(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    // ---- SD-JWT KB-JWT validation tests ----
+
+    private DcqlTokensDto mockSdJwtTokens() {
+        Map<String, List<String>> sdJwtTokens = new HashMap<>();
+        sdJwtTokens.put("cred1", Collections.singletonList("header.payload.sig~kb-header.kb-payload.kb-sig"));
+        return new DcqlTokensDto(new HashMap<>(), new HashMap<>(), sdJwtTokens);
+    }
+
+    private AuthorizationRequestCreateResponse mockActiveAuth() {
+        AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+        AuthorizationRequestResponseDto authDetails = mock(AuthorizationRequestResponseDto.class);
+        when(auth.getAuthorizationDetails()).thenReturn(authDetails);
+        when(vpRequestService.getCurrentRequestStatus(STATE))
+                .thenReturn(new VPRequestStatusDto(VPRequestStatus.ACTIVE));
+        when(vpSubmissionService.getAuthRequest(STATE)).thenReturn(auth);
+        when(vpSubmissionService.extractDcqlTokens(any(), any())).thenReturn(mockSdJwtTokens());
+        return auth;
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenSdJwtKbJwtClientIdFails() {
+        mockActiveAuth();
+
+        when(vpSubmissionService.processSdJwtClientIdAndNonce(any(), any()))
+                .thenReturn(ErrorCode.CLIENT_ID_VALIDATION_FAILED);
+
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.CLIENT_ID_VALIDATION_FAILED.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenSdJwtKbJwtNonceFails() {
+        mockActiveAuth();
+
+        when(vpSubmissionService.processSdJwtClientIdAndNonce(any(), any()))
+                .thenReturn(ErrorCode.NONCE_VALIDATION_FAILED);
+
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.NONCE_VALIDATION_FAILED.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldProceed_whenSdJwtKbJwtValid() {
+        AuthorizationRequestCreateResponse auth = mockActiveAuth();
+        when(auth.getAuthorizationDetails()).thenReturn(mock(AuthorizationRequestResponseDto.class));
+
+        when(vpSubmissionService.processSdJwtClientIdAndNonce(any(), any())).thenReturn(null);
+
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(vpSubmissionService).submitVpToken(any(), any(), any(), any(), any(), any(), any());

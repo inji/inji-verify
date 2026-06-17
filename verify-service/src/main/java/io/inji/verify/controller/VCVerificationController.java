@@ -26,6 +26,7 @@ public class VCVerificationController {
 
     @PostMapping(path = "/v2/vc-verification", consumes = MediaType.APPLICATION_JSON_VALUE)
     public VCVerificationResultDto verifyV2(@Valid @RequestBody VCVerificationRequestDto request) {
-        return VCVerificationService.verifyV2(request);
+        // Plain VC verification endpoint — no VP session context, KB-JWT validation not applicable.
+        return VCVerificationService.verifyV2(request, false);
     }
 }

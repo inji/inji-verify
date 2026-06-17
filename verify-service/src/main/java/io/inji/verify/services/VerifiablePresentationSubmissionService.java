@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 
 import io.inji.verify.dto.result.DcqlTokensDto;
+import io.inji.verify.enums.ErrorCode;
 import org.json.JSONObject;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -29,9 +30,9 @@ public interface VerifiablePresentationSubmissionService {
 
     DcqlTokensDto extractDcqlTokens(String vpTokenString, AuthorizationRequestResponseDto authRequest) throws InvalidVpTokenException;
 
-    boolean isClientIdValid(AuthorizationRequestResponseDto authRequest, Map<String, List<JSONObject>> ldpVpTokens);
-    
-    boolean isNonceValid(AuthorizationRequestResponseDto authRequest, Map<String, List<JSONObject>> ldpVpTokens);
+    ErrorCode processLdpVpClientIdAndNonce(AuthorizationRequestResponseDto authRequest, Map<String, List<JSONObject>> ldpVpTokens);
+
+    ErrorCode processSdJwtClientIdAndNonce(AuthorizationRequestResponseDto authRequest, Map<String, List<String>> sdJwtTokens);
     
     String generateResponseCode(AuthorizationRequestResponseDto authRequest);
     

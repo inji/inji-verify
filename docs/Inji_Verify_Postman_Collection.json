@@ -2656,7 +2656,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"clientId\": \"injiverify.dev-int-inji.mosip.net\",\r\n    \"nonce\": \"yMRlSK2ZT31GdWbedhk4hA\",\r\n    \"responseCodeValidationRequired\": false,\r\n    \"dcqlQuery\": {\r\n        \"credentials\": [\r\n            {\r\n                \"id\": \"student_id_credential_query\",\r\n                \"format\": \"vc+sd-jwt\",\r\n                \"meta\": {\r\n                    \"vct_values\": [\r\n                        \"eu.europa.ec.eudi.msisdn.1\"\r\n                    ]\r\n                },\r\n                \"require_cryptographic_holder_binding\": false,\r\n                \"claims\": [\r\n                    {\r\n                        \"id\": \"registered_family_name\",\r\n                        \"path\": [\r\n                            \"registered_family_name\"\r\n                        ],\r\n                        \"values\": [\"Musterman\"]\r\n                    },\r\n                    {\r\n                        \"id\": \"phone_number\",\r\n                        \"path\": [\r\n                            \"phone_number\"\r\n                        ]\r\n                    },\r\n                    {\r\n                        \"id\": \"verification_method_information\",\r\n                        \"path\": [\r\n                            \"verification_method_information\"\r\n                        ]\r\n                    }\r\n                ],\r\n                \"claim_sets\": [\r\n                    [\r\n                        \"phone_number\",\r\n                        \"verification_method_information\"\r\n                    ],\r\n                    [\r\n                        \"registered_family_name\"\r\n                    ]\r\n                ]\r\n            }\r\n        ]\r\n    }\r\n}",
+                  "raw": "{\r\n    \"clientId\": \"decentralized_identifier:did:web:injiverify.dev-int-inji.mosip.net:v1:verify\",\r\n    \"nonce\": \"5wMViKom3siY2zBBQ5trvA\",\r\n    \"responseCodeValidationRequired\": false,\r\n    \"dcqlQuery\": {\r\n        \"credentials\": [\r\n            {\r\n                \"id\": \"student_id_credential_query\",\r\n                \"format\": \"vc+sd-jwt\",\r\n                \"meta\": {\r\n                    \"vct_values\": [\r\n                        \"MockVerifiableCredential_SD_JWT\"\r\n                    ]\r\n                }\r\n            }\r\n        ]\r\n    }\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -2706,7 +2706,7 @@
                   "urlencoded": [
                     {
                       "key": "vp_token",
-                      "value": "{\"student_id_credential_query\":[\"eyJ0eXAiOiJ2YytzZC1qd3QiLCJhbGciOiJFUzI1NiIsIng1YyI6WyJNSUlCNVRDQ0FZdWdBd0lCQWdJUUdVZEYwa0JpUUdEYXdwKzBkQlNTNWpBS0JnZ3Foa2pPUFFRREFqQWRNUTR3REFZRFZRUURFd1ZCYm1sdGJ6RUxNQWtHQTFVRUJoTUNUa3d3SGhjTk1qVXdOREV5TVRReU16TXdXaGNOTWpZd05UQXlNVFF5TXpNd1dqQWhNUkl3RUFZRFZRUURFd2xqY21Wa2J5QmtZM014Q3pBSkJnTlZCQVlUQWs1TU1Ga3dFd1lIS29aSXpqMENBUVlJS29aSXpqMERBUWNEUWdBRUZYVk5BMGxhYSs1UDJuazVQSkZvdjh4aEJGTno1VU9KQklWc3lrMFNLU2ZxVGZLTUI2UitjRkROaWpkbUJZeXVFYVVnTWd1VWM4aE9Wbm5yZVc5dGhLT0JxRENCcFRBZEJnTlZIUTRFRmdRVVlSOHZGUVRsa2pmMS9ObktlWnh2WTBaejNhQXdEZ1lEVlIwUEFRSC9CQVFEQWdlQU1CVUdBMVVkSlFFQi93UUxNQWtHQnlpQmpGMEZBUUl3SHdZRFZSMGpCQmd3Rm9BVUw5OHdhTll2OVFueElIYjVDRmd4anZaVXRVc3dJUVlEVlIwU0JCb3dHSVlXYUhSMGNITTZMeTltZFc1clpTNWhibWx0Ynk1cFpEQVpCZ05WSFJFRUVqQVFnZzVtZFc1clpTNWhibWx0Ynk1cFpEQUtCZ2dxaGtqT1BRUURBZ05JQURCRkFpQkJ3ZFMvY0ZCczNhd3RmUDlHRlZrZ1NPSVRRZFBCTUxoc0pCeWpnN2wyTFFJaEFQUUpXeTdxUXNmcTJHcmRwY0dYSHJEVkswdy9YblBGMlhBVDZyVFg4dUNQIiwiTUlJQnp6Q0NBWFdnQXdJQkFnSVFWd0FGb2xXUWltOTRnbXlDaWMzYkNUQUtCZ2dxaGtqT1BRUURBakFkTVE0d0RBWURWUVFERXdWQmJtbHRiekVMTUFrR0ExVUVCaE1DVGt3d0hoY05NalF3TlRBeU1UUXlNek13V2hjTk1qZ3dOVEF5TVRReU16TXdXakFkTVE0d0RBWURWUVFERXdWQmJtbHRiekVMTUFrR0ExVUVCaE1DVGt3d1dUQVRCZ2NxaGtqT1BRSUJCZ2dxaGtqT1BRTUJCd05DQUFRQy9ZeUJwY1JRWDhaWHBIZnJhMVROZFNiUzdxemdIWUhKM21zYklyOFRKTFBOWkk4VWw4ekpsRmRRVklWbHM1KzVDbENiTitKOUZVdmhQR3M0QXpBK280R1dNSUdUTUIwR0ExVWREZ1FXQkJRdjN6Qm8xaS8xQ2ZFZ2R2a0lXREdPOWxTMVN6QU9CZ05WSFE4QkFmOEVCQU1DQVFZd0lRWURWUjBTQkJvd0dJWVdhSFIwY0hNNkx5OW1kVzVyWlM1aGJtbHRieTVwWkRBU0JnTlZIUk1CQWY4RUNEQUdBUUgvQWdFQU1Dc0dBMVVkSHdRa01DSXdJS0Flb0J5R0dtaDBkSEJ6T2k4dlpuVnVhMlV1WVc1cGJXOHVhV1F2WTNKc01Bb0dDQ3FHU000OUJBTUNBMGdBTUVVQ0lRQ1RnODBBbXFWSEpMYVp0MnV1aEF0UHFLSVhhZlAyZ2h0ZDlPQ21kRDUxWndJZ0t2VmtyZ1RZbHhTUkFibUtZNk1sa0g4bU0zU05jbkVKazlmR1Z3SkcrKzA9Il19.eyJjcmVkZW50aWFsX3R5cGUiOiJNU0lTRE4iLCJuYmYiOjE3NTI5ODQ3MzcsImV4cCI6MTc4NTM4NDczNywidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkubXNpc2RuLjEiLCJjbmYiOnsia2lkIjoiZGlkOmp3azpleUpyZEhraU9pSkZReUlzSW1OeWRpSTZJbEF0TWpVMklpd2llQ0k2SWxKUk5XSkRiMngzUkZKV1pHUjRhbkk1TFUweUxVNUtPRVZ1TjFwSE1tTXpVbkZzVTJKVVR6TlJUMFVpTENKNUlqb2lZVlpFVVZkak5TMUJZbmhIYmxoV2JYRk1WMkphWmpGR1ZsWjFOVEF5TW0xaGFHdHpSVTh3VTJSZmR5SXNJblZ6WlNJNkluTnBaeUo5IzAifSwiaXNzIjoiaHR0cHM6Ly9mdW5rZS5hbmltby5pZCIsImlhdCI6MTc1Mzk0MjUyNywiX3NkIjpbIjI5SXE0b29UNzhGMkI1bFI1RzhGSGhGWWJKWmlER29vRHEySUpicFpCVG8iLCIzZVNTOEtZcUZzQVVHZVhIVWhwU21qd1k2TG5XaVJCMTVXYXRLY0ZTNzhJIiwiNE9mZGdDalZPUTJMbzhESXpTUEpodVVWT25yWGhjX1dkTGpCZDcwRGJFUSIsIkFwMWVweTdtVThiRkdrNXZkWXdlMjZma2pUY2taaW1uMDlncFlSR25XY3ciLCJEU0NWZHY3WklSOEZNNTR4c05MVlZqYndJc0JjcE9EUllHRTlCOTFra19RIiwiRnMwbGVHT0VMUU85ejhYblZsbVJTdXRUX0d3dDRTOWNubUJLcDF4TnRyQSIsIlFTbjl3dUx3LUJKY3VLRF9URHl0NGcyZlR4LU1KcmNyVzM0bVpKdHhtc0kiLCJfZDkyZVNKcW9FemdhQlctcFU2NUY2N3FOUno2Y2owRkJObDJYcTFmRWdFIiwia3VwOXhVUjZYMDZ5X3RiVVBPTzJ4VWxiWHJReG1qalRiVE9zMktYUUM4YyIsInBIYmh1eWxJbkZnaGtPY3hqcHVKb0o0S0hITUhfT2JSOWxYX0ZUa2Vmb2ciLCJ4YW1wZmJkRHJfd05LUllKN1F6NlAxZEZJcGJvMTJFdHRfZkMzYko4MDFvIl0sIl9zZF9hbGciOiJzaGEtMjU2In0.pf3MHMEAma64_-8mfmPdLCNzgzz5K0_EianTPd5IUzMlkXhB1v4NtQmRiARlLvTd9kkUChhW4lascAkW8TOnSA~WyI4NzY3MzA2NTE3OTE1MTMzMTI2NDI5MTUiLCJwaG9uZV9udW1iZXIiLCI0OTE1MTEyMzQ1NjciXQ~WyIyNzgzODk0ODU5Mjc2ODY0NTY1NjkxNzUiLCJyZWdpc3RlcmVkX2ZhbWlseV9uYW1lIiwiTXVzdGVybWFuIl0~WyI5Njk4OTYzODY5MDAwMTE3MzM0MTE0NDQiLCJyZWdpc3RlcmVkX2dpdmVuX25hbWUiLCJKb2huIE1pY2hhZWwiXQ~WyIxMDE3NzAzNzY5OTU2Mzc0MjI4NTIwMDQ4IiwiY29udHJhY3Rfb3duZXIiLHRydWVd~WyIxMTcwMTg2ODQ0MTkyNTczMzQyOTYyNDg5IiwiZW5kX3VzZXIiLGZhbHNlXQ~WyI0MzI1MjkxNDE2MzczOTU0MzgxNDM5NTUiLCJtb2JpbGVfb3BlcmF0b3IiLCJUZWxla29tX0RFIl0~WyI2ODA1NjkyNDQ3MTA1NjQ3ODc1ODQxNzUiLCJpc3N1aW5nX29yZ2FuaXphdGlvbiIsIlRlbE9yZyJd~WyI5MzE5ODU3NzkxNTk0Njc0ODE2NTg4ODciLCJ2ZXJpZmljYXRpb25fZGF0ZSIsIjIwMjMtMDgtMjUiXQ~WyI2MTkxMTk5NjI3Mzg2MDQ5MjI4ODkwMjEiLCJ2ZXJpZmljYXRpb25fbWV0aG9kX2luZm9ybWF0aW9uIiwiTnVtYmVyVmVyaWZ5Il0~WyIzNzM2NzUzNDQwNDA1ODI4Mzc2MTE0MjQiLCJpc3N1YW5jZV9kYXRlIiwiMjAyNS0wNy0yMFQwNDoxMjoxNy4wODlaIl0~WyI1NjU0NDMyNzk2MjEwMjQ2ODk0NjQ3MDgiLCJleHBpcnlfZGF0ZSIsIjIwMjYtMDctMzBUMDQ6MTI6MTcuMDg5WiJd~\"]}",
+                      "value": "{\"student_id_credential_query\":[\"eyJ4NXQjUzI1NiI6Ik5QMXpnRFRTUDJQbEFFck5hV1pJakV1MGVoeUowV3ZVVk94T3VSaVA4REkiLCJ4NWMiOlsiTUlJREVEQ0NBZmlnQXdJQkFnSUlwUXc4S2FaeUR6QXdEUVlKS29aSWh2Y05BUUVMQlFBd2VERUxNQWtHQTFVRUJoTUNTVTR4Q3pBSkJnTlZCQWdNQWt0Qk1SSXdFQVlEVlFRSERBbENRVTVIUVV4UFVrVXhEakFNQmdOVkJBb01CVWxKU1ZSQ01SY3dGUVlEVlFRTERBNUZXRUZOVUV4RkxVTkZUbFJGVWpFZk1CMEdBMVVFQXd3V2QzZDNMbVY0WVcxd2JHVXVZMjl0SUNoU1QwOVVLVEFlRncweU5UQTVNVFl3TmpVMU16WmFGdzB5T0RBNU1UVXdOalUxTXpaYU1JR2JNUXN3Q1FZRFZRUUdFd0pKVGpFTE1Ba0dBMVVFQ0F3Q1MwRXhFakFRQmdOVkJBY01DVUpCVGtkQlRFOVNSVEVPTUF3R0ExVUVDZ3dGU1VsSlZFSXhGekFWQmdOVkJBc01Ea1ZZUVUxUVRFVXRRMFZPVkVWU01VSXdRQVlEVlFRREREbDNkM2N1WlhoaGJYQnNaUzVqYjIwZ0tFTkZVbFJKUmxsZlZrTmZVMGxIVGw5RlExOVNNUzFGUTE5VFJVTlFNalUyVWpGZlUwbEhUaWt3V1RBVEJnY3Foa2pPUFFJQkJnZ3Foa2pPUFFNQkJ3TkNBQVRUUnBhRjhiNGFiUmY3YjFtdmtRNjUrZ1dtdkJ5VldZakVFcW0xWFlSSWMrYVFJaElVMFNzbllVaHUxR3pqY1Z0RlVVZDh2ZjBlR21QUnUxMENTc3BlbzBVd1F6QVNCZ05WSFJNQkFmOEVDREFHQVFIL0FnRUJNQjBHQTFVZERnUVdCQlRDUndTclZSaElTMnNVTVhWUDJGNTFRSE9PSnpBT0JnTlZIUThCQWY4RUJBTUNBb1F3RFFZSktvWklodmNOQVFFTEJRQURnZ0VCQUNKZHRYWTZKcldkRmhTMjI2bHBNM0pzd3p4RmtrSVhTN0xYY1lzLzlIc2xybEZqYjF6YWhOcEJWNzdJSHo3Y3h5UWFtNEhFQW43UEx2VGNXSWNIaU9PRzNObURCS2hHeTBmMGJQWjdsVFJPd0srOEgweHdIbHNwYkhuVlJaWkNBdnhGbFFWbkVWbWJmU0tUTGdscVBvM0FVUmRyeTdJa2k5dXdCSTU2OHpZRmEyWnZ4YWJnMkdHSG8zU2pWTlNFbG12RlBCc1VLNzljK3dOSStDRVdZR2pOUGNBNzV6emF3Qkw1N1ZKM3U5VEdOT3h2UzVHdmd6S0g3UmZiTkdvNGdUVWVoWWtkZ1JiUzhWRTRvMUtxWnNYSzdPYklVOVB5Z3pxTms0R1E5eGFUcURxU2I0TlRHREVxaENLQk5rZCs0TzNLZlJycjhVVjU5Vm5jSEhTQ0ZPYz0iLCJNSUlEdHpDQ0FwK2dBd0lCQWdJSUlWU0drNXlSM1Qwd0RRWUpLb1pJaHZjTkFRRUxCUUF3ZURFTE1Ba0dBMVVFQmhNQ1NVNHhDekFKQmdOVkJBZ01Ba3RCTVJJd0VBWURWUVFIREFsQ1FVNUhRVXhQVWtVeERqQU1CZ05WQkFvTUJVbEpTVlJDTVJjd0ZRWURWUVFMREE1RldFRk5VRXhGTFVORlRsUkZVakVmTUIwR0ExVUVBd3dXZDNkM0xtVjRZVzF3YkdVdVkyOXRJQ2hTVDA5VUtUQWVGdzB5TkRBM01qSXdOak14TWpKYUZ3MHpNakEzTWpBd05qTXhNakphTUhneEN6QUpCZ05WQkFZVEFrbE9NUXN3Q1FZRFZRUUlEQUpMUVRFU01CQUdBMVVFQnd3SlFrRk9SMEZNVDFKRk1RNHdEQVlEVlFRS0RBVkpTVWxVUWpFWE1CVUdBMVVFQ3d3T1JWaEJUVkJNUlMxRFJVNVVSVkl4SHpBZEJnTlZCQU1NRm5kM2R5NWxlR0Z0Y0d4bExtTnZiU0FvVWs5UFZDa3dnZ0VpTUEwR0NTcUdTSWIzRFFFQkFRVUFBNElCRHdBd2dnRUtBb0lCQVFDNmUvWFY5cXJPOVVQR1RWc2VIKzZjZ3dRWC9PalpKN3lZSTcyMG12NDlyT0R4dEdIWVR2NGRtaU1HQ3pPbTgzVUhpQnF3aE1Da0RZMnhTSkFHREt1NDlJZTBsbnFxNmJHdnh6RnhmdlQ1UVRER3NMWkhVZGc1dzFSZWpTaytjMUszNnB5cWxURkZWT2hVMWo5bmRkQTZxamRwY2oxRVpKWWZkNUFBc3BwQ1hQN0dxSGhuSGxlcU9nQk93d0pqeFBlellCZGN5aTM4MzZJM3d0cUFiaUMvbXJLTzF5aWNCdWNiMEN4ZS9NZEJ3MU1sa1REcnJZNnh3L3VDOUVDM0wzS3p6OCtMVFJoQWJOUEVTd1VmSWM2TFJ2cU9qTENnOTA3Mis1aGMxQzZOUG9JdTZWKzJZR1ptY3N4KzJNdkUrWHNLM0tEUVIvN25tL1JJR3d2WGtacFhBZ01CQUFHalJUQkRNQklHQTFVZEV3RUIvd1FJTUFZQkFmOENBUUl3SFFZRFZSME9CQllFRkEvb2MyNjZOQ05nSitYMXhXQnBKelZrWUJJQk1BNEdBMVVkRHdFQi93UUVBd0lDaERBTkJna3Foa2lHOXcwQkFRc0ZBQU9DQVFFQUdCczFvTWRpajBYaXZDV0NJZ3FIbCtJOG0yZDhlNVdmY3J5UjhWZERQNDF6Q0RPNXo4c3luZExtTXhyamEwMGhqb21TSVZzWXNpZndoOHhLN2FTa0o1NXVZaVpubjJ3K3oyQlU3WkJGRE9yMjRUREw4bzhLRW1BS3lFdXpHUnZqamlUNlY3ell1bFhTcHZaSjVlVjRuWDlIRzQzRWRlK2RsRDg0LzgwTnlDRnJwd1UzbEZWYmluNG0wU2V3RUxsREJadXYwYnhMNmlVUHBOeXI2TzRkMXRMMGxyYUNQc0pyeHh1OTNTbkJRQWpWc0M0VW1lcU1PMW8wVkNybXl4Y3dLTjZuN09JbGEwMGhzY212RDNodHlPaU11WnNXbFJ4TVVWMDVMdE93T05tQ09QUHVHeXdaZmJHS1hkZEN6Yml6YkVIOUt2Rmd3NENkZXRtZDlwamxZdz09Il0sImtpZCI6Imh0dHBzOi8vaW5qaWNlcnRpZnktbW9jay5yZWxlYXNlZC5tb3NpcC5uZXQjMU9oLXlwcThWV1JpTHc1dk05WnpsblJuVThjSTUwUDhSYXozRTE3OVUyMCIsInR5cCI6InZjK3NkLWp3dCIsImFsZyI6IkVTMjU2In0.eyJnZW5kZXIiOlt7Imxhbmd1YWdlIjoiZW5nIiwidmFsdWUiOiJmZW1hbGUifSx7Imxhbmd1YWdlIjoiZnJhIiwidmFsdWUiOiJmZU3DomxlIn0seyJsYW5ndWFnZSI6ImFyYSIsInZhbHVlIjoi2LDZg9ixIn1dLCJ2Y3QiOiJNb2NrVmVyaWZpYWJsZUNyZWRlbnRpYWxfU0RfSldUIiwicG9zdGFsQ29kZSI6NDUwMDksImlzcyI6Imh0dHBzOi8vaW5qaWNlcnRpZnktbW9jay5yZWxlYXNlZC5tb3NpcC5uZXQiLCJmdWxsTmFtZSI6W3sibGFuZ3VhZ2UiOiJmcmEiLCJ2YWx1ZSI6IkFsaGVyaSBCb2JieSJ9LHsibGFuZ3VhZ2UiOiJhcmEiLCJ2YWx1ZSI6Itiq2Krar9mE2K_Zg9mG2LPZjtiy2YLZh9mQ2YLZkNmB2YQg2K_Ys9mK2YrYs9mK2YPYr9mD2YbZiNqk2YgifSx7Imxhbmd1YWdlIjoiZW5nIiwidmFsdWUiOiJBbGhlcmkgQm9iYnkifV0sImRhdGVPZkJpcnRoIjoiMTk5OS8xMC8yMSIsIlZJRCI6MTIzMTIzMTIzMSwicHJvdmluY2UiOlt7Imxhbmd1YWdlIjoiZnJhIiwidmFsdWUiOiJ5dcSBbiAyIn0seyJsYW5ndWFnZSI6ImFyYSIsInZhbHVlIjoi2YrZjtmP2KfZhuqJm-KljSJ9LHsibGFuZ3VhZ2UiOiJlbmciLCJ2YWx1ZSI6Inl1YW4gd2VlIn1dLCJpc3N1YW5jZURhdGUiOiIyMDI2LTA2LTAzVDA1OjU0OjA1LjE3NVoiLCJwaG9uZSI6Iis5MTk0MjczNTc5MzQiLCJjbmYiOnsia2lkIjoiZGlkOmp3azpleUpyZEhraU9pSlBTMUFpTENKMWMyVWlPaUp6YVdjaUxDSmpjbllpT2lKRlpESTFOVEU1SWl3aWVDSTZJbTlKVUcxQlVqWkliMFpxY1dSTFZGbHRXRTVyVm14VGVXOU1ObHBpTVZNMWJ6QkNlaTFEVFhodlVWa2lmUT09In0sIlVJTiI6MTIzMTIzMTIzMSwiaWQiOiJodHRwczovL21vc2lwLmlvL2NyZWRlbnRpYWwvN2I3NzU5MjItNDI3NC00Njc1LThhMGQtMzIyODE4N2Y3NzNjIiwicmVnaW9uIjpbeyJsYW5ndWFnZSI6ImZyYSIsInZhbHVlIjoieXXEgW4gMyJ9LHsibGFuZ3VhZ2UiOiJhcmEiLCJ2YWx1ZSI6IiTZhNmP2Ybar--Al-GGkSJ9LHsibGFuZ3VhZ2UiOiJlbmciLCJ2YWx1ZSI6Inl1YW4gd2VlIDMifV0sImVtYWlsIjoic2l3ZXJrbUBnbWFpbC5jb20iLCJleHBpcmF0aW9uRGF0ZSI6IjIwMjgtMDYtMDJUMDU6NTQ6MDUuMTc1WiJ9.HgGWmexFM9ezqxUs7BkiIuZbGBTvuPK2qjfzWxkTPxH5sgxFk-KXUYZkRUILWJESbj8Z9wkBfuZ9wLVMBGYEMQ~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFZERTQSJ9.eyJpYXQiOjE3ODE2OTgwMTUsIm5vbmNlIjoiNXdNVmlLb20zc2lZMnpCQlE1dHJ2QSIsInNkX2hhc2giOiIzVU1tTkcyRUFLdnpfOTNsOFRrMER2aWdSQkVfX1dBQ21SYU9yRU9uTVBZIiwiYXVkIjoiZGVjZW50cmFsaXplZF9pZGVudGlmaWVyOmRpZDp3ZWI6aW5qaXZlcmlmeS5kZXYtaW50LWluamkubW9zaXAubmV0OnYxOnZlcmlmeSJ9.NXzSwmXcHI2JuIHZOYwbDqjylPc8vc6lfSiE8t3QKWjqOGvOhJujp_j_F-kSwyxMCpsSl1pzWrV-SKFY_OlDBg\"]}",
                       "type": "text"
                     },
                     {
@@ -3945,18 +3945,6 @@
                       "key": "state",
                       "value": "{{3_3_reqId}}",
                       "type": "text"
-                    },
-                    {
-                      "key": "error",
-                      "value": "Invalid_Request",
-                      "type": "text",
-                      "disabled": true
-                    },
-                    {
-                      "key": "error_description",
-                      "value": "User denied authorization to share credentials",
-                      "type": "text",
-                      "disabled": true
                     }
                   ]
                 },
@@ -4047,7 +4035,7 @@
                 ],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\"revocation\", \"suspension\"],\n  \"includeClaims\": true\n}",
+                  "raw": "{\n  \"skipStatusChecks\": true,\n  \"statusCheckFilters\": [\"revocation\", \"suspension\"],\n  \"includeClaims\": true\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -4159,18 +4147,6 @@
                       "key": "state",
                       "value": "{{4_1_reqId}}",
                       "type": "text"
-                    },
-                    {
-                      "key": "error",
-                      "value": "Invalid_Request",
-                      "type": "text",
-                      "disabled": true
-                    },
-                    {
-                      "key": "error_description",
-                      "value": "User denied authorization to share credentials",
-                      "type": "text",
-                      "disabled": true
                     }
                   ]
                 },
@@ -4254,7 +4230,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\"revocation\", \"suspension\"],\n  \"includeClaims\": true\n}",
+                  "raw": "{\n  \"skipStatusChecks\": true,\n  \"statusCheckFilters\": [\"revocation\", \"suspension\"],\n  \"includeClaims\": true\n}",
                   "options": {
                     "raw": {
                       "language": "json"
