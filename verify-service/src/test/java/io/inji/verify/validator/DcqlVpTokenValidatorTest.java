@@ -1883,6 +1883,13 @@ class DcqlVpTokenValidatorTest {
             "eyJhbGciOiJFUzI1NiIsInR5cCI6InZjK3NkLWp3dCJ9" +
             ".eyJfc2RfYWxnIjoic2hhLTI1NiIsIl9zZCI6WyJfd1JuYm9uTU11cktlME5Ud2Y0ZXBJaXB0dVF5VFlBTldiSHBCNmVJYlFFIl19" +
             ".sig~WyJzYWx0MSIsIm5hbWUiLCJBbGljZSJd~";
+    // vc+sd-jwt token with vct="https://example.com/MyCredential"
+    // Header: {"alg":"ES256","typ":"vc+sd-jwt"} = eyJhbGciOiJFUzI1NiIsInR5cCI6InZjK3NkLWp3dCJ9
+    // Payload: {"vct": "https://example.com/MyCredential"} = eyJ2Y3QiOiAiaHR0cHM6Ly9leGFtcGxlLmNvbS9NeUNyZWRlbnRpYWwifQ
+    private static final String VC_SD_JWT_VCT_MY =
+            "eyJhbGciOiJFUzI1NiIsInR5cCI6InZjK3NkLWp3dCJ9" +
+            ".eyJ2Y3QiOiAiaHR0cHM6Ly9leGFtcGxlLmNvbS9NeUNyZWRlbnRpYWwifQ" +
+            ".sig~";
 
     // Validation F (isTypeValuesSatisfied): branches where vcArray is null / not-array / empty
     // These require holderBindingRequired=true AND typeValues set so the code enters isTypeValuesSatisfied.
@@ -1989,10 +1996,11 @@ class DcqlVpTokenValidatorTest {
                 new CredentialMetaDto(List.of("https://example.com/WrongCredential"), null), false, false, null, null);
         DCQLQueryDto query = new DCQLQueryDto(List.of(credVcSdJwt), null);
 
-        // DC_SD_JWT_VCT_MY has vct="https://example.com/MyCredential" — not in allowed list
+        // VC_SD_JWT_VCT_MY has typ=vc+sd-jwt and vct="https://example.com/MyCredential"
+        // — a real vct claim that is not in the allowed list, exercising the vct mismatch path
         VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
                 () -> validator.validateVpTokenAgainstDcql(query,
-                        sdJwtToken("cred1", VC_SD_JWT_NAME_ALICE)));
+                        sdJwtToken("cred1", VC_SD_JWT_VCT_MY)));
         assertEquals(ErrorCode.VP_TOKEN_SD_JWT_VCT_MISMATCH, ex.getErrorCode());
     }
 

@@ -412,7 +412,18 @@ class VerifiablePresentationRequestServiceImplTest {
         assertEquals("tx_dec_id", response.getTransactionId());
         // DID-based flow: requestUri is populated, authorizationDetails is null
         assertNull(response.getAuthorizationDetails());
-        assertNotNull(response.getRequestUri());
+        String requestUri = response.getRequestUri();
+        assertNotNull(requestUri);
+        // URI must embed the VP request path defined in Constants
+        assertTrue(requestUri.contains(Constants.VP_REQUEST_URI),
+                "requestUri should contain the VP request path '" + Constants.VP_REQUEST_URI + "' but was: " + requestUri);
+        // URI must end with the actual requestId so the wallet can fetch the signed JWT
+        String requestId = response.getRequestId();
+        assertTrue(requestUri.endsWith("/" + requestId),
+                "requestUri should end with '/" + requestId + "' but was: " + requestUri);
+        // requestId must follow the expected prefix convention
+        assertTrue(requestId.startsWith(Constants.REQUEST_ID_PREFIX),
+                "requestId should start with '" + Constants.REQUEST_ID_PREFIX + "' but was: " + requestId);
     }
 
     @Test

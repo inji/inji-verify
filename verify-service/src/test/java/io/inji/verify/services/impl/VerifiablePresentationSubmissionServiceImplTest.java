@@ -1896,7 +1896,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             io.inji.verify.dto.dcql.DCQLQueryDto dcql = new io.inji.verify.dto.dcql.DCQLQueryDto(
                     List.of(new io.inji.verify.dto.dcql.CredentialQueryDto(
                             "age_credential", "ldp_vc",
-                            new io.inji.verify.dto.dcql.CredentialMetaDto(List.of("age_credential"), null),
+                            new io.inji.verify.dto.dcql.CredentialMetaDto(null, List.of(List.of("VerifiableCredential"))),
                             false, false, null, null)),
                     null);
             AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
