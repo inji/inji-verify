@@ -155,6 +155,54 @@ class VerifiablePresentationRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Should produce JWT when verifierDid is null (null issuer path)")
+    void getVPRequestJwt_WithNullVerifierDid_ProducesJwt() throws Exception {
+        String requestId = "req_null_did";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        null, // null clientId → verifierDid null
+                        DcqlTestFixtures.minimalDcqlDto(),
+                        null, "nonce", "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        String jwt = service.getVPRequestJwt(requestId);
+
+        assertNotNull(jwt);
+        // issuer should be null when verifierDid is null
+        assertNull(SignedJWT.parse(jwt).getJWTClaimsSet().getIssuer());
+    }
+
+    @Test
+    @DisplayName("JWT should include client_metadata when clientId starts with decentralized_identifier")
+    void getVPRequestJwt_WithDecentralizedIdentifierDid_IncludesClientMetadata() throws Exception {
+        String requestId = "req_dec_id";
+        String did = "decentralized_identifier:did:example:verifier";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        did,
+                        DcqlTestFixtures.minimalDcqlDto(),
+                        null, "nonce", "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        String jwt = service.getVPRequestJwt(requestId);
+
+        assertNotNull(jwt);
+        var claims = SignedJWT.parse(jwt).getJWTClaimsSet();
+        // The decentralized_identifier: prefix should be stripped for the issuer
+        assertEquals("did:example:verifier", claims.getIssuer());
+        // client_metadata claim should be present
+        assertNotNull(claims.getClaim("client_metadata"));
+    }
+
+    @Test
     @DisplayName("Should return JWT string when authorization request and details are valid")
     void getVPRequestJwt_ValidRequest_ReturnsJwtString() throws Exception {
         String requestId = "testRequestId123";
@@ -347,6 +395,24 @@ class VerifiablePresentationRequestServiceImplTest {
         assertNotNull(response.getAuthorizationDetails().getNonce());
         assertFalse(response.getAuthorizationDetails().getNonce().isBlank());
         assertNotEquals("   ", response.getAuthorizationDetails().getNonce());
+    }
+
+    @Test
+    void shouldCreateAuthorizationRequest_WithDecentralizedIdentifierClientId() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+
+        VPRequestCreateDto dto = new VPRequestCreateDto(
+                "decentralized_identifier:did:example:verifier",
+                "tx_dec_id", null, minimalDcqlQuery(), false);
+
+        VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+        assertNotNull(response);
+        assertEquals("tx_dec_id", response.getTransactionId());
+        // DID-based flow: requestUri is populated, authorizationDetails is null
+        assertNull(response.getAuthorizationDetails());
+        assertNotNull(response.getRequestUri());
     }
 
     @Test

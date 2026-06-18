@@ -1866,6 +1866,467 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     }
 
     @Nested
+    class TestProcessSubmissionV2 {
+
+        // VP token with proof (signed) containing a valid VC
+        private static final String SIGNED_LDP_VP_TOKEN =
+                "{\"type\":[\"VerifiablePresentation\"],\"proof\":{\"type\":\"Ed25519Signature2018\"}," +
+                "\"verifiableCredential\":[{\"type\":[\"VerifiableCredential\"],\"credentialSubject\":{\"name\":\"Alice\"}}]}";
+
+        // PE-based authRequest (presentationDefinition non-null, dcqlQuery null)
+        private AuthorizationRequestCreateResponse peAuthResponse(String transactionId, boolean acceptWithoutProof) {
+            io.inji.verify.dto.presentation.VPDefinitionResponseDto pd =
+                    new io.inji.verify.dto.presentation.VPDefinitionResponseDto("pd1", List.of(), null, null, null, null);
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                    "clientId", null, pd, "nonce", "responseUri", acceptWithoutProof, false);
+            return new AuthorizationRequestCreateResponse("state1", transactionId, authDetails,
+                    System.currentTimeMillis() + 100000);
+        }
+
+        // DCQL-based authRequest (defaulting CHB=true for unknown queryIds)
+        private AuthorizationRequestCreateResponse dcqlAuthResponse(String transactionId) {
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                    "clientId", DcqlTestFixtures.minimalDcqlDto(), null, "nonce", "responseUri", false, false);
+            return new AuthorizationRequestCreateResponse("state1", transactionId, authDetails,
+                    System.currentTimeMillis() + 100000);
+        }
+
+        // DCQL-based authRequest with age_credential query having require_cryptographic_holder_binding=false
+        private AuthorizationRequestCreateResponse dcqlAuthResponseNoCHB(String transactionId) {
+            io.inji.verify.dto.dcql.DCQLQueryDto dcql = new io.inji.verify.dto.dcql.DCQLQueryDto(
+                    List.of(new io.inji.verify.dto.dcql.CredentialQueryDto(
+                            "age_credential", "ldp_vc",
+                            new io.inji.verify.dto.dcql.CredentialMetaDto(List.of("age_credential"), null),
+                            false, false, null, null)),
+                    null);
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                    "clientId", dcql, null, "nonce", "responseUri", false, false);
+            return new AuthorizationRequestCreateResponse("state1", transactionId, authDetails,
+                    System.currentTimeMillis() + 100000);
+        }
+
+        // Mock VPSubmission with a non-empty descriptor map so token matching passes
+        private VPSubmission signedVpSubmission(String vpToken) {
+            VPSubmission sub = mock(VPSubmission.class);
+            when(sub.getVpToken()).thenReturn("[" + vpToken + "]");
+            when(sub.getPresentationSubmission()).thenReturn(
+                    new io.inji.verify.dto.submission.PresentationSubmissionDto(
+                            "ps1", "pd1",
+                            List.of(new io.inji.verify.dto.submission.DescriptorMapDto("desc1", "ldp_vp", "$.verifiableCredential[0]", null))));
+            when(sub.getError()).thenReturn(null);
+            when(sub.getResponseCode()).thenReturn(null);
+            return sub;
+        }
+
+        @Test
+        void testProcessSubmissionV2_PE_SignedVP_SkipStatusChecks_Success() {
+            String transactionId = "tx1";
+            List<String> requestIds = List.of("req1");
+            VerificationRequestDto request = new VerificationRequestDto(true, List.of(), false);
+
+            VPSubmission sub = signedVpSubmission(SIGNED_LDP_VP_TOKEN);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(peAuthResponse(transactionId, false));
+
+            PresentationVerificationResultV2 pvResult = mock(PresentationVerificationResultV2.class);
+            VerificationResult proofResult = new VerificationResult(true, "", "");
+            VerificationResult vcResult = new VerificationResult(true, "", "");
+            VCResultV2 vcRes = new VCResultV2("{\"type\":[\"VerifiableCredential\"],\"credentialSubject\":{\"name\":\"Alice\"}}", vcResult);
+            when(pvResult.getProofVerificationResult()).thenReturn(proofResult);
+            when(pvResult.getVcResults()).thenReturn(List.of(vcRes));
+            when(presentationVerifier.verifyV2(anyString())).thenReturn(pvResult);
+
+            VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
+
+            assertTrue(result.isAllChecksSuccessful());
+            assertEquals(1, result.getCredentialResults().size());
+            assertTrue(result.getCredentialResults().getFirst().getHolderProofCheck().isValid());
+        }
+
+        @Test
+        void testProcessSubmissionV2_PE_SignedVP_WithStatusChecks_Success() {
+            String transactionId = "tx2";
+            List<String> requestIds = List.of("req2");
+            VerificationRequestDto request = new VerificationRequestDto(false, List.of("revocation"), false);
+
+            VPSubmission sub = signedVpSubmission(SIGNED_LDP_VP_TOKEN);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(peAuthResponse(transactionId, false));
+
+            PresentationResultWithCredentialStatusV2 pvResult = mock(PresentationResultWithCredentialStatusV2.class);
+            VerificationResult proofResult = new VerificationResult(true, "", "");
+            VerificationResult vcVResult = new VerificationResult(true, "", "");
+            VCResultWithCredentialStatusV2 vcRes = new VCResultWithCredentialStatusV2(
+                    "{\"type\":[\"VerifiableCredential\"]}", vcVResult, Map.of());
+            when(pvResult.getProofVerificationResult()).thenReturn(proofResult);
+            when(pvResult.getVcResults()).thenReturn(List.of(vcRes));
+            when(presentationVerifier.verifyAndGetCredentialStatusV2(anyString(), anyList())).thenReturn(pvResult);
+
+            VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
+
+            assertTrue(result.isAllChecksSuccessful());
+            assertEquals(1, result.getCredentialResults().size());
+            assertTrue(result.getCredentialResults().getFirst().getHolderProofCheck().isValid());
+        }
+
+        @Test
+        void testProcessSubmissionV2_PE_UnsignedVP_AcceptedWithCredentials_Success() {
+            String transactionId = "tx3";
+            List<String> requestIds = List.of("req3");
+            VerificationRequestDto request = new VerificationRequestDto(true, List.of(), false);
+
+            String unsignedVp = "{\"type\":[\"VerifiablePresentation\"],\"verifiableCredential\":[{\"type\":[\"VerifiableCredential\"]}]}";
+            VPSubmission sub = signedVpSubmission(unsignedVp);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(peAuthResponse(transactionId, true)); // acceptVPWithoutHolderProof=true
+
+            VCVerificationResultDto mockVcResult = new VCVerificationResultDto();
+            mockVcResult.setAllChecksSuccessful(true);
+            mockVcResult.setSchemaAndSignatureCheck(new SchemaAndSignatureCheckDto(true, null));
+            when(vcVerificationService.verifyV2(any(), anyBoolean())).thenReturn(mockVcResult);
+
+            VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
+
+            assertTrue(result.isAllChecksSuccessful());
+            assertFalse(result.getCredentialResults().isEmpty());
+        }
+
+        @Test
+        void testProcessSubmissionV2_PE_UnsignedVP_NotAccepted_ThrowsVPWithoutProofException() {
+            String transactionId = "tx4";
+            List<String> requestIds = List.of("req4");
+            VerificationRequestDto request = new VerificationRequestDto(true, List.of(), false);
+
+            String unsignedVp = "{\"type\":[\"VerifiablePresentation\"],\"verifiableCredential\":[]}";
+            VPSubmission sub = signedVpSubmission(unsignedVp);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(peAuthResponse(transactionId, false)); // acceptVPWithoutHolderProof=false
+
+            assertThrows(VPWithoutProofException.class, () ->
+                    verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId));
+        }
+
+        @Test
+        void testProcessSubmissionV2_PE_TokenNotMatching_ThrowsTokenMatchingFailedException() {
+            String transactionId = "tx5";
+            List<String> requestIds = List.of("req5");
+            VerificationRequestDto request = new VerificationRequestDto(true, List.of(), false);
+
+            // No presentationSubmission → descriptorMap null → token mismatch
+            VPSubmission sub = vpSubmission("state1", "[" + SIGNED_LDP_VP_TOKEN + "]",
+                    null, null, null, null, false);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(peAuthResponse(transactionId, false));
+
+            assertThrows(TokenMatchingFailedException.class, () ->
+                    verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId));
+        }
+
+        @Test
+        void testProcessSubmissionV2_DCQL_LDPVPSkipStatusChecks_Success() {
+            String transactionId = "tx6";
+            List<String> requestIds = List.of("req6");
+            VerificationRequestDto request = new VerificationRequestDto(true, List.of(), false);
+
+            String vpToken = "{\"age_credential\":[" + SIGNED_LDP_VP_TOKEN + "]}";
+            VPSubmission sub = vpSubmission("state1", vpToken, null, null, null, null, false);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(dcqlAuthResponse(transactionId));
+
+            PresentationVerificationResultV2 pvResult = mock(PresentationVerificationResultV2.class);
+            VerificationResult proofResult = new VerificationResult(true, "", "");
+            VCResultV2 vcRes = new VCResultV2("{\"type\":[\"VerifiableCredential\"]}", new VerificationResult(true, "", ""));
+            when(pvResult.getProofVerificationResult()).thenReturn(proofResult);
+            when(pvResult.getVcResults()).thenReturn(List.of(vcRes));
+            when(presentationVerifier.verifyV2(anyString())).thenReturn(pvResult);
+
+            VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
+
+            assertTrue(result.isAllChecksSuccessful());
+            assertEquals(1, result.getCredentialResults().size());
+        }
+
+        @Test
+        void testProcessSubmissionV2_DCQL_LDPVPWithStatusChecks_Success() {
+            String transactionId = "tx7";
+            List<String> requestIds = List.of("req7");
+            VerificationRequestDto request = new VerificationRequestDto(false, List.of("revocation"), false);
+
+            String vpToken = "{\"age_credential\":[" + SIGNED_LDP_VP_TOKEN + "]}";
+            VPSubmission sub = vpSubmission("state1", vpToken, null, null, null, null, false);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(dcqlAuthResponse(transactionId));
+
+            PresentationResultWithCredentialStatusV2 pvResult = mock(PresentationResultWithCredentialStatusV2.class);
+            VerificationResult proofResult = new VerificationResult(true, "", "");
+            VCResultWithCredentialStatusV2 vcRes = new VCResultWithCredentialStatusV2(
+                    "{\"type\":[\"VerifiableCredential\"]}", new VerificationResult(true, "", ""), Map.of());
+            when(pvResult.getProofVerificationResult()).thenReturn(proofResult);
+            when(pvResult.getVcResults()).thenReturn(List.of(vcRes));
+            when(presentationVerifier.verifyAndGetCredentialStatusV2(anyString(), anyList())).thenReturn(pvResult);
+
+            VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
+
+            assertTrue(result.isAllChecksSuccessful());
+            assertEquals(1, result.getCredentialResults().size());
+        }
+
+        @Test
+        void testProcessSubmissionV2_DCQL_LDPVCTokens_Success() {
+            String transactionId = "tx8";
+            List<String> requestIds = List.of("req8");
+            VerificationRequestDto request = new VerificationRequestDto(true, List.of(), false);
+
+            // LDP VC token (no proof, not an SD-JWT) wrapped in DCQL map
+            // require_cryptographic_holder_binding=false so the VC (not VP) format is accepted
+            String vpToken = "{\"age_credential\":[{\"type\":[\"VerifiableCredential\"],\"credentialSubject\":{\"name\":\"Bob\"}}]}";
+            VPSubmission sub = vpSubmission("state1", vpToken, null, null, null, null, false);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(dcqlAuthResponseNoCHB(transactionId));
+
+            VCVerificationResultDto mockVcResult = new VCVerificationResultDto();
+            mockVcResult.setAllChecksSuccessful(true);
+            mockVcResult.setSchemaAndSignatureCheck(new SchemaAndSignatureCheckDto(true, null));
+            when(vcVerificationService.verifyV2(any(), anyBoolean())).thenReturn(mockVcResult);
+
+            VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
+
+            assertTrue(result.isAllChecksSuccessful());
+            assertEquals(1, result.getCredentialResults().size());
+        }
+
+        @Test
+        void testProcessSubmissionV2_GenericException_ThrowsVPVerificationException() {
+            String transactionId = "tx9";
+            List<String> requestIds = List.of("req9");
+            VerificationRequestDto request = new VerificationRequestDto(true, List.of(), false);
+
+            String vpToken = "{\"age_credential\":[" + SIGNED_LDP_VP_TOKEN + "]}";
+            VPSubmission sub = vpSubmission("state1", vpToken, null, null, null, null, false);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(dcqlAuthResponse(transactionId));
+            when(presentationVerifier.verifyV2(anyString())).thenThrow(new RuntimeException("unexpected"));
+
+            assertThrows(VPVerificationException.class, () ->
+                    verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId));
+        }
+
+        @Test
+        void testGetVPResultV2_SubmissionNotFound_ThrowsVPSubmissionNotFoundException() {
+            String transactionId = "tx10";
+            List<String> requestIds = List.of("req10");
+            VerificationRequestDto request = new VerificationRequestDto(true, List.of(), false);
+
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(Collections.emptyList());
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(dcqlAuthResponse(transactionId));
+
+            assertThrows(VPSubmissionNotFoundException.class, () ->
+                    verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId));
+        }
+
+        @Test
+        void testGetVPResultV2_WalletError_ThrowsVPSubmissionWalletError() {
+            String transactionId = "tx11";
+            List<String> requestIds = List.of("req11");
+            VerificationRequestDto request = new VerificationRequestDto(true, List.of(), false);
+
+            VPSubmission sub = mock(VPSubmission.class);
+            when(sub.getError()).thenReturn("wallet_error");
+            when(sub.getResponseCode()).thenReturn(null);
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(sub));
+            when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
+                    .thenReturn(dcqlAuthResponse(transactionId));
+
+            assertThrows(VPSubmissionWalletError.class, () ->
+                    verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId));
+        }
+    }
+
+    @Nested
+    class TestPrivateHelpers {
+
+        @Test
+        void testIsAuthRequestWithPresentationExchange_NullAuthRequest() {
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isAuthRequestWithPresentationExchange",
+                    (AuthorizationRequestCreateResponse) null);
+            assertFalse(result);
+        }
+
+        @Test
+        void testIsAuthRequestWithPresentationExchange_NullAuthDetails() {
+            AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+            when(auth.getAuthorizationDetails()).thenReturn(null);
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isAuthRequestWithPresentationExchange", auth);
+            assertFalse(result);
+        }
+
+        @Test
+        void testIsAuthRequestWithPresentationExchange_WithPresentationDefinition() {
+            io.inji.verify.dto.presentation.VPDefinitionResponseDto pd =
+                    new io.inji.verify.dto.presentation.VPDefinitionResponseDto("pd-id", List.of(), null, null, null, null);
+            AuthorizationRequestResponseDto details = new AuthorizationRequestResponseDto(
+                    "clientId", null, pd, "nonce", "uri", false, false);
+            AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+            when(auth.getAuthorizationDetails()).thenReturn(details);
+
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isAuthRequestWithPresentationExchange", auth);
+            assertTrue(result);
+        }
+
+        @Test
+        void testIsAuthRequestWithPresentationExchange_WithDcqlQuery() {
+            AuthorizationRequestResponseDto details = new AuthorizationRequestResponseDto(
+                    "clientId", DcqlTestFixtures.minimalDcqlDto(), null, "nonce", "uri", false, false);
+            AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+            when(auth.getAuthorizationDetails()).thenReturn(details);
+
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isAuthRequestWithPresentationExchange", auth);
+            assertFalse(result);
+        }
+
+        @Test
+        void testIsAcceptVPWithoutHolderProof_True() {
+            AuthorizationRequestResponseDto details = new AuthorizationRequestResponseDto(
+                    "clientId", null, null, "nonce", "uri", true, false);
+            AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+            when(auth.getAuthorizationDetails()).thenReturn(details);
+
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isAcceptVPWithoutHolderProof", auth);
+            assertTrue(result);
+        }
+
+        @Test
+        void testIsAcceptVPWithoutHolderProof_False() {
+            AuthorizationRequestResponseDto details = new AuthorizationRequestResponseDto(
+                    "clientId", null, null, "nonce", "uri", false, false);
+            AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+            when(auth.getAuthorizationDetails()).thenReturn(details);
+
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isAcceptVPWithoutHolderProof", auth);
+            assertFalse(result);
+        }
+
+        @Test
+        void testIsAcceptVPWithoutHolderProof_NullAuthDetails() {
+            AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+            when(auth.getAuthorizationDetails()).thenReturn(null);
+
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isAcceptVPWithoutHolderProof", auth);
+            assertFalse(result);
+        }
+
+        @Test
+        void testPopulateHolderProofDto_Valid() {
+            VerificationResult vr = new VerificationResult(true, "", "");
+            io.inji.verify.dto.result.HolderProofCheckDto result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "populateHolderProofDto", vr);
+            assertNotNull(result);
+            assertTrue(result.isValid());
+            assertNull(result.getError());
+        }
+
+        @Test
+        void testPopulateHolderProofDto_Invalid() {
+            // Kotlin VerificationResult constructor order: (status, verificationMessage, verificationErrorCode)
+            VerificationResult vr = new VerificationResult(false, "some error", "ERR_CODE");
+            io.inji.verify.dto.result.HolderProofCheckDto result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "populateHolderProofDto", vr);
+            assertNotNull(result);
+            assertFalse(result.isValid());
+            assertNotNull(result.getError());
+            assertEquals("ERR_CODE", result.getError().getErrorCode());
+        }
+
+        @Test
+        void testGetListOfVerifiableCredentials_JSONArray() {
+            JSONArray arr = new JSONArray();
+            arr.put(new JSONObject("{\"type\":\"vc1\"}"));
+            arr.put("sd-jwt-string");
+            List<Object> result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "getListOfVerifiableCredentials", arr);
+            assertEquals(2, result.size());
+        }
+
+        @Test
+        void testGetListOfVerifiableCredentials_EmptyJSONArray_ThrowsInvalidVpTokenException() {
+            assertThrows(InvalidVpTokenException.class, () ->
+                    ReflectionTestUtils.invokeMethod(verifiablePresentationSubmissionService,
+                            "getListOfVerifiableCredentials", new JSONArray()));
+        }
+
+        @Test
+        void testGetListOfVerifiableCredentials_JSONObject() {
+            JSONObject obj = new JSONObject("{\"type\":\"vc\"}");
+            List<Object> result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "getListOfVerifiableCredentials", obj);
+            assertEquals(1, result.size());
+        }
+
+        @Test
+        void testGetListOfVerifiableCredentials_String() {
+            List<Object> result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "getListOfVerifiableCredentials", "some-sd-jwt");
+            assertEquals(1, result.size());
+        }
+
+        @Test
+        void testGetListOfVerifiableCredentials_NullOrOtherType_ThrowsInvalidVpTokenException() {
+            assertThrows(InvalidVpTokenException.class, () ->
+                    ReflectionTestUtils.invokeMethod(verifiablePresentationSubmissionService,
+                            "getListOfVerifiableCredentials", 42));
+        }
+
+        @Test
+        void testIsValidVerifiablePresentation_True() {
+            JSONObject vp = new JSONObject("{\"type\":[\"VerifiablePresentation\"]}");
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isValidVerifiablePresentation", vp);
+            assertTrue(result);
+        }
+
+        @Test
+        void testIsValidVerifiablePresentation_False_WrongType() {
+            JSONObject vp = new JSONObject("{\"type\":[\"SomethingElse\"]}");
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isValidVerifiablePresentation", vp);
+            assertFalse(result);
+        }
+
+        @Test
+        void testIsVerifiablePresentationSigned_WithProof() {
+            JSONObject vp = new JSONObject("{\"proof\":{\"type\":\"Ed25519Signature2018\"}}");
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isVerifiablePresentationSigned", vp);
+            assertTrue(result);
+        }
+
+        @Test
+        void testIsVerifiablePresentationSigned_WithoutProof() {
+            JSONObject vp = new JSONObject("{\"type\":[\"VerifiablePresentation\"]}");
+            boolean result = ReflectionTestUtils.invokeMethod(
+                    verifiablePresentationSubmissionService, "isVerifiablePresentationSigned", vp);
+            assertFalse(result);
+        }
+    }
+
+    @Nested
     class ProcessSdJwtClientIdAndNonce {
 
         private static final String EXPECTED_NONCE = "test-nonce-value";

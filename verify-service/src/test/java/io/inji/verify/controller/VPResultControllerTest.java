@@ -11,12 +11,14 @@ import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.enums.VPResultStatus;
+import io.inji.verify.dto.submission.VCSubmissionVerificationStatusDto;
 import io.inji.verify.exception.InvalidVpTokenException;
+import io.inji.verify.exception.ResponseCodeException;
 import io.inji.verify.exception.TokenMatchingFailedException;
 import io.inji.verify.exception.VPSubmissionNotFoundException;
 import io.inji.verify.exception.VPSubmissionWalletError;
+import io.inji.verify.exception.VPVerificationException;
 import io.inji.verify.exception.VPWithoutProofException;
-import io.inji.verify.exception.ResponseCodeException;
 import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
@@ -348,5 +350,297 @@ public class VPResultControllerTest {
                                 new ErrorDto(ErrorCode.MALFORMED_COOKIE)
                         )
                 ));
+    }
+
+    // ── v1: vcSubmission found ────────────────────────────────────────────────
+
+    @Test
+    public void testGetVPResult_FoundVCSubmission() throws Exception {
+        String transactionId = "tx_vc_found";
+        VCSubmissionVerificationStatusDto vcDto = mock(VCSubmissionVerificationStatusDto.class);
+
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of());
+        when(vcSubmissionService.getVcWithVerification(transactionId)).thenReturn(vcDto);
+
+        mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isOk());
+    }
+
+    // ── v1: VPVerificationException ───────────────────────────────────────────
+
+    @Test
+    void testGetVPResult_VPVerificationException() throws Exception {
+        String transactionId = "tx_vp_verify_fail";
+        List<String> requestIds = List.of("req001");
+
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(requestIds);
+        when(verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId))
+                .thenThrow(new VPVerificationException());
+
+        ErrorDto expected = new ErrorDto(
+                ErrorCode.VP_VERIFICATION_FAILED.getErrorCode(),
+                ErrorCode.VP_VERIFICATION_FAILED.getErrorMessage());
+
+        mockMvc.perform(get("/vp-result/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(objectMapper.writeValueAsString(expected)));
+    }
+
+    // ── v2 exception handlers ─────────────────────────────────────────────────
+
+    @Test
+    void testGetVPResultV2_VPSubmissionNotFoundException() throws Exception {
+        String transactionId = "txn_v2_not_found";
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPResultV2(any(), any(), any()))
+                .thenThrow(new VPSubmissionNotFoundException());
+
+        mockMvc.perform(post("/v2/vp-results/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(ErrorCode.NO_VP_SUBMISSION))));
+    }
+
+    @Test
+    void testGetVPResultV2_VPWithoutProofException() throws Exception {
+        String transactionId = "txn_v2_no_proof";
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPResultV2(any(), any(), any()))
+                .thenThrow(new VPWithoutProofException());
+
+        mockMvc.perform(post("/v2/vp-results/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF))));
+    }
+
+    @Test
+    void testGetVPResultV2_VPSubmissionWalletError() throws Exception {
+        String transactionId = "txn_v2_wallet_err";
+        String code = "WALLET_ERR";
+        String msg = "wallet error";
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPResultV2(any(), any(), any()))
+                .thenThrow(new VPSubmissionWalletError(code, msg));
+
+        mockMvc.perform(post("/v2/vp-results/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(code, msg))));
+    }
+
+    @Test
+    void testGetVPResultV2_TokenMatchingFailedException() throws Exception {
+        String transactionId = "txn_v2_token_mismatch";
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPResultV2(any(), any(), any()))
+                .thenThrow(new TokenMatchingFailedException());
+
+        mockMvc.perform(post("/v2/vp-results/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(ErrorCode.TOKEN_MATCHING_FAILED))));
+    }
+
+    @Test
+    void testGetVPResultV2_InvalidVpTokenException() throws Exception {
+        String transactionId = "txn_v2_invalid_token";
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPResultV2(any(), any(), any()))
+                .thenThrow(new InvalidVpTokenException());
+
+        mockMvc.perform(post("/v2/vp-results/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(ErrorCode.INVALID_VP_TOKEN))));
+    }
+
+    @Test
+    void testGetVPResultV2_ResponseCodeException() throws Exception {
+        String transactionId = "txn_v2_resp_code";
+        ErrorCode errorCode = ErrorCode.INVALID_TRANSACTION_ID;
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPResultV2(any(), any(), any()))
+                .thenThrow(new ResponseCodeException(errorCode));
+
+        mockMvc.perform(post("/v2/vp-results/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(objectMapper.writeValueAsString(
+                        new ErrorDto(errorCode.name(), errorCode.getErrorMessage()))));
+    }
+
+    @Test
+    void testGetVPResultV2_VPVerificationException() throws Exception {
+        String transactionId = "txn_v2_vp_verify_fail";
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPResultV2(any(), any(), any()))
+                .thenThrow(new VPVerificationException());
+
+        ErrorDto expected = new ErrorDto(
+                ErrorCode.VP_VERIFICATION_FAILED.getErrorCode(),
+                ErrorCode.VP_VERIFICATION_FAILED.getErrorMessage());
+
+        mockMvc.perform(post("/v2/vp-results/{transactionId}", transactionId)
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}"))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(objectMapper.writeValueAsString(expected)));
+    }
+
+    // ── session endpoint exception handlers ───────────────────────────────────
+
+    @Test
+    void testGetVPSessionResults_VPSubmissionNotFoundException() throws Exception {
+        String transactionId = "txn_sess_not_found";
+        String encodedCookie = Base64.getEncoder().encodeToString(transactionId.getBytes());
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPSessionResults(any(), any(), any()))
+                .thenThrow(new VPSubmissionNotFoundException());
+
+        mockMvc.perform(post("/vp-session-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .cookie(new Cookie(COOKIE_NAME, encodedCookie)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(ErrorCode.NO_VP_SUBMISSION))));
+    }
+
+    @Test
+    void testGetVPSessionResults_VPWithoutProofException() throws Exception {
+        String transactionId = "txn_sess_no_proof";
+        String encodedCookie = Base64.getEncoder().encodeToString(transactionId.getBytes());
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPSessionResults(any(), any(), any()))
+                .thenThrow(new VPWithoutProofException());
+
+        mockMvc.perform(post("/vp-session-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .cookie(new Cookie(COOKIE_NAME, encodedCookie)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(ErrorCode.VP_WITHOUT_PROOF))));
+    }
+
+    @Test
+    void testGetVPSessionResults_VPSubmissionWalletError() throws Exception {
+        String transactionId = "txn_sess_wallet_err";
+        String encodedCookie = Base64.getEncoder().encodeToString(transactionId.getBytes());
+        String code = "WALLET_ERR";
+        String msg = "wallet error";
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPSessionResults(any(), any(), any()))
+                .thenThrow(new VPSubmissionWalletError(code, msg));
+
+        mockMvc.perform(post("/vp-session-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .cookie(new Cookie(COOKIE_NAME, encodedCookie)))
+                .andExpect(status().isNotFound())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(code, msg))));
+    }
+
+    @Test
+    void testGetVPSessionResults_TokenMatchingFailedException() throws Exception {
+        String transactionId = "txn_sess_token_mismatch";
+        String encodedCookie = Base64.getEncoder().encodeToString(transactionId.getBytes());
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPSessionResults(any(), any(), any()))
+                .thenThrow(new TokenMatchingFailedException());
+
+        mockMvc.perform(post("/vp-session-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .cookie(new Cookie(COOKIE_NAME, encodedCookie)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(ErrorCode.TOKEN_MATCHING_FAILED))));
+    }
+
+    @Test
+    void testGetVPSessionResults_InvalidVpTokenException() throws Exception {
+        String transactionId = "txn_sess_invalid_token";
+        String encodedCookie = Base64.getEncoder().encodeToString(transactionId.getBytes());
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPSessionResults(any(), any(), any()))
+                .thenThrow(new InvalidVpTokenException());
+
+        mockMvc.perform(post("/vp-session-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .cookie(new Cookie(COOKIE_NAME, encodedCookie)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(
+                        objectMapper.writeValueAsString(new ErrorDto(ErrorCode.INVALID_VP_TOKEN))));
+    }
+
+    @Test
+    void testGetVPSessionResults_ResponseCodeException() throws Exception {
+        String transactionId = "txn_sess_resp_code";
+        String encodedCookie = Base64.getEncoder().encodeToString(transactionId.getBytes());
+        ErrorCode errorCode = ErrorCode.INVALID_TRANSACTION_ID;
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPSessionResults(any(), any(), any()))
+                .thenThrow(new ResponseCodeException(errorCode));
+
+        mockMvc.perform(post("/vp-session-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .cookie(new Cookie(COOKIE_NAME, encodedCookie)))
+                .andExpect(status().isBadRequest())
+                .andExpect(content().string(objectMapper.writeValueAsString(
+                        new ErrorDto(errorCode.name(), errorCode.getErrorMessage()))));
+    }
+
+    @Test
+    void testGetVPSessionResults_VPVerificationException() throws Exception {
+        String transactionId = "txn_sess_vp_verify_fail";
+        String encodedCookie = Base64.getEncoder().encodeToString(transactionId.getBytes());
+        when(verifiablePresentationRequestService.getLatestRequestIdFor(transactionId))
+                .thenReturn(List.of("req1"));
+        when(verifiablePresentationSubmissionService.getVPSessionResults(any(), any(), any()))
+                .thenThrow(new VPVerificationException());
+
+        ErrorDto expected = new ErrorDto(
+                ErrorCode.VP_VERIFICATION_FAILED.getErrorCode(),
+                ErrorCode.VP_VERIFICATION_FAILED.getErrorMessage());
+
+        mockMvc.perform(post("/vp-session-results")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{}")
+                        .cookie(new Cookie(COOKIE_NAME, encodedCookie)))
+                .andExpect(status().isInternalServerError())
+                .andExpect(content().string(objectMapper.writeValueAsString(expected)));
     }
 }

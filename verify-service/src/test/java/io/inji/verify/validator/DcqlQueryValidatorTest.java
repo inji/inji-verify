@@ -753,4 +753,84 @@ class DcqlQueryValidatorTest {
 
         assertEquals(ErrorCode.DCQL_CLAIM_VALUES_INVALID, ex.getErrorCode());
     }
+
+    // -------------------------------------------------------------------------
+    // Additional branch-coverage tests
+    // -------------------------------------------------------------------------
+
+    @Test
+    void shouldFail_whenCredentialIdIsNull() {
+        // Explicitly test the null branch of (id == null || id.isBlank())
+        List<CredentialQueryDto> creds = new ArrayList<>();
+        creds.add(new CredentialQueryDto(null, Constants.FORMAT_LDP_VC, new CredentialMetaDto(null, null), true, false, null, null));
+        DCQLQueryDto query = new DCQLQueryDto(creds, null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validate(query));
+        assertEquals(ErrorCode.DCQL_CREDENTIAL_ID_REQUIRED, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenCredentialIdIsBlank() {
+        // Explicitly test the isBlank() branch of (id == null || id.isBlank())
+        DCQLQueryDto query = new DCQLQueryDto(List.of(cred("   ")), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validate(query));
+        assertEquals(ErrorCode.DCQL_CREDENTIAL_ID_REQUIRED, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenVcSdJwtHasTypeValues() {
+        // FORMAT_VC_SD_JWT branch in validateCredentialMeta switch — typeValues not allowed
+        CredentialMetaDto meta = new CredentialMetaDto(null, List.of(List.of("SomeCredential")));
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(credWithMeta("c", Constants.FORMAT_VC_SD_JWT, meta)), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validate(query));
+        assertEquals(ErrorCode.DCQL_META_NOT_MATCHING_FORMAT, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldPass_whenVcSdJwtHasVctValues() {
+        // FORMAT_VC_SD_JWT with valid vctValues — must not throw
+        CredentialMetaDto meta = new CredentialMetaDto(List.of("https://example.com/SomeCredential"), null);
+        assertDoesNotThrow(() -> validator.validate(
+                new DCQLQueryDto(List.of(credWithMeta("c", Constants.FORMAT_VC_SD_JWT, meta)), null)));
+    }
+
+    @Test
+    void shouldPass_whenClaimPathContainsValidLong() {
+        // Long within valid range (0 to Integer.MAX_VALUE) — hits element instanceof Long success branch
+        List<ClaimQueryDto> claims = List.of(
+                new ClaimQueryDto(null, Arrays.asList(5L), null));
+        assertDoesNotThrow(() -> validator.validate(
+                new DCQLQueryDto(List.of(credWithClaims("c", claims, null)), null)));
+    }
+
+    @Test
+    void shouldFail_whenClaimPathContainsNegativeLong() {
+        // Negative Long — hits value < 0 branch on the Long type path
+        List<ClaimQueryDto> claims = List.of(
+                new ClaimQueryDto(null, Arrays.asList(-1L), null));
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithClaims("c", claims, null)), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validate(query));
+        assertEquals(ErrorCode.DCQL_CLAIM_PATH_INVALID, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenClaimIdIsBlankAndClaimSetsPresent() {
+        // Blank (not null) claim ID when claimSets is present — hits isBlank() branch in validateClaimIds
+        List<ClaimQueryDto> claims = List.of(
+                new ClaimQueryDto("   ", List.of("given_name"), null));
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(credWithClaims("c", claims, List.of(List.of("claim1")))), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validate(query));
+        assertEquals(ErrorCode.DCQL_MISSING_CLAIM_ID, ex.getErrorCode());
+    }
 }

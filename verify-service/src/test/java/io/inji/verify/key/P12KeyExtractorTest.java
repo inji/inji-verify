@@ -15,12 +15,12 @@ import java.util.Date;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.ArgumentMatchers.anyString;
 import static org.mockito.Mockito.*;
+import org.bouncycastle.asn1.x500.X500Name;
 import org.bouncycastle.cert.X509v3CertificateBuilder;
 import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
 import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
 import org.bouncycastle.operator.ContentSigner;
 import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
-import org.bouncycastle.asn1.x500.X500Name;
 
 class P12KeyExtractorTest {
 
@@ -129,6 +129,40 @@ class P12KeyExtractorTest {
 
         assertTrue(exception.getCause().getMessage()
                 .contains("No EdDSA key entry"));
+    }
+
+    @Test
+    void extractKeyPair_ShouldThrow_WhenKeyAlgorithmIsNotEdDSA() throws Exception {
+        // Use an RSA key — algorithm will be "RSA", which is neither Ed25519 nor EdDSA.
+        // This exercises the false branch of the algorithm check inside extractKeyPair.
+        KeyPair rsaKeyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
+
+        long now = System.currentTimeMillis();
+        X500Name name = new X500Name("CN=TestRSA");
+        X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+                name,
+                java.math.BigInteger.valueOf(now),
+                new Date(now - 60_000L),
+                new Date(now + 3_600_000L),
+                name,
+                rsaKeyPair.getPublic()
+        );
+        ContentSigner rsaSigner = new JcaContentSignerBuilder("SHA256withRSA").build(rsaKeyPair.getPrivate());
+        X509Certificate rsaCert = new JcaX509CertificateConverter().getCertificate(certBuilder.build(rsaSigner));
+
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, "password".toCharArray());
+        ks.setKeyEntry("rsa-alias", rsaKeyPair.getPrivate(), "password".toCharArray(), new X509Certificate[]{rsaCert});
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ks.store(baos, "password".toCharArray());
+
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream()).thenReturn(new ByteArrayInputStream(baos.toByteArray()));
+        when(resourceLoader.getResource(anyString())).thenReturn(resource);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> extractor.extractKeyPair());
+        assertTrue(exception.getCause().getMessage().contains("No EdDSA key entry"));
     }
 
     @Test

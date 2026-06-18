@@ -113,6 +113,7 @@ class VPSubmissionControllerTest {
         );
     }
 
+    @Test
     void shouldReturnBadRequest_whenUnsupportedParameterPresent() {
         Map<String, String[]> params = new HashMap<>();
         params.put("invalid", new String[]{"x"});
@@ -581,5 +582,242 @@ class VPSubmissionControllerTest {
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(vpSubmissionService).submitVpToken(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    // ---- validateRequest missing paths ----
+
+    @Test
+    void shouldReturnBadRequest_whenNeitherVpTokenNorErrorProvided() {
+        ResponseEntity<?> response = controller.submitVP(null, STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.EITHER_VP_TOKEN_OR_ERROR_REQUIRED.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenErrorDescriptionProvidedWithVpToken() {
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, "some description", request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.ERROR_DESCRIPTION_VP_TOKEN_CONFLICT.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenErrorDescriptionProvidedWithoutError() {
+        ResponseEntity<?> response = controller.submitVP(null, STATE, null, "some description", request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.ERROR_DESCRIPTION_ERROR_REQUIRED.getErrorCode(), body.getErrorCode());
+    }
+
+    // ---- validateVPTokenStructure missing paths ----
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenIsLiteralNull() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        ResponseEntity<?> response = controller.submitVP("null", STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_REQUIRED.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenIsJsonArray() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        ResponseEntity<?> response = controller.submitVP("[{\"type\":\"VP\"}]", STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_NOT_VALID_JSON_OBJECT.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenIsEmptyObject() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        ResponseEntity<?> response = controller.submitVP("{}", STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_MUST_HAVE_KEY_VALUE_PAIR.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenValueIsNotArray() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        ResponseEntity<?> response = controller.submitVP("{\"cred1\":{\"type\":\"VP\"}}", STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_VALUES_MUST_BE_ARRAYS.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenArrayIsEmpty() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        ResponseEntity<?> response = controller.submitVP("{\"cred1\":[]}", STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_ARRAYS_MUST_HAVE_ELEMENTS.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenFirstElementIsInvalid() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        // First element is an empty JSON object (not a valid non-empty object, not a string)
+        ResponseEntity<?> response = controller.submitVP("{\"cred1\":[{}]}", STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_ARRAY_ELEMENTS_INVALID.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenArrayHasMixedTypes_objectThenNonObject() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        // First element valid object, second is a string
+        ResponseEntity<?> response = controller.submitVP(
+                "{\"cred1\":[{\"type\":\"VP\"}, \"sd-jwt-string\"]}",
+                STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_ALL_ELEMENTS_MUST_BE_OBJECTS.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenArrayHasMixedTypes_sdJwtThenNonString() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        // First element is a non-empty SD-JWT string, second is a JSON object
+        ResponseEntity<?> response = controller.submitVP(
+                "{\"cred1\":[\"header.payload.sig~kb\", {\"type\":\"VP\"}]}",
+                STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.VP_TOKEN_ALL_ELEMENTS_MUST_BE_SD_JWT.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenVpTokenHasDuplicateQueryIds() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        // Raw JSON with duplicate keys — standard ObjectMapper de-dupes them, but
+        // validateDuplicateQueryIds uses streaming API which catches duplicates
+        String duplicateKeys = "{\"cred1\":[{\"type\":\"VP\"}],\"cred1\":[{\"type\":\"VP\"}]}";
+        ResponseEntity<?> response = controller.submitVP(duplicateKeys, STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.DUPLICATE_QUERY_IDS_NOT_ALLOWED.getErrorCode(), body.getErrorCode());
+    }
+
+    // ---- extractDcqlTokens exception path ----
+
+    @Test
+    void shouldReturnBadRequest_whenExtractDcqlTokensThrowsInvalidVpToken() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+        AuthorizationRequestResponseDto authDetails = mock(AuthorizationRequestResponseDto.class);
+        when(auth.getAuthorizationDetails()).thenReturn(authDetails);
+        when(vpSubmissionService.getAuthRequest(STATE)).thenReturn(auth);
+        when(vpSubmissionService.extractDcqlTokens(any(), any()))
+                .thenThrow(new io.inji.verify.exception.InvalidVpTokenException("bad structure"));
+
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals("invalid_vp_token", body.getErrorCode());
+    }
+
+    // ---- Error-only submission (no vpToken) ----
+
+    @Test
+    void shouldReturnSuccess_whenErrorSubmissionSucceeds() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+        AuthorizationRequestResponseDto authDetails = mock(AuthorizationRequestResponseDto.class);
+        when(auth.getAuthorizationDetails()).thenReturn(authDetails);
+        when(vpSubmissionService.getAuthRequest(STATE)).thenReturn(auth);
+
+        ResponseEntity<?> response = controller.submitVP(null, STATE, "access_denied", "user cancelled", request);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(vpSubmissionService).submitVpToken(any(), isNull(), eq(STATE), eq("access_denied"), eq("user cancelled"), any(), any());
+    }
+
+    // ---- Success path with response code ----
+
+    @Test
+    void shouldReturnSuccess_withRedirectUriWhenResponseCodeGenerated() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+        AuthorizationRequestResponseDto authDetails = mock(AuthorizationRequestResponseDto.class);
+        when(auth.getAuthorizationDetails()).thenReturn(authDetails);
+        when(vpSubmissionService.getAuthRequest(STATE)).thenReturn(auth);
+        when(vpSubmissionService.extractDcqlTokens(any(), any())).thenReturn(mockDcqlTokens());
+        when(vpSubmissionService.processLdpVpClientIdAndNonce(any(), any())).thenReturn(null);
+        when(vpSubmissionService.generateResponseCode(any())).thenReturn("resp-code-123");
+        when(vpSubmissionService.generateResponseCodeExpiry()).thenReturn(new Timestamp(System.currentTimeMillis()));
+        when(vpSubmissionService.buildRedirectUri("resp-code-123")).thenReturn("https://example.com/cb?response_code=resp-code-123");
+
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        @SuppressWarnings("unchecked")
+        Map<String, Object> body = (Map<String, Object>) response.getBody();
+        assertNotNull(body);
+        assertEquals("https://example.com/cb?response_code=resp-code-123", body.get("redirect_uri"));
+    }
+
+    // ---- validateClientIdNonce — no bindable tokens (both maps empty) ----
+
+    @Test
+    void shouldProceed_whenDcqlTokensHaveNoBindableTokens() {
+        VPRequestStatusDto dto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
+        when(vpRequestService.getCurrentRequestStatus(STATE)).thenReturn(dto);
+
+        AuthorizationRequestCreateResponse auth = mock(AuthorizationRequestCreateResponse.class);
+        AuthorizationRequestResponseDto authDetails = mock(AuthorizationRequestResponseDto.class);
+        when(auth.getAuthorizationDetails()).thenReturn(authDetails);
+        when(vpSubmissionService.getAuthRequest(STATE)).thenReturn(auth);
+
+        // DcqlTokensDto with only ldpVcTokens (no LDP VP, no SD-JWT → skips clientId/nonce validation)
+        Map<String, List<org.json.JSONObject>> ldpVcTokens = new HashMap<>();
+        ldpVcTokens.put("cred1", List.of(new org.json.JSONObject("{\"type\":\"VerifiableCredential\"}")));
+        DcqlTokensDto ldpVcOnly = new DcqlTokensDto(new HashMap<>(), ldpVcTokens, new HashMap<>());
+        when(vpSubmissionService.extractDcqlTokens(any(), any())).thenReturn(ldpVcOnly);
+
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
+        assertEquals(HttpStatus.OK, response.getStatusCode());
+        verify(vpSubmissionService).submitVpToken(any(), any(), any(), any(), any(), any(), any());
+        verify(vpSubmissionService, never()).processLdpVpClientIdAndNonce(any(), any());
+        verify(vpSubmissionService, never()).processSdJwtClientIdAndNonce(any(), any());
     }
 }

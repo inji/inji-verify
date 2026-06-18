@@ -1871,4 +1871,185 @@ class DcqlVpTokenValidatorTest {
         assertDoesNotThrow(() -> validator.validateVpTokenAgainstDcql(query,
                 sdJwtToken("cred1", SD_JWT_SCORE_42)));
     }
+
+    // -------------------------------------------------------------------------
+    // Additional branch-coverage tests
+    // -------------------------------------------------------------------------
+
+    // vc+sd-jwt format — same as dc+sd-jwt but different header typ
+    // Header: {"alg":"ES256","typ":"vc+sd-jwt"} = eyJhbGciOiJFUzI1NiIsInR5cCI6InZjK3NkLWp3dCJ9
+    // Same payload+disclosures as SD_JWT_NAME_ALICE but with vc+sd-jwt typ
+    private static final String VC_SD_JWT_NAME_ALICE =
+            "eyJhbGciOiJFUzI1NiIsInR5cCI6InZjK3NkLWp3dCJ9" +
+            ".eyJfc2RfYWxnIjoic2hhLTI1NiIsIl9zZCI6WyJfd1JuYm9uTU11cktlME5Ud2Y0ZXBJaXB0dVF5VFlBTldiSHBCNmVJYlFFIl19" +
+            ".sig~WyJzYWx0MSIsIm5hbWUiLCJBbGljZSJd~";
+
+    // Validation F (isTypeValuesSatisfied): branches where vcArray is null / not-array / empty
+    // These require holderBindingRequired=true AND typeValues set so the code enters isTypeValuesSatisfied.
+
+    @Test
+    void shouldFail_whenVpHasNoVerifiableCredentialArray_andTypeValuesSet() {
+        // VP passes holder-binding check (type=VerifiablePresentation) but has no verifiableCredential field.
+        // isTypeValuesSatisfied: vcArray == null → return false → VP_TOKEN_META_TYPE_VALUES_MISMATCH
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithTypeValuesAndBinding("cred1", List.of(
+                List.of("MOSIPVerifiableCredential")
+        ))), null);
+
+        ObjectNode vp = MAPPER.createObjectNode();
+        vp.putArray("type").add("VerifiablePresentation"); // no verifiableCredential field
+        ObjectNode token = MAPPER.createObjectNode();
+        token.putArray("cred1").add(vp);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query, token));
+        assertEquals(ErrorCode.VP_TOKEN_META_TYPE_VALUES_MISMATCH, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenVpVerifiableCredentialIsNotArray_andTypeValuesSet() {
+        // VP has verifiableCredential as a string (not array).
+        // isTypeValuesSatisfied: !vcArray.isArray() → return false → VP_TOKEN_META_TYPE_VALUES_MISMATCH
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithTypeValuesAndBinding("cred1", List.of(
+                List.of("MOSIPVerifiableCredential")
+        ))), null);
+
+        ObjectNode vp = MAPPER.createObjectNode();
+        vp.putArray("type").add("VerifiablePresentation");
+        vp.put("verifiableCredential", "not-an-array"); // string, not array
+        ObjectNode token = MAPPER.createObjectNode();
+        token.putArray("cred1").add(vp);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query, token));
+        assertEquals(ErrorCode.VP_TOKEN_META_TYPE_VALUES_MISMATCH, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenVpHasEmptyVerifiableCredentialArray_andTypeValuesSet() {
+        // VP has verifiableCredential as an empty array.
+        // isTypeValuesSatisfied: vcArray.isEmpty() → return false → VP_TOKEN_META_TYPE_VALUES_MISMATCH
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithTypeValuesAndBinding("cred1", List.of(
+                List.of("MOSIPVerifiableCredential")
+        ))), null);
+
+        ObjectNode vp = MAPPER.createObjectNode();
+        vp.putArray("type").add("VerifiablePresentation");
+        vp.putArray("verifiableCredential"); // empty array
+        ObjectNode token = MAPPER.createObjectNode();
+        token.putArray("cred1").add(vp);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query, token));
+        assertEquals(ErrorCode.VP_TOKEN_META_TYPE_VALUES_MISMATCH, ex.getErrorCode());
+    }
+
+    // claimValueMatches: Long branch (value instanceof Long && node.isIntegralNumber())
+
+    @Test
+    void shouldPass_whenClaimValueMatchesDeclaredLong() {
+        // Long declared value must match an integral JSON number (node.asLong() comparison)
+        List<ClaimQueryDto> claims = List.of(claimPathWithValues(List.of(9999999999L), "bigScore"));
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithClaims("cred1", false, claims)), null);
+
+        ObjectNode subject = MAPPER.createObjectNode().put("bigScore", 9999999999L);
+        assertDoesNotThrow(() -> validator.validateVpTokenAgainstDcql(query,
+                ldpVcToken("cred1", subject)));
+    }
+
+    @Test
+    void shouldFail_whenClaimValueDeclaredLongDoesNotMatch() {
+        // Long declared value that doesn't equal the JSON number
+        List<ClaimQueryDto> claims = List.of(claimPathWithValues(List.of(9999999999L), "bigScore"));
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithClaims("cred1", false, claims)), null);
+
+        ObjectNode subject = MAPPER.createObjectNode().put("bigScore", 1111111111L);
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query, ldpVcToken("cred1", subject)));
+        assertEquals(ErrorCode.VP_TOKEN_CLAIM_VALUE_MISMATCH, ex.getErrorCode());
+    }
+
+    // vc+sd-jwt format: hits FORMAT_VC_SD_JWT branch in isSdJwtFormat (used by validateSdJwtClaims / validateVctValues)
+
+    @Test
+    void shouldPass_whenVcSdJwtTopLevelClaimPresent() {
+        // FORMAT_VC_SD_JWT: same claim-path resolution as dc+sd-jwt (via isSdJwtFormat)
+        List<ClaimQueryDto> claims = List.of(claimPath("name"));
+        CredentialQueryDto credVcSdJwt = new CredentialQueryDto("cred1", Constants.FORMAT_VC_SD_JWT,
+                new CredentialMetaDto(null, null), false, false, claims, null);
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credVcSdJwt), null);
+
+        assertDoesNotThrow(() -> validator.validateVpTokenAgainstDcql(query,
+                sdJwtToken("cred1", VC_SD_JWT_NAME_ALICE)));
+    }
+
+    @Test
+    void shouldFail_whenVcSdJwtVctValuesMismatch() {
+        // FORMAT_VC_SD_JWT: validateVctValues path — vct must match one of vct_values
+        CredentialQueryDto credVcSdJwt = new CredentialQueryDto("cred1", Constants.FORMAT_VC_SD_JWT,
+                new CredentialMetaDto(List.of("https://example.com/WrongCredential"), null), false, false, null, null);
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credVcSdJwt), null);
+
+        // DC_SD_JWT_VCT_MY has vct="https://example.com/MyCredential" — not in allowed list
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query,
+                        sdJwtToken("cred1", VC_SD_JWT_NAME_ALICE)));
+        assertEquals(ErrorCode.VP_TOKEN_SD_JWT_VCT_MISMATCH, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldFail_whenVcSdJwtBindingRequired_andCnfAbsent() {
+        // FORMAT_VC_SD_JWT: validateHolderBinding with holderBindingRequired=true and no cnf claim
+        CredentialQueryDto credWithBinding = new CredentialQueryDto("cred1", Constants.FORMAT_VC_SD_JWT,
+                new CredentialMetaDto(null, null), true, false, null, null);
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credWithBinding), null);
+
+        // VC_SD_JWT has vc+sd-jwt typ but no cnf in payload → hasSdJwtCnfClaim returns false
+        ObjectNode token = MAPPER.createObjectNode();
+        token.putArray("cred1").add(VC_SD_JWT);
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query, token));
+        assertEquals(ErrorCode.VP_TOKEN_SD_JWT_MISSING_CNF, ex.getErrorCode());
+    }
+
+    // describeOptionFailure: catch block for VPRequestValidationException (path type mismatch)
+
+    @Test
+    void shouldFail_whenPathTypeMismatch_inClaimSetOption() {
+        // Path ["name", "first"] where credentialSubject.name is a String (not object).
+        // resolvePath throws VPRequestValidationException (string step on non-object) →
+        // describeOptionFailure catches it and returns "path type mismatch" description →
+        // all options fail → VP_TOKEN_CLAIM_SETS_NOT_SATISFIED
+        List<ClaimQueryDto> claims = List.of(
+                namedClaim("a", null, "name", "first")); // "name" is a string, can't navigate into it
+        List<List<String>> claimSets = List.of(List.of("a"));
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(ldpVcCredWithClaimSets("cred1", claims, claimSets)), null);
+
+        ObjectNode subject = MAPPER.createObjectNode().put("name", "Alice"); // "name" is a plain string
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query, ldpVcToken("cred1", subject)));
+        assertEquals(ErrorCode.VP_TOKEN_CLAIM_SETS_NOT_SATISFIED, ex.getErrorCode());
+    }
+
+    // describeOptionFailure: "unknown claim id" branch (claimById.get(claimId) returns null)
+
+    @Test
+    void shouldFail_whenClaimSetReferencesNonExistentClaimId_atSubmissionTime() {
+        // claimSets references claim id "z" which is not in claims — describeOptionFailure returns
+        // "unknown claim id 'z'" for every option → VP_TOKEN_CLAIM_SETS_NOT_SATISFIED
+        // Note: this bypasses query-time validation since DCQL spec allows such checks at submission
+        List<ClaimQueryDto> claims = List.of(namedClaim("a", null, "name"));
+        // Directly use the validator bypassing query-level validateClaimSets
+        // by building a raw CredentialQueryDto with mismatched claimSets
+        CredentialQueryDto credMismatch = new CredentialQueryDto("cred1", Constants.FORMAT_LDP_VC,
+                new CredentialMetaDto(null, null), false, false, claims,
+                List.of(List.of("z"))); // "z" is not in claims
+        DCQLQueryDto query = new DCQLQueryDto(List.of(credMismatch), null);
+
+        ObjectNode subject = MAPPER.createObjectNode().put("name", "Alice");
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query, ldpVcToken("cred1", subject)));
+        assertEquals(ErrorCode.VP_TOKEN_CLAIM_SETS_NOT_SATISFIED, ex.getErrorCode());
+    }
 }

@@ -1,7 +1,11 @@
 package io.inji.verify.controller;
 
+import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.exc.InvalidFormatException;
+import com.fasterxml.jackson.databind.exc.MismatchedInputException;
+import com.fasterxml.jackson.databind.exc.UnrecognizedPropertyException;
 import com.fasterxml.jackson.module.paramnames.ParameterNamesModule;
 import io.inji.verify.dto.authorizationrequest.VPRequestCreateDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestResponseDto;
@@ -18,7 +22,10 @@ import io.inji.verify.services.VerifiablePresentationRequestService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
+import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.converter.HttpMessageNotReadableException;
 import org.springframework.http.converter.StringHttpMessageConverter;
 import org.springframework.http.converter.json.Jackson2ObjectMapperBuilder;
 import org.springframework.http.converter.json.MappingJackson2HttpMessageConverter;
@@ -29,6 +36,7 @@ import org.springframework.web.context.request.async.DeferredResult;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
+import java.util.List;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertFalse;
@@ -262,6 +270,94 @@ public class VPRequestControllerTest {
                 objectMapper.readTree(result.getResponse().getContentAsString());
         assertEquals("vct_values must be an array of strings.",
                 responseNode.path("errorMessage").asText(""));
+    }
+
+    // ── handleJsonErrors direct tests ──────────────────────────────────────────
+
+    @Test
+    void handleJsonErrors_UnrecognizedProperty_returnsUnknownField() {
+        UnrecognizedPropertyException upe = mock(UnrecognizedPropertyException.class);
+        when(upe.getPropertyName()).thenReturn("unknownField");
+        HttpMessageNotReadableException ex = mock(HttpMessageNotReadableException.class);
+        when(ex.getMostSpecificCause()).thenReturn(upe);
+
+        ResponseEntity<ErrorDto> response =
+                new VPRequestController(verifiablePresentationRequestService, dcqlValidator)
+                        .handleJsonErrors(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("UNKNOWN_FIELD", response.getBody().getErrorCode());
+        assertTrue(response.getBody().getErrorMessage().contains("unknownField"));
+    }
+
+    @Test
+    void handleJsonErrors_InvalidFormat_returnsInvalidFieldValue() {
+        InvalidFormatException ife = mock(InvalidFormatException.class);
+        when(ife.getPath()).thenReturn(List.of());
+        when(ife.getValue()).thenReturn("badValue");
+        HttpMessageNotReadableException ex = mock(HttpMessageNotReadableException.class);
+        when(ex.getMostSpecificCause()).thenReturn(ife);
+
+        ResponseEntity<ErrorDto> response =
+                new VPRequestController(verifiablePresentationRequestService, dcqlValidator)
+                        .handleJsonErrors(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("INVALID_FIELD_VALUE", response.getBody().getErrorCode());
+        assertTrue(response.getBody().getErrorMessage().contains("badValue"));
+    }
+
+    @Test
+    void handleJsonErrors_MismatchedInput_generalField_returnsMalformedRequest() {
+        MismatchedInputException mie = mock(MismatchedInputException.class);
+        when(mie.getPath()).thenReturn(List.of());
+        when(mie.getOriginalMessage()).thenReturn("Cannot deserialize value of type");
+        HttpMessageNotReadableException ex = mock(HttpMessageNotReadableException.class);
+        when(ex.getMostSpecificCause()).thenReturn(mie);
+
+        ResponseEntity<ErrorDto> response =
+                new VPRequestController(verifiablePresentationRequestService, dcqlValidator)
+                        .handleJsonErrors(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("MALFORMED_REQUEST", response.getBody().getErrorCode());
+        assertEquals("Cannot deserialize value of type", response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void handleJsonErrors_JsonParseException_returnsInvalidJson() {
+        JsonParseException jpe = mock(JsonParseException.class);
+        when(jpe.getOriginalMessage()).thenReturn("Unexpected character ('{')");
+        HttpMessageNotReadableException ex = mock(HttpMessageNotReadableException.class);
+        when(ex.getMostSpecificCause()).thenReturn(jpe);
+
+        ResponseEntity<ErrorDto> response =
+                new VPRequestController(verifiablePresentationRequestService, dcqlValidator)
+                        .handleJsonErrors(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("INVALID_JSON", response.getBody().getErrorCode());
+        assertEquals("Unexpected character ('{')", response.getBody().getErrorMessage());
+    }
+
+    @Test
+    void handleJsonErrors_unknownCause_returnsInvalidRequest() {
+        RuntimeException cause = new RuntimeException("some unexpected low-level error");
+        HttpMessageNotReadableException ex = mock(HttpMessageNotReadableException.class);
+        when(ex.getMostSpecificCause()).thenReturn(cause);
+
+        ResponseEntity<ErrorDto> response =
+                new VPRequestController(verifiablePresentationRequestService, dcqlValidator)
+                        .handleJsonErrors(ex);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        assertNotNull(response.getBody());
+        assertEquals("INVALID_REQUEST", response.getBody().getErrorCode());
+        assertEquals("some unexpected low-level error", response.getBody().getErrorMessage());
     }
 
     @Test
