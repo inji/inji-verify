@@ -171,7 +171,7 @@ public class DcqlValidator {
                     continue;
                 }
                 if (element instanceof Integer || element instanceof Long) {
-                    long value = element instanceof Integer ? (Integer) element : (Long) element;
+                    long value = ((Number) element).longValue();
                     if (value < 0 || value > Integer.MAX_VALUE) {
                         throw new VPRequestValidationException(ErrorCode.DCQL_CLAIM_PATH_INVALID);
                     }

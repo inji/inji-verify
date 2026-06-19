@@ -355,9 +355,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
   
     /**
-     * This method is used to persist the VP submission details along with the response code and 
-     * its expiry time. 
-     * It also invokes the listener to update the status of VP request.
+     * This method is used to persist the VP submission details along with the response code and
+     * its expiry time.
      */
 	@Transactional
 	public void submitVpToken(AuthorizationRequestResponseDto authRequest, String vpToken, String state, String error,
@@ -374,9 +373,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 			throw new VPAlreadySubmittedException("VP already submitted for request_id: " + state, e);
 		}
         log.debug("VP submission saved successfully for state: {}", state);
-        //log.debug(vpSubmissionRepository.getById(state).getVpToken());
-        /// invoke listener to update the status of VP request
-		verifiablePresentationRequestService.invokeVpRequestStatusListener(state);
 
 	}
 
