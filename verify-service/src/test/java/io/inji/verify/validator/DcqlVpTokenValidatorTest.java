@@ -1437,10 +1437,17 @@ class DcqlVpTokenValidatorTest {
             ".eyJfc2RfYWxnIjoic2hhLTI1NiIsIl9zZCI6WyJxQ2NEbUZOZmpCSTZDRnhpbFhPY3VKQkV6RXA3OUdBWWdsODNrRHNfU3E0Il19" +
             ".sig~WyJzYWx0NSIsInNjb3JlIiw0Ml0~";
 
-    // No disclosures — payload has iss=mandatory_issuer baked in, no _sd claims
+    // No disclosures — payload is {"_sd_alg":"sha-256","_sd":[]}, no regular claims and no selectively disclosed claims
     private static final String SD_JWT_NO_DISCLOSURES =
             "eyJhbGciOiJFUzI1NiIsInR5cCI6ImRjK3NkLWp3dCJ9" +
             ".eyJfc2RfYWxnIjoic2hhLTI1NiIsIl9zZCI6W119" +
+            ".sig~";
+
+    // Non-SD payload claim — payload is {"iss":"https://issuer.example","_sd_alg":"sha-256","_sd":[]}, no disclosures
+    // "iss" is a regular (non-selectively-disclosed) JWT payload claim
+    private static final String SD_JWT_ISS_ONLY =
+            "eyJhbGciOiJFUzI1NiIsInR5cCI6ImRjK3NkLWp3dCJ9" +
+            ".eyJpc3MiOiJodHRwczovL2lzc3Vlci5leGFtcGxlIiwiX3NkX2FsZyI6InNoYS0yNTYiLCJfc2QiOltdfQ" +
             ".sig~";
 
     // dc+sd-jwt with {"name": "Alice"} disclosure
@@ -1594,9 +1601,9 @@ class DcqlVpTokenValidatorTest {
     }
 
     @Test
-    void shouldFail_whenRequestedClaimIsInPayloadButNotDisclosed() {
-        // SD_JWT_NO_DISCLOSURES has no ~disclosure~ parts, so no selectively disclosed claims.
-        // Even if "name" were baked into the payload, DCQL claims check only disclosed claims.
+    void shouldFail_whenClaimAbsentFromBothPayloadAndDisclosures() {
+        // SD_JWT_NO_DISCLOSURES payload is {"_sd_alg":"sha-256","_sd":[]} — "name" is absent
+        // from both the JWT payload and the selective disclosures, so validation must fail.
         List<ClaimQueryDto> claims = List.of(claimPath("name"));
         DCQLQueryDto query = new DCQLQueryDto(
                 List.of(sdJwtCredentialQueryWithClaims("cred1", claims)), null);
@@ -1606,6 +1613,43 @@ class DcqlVpTokenValidatorTest {
                         sdJwtToken("cred1", SD_JWT_NO_DISCLOSURES)));
 
         assertEquals(ErrorCode.VP_TOKEN_CLAIM_NOT_FOUND, ex.getErrorCode());
+    }
+
+    @Test
+    void shouldPass_whenNonSdPayloadClaimMatchesQuery() {
+        // SD_JWT_ISS_ONLY has "iss" as a regular (non-selectively-disclosed) JWT payload claim.
+        // Claim matching now covers both SD disclosures and regular payload claims, so "iss" must be found.
+        List<ClaimQueryDto> claims = List.of(claimPath("iss"));
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(sdJwtCredentialQueryWithClaims("cred1", claims)), null);
+
+        assertDoesNotThrow(() -> validator.validateVpTokenAgainstDcql(query,
+                sdJwtToken("cred1", SD_JWT_ISS_ONLY)));
+    }
+
+    @Test
+    void shouldPass_whenNonSdPayloadClaimValueMatchesQuery() {
+        // "iss" is a regular payload claim with value "https://issuer.example" — value match must succeed.
+        List<ClaimQueryDto> claims = List.of(claimPathWithValues(List.of("https://issuer.example"), "iss"));
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(sdJwtCredentialQueryWithClaims("cred1", claims)), null);
+
+        assertDoesNotThrow(() -> validator.validateVpTokenAgainstDcql(query,
+                sdJwtToken("cred1", SD_JWT_ISS_ONLY)));
+    }
+
+    @Test
+    void shouldFail_whenNonSdPayloadClaimValueMismatch() {
+        // "iss" is present but value doesn't match the declared constraint.
+        List<ClaimQueryDto> claims = List.of(claimPathWithValues(List.of("https://other.example"), "iss"));
+        DCQLQueryDto query = new DCQLQueryDto(
+                List.of(sdJwtCredentialQueryWithClaims("cred1", claims)), null);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> validator.validateVpTokenAgainstDcql(query,
+                        sdJwtToken("cred1", SD_JWT_ISS_ONLY)));
+
+        assertEquals(ErrorCode.VP_TOKEN_CLAIM_VALUE_MISMATCH, ex.getErrorCode());
     }
 
     @Test

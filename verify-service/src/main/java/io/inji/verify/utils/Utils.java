@@ -379,7 +379,7 @@ public final class Utils {
     }
 
     /** Returns all claims from an SD-JWT (payload + disclosures decoded), minus any meta claims. */
-    private static Map<String, Object> extractSdJwtClaims(String verifiableCredential, List<String> metaClaims) {
+    public static Map<String, Object> extractSdJwtClaims(String verifiableCredential, List<String> metaClaims) {
         try {
             SDJWT sdjwt = SDJWT.parse(verifiableCredential);
             String payloadJson = decodeBase64Json(sdjwt.getCredentialJwt().split("\\.")[1]);
