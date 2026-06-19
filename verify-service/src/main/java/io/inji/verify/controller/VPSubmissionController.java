@@ -192,7 +192,9 @@ public class VPSubmissionController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorDto(ErrorCode.VP_ALREADY_SUBMITTED));
         }
-        // --- 10. Return success response with redirect URI if generated
+        // ---- 10. Notify status listeners after transaction commits so the DB record is visible
+        verifiablePresentationRequestService.invokeVpRequestStatusListener(state);
+        // --- 11. Return success response with redirect URI if generated
         return ResponseEntity.status(HttpStatus.OK).body(response);
 
     }
