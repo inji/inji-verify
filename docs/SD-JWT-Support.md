@@ -2,7 +2,7 @@
 
 ## 🔍 Overview
 
-Inji Verify now supports **Selective Disclosure JSON Web Tokens (SD-JWTs)** as a credential format — specifically, the IETF-defined SD-JWT (vc+sd-jwt) format.  
+Inji Verify now supports **Selective Disclosure JSON Web Tokens (SD-JWTs)** as a credential format — both the legacy `vc+sd-jwt` format (SD-JWT VC draft-04) and the current `dc+sd-jwt` format (SD-JWT VC draft-10).  
 When Verifiable Credentials (VCs) are returned as SD-JWT strings, the UI decodes and renders them using the `@sd-jwt/decode` library.
 
 This document explains:
@@ -18,7 +18,8 @@ This document explains:
 It enables privacy-preserving presentations without revealing undisclosed claims.
 
 Key characteristics:
-- VCs are encoded as **compact SD-JWT strings (vc+sd-jwt)** 
+- VCs are encoded as **compact SD-JWT strings** — either `dc+sd-jwt` (current, draft-10) or `vc+sd-jwt` (legacy, draft-04)
+- Both formats are recognized and processed identically; `vc+sd-jwt` is accepted for backward compatibility with older credentials
 - Public and disclosed claims are included in the Verifiable Presentation
 - Undisclosed claims remain hidden while maintaining cryptographic binding
 - Signature integrity is maintained

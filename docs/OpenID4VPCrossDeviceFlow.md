@@ -7,7 +7,7 @@ The implementation adheres to the OpenID4VP [specification](https://openid.net/s
 ## Specifications supported
 - OpenID for Verifiable Presentations – [Draft 23 🔗](https://openid.net/specs/openid-4-verifiable-presentations-1_0-23.html).
 - Presentation Exchange 2.0.0 [specification 🔗](https://identity.foundation/presentation-exchange/spec/v2.0.0)
-- Supported VC format: LDP VC, SD-JWT VC, CWT VC
+- Supported VC format: LDP VC, SD-JWT VC (`dc+sd-jwt` draft-10 and `vc+sd-jwt` draft-04), CWT VC
 
 ## API Documentation
 API documentation is available in the [Inji Verify API documentation 🔗](https://mosip.stoplight.io/docs/inji-verify/branches/main/).
