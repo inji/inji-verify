@@ -966,20 +966,12 @@ paths:
                       jws: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
           application/dc+sd-jwt:
             schema:
-              $ref: '#/components/schemas/VCVerificationSDJWTRequest'
-            examples:
-              example:
-                summary: Example dc+sd-jwt format VC to be verified (current, draft-10)
-                value:
-                  vc: eyJhbGciOiJFZERTQSIsInR5cCI6ImRjK3NkLWp3dCJ9.eyJ2Y3QiOiJodHRwczovL2V4YW1wbGUuY29tL015Q3JlZGVudGlhbCJ9...signature
+              type: string
+            example: eyJhbGciOiJFZERTQSIsInR5cCI6ImRjK3NkLWp3dCJ9.eyJ2Y3QiOiJodHRwczovL2V4YW1wbGUuY29tL015Q3JlZGVudGlhbCJ9...signature
           application/vc+sd-jwt:
             schema:
-              $ref: '#/components/schemas/VCVerificationSDJWTRequest'
-            examples:
-              example:
-                summary: Example vc+sd-jwt format VC to be verified (legacy, draft-04)
-                value:
-                  vc: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+              type: string
+            example: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
           application/vc+cwt:
             schema:
               $ref: '#/components/schemas/VCVerificationCWTRequest'
