@@ -1,0 +1,1996 @@
+openapi: 3.0.0
+servers:
+  - url: 'https://injiverify.collab.mosip.net/v1/verify'
+tags:
+  - name: VC Submission
+    description: APIs for Verifiable Credential Submission related operations
+  - name: VC Verification
+    description: APIs for Verifiable Credential Verification related operations
+  - name: VP Request
+    description: APIs for Verifiable Presentation Authorization Request related operations
+  - name: VP Submission
+    description: APIs for Verifiable Presentation submission related operations
+  - name: VP Results
+    description: APIs for Verifiable Presentation Results related operations
+info:
+  title: OpenID4VP Verifier API - Inji Verify
+  version: 1.0.0
+  contact:
+    name: MOSIP
+    url: 'https://mosip.io'
+    email: mosip.emailnotifier@gmail.com
+  license:
+    name: MPL-2.0
+    url: 'https://www.mozilla.org/en-US/MPL/2.0/'
+  description: |-
+    API for VC verification and OpenID4VP v1.0.
+
+    This version aligns with [OpenID4VP v1.0](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html)
+    and [SD-JWT VC draft-10](https://datatracker.ietf.org/doc/html/draft-ietf-oauth-sd-jwt-vc-10).
+
+    **Breaking changes from previous versions:**
+    - VP request endpoints versioned to `/v2/*` — not backward compatible
+    - `presentationDefinition` / `presentationDefinitionId` replaced by `dcql_query`
+    - `acceptVPWithoutHolderProof` removed — use `require_cryptographic_holder_binding` in DCQL
+    - `client_id` with `did:` prefix rejected — use `decentralized_identifier:did:` prefix
+    - `vp_formats` renamed to `vp_formats_supported`; `ldp_vp` renamed to `ldp_vc`
+    - `presentation_submission` removed from VP submission — DCQL-only
+    - `vp_token` in submission is now a JSON object keyed by DCQL `query_id`
+paths:
+  /v2/vp-request:
+    post:
+      summary: Initiate a new VP Request (v2 — OpenID4VP 1.0)
+      description: |-
+        ## Description
+        This endpoint initiates a **Verifiable Presentation (VP) request** compliant with OpenID4VP v1.0.
+
+        This replaces the legacy `/vp-request` endpoint and is **not backward compatible**.
+
+        ---
+
+        ## Request
+
+        The request body **must include**:
+        - `clientId`
+        - `dcql_query` — DCQL query specifying the credentials to request (per OpenID4VP v1.0)
+
+        `presentationDefinition` and `presentationDefinitionId` are **not supported** and will be rejected.
+
+        ---
+
+        ## clientId Schemes
+
+        ### Pre-registered
+        - `clientId` is a simple string (e.g., `client123`)
+        - Authorization Request is returned **by value** in `authorizationDetails`
+        - `client_metadata` **MUST NOT** be included — rejected with `invalid_request` per OpenID4VP v1.0 Section 8.5
+
+        ### Decentralized Identifier
+        - `clientId` must use the `decentralized_identifier:` prefix per OpenID4VP v1.0 Section 5.9.3
+        - Example: `decentralized_identifier:did:example:verifier123`
+        - Authorization Request is returned **by reference** (`requestUri`)
+        - The legacy `did:` prefix is **rejected** with `INVALID_CLIENT_IDENTIFIER`
+
+        ---
+
+        ## nonce
+
+        - Optional field
+        - If provided: must be ≥ 16 characters, URL-safe characters only (`[A-Za-z0-9._~-]`); blank or whitespace values are rejected
+        - If not provided: a cryptographically secure nonce is generated (Base64URL without padding, ≥ 128 bits entropy)
+
+        ---
+
+        ## transactionId / requestId
+
+        - `transactionId`: optional, generated as `txn_<uuid>` if absent
+        - `requestId`: auto-generated as `req_<uuid>` per transaction
+
+        ---
+
+        ## responseCodeValidationRequired
+
+        | Flow Type | Value | Behavior |
+        |---|---|---|
+        | Cross Device Flow | `false` | `/v2/vp-submission` returns HTTP 200 only |
+        | Same Device – Web Wallet | `true` | `/v2/vp-submission` returns `redirect_uri` with `response_code` |
+        | Same Device – Mobile Wallet | `false` | `/v2/vp-submission` returns HTTP 200 only |
+
+      operationId: createVPRequestV2
+      tags:
+        - VP Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VPRequestCreate'
+            examples:
+              pre_registered:
+                summary: Pre-registered clientId with DCQL query (by value)
+                value:
+                  clientId: client123
+                  dcql_query:
+                    credentials:
+                      - id: age_credential_query
+                        format: ldp_vc
+                        meta:
+                          type_values:
+                            - - VerifiableCredential
+                              - AgeCredential
+                        require_cryptographic_holder_binding: true
+              decentralized_identifier:
+                summary: DID-based clientId with DCQL query (by reference)
+                value:
+                  clientId: 'decentralized_identifier:did:example:verifier123'
+                  dcql_query:
+                    credentials:
+                      - id: age_credential_query
+                        format: dc+sd-jwt
+                        meta:
+                          vct_values:
+                            - 'https://example.com/AgeCredential'
+                        require_cryptographic_holder_binding: true
+      responses:
+        '201':
+          description: |-
+            The VP request was created successfully. The response includes a `transactionId` and `requestId`, along with either:
+            - The full `authorizationDetails` object (pre-registered clientId), or
+            - A `requestUri` pointing to the authorization request JWT (decentralized_identifier clientId).
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/VPRequestResponse'
+                  - $ref: '#/components/schemas/VPRequestResponseByReference'
+              examples:
+                by_value:
+                  summary: Authorization by value (pre-registered clientId)
+                  value:
+                    transactionId: txn_f82f281e-8d96-419b-b413-5a0459739a7b
+                    requestId: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
+                    authorizationDetails:
+                      responseUri: 'https://injiverify.collab.mosip.net/v1/verify/v2/vp-submission/direct-post'
+                      responseType: vp_token
+                      responseMode: direct_post
+                      clientId: client123
+                      nonce: T3yeEqs0zVbveJASNFZ4kA
+                      dcql_query:
+                        credentials:
+                          - id: age_credential_query
+                            format: ldp_vc
+                            meta:
+                              type_values:
+                                - - VerifiableCredential
+                                  - AgeCredential
+                            require_cryptographic_holder_binding: true
+                      client_metadata:
+                        vp_formats_supported:
+                          ldp_vc:
+                            proof_type:
+                              - Ed25519Signature2020
+                          dc+sd-jwt:
+                            sd-jwt_alg_values:
+                              - ES256
+                              - ES384
+                            kb-jwt_alg_values:
+                              - ES256
+                              - ES384
+                          vc+sd-jwt:
+                            sd-jwt_alg_values:
+                              - ES256
+                              - ES384
+                            kb-jwt_alg_values:
+                              - ES256
+                              - ES384
+                      iat: 1752838929
+                    expiresAt: 1752838929
+                by_reference:
+                  summary: Authorization by reference (decentralized_identifier clientId)
+                  value:
+                    transactionId: 'urn:uuid:f82f281e-8d96-419b-b413-5a0459739a7b'
+                    requestId: 'urn:uuid:6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+                    requestUri: 'https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+                    expiresAt: 1752838929
+        '400':
+          description: |-
+            The request failed due to validation errors.
+
+            **Request parsing errors:**
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `INVALID_JSON` | JSON parse error message |
+            | `UNKNOWN_FIELD` | Unknown field: `{fieldName}` |
+            | `INVALID_FIELD_VALUE` | Invalid value `'{value}'` for field `'{field}'` |
+            | `MALFORMED_REQUEST` | Mismatched input type message |
+            | `INVALID_REQUEST` | Catch-all for unhandled request errors |
+
+            **Request field validation errors:**
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `invalid_request` | client_id is required |
+            | `dcql_query_required` | dcql_query is required |
+            | `invalid_request` | Nonce must contain only ASCII URL-safe characters (A-Z, a-z, 0-9, -, ., _, ~) and be at least 16 characters. |
+
+            **DCQL structure validation errors:**
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `dcql_query.credentials` | Each DCQL credential entry must not be null. |
+            | `dcql_query.credentials` | dcql_query.credentials must be a non-empty array. |
+            | `dcql_query.credentials` | Each DCQL credential entry must contain id. |
+            | `dcql_query.credentials` | Credential id must contain only alphanumeric characters, underscores, and hyphens. |
+            | `dcql_query.credentials` | Duplicate credential ids are not allowed. |
+            | `dcql_query.credentials` | Each DCQL credential entry must contain format. |
+            | `dcql_query.credentials` | DCQL credential format must be a valid format. |
+            | `dcql_query.credentials` | Each DCQL credential entry must contain meta. |
+            | `dcql_query.credentials` | DCQL meta must not contain null/blank values. |
+            | `dcql_query.credentials` | Each value in type_values must be a valid IRI (absolute or relative). |
+            | `dcql_query.credentials` | DCQL meta must not contain duplicate values. |
+            | `dcql_query.credentials` | DCQL meta fields must match the specified credential format. |
+            | `dcql_query.credentials` | Each claim must contain path. |
+            | `dcql_query.credentials` | DCQL claim path must be a valid path. |
+            | `dcql_query.credentials` | Duplicate claim paths are not allowed within a single credential query. |
+            | `dcql_query.credentials` | Claim id must contain only alphanumeric characters, underscores, and hyphens. |
+            | `dcql_query.credentials` | Duplicate claim ids are not allowed. |
+            | `dcql_query.credentials` | DCQL claim values must be a non-empty array if claim values field is present. |
+            | `dcql_query.credentials` | claim_sets must not be empty if claim_sets field is present. |
+            | `dcql_query.credentials` | claim_sets contains missing claim id reference. |
+            | `dcql_query.credentials` | claim_sets contains unknown claim id reference. |
+            | `dcql_query.credentials` | credential_sets contains unknown credential id reference. |
+            | `dcql_query.credential_sets` | credential_sets must contain at least one required entry. |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                client_id_required:
+                  summary: Missing clientId
+                  value:
+                    errorCode: invalid_request
+                    errorMessage: client_id is required
+                dcql_query_required:
+                  summary: Missing dcql_query
+                  value:
+                    errorCode: dcql_query_required
+                    errorMessage: dcql_query is required
+                invalid_nonce:
+                  summary: Invalid nonce
+                  value:
+                    errorCode: invalid_request
+                    errorMessage: 'Nonce must contain only ASCII URL-safe characters (A-Z, a-z, 0-9, -, ., _, ~) and be at least 16 characters.'
+                unknown_field:
+                  summary: Unknown field in request body
+                  value:
+                    errorCode: UNKNOWN_FIELD
+                    errorMessage: 'Unknown field: presentationDefinition'
+                invalid_format:
+                  summary: Unsupported credential format
+                  value:
+                    errorCode: dcql_query.credentials
+                    errorMessage: DCQL credential format must be a valid format.
+                duplicate_credential_id:
+                  summary: Duplicate credential id in DCQL query
+                  value:
+                    errorCode: dcql_query.credentials
+                    errorMessage: Duplicate credential ids are not allowed.
+  /v2/vp-session-request:
+    post:
+      summary: Initiate VP Session Request (v2 — OpenID4VP 1.0)
+      description: |-
+        ## Description
+        This endpoint initiates a **Verifiable Presentation (VP) session request** compliant with OpenID4VP v1.0.
+
+        This replaces the legacy `/vp-session-request` endpoint and is **not backward compatible**.
+
+        **The request and response body is identical to `/v2/vp-request`**, with the addition that a base64-encoded `transaction_id` is set as an **HttpOnly cookie** upon success.
+
+        This endpoint is intended for **session-based flows** (e.g., when using `@injistack/react-inji-verify-sdk`).
+
+        ---
+
+        ## Cookie Behavior
+
+        The `transaction_id` is base64-encoded and set as an HttpOnly cookie:
+
+        `Set-Cookie: transaction_id=<base64EncodedUuid>; HttpOnly; [Secure]`
+
+        | Environment | HttpOnly | Secure | SameSite | Max-Age |
+        |---|---|---|---|---|
+        | Production | true | true | None | 15 min |
+        | Local | true | false | Lax | 15 min |
+
+        > This cookie is **only set** by `/v2/vp-session-request`, not by `/v2/vp-request`.
+
+      operationId: createVPSessionRequestV2
+      tags:
+        - VP Request
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VPRequestCreate'
+            example:
+              clientId: client123
+              dcql_query:
+                credentials:
+                  - id: age_credential_query
+                    format: ldp_vc
+                    meta:
+                      type_values:
+                        - - VerifiableCredential
+                          - AgeCredential
+                    require_cryptographic_holder_binding: true
+      responses:
+        '201':
+          description: |-
+            The VP session request was created successfully. See `/v2/vp-request` for response body details.
+            Additionally sets a base64-encoded `transaction_id` as an HttpOnly cookie.
+          headers:
+            Set-Cookie:
+              description: HttpOnly cookie containing base64-encoded transaction_id
+              schema:
+                type: string
+                example: 'transaction_id=dHhuX2Y4MmYyODFlLThkOTYtNDE5Yi1iNDEzLTVhMDQ1OTczOWE3Yg==; HttpOnly; Secure; SameSite=None; Path=/; Max-Age=900'
+          content:
+            application/json:
+              schema:
+                oneOf:
+                  - $ref: '#/components/schemas/VPRequestResponse'
+                  - $ref: '#/components/schemas/VPRequestResponseByReference'
+        '400':
+          description: Same validation rules and error codes as `POST /v2/vp-request`. See that endpoint for the full error code table.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+  '/v2/vp-request/{requestId}':
+    get:
+      summary: Get VP Request JWT (v2 — OpenID4VP 1.0)
+      description: |-
+        ## Description
+        Retrieves a Verifiable Presentation (VP) request as a signed JWT. Used in **authorization by reference** flows where the wallet fetches the full request from the `requestUri` returned by `/v2/vp-request`.
+
+        This replaces the legacy `/vp-request/{requestId}` endpoint and is **not backward compatible**.
+
+        Supports DCQL-based authorization requests per OpenID4VP v1.0.
+      operationId: getVPRequestJwtV2
+      tags:
+        - VP Request
+      parameters:
+        - name: requestId
+          description: The Request ID for which to retrieve the signed JWT.
+          in: path
+          required: true
+          schema:
+            type: string
+          example: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
+      responses:
+        '200':
+          description: The VP Request JWT was successfully retrieved.
+          content:
+            application/oauth-authz-req+jwt:
+              schema:
+                type: string
+                format: jwt
+                example: eyJhbGciOiJFRERTQSIsInR5cCI6Im9hdXRoLWF1dGh6LXJlcStqd3QiLCJraWQiOiJkaWQ6ZXhhbXBsZTppc3N1ZXItZGVmYXVsdC1rZXkifQ.eyJjbGllbnRfaWQiOiJkZWNlbnRyYWxpemVkX2lkZW50aWZpZXI6ZGlkOmV4YW1wbGU6dmVyaWZpZXIxMjMiLCJpc3MiOiJkZWNlbnRyYWxpemVkX2lkZW50aWZpZXI6ZGlkOmV4YW1wbGU6dmVyaWZpZXIxMjMiLCJyZXNwb25zZV90eXBlIjoidnBfdG9rZW4iLCJyZXNwb25zZV9tb2RlIjoiZGlyZWN0X3Bvc3QiLCJub25jZSI6IlQzeWVFcXMwelZidmVKQVNORlo0a0EiLCJleHAiOjE2Nzg5MzA0MDAsImlhdCI6MTY3ODkyOTgwMH0.EXAMPLE_EDDSA_SIGNATURE
+        '404':
+          description: The specified Request ID does not exist.
+  '/vp-request/{requestId}/status':
+    get:
+      summary: Get the VP Request status
+      description: |-
+        ## Description
+        Checks the current status of a specific VP request. Allows the verifier to monitor whether the request has been fulfilled, is still active, or has expired.
+
+        Possible status values: `ACTIVE`, `VP_SUBMITTED`, `EXPIRED`.
+      operationId: getVPRequestStatus
+      tags:
+        - VP Request
+      parameters:
+        - name: requestId
+          description: The Request ID for which to get the status.
+          in: path
+          required: true
+          schema:
+            type: string
+          example: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
+      responses:
+        '200':
+          description: 'VP Request status retrieved successfully. Status can be `ACTIVE`, `VP_SUBMITTED`, or `EXPIRED`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VPRequestStatus'
+              examples:
+                active:
+                  summary: Request is active and awaiting submission
+                  value:
+                    status: ACTIVE
+                submitted:
+                  summary: A VP has been submitted
+                  value:
+                    status: VP_SUBMITTED
+                expired:
+                  summary: Request has expired
+                  value:
+                    status: EXPIRED
+        '404':
+          description: The Request ID is not associated with a known transaction.
+  /v2/vp-submission/direct-post:
+    post:
+      summary: Submit Authorization Response as VP Token (v2 — DCQL, OpenID4VP 1.0)
+      description: |-
+        ## Description
+        Used by a wallet to submit a **Verifiable Presentation (VP)** via DCQL-based `vp_token`, per OpenID4VP v1.0.
+
+        This replaces the legacy `/vp-submission/direct-post` endpoint and is **not backward compatible**.
+
+        `presentation_submission` is **no longer accepted**. The `vp_token` is now a JSON object keyed by DCQL `query_id`.
+
+        ---
+
+        ## vp_token Structure
+
+        `vp_token` is a JSON object where:
+        - Each **key** is a `query_id` from the DCQL request
+        - Each **value** is an **array** of presentations (required even for a single presentation)
+        - Presentations are format-specific: JSON objects for `ldp_vc`, strings for `dc+sd-jwt`/`vc+sd-jwt`
+
+        ```json
+        {
+          "age_credential_query": [
+            { "@context": [...], "type": ["VerifiablePresentation"], ... }
+          ],
+          "identity_query": [
+            "eyJhbGciOiJFUzI1NiJ9...<sd-jwt>~..."
+          ]
+        }
+        ```
+
+        ---
+
+        ## DCQL Validation
+
+        All validations run before cryptographic verification. Any failure rejects the entire `vp_token` (all-or-nothing):
+
+        - No unknown credential IDs (not declared in DCQL query)
+        - All required credentials present (or `credential_sets` satisfied)
+        - Format matches DCQL `format` declaration (`ldp_vc`, `dc+sd-jwt`, `vc+sd-jwt`)
+        - `multiple=false` (default): exactly one presentation per credential
+        - Holder binding: VP required when `require_cryptographic_holder_binding=true` (ldp_vc); SD-JWT+KB required when true (SD-JWT)
+        - `meta.type_values` satisfied for `ldp_vc` (OR-of-ANDs, supports IRI fragment matching)
+        - `meta.vct_values` exact match for SD-JWT
+        - Declared `claims` paths resolve and values match
+
+        ---
+
+        ## Security Validations
+
+        - **State**: `state` must correspond to a recent, valid, non-expired, non-duplicate Authorization Request
+        - **Nonce**: nonce from KB-JWT (SD-JWT) or VP proof (ldp_vc) must match the stored nonce
+        - **Client ID / aud**: `aud` in KB-JWT must match the verifier's `client_id`
+
+        ---
+
+        ## Error Handling
+
+        The following request attributes are supported for wallet-reported errors:
+        - `error` — wallet error code
+        - `error_description` — optional description
+
+        When `error` is present: `vp_token` must be null/absent. When `vp_token` is present: `error` must be absent.
+
+        ---
+
+        ## responseCodeValidationRequired
+
+        - If `true` in the corresponding Authorization Request: returns `redirect_uri` with `response_code`
+        - If `false`: returns HTTP 200 only
+
+        The `response_code` is cryptographically random, single-use, and short-lived (~5 minutes).
+
+        ---
+
+        ## VP Request Expiry
+
+        The server enforces VP request expiry. Submissions after expiry are rejected with `expired_request`.
+
+        ---
+
+        ## Duplicate Submission Prevention
+
+        The nonce is marked as consumed after the first successful submission. Resubmissions are rejected with `duplicate_submission`.
+
+      operationId: submitVPV2
+      tags:
+        - VP Submission
+      requestBody:
+        required: true
+        content:
+          application/x-www-form-urlencoded:
+            schema:
+              $ref: '#/components/schemas/AuthorizationResponseV2'
+            example:
+              vp_token: '{"age_credential_query":[{"@context":["https://www.w3.org/2018/credentials/v1"],"type":["VerifiablePresentation"],"verifiableCredential":[{"@context":["https://www.w3.org/2018/credentials/v1"],"type":["VerifiableCredential","AgeCredential"],"issuer":"did:example:issuer","credentialSubject":{"id":"did:example:holder","age":25},"proof":{"type":"Ed25519Signature2020","proofValue":"zIssuerSig..."}}],"proof":{"type":"Ed25519Signature2020","challenge":"T3yeEqs0zVbveJASNFZ4kA","domain":"client123","proofValue":"zHolderSig..."}}]}'
+              state: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
+      responses:
+        '200':
+          description: The VP was processed successfully.
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  redirect_uri:
+                    type: string
+                    nullable: true
+                    description: Optional `redirect_uri` returned when `responseCodeValidationRequired=true` in the Authorization Request. Contains `response_code` as a hash fragment.
+              examples:
+                without_redirect:
+                  summary: Accepted without redirect (responseCodeValidationRequired=false)
+                  value: {}
+                with_redirect:
+                  summary: Accepted with redirect (responseCodeValidationRequired=true)
+                  value:
+                    redirect_uri: 'https://example.com/#response_code=731c81d6-9fad-455f-9c66-681e45d59527'
+        '400':
+          description: |-
+            The submission failed. All errors use `errorCode` / `errorMessage` fields.
+
+            **Parameter validation** (validated before anything else):
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `invalid_request` | Either vp_token or error must be provided. |
+            | `invalid_request` | Both vp_token and error cannot be provided together. |
+            | `invalid_request` | If error_description is provided, vp_token must be null. |
+            | `invalid_request` | If error_description is provided, error must also be provided. |
+            | `invalid_request` | Invalid parameter: `{param}` (unknown form parameter) |
+
+            **State validation**:
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `invalid_request` | State parameter is required and cannot be empty. |
+            | `invalid_request` | Invalid state parameter: No matching VP request found. |
+            | `invalid_request` | Invalid state parameter: VP request has expired. |
+            | `invalid_request` | VP response has already been submitted. |
+
+            **`vp_token` structure validation**:
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `invalid_request` | invalid_vp_token: vp_token is required and cannot be empty or 'null' |
+            | `invalid_request` | invalid_vp_token, not a valid JSON object |
+            | `invalid_request` | invalid_vp_token: must contain at least one key-value pair |
+            | `invalid_request` | invalid_vp_token: all values must be arrays |
+            | `invalid_request` | invalid_vp_token: all arrays must have at least one element |
+            | `invalid_request` | invalid_vp_token: array elements must be non-empty JSON objects or non-empty SD-JWT strings |
+            | `invalid_request` | invalid_vp_token: all elements must be non-empty JSON objects |
+            | `invalid_request` | invalid_vp_token: all elements must be non-empty SD-JWT strings |
+            | `invalid_request` | invalid_vp_token: duplicate query ids are not allowed |
+
+            **DCQL validation** (runs against the stored DCQL query):
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `invalid_request` | vp_token contains credential id(s) not present in the DCQL query. |
+            | `invalid_request` | vp_token is missing one or more required credential ids from the DCQL query. |
+            | `invalid_request` | vp_token does not satisfy the DCQL credential_sets requirements. |
+            | `invalid_request` | vp_token credential format does not match the format declared in the DCQL query. |
+            | `invalid_request` | vp_token contains multiple credentials for a query that does not allow multiple. |
+            | `invalid_request` | vp_token ldp_vc credential must be a VerifiablePresentation when require_cryptographic_holder_binding is true. |
+            | `invalid_request` | vp_token ldp_vc credential must be a VerifiableCredential when require_cryptographic_holder_binding is false. |
+            | `invalid_request` | vp_token VerifiablePresentation is missing a verifiableCredential array, which is required when require_cryptographic_holder_binding is true. |
+            | `invalid_request` | vp_token SD-JWT credential does not contain a cnf claim and therefore does not support Holder Binding, which is required when require_cryptographic_holder_binding is true. |
+            | `invalid_request` | vp_token SD-JWT credential must include a Key Binding JWT when require_cryptographic_holder_binding is true. |
+            | `invalid_request` | vp_token ldp_vc credential type values do not satisfy any of the type_values options in the DCQL query. |
+            | `invalid_request` | vp_token SD-JWT credential vct claim does not match any of the vct_values in the DCQL query. |
+            | `invalid_request` | vp_token ldp_vc credential does not contain a required claim path declared in the DCQL query. |
+            | `invalid_request` | vp_token ldp_vc credential claim value does not match any of the declared values in the DCQL query. |
+            | `invalid_request` | vp_token credential does not satisfy any of the claim_sets options declared in the DCQL query. |
+
+            **Client ID / Nonce validation** (KB-JWT and ldp_vc proof):
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `invalid_request` | Nonce validation failed due to invalid nonce/challenge. |
+            | `invalid_request` | Client id validation failed due to invalid client_id/domain. |
+            | `invalid_request` | Client id or nonce validation failed. |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+              examples:
+                state_expired:
+                  summary: VP request expired
+                  value:
+                    errorCode: invalid_request
+                    errorMessage: 'Invalid state parameter: VP request has expired.'
+                already_submitted:
+                  summary: Already submitted
+                  value:
+                    errorCode: invalid_request
+                    errorMessage: VP response has already been submitted.
+                vp_token_not_json:
+                  summary: vp_token not a JSON object
+                  value:
+                    errorCode: invalid_request
+                    errorMessage: 'invalid_vp_token, not a valid JSON object'
+                nonce_mismatch:
+                  summary: Nonce/challenge mismatch
+                  value:
+                    errorCode: invalid_request
+                    errorMessage: 'Nonce validation failed due to invalid nonce/challenge.'
+        '500':
+          description: Internal server error during submission processing.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+              example:
+                errorCode: REDIRECT_URI_NOT_FOUND
+                errorMessage: Redirect URI configuration is missing
+  /vc-submission:
+    post:
+      summary: Submit a Verifiable Credential (VC)
+      description: |-
+        ## Description
+        Allows a user or system to submit a Verifiable Credential (VC) to the server. If a `transactionId` is not provided, the server generates one automatically.
+
+        This endpoint is for submitting individual credentials and is distinct from VP submission.
+      operationId: submitVC
+      tags:
+        - VC Submission
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VCSubmissionRequest'
+            example:
+              vc:
+                '@context':
+                  - 'https://www.w3.org/2018/credentials/v1'
+                type:
+                  - VerifiableCredential
+                issuer: 'https://example.org/issuers/123'
+                issuanceDate: '2023-01-01T00:00:00Z'
+                credentialSubject:
+                  id: 'did:example:abc'
+                  age: 25
+                proof:
+                  type: Ed25519Signature2020
+                  created: '2023-01-01T00:00:00Z'
+                  proofPurpose: assertionMethod
+                  verificationMethod: 'https://example.org/keys/1'
+                  jws: eyJ...signature
+              transactionId: txn_abc123
+      responses:
+        '200':
+          description: VC submission accepted successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCSubmissionResponse'
+              example:
+                transactionId: txn_abc123
+        '400':
+          description: Bad request — request body is malformed or missing the VC object.
+  '/vp-result/{transactionId}':
+    parameters:
+      - schema:
+          type: string
+        name: transactionId
+        description: The Transaction ID for which to retrieve the VP result.
+        in: path
+        required: true
+    get:
+      summary: Get VP results for a given Transaction ID (v1 — backward compatible)
+      description: |-
+        ## Description
+        Returns the final result of a Verifiable Presentation (VP) submission. Supports both DCQL-based and legacy Presentation Definition submissions for backward compatibility.
+
+        Supported credential formats: JSON-LD and SD-JWT (`dc+sd-jwt` and `vc+sd-jwt`).
+
+        Revocation checks are performed for JSON-LD credentials. The verification status can be `SUCCESS`, `INVALID`, `EXPIRED`, or `REVOKED`.
+
+        For a detailed per-check breakdown, use `/v2/vp-results/{transactionId}`.
+
+        **Error handling:**
+        - `transactionId` null or empty → 400 `invalid_request`
+        - `transactionId` not found → 404 `transaction_not_found`
+      tags:
+        - VP Results
+      operationId: getVpResult
+      x-internal: true
+      responses:
+        '200':
+          description: VP submission results retrieved successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VpTokenResult'
+              examples:
+                success:
+                  summary: Successful VP submission result
+                  value:
+                    transactionId: txn_abc123
+                    vpResultStatus: SUCCESS
+                    vcResults:
+                      - vc: '{...}'
+                        verificationStatus: SUCCESS
+                failure:
+                  summary: Failed VP submission result
+                  value:
+                    transactionId: txn_def456
+                    vpResultStatus: FAILED
+                    vcResults:
+                      - vc: '{...}'
+                        verificationStatus: INVALID
+        '400':
+          description: |-
+            Verification processing error.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `TOKEN_MATCHING_FAILED` | Token matching failed. |
+            | `INVALID_VP_TOKEN` | Verifiable Presentation Submission failed, due to invalid VP token. |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: |-
+            Transaction not found, or wallet reported an error during VP submission.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `INVALID_TRANSACTION_ID` | Invalid transaction ID, No requests found for given transaction ID. |
+            | `NO_VP_SUBMISSION` | No VP submission found for given transaction ID. |
+            | *(wallet error code)* | Error code and description as reported by the wallet. |
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errorCode:
+                    type: string
+                  errorMessage:
+                    type: string
+        '500':
+          description: |-
+            Internal server error during VC verification or credential status check.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `VP_WITHOUT_PROOF` | Invalid VP Submission since VP is without proof. |
+            | `VP_VERIFICATION_FAILED` | VP verification failed due to runtime exception during VP verification. |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  '/v2/vp-results/{transactionId}':
+    post:
+      summary: Get VP results for a given Transaction ID (v2 — DCQL + Legacy, OpenID4VP 1.0)
+      description: |-
+        ## Description
+        Verifies a VP identified by `transactionId` and returns a detailed, structured result for the VP and each VC contained within it.
+
+        Supports both **DCQL-based** and **legacy Presentation Definition** submissions for backward compatibility.
+
+        The verification process runs in the following stages:
+
+        1. **Schema and Signature Verification** — validates structure and cryptographic signature. If this fails, no further checks run.
+        2. **Expiry Check** — performed only when stage 1 passes. Expiry failure does not prevent claims extraction.
+        3. **Credential Status Checks** (Optional) — revocation/suspension checks. Skipped when `skipStatusChecks=true`.
+        4. **Holder Proof Verification** — validates holder binding. Behavior is format-specific:
+           - JSON-LD: verifies VP signature
+           - SD-JWT: verifies KB-JWT `nonce` and `aud` against the Authorization Request nonce and `client_id`
+           - CWT: holder proof not currently supported
+        5. **Claims Extraction** (Optional) — when `includeClaims=true` and stage 1 passes.
+
+        `allChecksSuccessful` at the top level is `true` only when all credentials pass all checks.
+
+        **Error handling:**
+        - `transactionId` null or empty → 400 `invalid_request`
+        - `transactionId` not found → 404 `transaction_not_found`
+      operationId: verifyVPResultsV2
+      tags:
+        - VP Results
+      parameters:
+        - name: transactionId
+          in: path
+          required: true
+          description: Unique transaction identifier generated during VP flow
+          schema:
+            type: string
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/V2VpVerificationRequest'
+      responses:
+        '200':
+          description: Detailed VP verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VpVerificationResponse'
+        '400':
+          description: |-
+            Verification processing error.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `TOKEN_MATCHING_FAILED` | Token matching failed. |
+            | `INVALID_VP_TOKEN` | Verifiable Presentation Submission failed, due to invalid VP token. |
+            | `RESPONSE_CODE_NOT_MATCHING` | Response code is not matching the VP Submission response. |
+            | `RESPONSE_CODE_EXPIRED` | Response code has expired. |
+            | `RESPONSE_CODE_USED` | Response code has been used. |
+            | `RESPONSE_CODE_NOT_FOUND` | Response code is missing for this VP Submission. |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: |-
+            Transaction not found, or wallet reported an error during VP submission.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `INVALID_TRANSACTION_ID` | Invalid transaction ID, No requests found for given transaction ID. |
+            | `NO_VP_SUBMISSION` | No VP submission found for given transaction ID. |
+            | *(wallet error code)* | Error code and description as reported by the wallet. |
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errorCode:
+                    type: string
+                  errorMessage:
+                    type: string
+        '500':
+          description: |-
+            Internal server error.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `VP_WITHOUT_PROOF` | Invalid VP Submission since VP is without proof. |
+            | `VP_VERIFICATION_FAILED` | VP verification failed due to runtime exception during VP verification. |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+      x-stoplight:
+        id: mtwcvmeae79qe
+      x-internal: true
+  /vp-session-results:
+    post:
+      summary: Get VP session results (Cookie-based — DCQL + Legacy, OpenID4VP 1.0)
+      description: |-
+        ## Description
+        Retrieves detailed verification results for a VP session. This is the primary endpoint used by `@injistack/react-inji-verify-sdk` for all flows (same-device and cross-device).
+
+        **The request and response body are the same as `/v2/vp-results/{transactionId}`.**
+
+        Supports both **DCQL-based** and **legacy Presentation Definition** submissions for backward compatibility.
+
+        The session is identified using a **`transaction_id` cookie** (required, base64-encoded). If the cookie is missing or invalid, returns **401 Unauthorized** with `VP_SESSION_INVALID`.
+
+        If the corresponding Authorization Request has `responseCodeValidationRequired=true`, a **`response_code`** must be provided and must be valid, unexpired, and unused.
+
+        After processing, the session cookie is cleared to prevent reuse.
+
+        ---
+
+        ## Request Body (Optional)
+
+        - `responseCode`: required only when `responseCodeValidationRequired=true`
+        - `skipStatusChecks`: skip all credential status checks
+        - `statusCheckFilters`: run only selected checks (`revocation`, `suspension`)
+        - `includeClaims`: include credential claims in the response
+
+        ---
+
+        ## Error Handling
+
+        - Cookie missing or invalid → 401 `VP_SESSION_INVALID`
+        - `transaction_not_found` → 404
+      operationId: getVpSessionResults
+      tags:
+        - VP Results
+      parameters:
+        - name: transaction_id
+          in: cookie
+          required: true
+          schema:
+            type: string
+          description: Base64-encoded Transaction ID set during VP session request
+      requestBody:
+        required: false
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VpVerificationSessionRequest'
+      responses:
+        '200':
+          description: Detailed VP verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VpVerificationResponse'
+        '400':
+          description: |-
+            Verification processing error or malformed session cookie.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `TOKEN_MATCHING_FAILED` | Token matching failed. |
+            | `INVALID_VP_TOKEN` | Verifiable Presentation Submission failed, due to invalid VP token. |
+            | `RESPONSE_CODE_NOT_MATCHING` | Response code is not matching the VP Submission response. |
+            | `RESPONSE_CODE_EXPIRED` | Response code has expired. |
+            | `RESPONSE_CODE_USED` | Response code has been used. |
+            | `RESPONSE_CODE_NOT_FOUND` | Response code is missing for this VP Submission. |
+            | `RESPONSE_CODE_NOT_USED` | Transaction was incomplete, response_code was not used. |
+            | `MALFORMED_COOKIE` | Request cannot be processed due to malformed cookie. |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '401':
+          description: |-
+            Cookie is missing or invalid.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `VP_SESSION_INVALID` | Your VP verification session is invalid. Please restart the process and try again. |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/ErrorResponse'
+        '404':
+          description: |-
+            Transaction not found, or wallet reported an error during VP submission.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `INVALID_TRANSACTION_ID` | Invalid transaction ID, No requests found for given transaction ID. |
+            | `NO_VP_SUBMISSION` | No VP submission found for given transaction ID. |
+            | *(wallet error code)* | Error code and description as reported by the wallet. |
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  errorCode:
+                    type: string
+                  errorMessage:
+                    type: string
+        '500':
+          description: |-
+            Internal server error.
+
+            | errorCode | errorMessage |
+            |---|---|
+            | `VP_WITHOUT_PROOF` | Invalid VP Submission since VP is without proof. |
+            | `VP_VERIFICATION_FAILED` | VP verification failed due to runtime exception during VP verification. |
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /vc-verification:
+    post:
+      summary: Verify a Verifiable Credential (v1)
+      description: |-
+        ## Description
+        Performs server-side verification of a Verifiable Credential (VC) — validates structural integrity and cryptographic signature.
+        The verification status returned can be `SUCCESS`, `INVALID`, `EXPIRED`, or `REVOKED`.
+
+        Revocation checks are performed for JSON-LD credentials.
+
+        For a detailed per-check breakdown, use `/v2/vc-verification`.
+
+        **Supported formats and Content-Type headers:**
+
+        | Format | Content-Type |
+        |---|---|
+        | JSON-LD | `application/vc+ld+json` |
+        | SD-JWT VC (draft-10) | `application/dc+sd-jwt` |
+        | SD-JWT VC (draft-04, legacy) | `application/vc+sd-jwt` |
+        | CWT | `application/vc+cwt` (VC as HEX value of CBOR) |
+      operationId: vc-verification
+      tags:
+        - VC Verification
+      requestBody:
+        required: true
+        description: The Verifiable Credential to be verified.
+        content:
+          application/vc+ld+json:
+            schema:
+              $ref: '#/components/schemas/VCVerificationRequest'
+            examples:
+              example:
+                summary: JSON-LD VC
+                value:
+                  vc:
+                    '@context':
+                      - 'https://www.w3.org/2018/credentials/v1'
+                    type:
+                      - VerifiableCredential
+                      - AgeCredential
+                    issuer: 'did:web:example.com'
+                    issuanceDate: '2023-01-01T00:00:00Z'
+                    credentialSubject:
+                      id: 'did:example:123'
+                      age: 25
+                    proof:
+                      type: Ed25519Signature2020
+                      created: '2023-01-01T00:00:00Z'
+                      verificationMethod: 'did:web:example.com#key-1'
+                      proofPurpose: assertionMethod
+                      jws: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+          application/dc+sd-jwt:
+            schema:
+              type: string
+            example: eyJhbGciOiJFZERTQSIsInR5cCI6ImRjK3NkLWp3dCJ9.eyJ2Y3QiOiJodHRwczovL2V4YW1wbGUuY29tL015Q3JlZGVudGlhbCJ9...signature
+          application/vc+sd-jwt:
+            schema:
+              type: string
+            example: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+          application/vc+cwt:
+            schema:
+              $ref: '#/components/schemas/VCVerificationCWTRequest'
+            examples:
+              example:
+                summary: Hex-encoded CWT
+                value:
+                  vc: d83dd2845831a2012604582b4b52394b495f49386443
+      responses:
+        '200':
+          description: 'Verification result. `verificationStatus` can be `SUCCESS`, `EXPIRED`, `INVALID`, or `REVOKED`.'
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VCVerificationResult'
+              examples:
+                success:
+                  value:
+                    verificationStatus: SUCCESS
+                invalid:
+                  value:
+                    verificationStatus: INVALID
+                expired:
+                  value:
+                    verificationStatus: EXPIRED
+                revoked:
+                  value:
+                    verificationStatus: REVOKED
+        '400':
+          description: |-
+            Invalid request body — `Content-Type` header is missing, unsupported, or the request body cannot be parsed.
+        '415':
+          description: Unsupported `Content-Type`. Accepted values are `application/vc+ld+json`, `application/dc+sd-jwt`, `application/vc+sd-jwt`, `application/vc+cwt`.
+        '500':
+          description: |-
+            Internal server error during verification or status check. Commonly caused by a failed credential status list retrieval.
+
+            Example error message: `STATUS_RETRIEVAL_ERROR - Retrieval of the status list failed: Network request failed with error response`
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+              examples:
+                Example 1:
+                  value:
+                    timestamp: '2025-12-03T10:52:43.747423Z'
+                    status: 500
+                    path: /v1/verify/vc-verification
+                    error: 'STATUS_RETRIEVAL_ERROR - Retrieval of the status list failed: Network request failed with error response'
+  /v2/vc-verification:
+    post:
+      summary: Verify a Verifiable Credential (v2 — detailed breakdown)
+      description: |-
+        ## Description
+        Verifies a single VC and returns a detailed breakdown of verification results instead of a single final status.
+
+        The verification process runs in the following order:
+
+        1. **Schema and Signature Verification** — validates structure and cryptographic signature. If this fails, no further checks run.
+        2. **Expiry Check** — performed only when stage 1 passes.
+        3. **Credential Status Checks** (Optional) — revocation/suspension. Skipped when `skipStatusChecks=true`.
+        4. **Claims Extraction** (Optional) — when `includeClaims=true` and stage 1 passes.
+
+        **Supported formats:** JSON-LD, SD-JWT (`dc+sd-jwt`, `vc+sd-jwt`), CWT.
+
+        Runtime exceptions are propagated as HTTP 500.
+      operationId: verifyVCV2
+      tags:
+        - VC Verification
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              $ref: '#/components/schemas/VcVerificationRequest'
+      responses:
+        '200':
+          description: Detailed VC verification result
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/VcVerificationResponse'
+        '400':
+          description: |-
+            Invalid request payload — `verifiableCredential` field is null or missing.
+        '500':
+          description: Internal server error during verification or credential status check.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InternalErrorResponse'
+  /well-known/did.json:
+    post:
+      summary: Get the DID document
+      description: |-
+        ## Description
+        Retrieves the DID (Decentralized Identifier) document for the verifier, following the `.well-known` discovery pattern.
+        The DID document contains public keys for authentication and service endpoints. Supports Authorization Requests by reference with DID-based `client_id` (using the `decentralized_identifier:` prefix per OpenID4VP v1.0).
+      tags:
+        - VP Request
+      responses:
+        '200':
+          description: DID document found and returned successfully.
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/DIDDocument'
+              example:
+                '@context':
+                  - 'https://www.w3.org/ns/did/v1'
+                  - 'https://w3id.org/security/suites/ed25519-2020/v1'
+                id: 'did:example:123456789abcdefghi'
+                verificationMethod:
+                  - id: 'did:example:123456789abcdefghi#keys-1'
+                    type: Ed25519VerificationKey2020
+                    controller: 'did:example:123456789abcdefghi'
+                    publicKeyMultibase: z6MkhPCXw1tV8wR2rWqC2kF7zX9b2D9M9m3yD5rN2J2F7zW
+                authentication:
+                  - '#keys-1'
+                service:
+                  - id: 'did:example:123456789abcdefghi#didcomm-1'
+                    type: DIDCommMessaging
+                    serviceEndpoint: 'https://example.com/didcomm'
+        '500':
+          description: DID document creation failed due to an internal server error.
+      operationId: get-did-json
+components:
+  schemas:
+    # -------------------------------------------------------------------------
+    # VP Request schemas
+    # -------------------------------------------------------------------------
+    VPRequestCreate:
+      type: object
+      required:
+        - clientId
+        - dcql_query
+      properties:
+        clientId:
+          type: string
+          description: |-
+            Identifier of the verifier. Two schemes are supported:
+
+            - **Pre-registered**: simple string (e.g., `client123`). Authorization Request is returned by value. `client_metadata` MUST NOT be included.
+            - **Decentralized Identifier**: must use the `decentralized_identifier:` prefix per OpenID4VP v1.0 Section 5.9.3 (e.g., `decentralized_identifier:did:example:verifier123`). Authorization Request is returned by reference. The legacy `did:` prefix is rejected with `INVALID_CLIENT_IDENTIFIER`.
+          example: client123
+        dcql_query:
+          $ref: '#/components/schemas/DcqlQuery'
+          description: DCQL query specifying the credentials to request, per OpenID4VP v1.0. Required. `presentationDefinition` and `presentationDefinitionId` are not supported.
+        responseCodeValidationRequired:
+          type: boolean
+          description: 'If `true`, `/v2/vp-submission` returns a `redirect_uri` with `response_code`. Use `true` for same-device web wallet flows. Default: `false`.'
+          default: false
+          example: false
+        transactionId:
+          type: string
+          description: 'Optional. Unique UUID for the transaction. If not provided, generated as `txn_<uuid>`.'
+          example: txn_abc123
+        nonce:
+          type: string
+          description: |-
+            Optional. If provided, must be:
+            - At least 16 characters
+            - URL-safe characters only: `[A-Za-z0-9._~-]`
+            - Not blank or whitespace-only
+
+            If not provided, a cryptographically secure nonce is generated (Base64URL without padding, ≥ 128 bits entropy).
+          example: T3yeEqs0zVbveJASNFZ4kA
+    DcqlQuery:
+      type: object
+      required:
+        - credentials
+      description: DCQL (Digital Credentials Query Language) query per OpenID4VP v1.0.
+      properties:
+        credentials:
+          type: array
+          minItems: 1
+          description: Array of credential queries. Each entry specifies a credential to request.
+          items:
+            $ref: '#/components/schemas/DcqlCredential'
+        credential_sets:
+          type: array
+          description: |-
+            Optional. Specifies which combinations of credentials are acceptable.
+            Each set is satisfied when the VP token contains all credential IDs from at least one of its options (OR-of-ANDs).
+            Sets with `required: false` are optional and not enforced.
+          items:
+            $ref: '#/components/schemas/DcqlCredentialSet'
+    DcqlCredential:
+      type: object
+      required:
+        - id
+        - format
+      description: A single credential query within a DCQL query.
+      properties:
+        id:
+          type: string
+          pattern: '^[a-zA-Z0-9_-]+$'
+          description: Unique identifier for this credential query. Used as the key in the `vp_token` response.
+          example: age_credential_query
+        format:
+          type: string
+          description: 'Credential format to request. Supported values: `ldp_vc`, `dc+sd-jwt`, `vc+sd-jwt`.'
+          enum:
+            - ldp_vc
+            - dc+sd-jwt
+            - vc+sd-jwt
+          example: ldp_vc
+        meta:
+          $ref: '#/components/schemas/DcqlMeta'
+          description: Optional metadata constraints for the credential.
+        claims:
+          type: array
+          description: Optional. Declared claim paths to request from the credential.
+          items:
+            $ref: '#/components/schemas/DcqlClaim'
+        claim_sets:
+          type: array
+          description: Optional. OR-of-ANDs of claim IDs. At least one option must be fully satisfied by the credential.
+          items:
+            type: array
+            items:
+              type: string
+          example:
+            - - first_name
+              - last_name
+            - - given_name
+        multiple:
+          type: boolean
+          default: false
+          description: 'If `false` (default), exactly one presentation is expected per credential query. If `true`, one or more are allowed.'
+          example: false
+        require_cryptographic_holder_binding:
+          type: boolean
+          default: true
+          description: |-
+            Controls whether the wallet must demonstrate holder binding.
+
+            - `true` (default): Wallet must submit a VP (for `ldp_vc`) or SD-JWT+KB (for SD-JWT formats).
+            - `false`: Wallet may submit a bare VC (for `ldp_vc`) or plain SD-JWT without KB-JWT (for SD-JWT formats).
+          example: true
+    DcqlMeta:
+      type: object
+      description: Metadata constraints for a DCQL credential query.
+      properties:
+        vct_values:
+          type: array
+          description: 'SD-JWT only. Exact-match values for the `vct` claim in the SD-JWT payload.'
+          items:
+            type: string
+          example:
+            - 'https://example.com/AgeCredential'
+        type_values:
+          type: array
+          description: |-
+            `ldp_vc` only. OR-of-ANDs type constraints. The credential must satisfy at least one inner array (OR); within each inner array, all declared types must be present (AND).
+
+            Supports exact match and IRI fragment match (e.g., `https://example.org/context#AgeCredential` matches short name `AgeCredential`).
+          items:
+            type: array
+            items:
+              type: string
+          example:
+            - - VerifiableCredential
+              - AgeCredential
+    DcqlClaim:
+      type: object
+      required:
+        - path
+      description: A declared claim path within a DCQL credential query.
+      properties:
+        id:
+          type: string
+          description: Optional ID for this claim, referenced in `claim_sets`.
+          example: first_name
+        path:
+          type: array
+          description: |-
+            JSONPath-like path to the claim within the credential. Segment types:
+            - string: object key lookup
+            - integer: array index
+            - null: array wildcard (expands to all array elements)
+          items:
+            oneOf:
+              - type: string
+                nullable: true
+              - type: integer
+          example:
+            - credentialSubject
+            - first_name
+        values:
+          type: array
+          description: 'Optional. The resolved claim value must type-and-value match at least one declared value (OR). Supported types: null, string, boolean, integer.'
+          items: {}
+    DcqlCredentialSet:
+      type: object
+      required:
+        - options
+      description: Specifies an acceptable combination of credentials within a DCQL query.
+      properties:
+        options:
+          type: array
+          description: Each inner array is one option (AND of credential IDs). The set is satisfied when at least one option is present in the VP token (OR across options).
+          items:
+            type: array
+            items:
+              type: string
+          example:
+            - - age_credential_query
+            - - identity_credential_query
+              - photo_id_query
+        required:
+          type: boolean
+          default: true
+          description: 'If `true` (default), this set must be satisfied. If `false`, the set is optional.'
+          example: true
+    VPRequestResponse:
+      type: object
+      required:
+        - authorizationDetails
+      properties:
+        transactionId:
+          type: string
+          description: Unique ID of the VP request transaction.
+          example: txn_f82f281e-8d96-419b-b413-5a0459739a7b
+        requestId:
+          type: string
+          description: Unique ID of the authorization request.
+          example: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
+        authorizationDetails:
+          $ref: '#/components/schemas/AuthorizationRequestResponse'
+        expiresAt:
+          type: integer
+          format: int64
+          description: Unix timestamp (seconds) after which the request expires.
+          example: 1752838929
+    VPRequestResponseByReference:
+      type: object
+      required:
+        - requestUri
+      properties:
+        transactionId:
+          type: string
+          description: Unique ID of the VP request transaction.
+          example: 'urn:uuid:f82f281e-8d96-419b-b413-5a0459739a7b'
+        requestId:
+          type: string
+          description: Unique ID of the authorization request.
+          example: 'urn:uuid:6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+        requestUri:
+          type: string
+          format: uri
+          description: URI from which the wallet fetches the signed Authorization Request JWT.
+          example: 'https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+        expiresAt:
+          type: integer
+          format: int64
+          description: Unix timestamp (seconds) after which the request expires.
+          example: 1752838929
+    AuthorizationRequestResponse:
+      title: AuthorizationRequestResponse
+      type: object
+      description: Full authorization request payload returned when clientId scheme is pre-registered.
+      properties:
+        responseUri:
+          type: string
+          format: uri
+          description: URL for the wallet to submit the VP token.
+          example: 'https://injiverify.collab.mosip.net/v1/verify/v2/vp-submission/direct-post'
+        responseType:
+          type: string
+          description: Response type; always `vp_token`.
+          example: vp_token
+        responseMode:
+          type: string
+          description: Response mode; always `direct_post`.
+          example: direct_post
+        clientId:
+          type: string
+          description: Client ID of the verifier.
+          example: client123
+        nonce:
+          type: string
+          description: Cryptographic nonce binding the VP to this session. Base64URL-encoded without padding.
+          example: T3yeEqs0zVbveJASNFZ4kA
+        dcql_query:
+          $ref: '#/components/schemas/DcqlQuery'
+          description: DCQL query specifying the credentials requested.
+        client_metadata:
+          $ref: '#/components/schemas/ClientMetadata'
+          description: Verifier metadata including supported VP formats. Included for pre-registered clients only when applicable.
+        iat:
+          type: integer
+          format: int64
+          description: Unix timestamp of when the request was issued.
+          example: 1752838929
+    ClientMetadata:
+      type: object
+      description: Verifier client metadata per OpenID4VP v1.0 Section 5.
+      properties:
+        vp_formats_supported:
+          type: object
+          description: |-
+            Supported VP formats per OpenID4VP v1.0 (replaces `vp_formats`). Uses `ldp_vc` for Linked Data Proof credentials (replaces `ldp_vp`).
+            `client_name` is not included.
+          properties:
+            ldp_vc:
+              type: object
+              description: Linked Data Proof credential format support.
+              properties:
+                proof_type:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - Ed25519Signature2020
+            dc+sd-jwt:
+              type: object
+              description: SD-JWT VC (draft-10) format support.
+              properties:
+                sd-jwt_alg_values:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - ES256
+                    - ES384
+                kb-jwt_alg_values:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - ES256
+                    - ES384
+            vc+sd-jwt:
+              type: object
+              description: SD-JWT VC (draft-04, legacy) format support.
+              properties:
+                sd-jwt_alg_values:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - ES256
+                    - ES384
+                kb-jwt_alg_values:
+                  type: array
+                  items:
+                    type: string
+                  example:
+                    - ES256
+                    - ES384
+      example:
+        vp_formats_supported:
+          ldp_vc:
+            proof_type:
+              - Ed25519Signature2020
+          dc+sd-jwt:
+            sd-jwt_alg_values:
+              - ES256
+              - ES384
+            kb-jwt_alg_values:
+              - ES256
+              - ES384
+          vc+sd-jwt:
+            sd-jwt_alg_values:
+              - ES256
+              - ES384
+            kb-jwt_alg_values:
+              - ES256
+              - ES384
+    VPRequestStatus:
+      type: object
+      description: Status of a VP request transaction.
+      properties:
+        status:
+          type: string
+          enum:
+            - ACTIVE
+            - VP_SUBMITTED
+            - EXPIRED
+          description: Current status of the VP request transaction.
+          example: ACTIVE
+    # -------------------------------------------------------------------------
+    # VP Submission schemas
+    # -------------------------------------------------------------------------
+    AuthorizationResponseV2:
+      type: object
+      description: |-
+        DCQL-based VP submission body (application/x-www-form-urlencoded).
+
+        `presentation_submission` is no longer accepted. `vp_token` is a JSON object keyed by DCQL `query_id`.
+
+        Success: provide `vp_token` + `state` (no `error`).
+        Error: provide `error` + `state` (no `vp_token`; `error_description` optional).
+      properties:
+        vp_token:
+          type: string
+          nullable: true
+          description: |-
+            URL-encoded JSON string. When decoded, must be a JSON object where each key is a DCQL `query_id` and each value is an array of presentations.
+            Must be absent or `null` when `error` is present.
+
+            Each array element is either:
+            - A JSON object (for `ldp_vc` presentations)
+            - A string (for `dc+sd-jwt` or `vc+sd-jwt` presentations)
+          additionalProperties:
+            type: array
+            minItems: 1
+            items:
+              oneOf:
+                - type: object
+                  description: ldp_vc Verifiable Presentation (JSON-LD object)
+                - type: string
+                  description: SD-JWT presentation string (dc+sd-jwt or vc+sd-jwt)
+        state:
+          type: string
+          description: The `requestId` from the Authorization Request. Must be present and non-empty.
+          example: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
+        error:
+          type: string
+          nullable: true
+          description: 'Wallet-reported error code. Must be `null` when `vp_token` is present.'
+          example: user_cancelled
+        error_description:
+          type: string
+          nullable: true
+          description: Optional description of the wallet-reported error.
+          example: User cancelled the presentation.
+    # -------------------------------------------------------------------------
+    # VP Result schemas
+    # -------------------------------------------------------------------------
+    V2VpVerificationRequest:
+      type: object
+      x-stoplight:
+        id: 2662e7940e63a
+      properties:
+        skipStatusChecks:
+          type: boolean
+          default: false
+          description: Skip all credential status checks when `true`.
+        statusCheckFilters:
+          type: array
+          description: List of credential status check purposes to perform (e.g., `revocation`, `suspension`). Unsupported purposes are ignored. If empty, all supported checks are performed.
+          items:
+            type: string
+        includeClaims:
+          type: boolean
+          default: false
+          description: Include extracted plain claims in the response.
+    VpVerificationSessionRequest:
+      type: object
+      properties:
+        responseCode:
+          type: string
+          nullable: true
+          description: 'The `response_code` from the `redirect_uri`. Required when the corresponding Authorization Request was created with `responseCodeValidationRequired=true`. Must be valid, unexpired, and unused.'
+        skipStatusChecks:
+          type: boolean
+          default: false
+          description: Skip all credential status checks when `true`.
+        statusCheckFilters:
+          type: array
+          description: List of credential status check purposes to perform. Unsupported purposes are ignored.
+          items:
+            type: string
+        includeClaims:
+          type: boolean
+          default: false
+          description: Include extracted plain claims in the response.
+    VpTokenResult:
+      title: VpTokenResult
+      type: object
+      description: VP result for v1 (backward-compatible) result endpoint.
+      properties:
+        transactionId:
+          type: string
+          description: The transaction ID.
+          example: txn_abc123
+        vpResultStatus:
+          type: string
+          description: Overall VP submission status.
+          enum:
+            - SUCCESS
+            - FAILED
+          example: SUCCESS
+        vcResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/VcResult'
+          description: Verification results for each individual VC.
+    VcResult:
+      title: VcResult
+      type: object
+      description: Result for a single VC in a VP submission.
+      properties:
+        vc:
+          type: string
+          description: The verifiable credential as a JSON string.
+        verificationStatus:
+          $ref: '#/components/schemas/VerificationStatus'
+          description: Verification status of the VC.
+          example: SUCCESS
+    VpVerificationResponse:
+      type: object
+      description: Detailed VP verification result (v2).
+      properties:
+        transactionId:
+          type: string
+          description: Transaction ID.
+          example: txn_abc123
+        allChecksSuccessful:
+          type: boolean
+          description: '`true` only when all credentials in the VP have `allChecksSuccessful=true`.'
+        credentialResults:
+          type: array
+          items:
+            $ref: '#/components/schemas/VpCredentialResult'
+    VpCredentialResult:
+      type: object
+      description: Verification result for a single credential within a VP.
+      properties:
+        verifiableCredential:
+          type: string
+          description: Full verifiable credential details.
+        allChecksSuccessful:
+          type: boolean
+          description: '`true` only when all checks pass for this credential.'
+        holderProofCheck:
+          $ref: '#/components/schemas/HolderResult'
+          description: |-
+            Holder binding validation result. Format-specific:
+            - JSON-LD: verifies VP signature; `null` if `require_cryptographic_holder_binding` was explicitly skipped
+            - SD-JWT: verifies KB-JWT `nonce` against Authorization Request nonce and `aud` against `client_id`; `null` if not supported
+            - CWT: not currently supported; always `null`
+        schemaAndSignatureCheck:
+          $ref: '#/components/schemas/ValidationResult'
+        expiryCheck:
+          $ref: '#/components/schemas/ExpiryCheckResult'
+        statusChecks:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusCheckResult'
+        claims:
+          type: object
+          description: Extracted claims from the credential (only when `includeClaims=true` and signature check passes).
+          additionalProperties: true
+    # -------------------------------------------------------------------------
+    # VC Verification schemas
+    # -------------------------------------------------------------------------
+    VcVerificationRequest:
+      type: object
+      required:
+        - verifiableCredential
+      properties:
+        verifiableCredential:
+          type: string
+          description: 'Verifiable Credential to verify (JSON-LD, SD-JWT (`dc+sd-jwt` or `vc+sd-jwt`), or CWT as HEX value of CBOR).'
+        skipStatusChecks:
+          type: boolean
+          default: false
+          description: Skip all credential status checks when `true`.
+        statusCheckFilters:
+          type: array
+          description: List of credential status check purposes to perform. Unsupported purposes are ignored.
+          items:
+            type: string
+        includeClaims:
+          type: boolean
+          default: false
+          description: Include extracted plain claims in the response.
+    VcVerificationResponse:
+      type: object
+      properties:
+        allChecksSuccessful:
+          type: boolean
+          description: '`true` only when schema/signature check, expiry check, and all status checks pass.'
+        schemaAndSignatureCheck:
+          $ref: '#/components/schemas/ValidationResult'
+        expiryCheck:
+          $ref: '#/components/schemas/ExpiryCheckResult'
+        statusChecks:
+          type: array
+          items:
+            $ref: '#/components/schemas/StatusCheckResult'
+        claims:
+          type: object
+          additionalProperties: true
+    VCVerificationRequest:
+      title: VCVerificationRequest
+      type: object
+      properties:
+        vc:
+          type: object
+          description: The complete JSON-LD verifiable credential object to verify.
+          example:
+            '@context':
+              - 'https://www.w3.org/2018/credentials/v1'
+            type:
+              - VerifiableCredential
+              - AgeCredential
+            issuer: 'did:web:example.com'
+            issuanceDate: '2023-01-01T00:00:00Z'
+            credentialSubject:
+              id: 'did:example:123'
+              age: 25
+            proof:
+              type: Ed25519Signature2020
+              created: '2023-01-01T00:00:00Z'
+              verificationMethod: 'did:web:example.com#key-1'
+              proofPurpose: assertionMethod
+              jws: eyJhbGciOiJFZERTQSJ9.eyJpYXQiOiIwMjMxMTIzMTIzMTMiLCJ...signature
+    VCVerificationCWTRequest:
+      title: VCVerificationCWTRequest
+      x-stoplight:
+        id: 23487178cda3e
+      type: object
+      required:
+        - vc
+      properties:
+        vc:
+          type: string
+          description: Hex-encoded CWT (CBOR bytes) to verify.
+          pattern: '^[0-9a-fA-F]+$'
+          example: d83dd2845831a2012604
+    VCVerificationResult:
+      title: VCVerificationResult
+      type: object
+      properties:
+        verificationStatus:
+          $ref: '#/components/schemas/VerificationStatus'
+          description: Overall VC verification status.
+          example: SUCCESS
+    # -------------------------------------------------------------------------
+    # VC Submission schemas
+    # -------------------------------------------------------------------------
+    VCSubmissionRequest:
+      title: VCSubmissionRequest
+      type: object
+      required:
+        - vc
+      properties:
+        vc:
+          type: object
+          description: The complete Verifiable Credential to submit.
+          example:
+            '@context':
+              - 'https://www.w3.org/2018/credentials/v1'
+            type:
+              - VerifiableCredential
+            issuer: 'https://example.org/issuers/123'
+            issuanceDate: '2023-01-01T00:00:00Z'
+            credentialSubject:
+              id: 'did:example:abc'
+              age: 25
+            proof:
+              type: Ed25519Signature2020
+              created: '2023-01-01T00:00:00Z'
+              proofPurpose: assertionMethod
+              verificationMethod: 'https://example.org/keys/1'
+              jws: eyJ...signature
+        transactionId:
+          type: string
+          description: 'Optional transaction ID. Generated by server if not provided.'
+          example: txn_abc123
+    VCSubmissionResponse:
+      title: VCSubmissionResponse
+      type: object
+      required:
+        - transactionId
+      properties:
+        transactionId:
+          type: string
+          description: Transaction ID assigned to the VC submission.
+          example: txn_abc123
+    # -------------------------------------------------------------------------
+    # DID Document schemas
+    # -------------------------------------------------------------------------
+    DIDDocument:
+      type: object
+      description: A DID Document describing the verifier's Decentralized Identifier, including public keys and service endpoints.
+      properties:
+        '@context':
+          type: array
+          items:
+            type: string
+          description: JSON-LD context for the DID Document.
+          example:
+            - 'https://www.w3.org/ns/did/v1'
+            - 'https://w3id.org/security/suites/jws-2020/v1'
+            - 'https://w3id.org/security/suites/ed25519-2020/v1'
+        id:
+          type: string
+          description: The DID described by this document.
+          pattern: '^did:[a-z0-9]+:.*$'
+          example: 'did:example:123456789'
+        verificationMethod:
+          type: array
+          items:
+            $ref: '#/components/schemas/VerificationMethod'
+          description: Public keys used to verify digital signatures.
+        assertionMethod:
+          type: array
+          items:
+            oneOf:
+              - type: string
+              - $ref: '#/components/schemas/VerificationMethod'
+          description: Verification methods used for asserting claims.
+        controller:
+          oneOf:
+            - type: string
+            - type: array
+              items:
+                type: string
+          description: DID(s) authorized to manage this DID Document.
+    VerificationMethod:
+      type: object
+      description: A public key or cryptographic material used for verification.
+      required:
+        - id
+        - type
+        - controller
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the verification method.
+          example: 'did:example:123#keys-1'
+        type:
+          type: string
+          description: Cryptographic suite type.
+          example: Ed25519VerificationKey2020
+        controller:
+          type: string
+          description: The DID authorized to use this verification method.
+          example: 'did:example:123'
+        publicKeyMultibase:
+          type: string
+          description: Public key in Multibase format.
+          example: z6MkhPCXw1tV8wR2rWqC2kF7zX9b2D9M9m3yD5rN2J2F7zW
+        publicKeyJwk:
+          type: object
+          description: Public key as a JSON Web Key (JWK).
+          properties:
+            kty:
+              type: string
+              example: OKP
+            crv:
+              type: string
+              example: Ed25519
+            x:
+              type: string
+              example: VCx2-2S5m0d_n0SgN84G2z2c5J1L0x0W0t0P0A0E0C0M
+    # -------------------------------------------------------------------------
+    # Shared / utility schemas
+    # -------------------------------------------------------------------------
+    VerificationStatus:
+      type: string
+      description: Verification status of a VC.
+      enum:
+        - SUCCESS
+        - EXPIRED
+        - INVALID
+        - REVOKED
+      example: SUCCESS
+    ValidationResult:
+      type: object
+      nullable: true
+      properties:
+        valid:
+          type: boolean
+          description: '`true` when schema and signature are both valid; `false` if any check fails.'
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    ExpiryCheckResult:
+      type: object
+      nullable: true
+      properties:
+        valid:
+          type: boolean
+          description: '`true` when the credential is not expired.'
+    StatusCheckResult:
+      type: object
+      properties:
+        purpose:
+          type: string
+          description: 'The status check purpose (e.g., `revocation`, `suspension`).'
+          example: revocation
+        valid:
+          type: boolean
+          description: '`true` when the status check passes.'
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    HolderResult:
+      type: object
+      x-stoplight:
+        id: 00c3a51c2168a
+      nullable: true
+      properties:
+        valid:
+          type: boolean
+          description: '`true` when holder proof check passes.'
+        error:
+          $ref: '#/components/schemas/ErrorDetail'
+    ErrorDetail:
+      type: object
+      nullable: true
+      properties:
+        code:
+          type: string
+          description: Error code.
+        message:
+          type: string
+          description: Error description.
+    ErrorResponse:
+      type: object
+      description: Standard error response body.
+      properties:
+        errorCode:
+          type: string
+          description: Machine-readable error code.
+          example: INVALID_CLIENT_IDENTIFIER
+        errorMessage:
+          type: string
+          description: Human-readable error description.
+          example: 'clientId uses the deprecated did: prefix. Use decentralized_identifier:did: as per OpenID4VP v1.0 Section 5.9.3.'
+        error:
+          type: string
+          description: Alternative error field (used in some endpoints per OpenID4VP spec).
+        error_description:
+          type: string
+          description: Alternative error description field.
+    InternalErrorResponse:
+      type: object
+      description: Internal server error response body.
+      properties:
+        timestamp:
+          type: string
+          description: Timestamp of the error.
+          example: '2025-12-03T10:52:43.747423Z'
+        status:
+          type: integer
+          description: HTTP status code.
+          example: 500
+        path:
+          type: string
+          description: Request path that caused the error.
+          example: /v1/verify/v2/vp-submission/direct-post
+        error:
+          type: string
+          description: Error details message.
+          example: 'STATUS_RETRIEVAL_ERROR - Retrieval of the status list failed: Network request failed with error response'
