@@ -66,6 +66,10 @@ image:
   # pullSecrets:
   #   - myRegistryKeySecretName
 
+## Context path for the verify service. Set this to /v1/verify for standalone deployments.
+## Leave empty (or do not set) when Verify is embedded as a library in another service (e.g. Certify).
+contextPath: /v1/verify
+
 ## Port on which this particular spring service module is running.
 springServicePort: 8080
 
@@ -75,7 +79,7 @@ springServicePort: 8080
 startupProbe:
   enabled: true
   httpGet:
-    path: /v1/verify/actuator/health
+    path: "{{ .Values.contextPath }}/actuator/health"
     port: 8080
   initialDelaySeconds: 0
   periodSeconds: 10
@@ -86,7 +90,7 @@ startupProbe:
 livenessProbe:
   enabled: true
   httpGet:
-    path: /v1/verify/actuator/health
+    path: "{{ .Values.contextPath }}/actuator/health"
     port: 8080
   initialDelaySeconds: 20
   periodSeconds: 10
@@ -97,7 +101,7 @@ livenessProbe:
 readinessProbe:
   enabled: true
   httpGet:
-    path: /v1/verify/actuator/health
+    path: "{{ .Values.contextPath }}/actuator/health"
     port: 8080
   initialDelaySeconds: 0
   periodSeconds: 10
@@ -241,6 +245,8 @@ updateStrategy:
 ##     value: "bar"
 ##
 extraEnvVars:
+  - name: VERIFY_CONTEXT_PATH
+    value: "{{ .Values.contextPath }}"
   - name: DATABASE_HOST
     valueFrom:
       configMapKeyRef:
@@ -393,7 +399,7 @@ metrics:
   podAnnotations:
     prometheus.io/scrape: "true"
 
-  endpointPath: /v1/verify/actuator/prometheus
+  endpointPath: "{{ .Values.contextPath }}/actuator/prometheus"
 
   ## Prometheus Service Monitor
   ## ref: https://github.com/coreos/prometheus-operator
@@ -445,4 +451,4 @@ istio:
   enabled: true
   gateways:
     - istio-system/internal
-  prefix: /v1/verify
+  prefix: "{{ .Values.contextPath }}"

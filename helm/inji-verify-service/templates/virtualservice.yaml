@@ -19,7 +19,7 @@ spec:
   http:
   - match:
       - uri:
-          prefix: {{ .Values.istio.prefix }}
+          prefix: {{ tpl .Values.istio.prefix . }}
     route:
     - destination:
         host: {{ template "common.names.fullname" . }}
