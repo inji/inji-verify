@@ -1236,6 +1236,7 @@ components:
       required:
         - id
         - format
+        - meta
       description: A single credential query within a DCQL query.
       properties:
         id:
@@ -1253,7 +1254,7 @@ components:
           example: ldp_vc
         meta:
           $ref: '#/components/schemas/DcqlMeta'
-          description: Optional metadata constraints for the credential.
+          description: 'Required. Must be present (cannot be null), but may be an empty object `{}` when no type/vct constraints are needed. Omitting or nulling this field returns `DCQL_META_REQUIRED`.'
         claims:
           type: array
           description: Optional. Declared claim paths to request from the credential.
@@ -1543,21 +1544,18 @@ components:
           type: string
           nullable: true
           description: |-
-            URL-encoded JSON string. When decoded, must be a JSON object where each key is a DCQL `query_id` and each value is an array of presentations.
-            Must be absent or `null` when `error` is present.
+            URL-encoded JSON string. Must be absent or `null` when `error` is present.
 
-            Each array element is either:
-            - A JSON object (for `ldp_vc` presentations)
-            - A string (for `dc+sd-jwt` or `vc+sd-jwt` presentations)
-          additionalProperties:
-            type: array
-            minItems: 1
-            items:
-              oneOf:
-                - type: object
-                  description: ldp_vc Verifiable Presentation (JSON-LD object)
-                - type: string
-                  description: SD-JWT presentation string (dc+sd-jwt or vc+sd-jwt)
+            When decoded, the JSON structure is:
+            ```json
+            {
+              "<query_id>": [<presentation>, ...]
+            }
+            ```
+            Each key is a DCQL `query_id`. Each value is an array of presentations where elements are either:
+            - A JSON object (`ldp_vc` Verifiable Presentation)
+            - A string (`dc+sd-jwt` or `vc+sd-jwt` presentation)
+          example: '{"age_credential_query":[{"@context":["https://www.w3.org/2018/credentials/v1"],"type":["VerifiablePresentation"]}]}'
         state:
           type: string
           description: The `requestId` from the Authorization Request. Must be present and non-empty.
@@ -1734,6 +1732,8 @@ components:
     VCVerificationRequest:
       title: VCVerificationRequest
       type: object
+      required:
+        - vc
       properties:
         vc:
           type: object
@@ -1858,6 +1858,44 @@ components:
               items:
                 type: string
           description: DID(s) authorized to manage this DID Document.
+        authentication:
+          type: array
+          description: Verification methods used for authentication. Each entry is either a reference string (DID URL) or an embedded VerificationMethod object.
+          items:
+            oneOf:
+              - type: string
+                description: DID URL reference to a verification method.
+              - $ref: '#/components/schemas/VerificationMethod'
+          example:
+            - '#keys-1'
+        service:
+          type: array
+          description: Service endpoints associated with the DID subject.
+          items:
+            $ref: '#/components/schemas/DIDService'
+    DIDService:
+      type: object
+      description: A service endpoint associated with a DID Document.
+      required:
+        - id
+        - type
+        - serviceEndpoint
+      properties:
+        id:
+          type: string
+          description: Unique identifier for the service endpoint.
+          example: 'did:example:123#didcomm-1'
+        type:
+          type: string
+          description: Type of service.
+          example: DIDCommMessaging
+        serviceEndpoint:
+          oneOf:
+            - type: string
+            - type: object
+              additionalProperties: true
+          description: URI or object describing the service endpoint.
+          example: 'https://example.com/didcomm'
     VerificationMethod:
       type: object
       description: A public key or cryptographic material used for verification.
