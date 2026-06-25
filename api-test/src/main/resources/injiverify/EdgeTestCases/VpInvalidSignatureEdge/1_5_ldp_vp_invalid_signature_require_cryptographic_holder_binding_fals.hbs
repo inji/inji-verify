@@ -1,0 +1,63 @@
+{
+    "clientId": "injiverify.dev-int-inji.mosip.net",
+    "nonce": "yMRlSK2ZT31GdWbedhk4hA",
+    "responseCodeValidationRequired": false,
+    "dcqlQuery": {
+        "credentials": [
+            {
+                "id": "age_credential_query",
+                "format": "ldp_vc",
+                "meta": {
+                    "type_values": [
+                        [
+                            "MockVerifiableCredential"
+                        ]
+                    ]
+                },
+                "require_cryptographic_holder_binding": false,
+                "claims": [
+                    {
+                        "id": "male_gender",
+                        "path": [
+                            "gender",
+                            null,
+                            "value"
+                        ],
+                        "values": [
+                            "Male"
+                        ]
+                    },
+                    {
+                        "id": "full_name_eng",
+                        "path": [
+                            "fullName",
+                             null,
+                            "language"
+                        ],
+                        "values": [
+                            "eng"
+                        ]
+                    }
+                ],
+                "claim_sets": [
+                    [
+                        "male_gender",
+                        "full_name_eng"
+                    ],
+                    [
+                        "full_name_eng"
+                    ]
+                ]
+            }
+        ],
+        "credential_sets": [
+            {
+                "options": [
+                    [
+                        "age_credential_query"
+                    ]
+                ]
+            }
+        ]
+    }
+}

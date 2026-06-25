@@ -1,0 +1,27 @@
+{
+  "clientId": "{{clientId}}",
+  "nonce": "{{nonce}}",
+  "responseCodeValidationRequired": {{responseCodeValidationRequired}},
+  "dcqlQuery": {
+    "credentials": [
+      {
+        "id": "student_id_credential_query",
+        "format": "vc+sd-jwt",
+        "meta": {
+          "vct_values": [
+            "eu.europa.ec.eudi.msisdn.1"
+          ]
+        },
+        "require_cryptographic_holder_binding": false,
+        "claims": [
+          {
+            "id": "phone_number",
+            "path": [
+              "phone_number"
+            ]
+          }
+        ]
+      }
+    ]
+  }
+}

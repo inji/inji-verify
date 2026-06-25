@@ -1,0 +1,30 @@
+VpInvalidNonceClientIdEdge:
+  Injiverify_Edge_VpInvalidNonceClientIdEdge_5_1_invalid_nonce_or_client_id_vp_request_with_invalid_nonce_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/5.1. invalid nonce or client-id/vp request with invalid nonce
+      uniqueIdentifier: TC_InjiVerify_Edge_VpInvalidNonceClientIdEdge_38
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpInvalidNonceClientIdEdge/5_1_invalid_nonce_or_client_id_create_vp_request_with_invalid_nonce
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_VpInvalidNonceClientIdEdge_5_1_invalid_nonce_or_client_id_vp_request_with_invalid_clientId_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/5.1. invalid nonce or client-id/vp request with invalid clientId
+      uniqueIdentifier: TC_InjiVerify_Edge_VpInvalidNonceClientIdEdge_40
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpInvalidNonceClientIdEdge/5_1_invalid_nonce_or_client_id_create_vp_request_with_invalid_clientId
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'

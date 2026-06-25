@@ -1,0 +1,176 @@
+DcqlQueryMatchingEdge:
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_1_vp_submission_dcql_query_matching_unknown_credential_id_vp_submission_unknown_credential_id:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.1. vp submission - dcql query matching - unknown credential id/vp submission - unknown credential id
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_43
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_1_vp_submission_dcql_query_matching_unknown_credential_id_submit_vp_
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_1_vp_submission_dcql_query_matching_unknown_credential_id_vp_request_unknown_credential_id_test_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_2_vp_submission_dcql_query_matching_missing_credential_id_vp_submission_missing_credential_id:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.2. vp submission - dcql query matching - missing credential id/vp submission - missing credential id
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_45
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_2_vp_submission_dcql_query_matching_missing_credential_id_submit_vp_
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_2_vp_submission_dcql_query_matching_missing_credential_id_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_3_vp_submission_dcql_query_matching_format_mismatch_vp_submission_format_mismatch:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.3. vp submission - dcql query matching - format mismatch/vp submission - format mismatch
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_47
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_3_vp_submission_dcql_query_matching_format_mismatch_submit_vp_submis
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_3_vp_submission_dcql_query_matching_format_mismatch_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_4_vp_submission_dcql_query_matching_type_values_mismatch_vp_submission_type_values_mismatch:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.4. vp submission - dcql query matching - type values mismatch/vp submission - type values mismatch
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_49
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_4_vp_submission_dcql_query_matching_type_values_mismatch_submit_vp_s
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_4_vp_submission_dcql_query_matching_type_values_mismatch_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_5_vp_submission_dcql_query_matching_vct_values_mismatch_vp_submission_vct_values_mismatch:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.5. vp submission - dcql query matching - vct values mismatch/vp submission - vct values mismatch
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_51
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_5_vp_submission_dcql_query_matching_vct_values_mismatch_submit_vp_su
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_5_vp_submission_dcql_query_matching_vct_values_mismatch_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_6_vp_submission_dcql_query_matching_missing_required_claim_vp_submission_missing_required_claim:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.6. vp submission - dcql query matching - missing required claim/vp submission - missing required claim
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_53
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_6_vp_submission_dcql_query_matching_missing_required_claim_submit_vp
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_6_vp_submission_dcql_query_matching_missing_required_claim_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_7_vp_submission_dcql_query_matching_claim_value_mismatch_vp_submission_claim_value_mismatch:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.7. vp submission - dcql query matching - claim value mismatch/vp submission - claim value mismatch
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_55
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_7_vp_submission_dcql_query_matching_claim_value_mismatch_submit_vp_s
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_7_vp_submission_dcql_query_matching_claim_value_mismatch_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_8_vp_submission_dcql_query_matching_no_satisfiable_claim_sets_option_vp_submission_no_satisfiable_claim_sets_option:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.8. vp submission - dcql query matching - no satisfiable claim sets option/vp submission - no satisfiable claim sets option
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_57
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_8_vp_submission_dcql_query_matching_no_satisfiable_claim_sets_option_submit
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_8_vp_submission_dcql_query_matching_no_satisfiable_claim_sets_option_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_9_vp_submission_dcql_query_matching_multiple_credentials_not_allowed_vp_submission_multiple_credentials_not_allowed:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.9. vp submission - dcql query matching - multiple credentials not allowed/vp submission - multiple credentials not allowed
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_59
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_9_vp_submission_dcql_query_matching_multiple_credentials_not_allowed_submit
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_9_vp_submission_dcql_query_matching_multiple_credentials_not_allowed_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_10_vp_submission_dcql_query_matching_sd_jwt_missing_cnf_vp_submission_sd_jwt_missing_cnf:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.10. vp submission - dcql query matching - sd-jwt missing cnf/vp submission - sd-jwt missing cnf
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_61
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_10_vp_submission_dcql_query_matching_sd_jwt_missing_cnf_submit_vp_su
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_10_vp_submission_dcql_query_matching_sd_jwt_missing_cnf_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_11_vp_submission_dcql_query_matching_sd_jwt_missing_key_binding_vp_submission_sd_jwt_missing_key_binding:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/6.11. vp submission - dcql query matching - sd-jwt missing key binding/vp submission - sd-jwt missing key binding
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_63
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_11_vp_submission_dcql_query_matching_sd_jwt_missing_key_binding_subm
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_DcqlQueryMatchingEdge_6_11_vp_submission_dcql_query_matching_sd_jwt_missing_key_binding_vp_request_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'

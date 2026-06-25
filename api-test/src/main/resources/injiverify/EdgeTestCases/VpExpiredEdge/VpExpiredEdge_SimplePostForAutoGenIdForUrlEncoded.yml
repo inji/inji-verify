@@ -1,0 +1,32 @@
+VpExpiredEdge:
+  Injiverify_Edge_VpExpiredEdge_1_4_ldp_vp_expired_require_cryptographic_holder_binding_false_vp_submission_expired:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/1.4. ldp_vp - expired - require_cryptographic_holder_binding false/vp submission expired
+      uniqueIdentifier: TC_InjiVerify_Edge_VpExpiredEdge_11
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpExpiredEdge/1_4_ldp_vp_expired_require_cryptographic_holder_binding_false_submit_v
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_VpExpiredEdge_1_4_ldp_vp_expired_require_cryptographic_holder_binding_false_vp_request_using_dcql_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'
+
+  Injiverify_Edge_VpExpiredEdge_1_9_sd_jwt_expired_dcql_request_vp_submission_expired:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/1.9. sd-jwt - expired - dcql request/vp submission expired
+      uniqueIdentifier: TC_InjiVerify_Edge_VpExpiredEdge_15
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpExpiredEdge/1_9_sd_jwt_expired_dcql_request_submit_vp_submission_expired
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_VpExpiredEdge_1_9_sd_jwt_expired_dcql_request_vp_request_using_dcql_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'

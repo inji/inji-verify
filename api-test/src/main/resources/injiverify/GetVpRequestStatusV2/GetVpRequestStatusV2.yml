@@ -29,14 +29,14 @@ GetVpRequestStatusV2.yml:
       "statusCheck": [],
       "claims": {
         "gender": "Male",
-        "policyName": "wallettest14",
-        "dob": "2025-01-01",
-        "policyNumber": "55555569",
-        "mobile": "0123456789",
-        "fullName": "wallettest14",
-        "policyIssuedOn": "2026-05-19",
-        "policyExpiresOn": "2035-04-20",
-        "email": "abcd@gmail.com"
+        "policyName": "Afterbirth",
+        "dob": "2025-02-04",
+        "policyNumber": "8080",
+        "mobile": "67845634567",
+        "fullName": "Afterbirth",
+        "policyIssuedOn": "2027-05-20",
+        "policyExpiresOn": "2024-06-17",
+        "email": "Afterbirth@gmail.com"
       },
       "holderProofCheck": {
         "valid": true,
@@ -113,14 +113,14 @@ GetVpRequestStatusV2.yml:
       "statusCheck": [],
       "claims": {
         "gender": "Male",
-        "policyName": "wallettest14",
-        "dob": "2025-01-01",
-        "policyNumber": "55555569",
-        "mobile": "0123456789",
-        "fullName": "wallettest14",
-        "policyIssuedOn": "2026-05-19",
-        "policyExpiresOn": "2035-04-20",
-        "email": "abcd@gmail.com"
+        "policyName": "Afterbirth",
+        "dob": "2025-02-04",
+        "policyNumber": "8080",
+        "mobile": "67845634567",
+        "fullName": "Afterbirth",
+        "policyIssuedOn": "2027-05-20",
+        "policyExpiresOn": "2024-06-17",
+        "email": "Afterbirth@gmail.com"
       },
       "holderProofCheck": {
         "valid": true,
@@ -162,7 +162,7 @@ GetVpRequestStatusV2.yml:
       "holderProofCheck": {
         "valid": false,
         "error": {
-          "errorCode": "ERR_HOLDER_BINDING_CHECK_FAILED"
+          "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
         }
       }
     }

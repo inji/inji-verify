@@ -3,10 +3,6 @@
 <suite name="Inji-Verify API Test">
 	<!-- Passing Group as parmeter unsing "testType" Possible Groups are: smoke 
 		regression smokeAndRegression -->
-	<listeners>
-		<listener
-			class-name="io.mosip.testrig.apirig.report.EmailableReport" />
-	</listeners>
 	<test name="InsertDBData">
 		<parameter name="ymlFile"
 			value="injiverify/InsertDBData/InsertDBData.yml" />
@@ -15,9 +11,27 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.DBIntegration" />
 		</classes>
 	</test>
+	<test name="InsertDBDataGetVpRequestStatus">
+		<parameter name="ymlFile"
+			value="injiverify/InsertDBData/InsertDBDataGetVpRequestStatus.yml" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
 	<test name="VpRequestWithPresentationId">
 		<parameter name="ymlFile"
 			value="injiverify/VpRequestWithPresentationId/VpRequestWithPresentationId.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId,id,nonce" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpRequestWithDCQL">
+		<parameter name="ymlFile"
+			value="injiverify/VpRequestWithDCQL/VpRequestWithDCQL.yml" />
 		<parameter name="idKeyName"
 			value="transactionId,requestId,id,nonce" />
 		<classes>
@@ -145,6 +159,32 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
 		</classes>
 	</test>
+	<test name="VcVerificationV1Formats">
+		<parameter name="ymlFile"
+			value="injiverify/VcVerification/VcVerificationV1Formats.yml" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostWithContentType" />
+		</classes>
+	</test>
+	<test name="VcSubmission">
+		<parameter name="ymlFile"
+			value="injiverify/VcSubmission/VcSubmission.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VcSubmissionGetResult">
+		<parameter name="ymlFile"
+			value="injiverify/VcSubmission/VcSubmissionGetResult.yml" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
 	<test name="VcVerificationES256K">
 		<parameter name="ymlFile"
 			value="injiverify/VcVerificationES256K/VcVerificationES256K.yml" />
@@ -209,6 +249,236 @@
 		<classes>
 			<class
 				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
+	<test name="CheckClinetMetaDataInVPResponse">
+		<parameter name="ymlFile"
+			value="injiverify/CheckClinetMetaDataInVPResponse/CheckClinetMetaDataInVPResponse.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId,requestUri" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="CheckClinetMetaDataInVPResponseGet">
+		<parameter name="ymlFile"
+			value="injiverify/CheckClinetMetaDataInVPResponse/CheckClinetMetaDataInVPResponseGet.yml" />
+		<parameter name="pathParams" value="requestId" />
+		<parameter name="headers" value="" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParamAndHeader" />
+		</classes>
+	</test>
+	<test name="VcVerificationV2Edge_SimplePost">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VcVerificationV2Edge/VcVerificationV2Edge_SimplePost.yml" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
+		</classes>
+	</test>
+	<test name="VpRequestUriEdge_SimplePostForAutoGenId">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRequestUriEdge/VpRequestUriEdge_SimplePostForAutoGenId.yml" />
+		<parameter name="idKeyName" value="transactionId,requestId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpRequestUriEdge_GetWithParamRequestId">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRequestUriEdge/VpRequestUriEdge_GetWithParamRequestId.yml" />
+		<parameter name="pathParams" value="requestId" />
+		<parameter name="headers" value="" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParamAndHeader" />
+		</classes>
+	</test>
+	<test name="VpRequestUriEdge_SimplePostForAutoGenIdForUrlEncoded">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRequestUriEdge/VpRequestUriEdge_SimplePostForAutoGenIdForUrlEncoded.yml" />
+		<parameter name="idKeyName" value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="VpRequestUriEdge_GetWithParam">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRequestUriEdge/VpRequestUriEdge_GetWithParam.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
+	<test name="VpRequestUriEdge_PostWithBodyAndPathParams">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRequestUriEdge/VpRequestUriEdge_PostWithBodyAndPathParams.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
+		</classes>
+	</test>
+	<test name="VpExpiredEdge_SimplePostForAutoGenId">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpExpiredEdge/VpExpiredEdge_SimplePostForAutoGenId.yml" />
+		<parameter name="idKeyName" value="transactionId,requestId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpExpiredEdge_SimplePostForAutoGenIdForUrlEncoded">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpExpiredEdge/VpExpiredEdge_SimplePostForAutoGenIdForUrlEncoded.yml" />
+		<parameter name="idKeyName" value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="VpExpiredEdge_GetWithParam">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpExpiredEdge/VpExpiredEdge_GetWithParam.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
+	<test name="VpExpiredEdge_PostWithBodyAndPathParams">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpExpiredEdge/VpExpiredEdge_PostWithBodyAndPathParams.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
+		</classes>
+	</test>
+	<test name="VpInvalidSignatureEdge_SimplePostForAutoGenId">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpInvalidSignatureEdge/VpInvalidSignatureEdge_SimplePostForAutoGenId.yml" />
+		<parameter name="idKeyName" value="transactionId,requestId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpInvalidSignatureEdge_SimplePostForAutoGenIdForUrlEncoded">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpInvalidSignatureEdge/VpInvalidSignatureEdge_SimplePostForAutoGenIdForUrlEncoded.yml" />
+		<parameter name="idKeyName" value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="VpInvalidSignatureEdge_GetWithParam">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpInvalidSignatureEdge/VpInvalidSignatureEdge_GetWithParam.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
+	<test name="VpInvalidSignatureEdge_PostWithBodyAndPathParams">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpInvalidSignatureEdge/VpInvalidSignatureEdge_PostWithBodyAndPathParams.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
+		</classes>
+	</test>
+	<test name="VpRevokedEdge_SimplePostForAutoGenId">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRevokedEdge/VpRevokedEdge_SimplePostForAutoGenId.yml" />
+		<parameter name="idKeyName" value="transactionId,requestId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpRevokedEdge_SimplePostForAutoGenIdForUrlEncoded">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRevokedEdge/VpRevokedEdge_SimplePostForAutoGenIdForUrlEncoded.yml" />
+		<parameter name="idKeyName" value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="VpRevokedEdge_GetWithParam">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRevokedEdge/VpRevokedEdge_GetWithParam.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
+	<test name="VpRevokedEdge_PostWithBodyAndPathParams">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRevokedEdge/VpRevokedEdge_PostWithBodyAndPathParams.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
+		</classes>
+	</test>
+	<test name="VpStatusCheckErrorEdge_SimplePostForAutoGenId">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpStatusCheckErrorEdge/VpStatusCheckErrorEdge_SimplePostForAutoGenId.yml" />
+		<parameter name="idKeyName" value="transactionId,requestId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpStatusCheckErrorEdge_SimplePostForAutoGenIdForUrlEncoded">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpStatusCheckErrorEdge/VpStatusCheckErrorEdge_SimplePostForAutoGenIdForUrlEncoded.yml" />
+		<parameter name="idKeyName" value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="VpStatusCheckErrorEdge_GetWithParam">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpStatusCheckErrorEdge/VpStatusCheckErrorEdge_GetWithParam.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
+	<test name="VpStatusCheckErrorEdge_PostWithBodyAndPathParams">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpStatusCheckErrorEdge/VpStatusCheckErrorEdge_PostWithBodyAndPathParams.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
+		</classes>
+	</test>
+	<test name="VpMultipleSubmissionEdge_SimplePostForAutoGenId">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpMultipleSubmissionEdge/VpMultipleSubmissionEdge_SimplePostForAutoGenId.yml" />
+		<parameter name="idKeyName" value="transactionId,requestId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpMultipleSubmissionEdge_SimplePostForAutoGenIdForUrlEncoded">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpMultipleSubmissionEdge/VpMultipleSubmissionEdge_SimplePostForAutoGenIdForUrlEncoded.yml" />
+		<parameter name="idKeyName" value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="VpMultipleSubmissionEdge_GetWithParam">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpMultipleSubmissionEdge/VpMultipleSubmissionEdge_GetWithParam.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
+	<test name="VpMultipleSubmissionEdge_PostWithBodyAndPathParams">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpMultipleSubmissionEdge/VpMultipleSubmissionEdge_PostWithBodyAndPathParams.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
+		</classes>
+	</test>
+	<test name="VpInvalidNonceClientIdEdge_SimplePostForAutoGenId">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpInvalidNonceClientIdEdge/VpInvalidNonceClientIdEdge_SimplePostForAutoGenId.yml" />
+		<parameter name="idKeyName" value="transactionId,requestId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpInvalidNonceClientIdEdge_SimplePostForAutoGenIdForUrlEncoded">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpInvalidNonceClientIdEdge/VpInvalidNonceClientIdEdge_SimplePostForAutoGenIdForUrlEncoded.yml" />
+		<parameter name="idKeyName" value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+	<test name="DcqlQueryMatchingEdge_SimplePostForAutoGenId">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/DcqlQueryMatchingEdge/DcqlQueryMatchingEdge_SimplePostForAutoGenId.yml" />
+		<parameter name="idKeyName" value="transactionId,requestId" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="DcqlQueryMatchingEdge_SimplePostForAutoGenIdForUrlEncoded">
+		<parameter name="ymlFile" value="injiverify/EdgeTestCases/DcqlQueryMatchingEdge/DcqlQueryMatchingEdge_SimplePostForAutoGenIdForUrlEncoded.yml" />
+		<parameter name="idKeyName" value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
 		</classes>
 	</test>
 </suite>

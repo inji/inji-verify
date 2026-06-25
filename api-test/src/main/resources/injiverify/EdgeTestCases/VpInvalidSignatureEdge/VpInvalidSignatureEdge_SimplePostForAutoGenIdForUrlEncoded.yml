@@ -1,0 +1,16 @@
+VpInvalidSignatureEdge:
+  Injiverify_Edge_VpInvalidSignatureEdge_1_5_ldp_vp_invalid_signature_require_cryptographic_holder_binding_fals_submit_vp_submission_invalid_signature:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/1.5. ldp_vp - invalid signature - require_cryptographic_holder_binding false/vp submission invalid signature
+      uniqueIdentifier: TC_InjiVerify_Edge_VpInvalidSignatureEdge_19
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpInvalidSignatureEdge/1_5_ldp_vp_invalid_signature_require_cryptographic_holder_binding_fals_submit
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_VpInvalidSignatureEdge_1_5_ldp_vp_invalid_signature_require_cryptographic_holder_binding_fals_vp_request_using_dcql_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'

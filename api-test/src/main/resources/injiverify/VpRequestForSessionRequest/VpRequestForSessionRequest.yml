@@ -1,82 +1,107 @@
 VpRequestForSessionRequest:
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid:
-    endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request with a valid data for VP Session result API
+    endPoint: /v1/verify/v2/vp-session-request
+    description: Creates a VP session request with a valid DCQL query for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_01
     role: noauth
     restMethod: post
     inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
     outputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequestResult
     input: '{
-      "clientId": "injiverify.mosip.net",
-      "nonce": "Mi0vDP17DlFcu/8m+OcP9A==",
-      "acceptVPWithoutHolderProof": true,
-      "responseCodeValidationRequired": true,
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": true
     }'
     output: '{
-      "responseCodeValidationRequired": "true",
       "responseType": "vp_token"
 }'
+
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withoutClientID_Neg:
-    endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request without clientId and expect 400 status code
+    endPoint: /v1/verify/v2/vp-session-request
+    description: Creates a VP session request without clientId and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_02
+    checkOnlyStatusCodeInResponse: true
     role: noauth
     restMethod: post
     inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
-    outputTemplate: injiverify/status
+    outputTemplate: injiverify/responseCode
     input: '{
-      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
-      "acceptVPWithoutHolderProof": true,
-      "responseCodeValidationRequired": true,
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "clientId": "$REMOVE$",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": true
     }'
     output: '{
-      "status": "400"
+      "responseCode": "400"
 }'
+
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withoutResponseCodeValidationRequired_Neg:
-    endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request with responseCodeValidationRequired present but no value and expect 400 status code
+    endPoint: /v1/verify/v2/vp-session-request
+    description: Creates a VP session request with responseCodeValidationRequired present but no value and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_03
+    checkOnlyStatusCodeInResponse: true
     role: noauth
     restMethod: post
     inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
-    outputTemplate: injiverify/status
+    outputTemplate: injiverify/responseCode
     input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
       "responseCodeValidationRequired": "$IGNORE$"
     }'
     output: '{
-      "status": "400"
+      "responseCode": "400"
 }'
+
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withMalformedJSONRequest_Neg:
-    endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request with empty presentationDefinition fields and expect 400 status code
+    endPoint: /v1/verify/v2/vp-session-request
+    description: Creates a VP session request with an empty request body and expect 400 status code
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_04
+    checkOnlyStatusCodeInResponse: true
     role: noauth
     restMethod: post
     inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
-    outputTemplate: injiverify/status
+    outputTemplate: injiverify/responseCode
     input: '{}'
     output: '{
-      "status": "400"
+      "responseCode": "400"
 }'
+
   Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid:
-    endPoint: /v1/verify/vp-session-request
-    description: Creates a VP request with valid data and response Code Validation Required is false for VP Session result API
+    endPoint: /v1/verify/v2/vp-session-request
+    description: Creates a VP session request with valid DCQL data and responseCodeValidationRequired false for VP Session result API
     uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_05
     role: noauth
     restMethod: post
     inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
     outputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequestResult
     input: '{
-      "clientId": "injiverify.mosip.net",
-      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
-      "acceptVPWithoutHolderProof": true,
-      "responseCodeValidationRequired": false,
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
     }'
     output: '{
-      "responseCodeValidationRequired": "false",
       "responseType": "vp_token"
+}'
+
+  Injiverify_CreateNewVerificationRequest_ForVpSessionRequest_V1_endpoint_Neg:
+    endPoint: /v1/verify/vp-session-request
+    description: Creates a VP session request with valid DCQL data using V1 endpoint and expect 404 status code
+    uniqueIdentifier: TC_InjiVerify_VpRequestForSessionRequest_with_v1_endpoint_06
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": true
+    }'
+    output: '{
+      "responseCode": "404"
 }'

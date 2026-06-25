@@ -1,7 +1,7 @@
 VpRequestWithPresentationId:
-  Injiverify_CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
-      description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details.
+  Injiverify_CreateNewVerificationRequest_WithPresentationId_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creates a VP request with a valid presentationDefinitionId should give 400 status code.
       uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_01
       role: noauth
       restMethod: post
@@ -9,33 +9,33 @@ VpRequestWithPresentationId:
       inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
       outputTemplate: injiverify/responseCode
       input: '{
-      "clientId": "did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
-      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
       "presentationDefinitionId": "200"
       }'
       output: '{
-      "responseCode": "201"
+      "responseCode": "400"
 }'
 
-  Injiverify_CreateNewVerificationRequest_With_Invalid_PresentationId_Neg:
-      endPoint: /v1/verify/vp-request
-      description: Creates a VP request with a invalid presentationDefinitionId
-      uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_02
-      role: noauth
-      restMethod: post
-      inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
-      outputTemplate: injiverify/VpRequestWithPresentationId/presentationDefinitionIdNegResult
-      input: '{
-      "clientId":"client123",
-      "presentationDefinitionId":"automationTestPresentationDefinitionId"
+  Injiverify_CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid:
+    endPoint: /v1/verify/v2/vp-request
+    description: Creates a VP request with a valid presentationDefinitionId for VP submission with presentation id
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_02
+    role: noauth
+    restMethod: post
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
+    outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
+    input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net",
+      "responseCodeValidationRequired": false,
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA"
       }'
-      output: '{
-    "errorCode": "NO_PRESENTATION_DEFINITION",
-    "errorMessage": "No Presentation Definition found for given Presentation Definition ID."
+    output: '{
+    "responseType": "vp_token"
 }'
 
   Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_All_Valid_Smoke_Sid:
-    endPoint: /v1/verify/vp-request
+    endPoint: /v1/verify/v2/vp-request
     description: Creates a VP request with a valid presentationDefinitionId for VP session result
     uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_03
     role: noauth
@@ -44,7 +44,7 @@ VpRequestWithPresentationId:
     outputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionResult
     input: '{
       "clientId": "injiverify.mosip.net",
-      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
       "acceptVPWithoutHolderProof": true,
       "responseCodeValidationRequired": true,
       "id": "$PRESENTATIONDEFINITIONID$"
@@ -54,75 +54,37 @@ VpRequestWithPresentationId:
       "responseType": "vp_token"
 }'
 
-  Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_withoutResponseCodeValidationRequired_Neg:
-    endPoint: /v1/verify/vp-request
-    description: Creates a VP request with responseCodeValidationRequired present but no value and expect 400 status code
-    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_04
-    role: noauth
-    restMethod: post
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
-    outputTemplate: injiverify/status
-    input: '{
-      "clientId": "injiverify.mosip.net",
-      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
-      "acceptVPWithoutHolderProof": true,
-      "responseCodeValidationRequired": "$IGNORE$",
-      "id": "$PRESENTATIONDEFINITIONID$"
-    }'
-    output: '{
-      "status": "400"
-}'
-  Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_invalidResponseCodeValidationRequired_Neg:
-    endPoint: /v1/verify/vp-request
-    description: Creates a VP request with invalid Response Code Validation Required parameter
-    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_05
-    role: noauth
-    restMethod: post
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
-    outputTemplate: injiverify/status
-    input: '{
-      "clientId": "injiverify.mosip.net",
-      "nonce": "MTc2Mzk1NTY5NDI5NQ==",
-      "acceptVPWithoutHolderProof": true,
-      "responseCodeValidationRequired": "$IGNORE$",
-      "id": "$PRESENTATIONDEFINITIONID$"
-    }'
-    output: '{
-      "status": "400"
-}'
-
   Injiverify_CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid:
-    endPoint: /v1/verify/vp-request
+    endPoint: /v1/verify/v2/vp-request
     description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details 2.
     uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_06
     role: noauth
     restMethod: post
     checkOnlyStatusCodeInResponse: true
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdDCQL31LifeInsurance
     outputTemplate: injiverify/responseCode
     input: '{
-      "clientId": "injiverify.dev-int-inji.mosip.net/",
-      "nonce": "MTc3OTI2OTc3ODcyNw==",
-      "presentationDefinitionId": "200"
+      "clientId": "decentralized_identifier:did:web:injiverify.dev-int-inji.mosip.net:v1:verify",
+      "responseCodeValidationRequired": false,
+      "nonce": "IvfM76kOqj8Xy5H9pFBGBQ"
       }'
     output: '{
-      "responseCode": "201"
+    "responseCode": "201"
 }'
 
   Injiverify_CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid:
-    endPoint: /v1/verify/vp-request
+    endPoint: /v1/verify/v2/vp-request
     description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details 3.
     uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_07
     role: noauth
     restMethod: post
-    checkOnlyStatusCodeInResponse: true
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
-    outputTemplate: injiverify/responseCode
+    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdDCQL41
+    outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
     input: '{
       "clientId": "redirect_uri:https://faceb18cd424.ngrok-free.app/verifier/vp-response",
-      "nonce": "oNjl1LmAXj6pqygwQnMBFQ==",
-      "presentationDefinitionId": "200"
+      "responseCodeValidationRequired": false,
+      "nonce": "IvfM76kOqj8Xy5H9pFBGBQ"
       }'
     output: '{
-      "responseCode": "201"
+    "responseType": "vp_token"
 }'

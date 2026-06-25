@@ -1,0 +1,32 @@
+VpRequestUriEdge:
+  Injiverify_Edge_VpRequestUriEdge_1_3_ldp_vp_valid_signature_request_uri_get_jwt_vp_request_from_request_uri:
+      endPoint: /v1/verify/v2/vp-request/{requestId}
+      description: Edge case from Postman - openid4vp/1.3. ldp_vp - valid signature - request_uri/get jwt vp request from request_uri
+      uniqueIdentifier: TC_InjiVerify_Edge_VpRequestUriEdge_05
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpRequestUriEdge/1_3_ldp_vp_valid_signature_request_uri_get_request_get_jwt_vp_request_
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "$ID:Edge_VpRequestUriEdge_1_3_ldp_vp_valid_signature_request_uri_vp_request_with_request_uri_in_response_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'
+
+  Injiverify_Edge_VpRequestUriEdge_1_3_ldp_vp_valid_signature_request_uri_vp_request_status:
+      endPoint: /v1/verify/vp-request/{requestId}/status
+      description: Edge case from Postman - openid4vp/1.3. ldp_vp - valid signature - request_uri/vp request status
+      uniqueIdentifier: TC_InjiVerify_Edge_VpRequestUriEdge_07
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpRequestUriEdge/1_3_ldp_vp_valid_signature_request_uri_status_vp_request_status
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "$ID:Edge_VpRequestUriEdge_1_3_ldp_vp_valid_signature_request_uri_vp_request_with_request_uri_in_response_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'

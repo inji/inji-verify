@@ -1,34 +1,36 @@
 CreateNewVerificationRequestWithProof:
   Injiverify_CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
-      description: Submitting the authorization response with proof
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a VP request with DCQL query and acceptVPWithoutHolderProof true
       uniqueIdentifier: TC_InjiVerify_VcRevocationStatus_WithProof_01
       role: noauth
       restMethod: post
-      inputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateNewVerifcationRequestWithProof
+      inputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateVpRequestWithDCQL11
       outputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateNewVerificationRequestResultWithOutProof
       input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": true,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-    "acceptVPWithoutHolderProof": "true",
-    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
-    "id": "$PRESENTATIONDEFINITIONID$"
+    "responseType": "vp_token"
 }'
 
   Injiverify_CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
-      description: Submitting the authorization response with out proof
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a VP request with DCQL query and acceptVPWithoutHolderProof false
       uniqueIdentifier: TC_InjiVerify_VcRevocationStatus_WithProof_02
       role: noauth
       restMethod: post
-      inputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateNewVerifcationRequestWithOutProof
+      inputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateVpRequestWithDCQLWithoutVC
       outputTemplate: injiverify/CreateNewVerificationRequestWithProof/CreateNewVerificationRequestResultWithOutProof
       input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-    "acceptVPWithoutHolderProof": "false",
-    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
-    "id": "$PRESENTATIONDEFINITIONID$"
+    "responseType": "vp_token"
 }'
-
-

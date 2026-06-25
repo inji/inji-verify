@@ -126,6 +126,10 @@ public class DBIntegration extends InjiVerifyUtil implements ITest {
 
 				logger.info("DB SELECT Result: " + result);
 
+				if (testCaseDTO.isCheckErrorsOnlyInResponse()) {
+					throw new AdminTestException("Expected DB operation to fail but SELECT succeeded");
+				}
+
 				// 👇 if you only expect one row
 				if (!result.isEmpty()) {
 					Map<String, Object> row = result.get(0);
@@ -137,9 +141,17 @@ public class DBIntegration extends InjiVerifyUtil implements ITest {
 						InjiVerifyConfigManager.getproperty("db-su-user"),
 						InjiVerifyConfigManager.getproperty("postgres-password"),
 						InjiVerifyConfigManager.getproperty("inji_verify_schema"), sqlQuery);
+				if (testCaseDTO.isCheckErrorsOnlyInResponse()) {
+					throw new AdminTestException("Expected DB insert to fail but operation succeeded");
+				}
 				GlobalMethods.reportResponse("No Header", sqlQuery, "Success", true);
 			}
 		} catch (Exception e) {
+			if (testCaseDTO.isCheckErrorsOnlyInResponse()) {
+				GlobalMethods.reportResponse("No Header", sqlQuery, e.getMessage(), true);
+				logger.info("Expected DB failure for " + testCaseName + ": " + e.getMessage());
+				return;
+			}
 			throw new AdminTestException(e.getMessage());
 		}
 

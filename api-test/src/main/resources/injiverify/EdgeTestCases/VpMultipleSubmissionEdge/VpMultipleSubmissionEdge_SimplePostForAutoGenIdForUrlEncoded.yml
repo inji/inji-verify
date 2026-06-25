@@ -1,0 +1,32 @@
+VpMultipleSubmissionEdge:
+  Injiverify_Edge_VpMultipleSubmissionEdge_2_1_multiple_vp_submission_ldp_vp_sd_jwt_require_cryptographic_holder__submit_1_ldp_vc_valid_1_sd_jwt_valid:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/2.1. multiple vp submission - ldp_vp, sd_jwt - require_cryptographic_holder_binding false/1 ldp_vc valid, 1 sd_jwt valid
+      uniqueIdentifier: TC_InjiVerify_Edge_VpMultipleSubmissionEdge_31
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpMultipleSubmissionEdge/2_1_multiple_vp_submission_ldp_vp_sd_jwt_require_cryptographic_holder__submit
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_VpMultipleSubmissionEdge_2_1_multiple_vp_submission_ldp_vp_sd_jwt_require_cryptographic_holder__vp_request_using_dcql_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'
+
+  Injiverify_Edge_VpMultipleSubmissionEdge_2_2_multiple_vp_submission_valid_expired_invalid_require_cryptographic_1_valid_1_expired_and_1_invalid_vc:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/2.2. multiple vp submission - valid, expired, invalid - require_cryptographic_holder_binding false/1 valid, 1 expired and 1 invalid vc
+      uniqueIdentifier: TC_InjiVerify_Edge_VpMultipleSubmissionEdge_35
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpMultipleSubmissionEdge/2_2_multiple_vp_submission_valid_expired_invalid_require_cryptographic_submit
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_VpMultipleSubmissionEdge_2_2_multiple_vp_submission_valid_expired_invalid_require_cryptographic_vp_request_using_dcql_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'

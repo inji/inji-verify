@@ -1,0 +1,45 @@
+VcSubmission:
+  Injiverify_VcSubmission_JsonLd_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vc-submission
+      description: Submit json-ld VC for async verification
+      uniqueIdentifier: TC_InjiVerify_VcSubmission_01
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VcSubmission/VcSubmissionJsonLd
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+
+  Injiverify_VcSubmission_SdJwt_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vc-submission
+      description: Submit sd-jwt VC for async verification
+      uniqueIdentifier: TC_InjiVerify_VcSubmission_02
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VcSubmission/VcSubmissionSdJwt
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+
+  Injiverify_VcSubmission_Cwt_All_Valid_Smoke_Sid:
+      endPoint: /v1/verify/vc-submission
+      description: Submit cwt VC for async verification
+      uniqueIdentifier: TC_InjiVerify_VcSubmission_03
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VcSubmission/VcSubmissionCwt
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "200"
+}'

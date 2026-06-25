@@ -1,0 +1,65 @@
+{
+  "vp_token": {
+    "life_insurance_credential_id": [
+      {
+        "@context": [
+          "https://www.w3.org/2018/credentials/v1",
+          "https://w3id.org/security/suites/jws-2020/v1"
+        ],
+        "id": "urn:uuid:040c6666-f766-445d-b798-bdd94fd48f43",
+        "proof": {
+          "verificationMethod": "did:jwk:eyJrdHkiOiJPS1AiLCJ1c2UiOiJzaWciLCJjcnYiOiJFZDI1NTE5IiwieCI6Im9JUG1BUjZIb0ZqcWRLVFltWE5rVmxTeW9MNlpiMVM1bzBCei1DTXhvUVkifQ#0",
+          "challenge": "IvfM76kOqj8Xy5H9pFBGBQ",
+          "domain": "decentralized_identifier:did:web:injiverify.dev-int-inji.mosip.net:v1:verify",
+          "type": "JsonWebSignature2020",
+          "jws": "eyJjcml0IjpbImI2NCJdLCJhbGciOiJFZERTQSIsImI2NCI6ZmFsc2V9..dgsVZai4skG2hslojGGjibLSzB7Yt6FoSNpS_2xXeXdZM_GD0OKXHSVdoE-CZd4szffjwEGOZo5wRkV_3vTHCA"
+        },
+        "type": [
+          "VerifiablePresentation"
+        ],
+        "verifiableCredential": [
+          {
+            "@context": [
+              "https://www.w3.org/2018/credentials/v1",
+              "https://inji.github.io/inji-config/contexts/insurance-context.json",
+              "https://w3id.org/security/suites/ed25519-2020/v1"
+            ],
+            "issuanceDate": "2026-06-15T07:06:32.635Z",
+            "issuer": "did:web:api.released.mosip.net:identity-service:02b073b8-aacd-472e-b63f-265bb7ccdd9f",
+            "credentialSubject": {
+              "mobile": "67845634567",
+              "policyExpiresOn": "2024-06-17",
+              "email": "Afterbirth@gmail.com",
+              "id": "did:jwk:eyJrdHkiOiJPS1AiLCJ1c2UiOiJzaWciLCJjcnYiOiJFZDI1NTE5IiwieCI6Im9JUG1BUjZIb0ZqcWRLVFltWE5rVmxTeW9MNlpiMVM1bzBCei1DTXhvUVkifQ==",
+              "gender": "Male",
+              "benefits": [
+                "No Toll Fee",
+                "Free Movie Tickets"
+              ],
+              "policyNumber": "8080",
+              "fullName": "Afterbirth",
+              "policyIssuedOn": "2027-05-20",
+              "dob": "2025-02-04",
+              "policyName": "Afterbirth"
+            },
+            "id": "did:rcw:954e7dbb-7f2e-4b38-ac55-4551a67a2abb",
+            "expirationDate": "2031-06-15T07:06:32.620Z",
+            "type": [
+              "VerifiableCredential",
+              "InsuranceCredential"
+            ],
+            "proof": {
+              "proofValue": "z9mh7b8E2YXYe1fyPfEksRgviebnDBgS8g43RqQggWiLbST4imHPdgbFdVELmwHk6vrfjFPuo8Jadzz6SwUoMiwa",
+              "type": "Ed25519Signature2020",
+              "created": "2026-06-15T07:06:33Z",
+              "proofPurpose": "assertionMethod",
+              "verificationMethod": "did:web:api.released.mosip.net:identity-service:02b073b8-aacd-472e-b63f-265bb7ccdd9f#key-0"
+            }
+          }
+        ],
+        "holder": "did:jwk:eyJrdHkiOiJPS1AiLCJ1c2UiOiJzaWciLCJjcnYiOiJFZDI1NTE5IiwieCI6Im9JUG1BUjZIb0ZqcWRLVFltWE5rVmxTeW9MNlpiMVM1bzBCei1DTXhvUVkifQ#0"
+      }
+    ]
+  },
+  "state": "{{state}}"
+}

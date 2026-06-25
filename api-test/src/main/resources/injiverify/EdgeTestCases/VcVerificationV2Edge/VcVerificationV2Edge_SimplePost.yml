@@ -1,0 +1,45 @@
+VcVerificationV2Edge:
+  Injiverify_Edge_VcVerificationV2Edge_ldp_vc_ldp_vc_missing_proof:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Edge case from Postman - v2/vc-verification/ldp_vc/ldp_vc missing proof
+      uniqueIdentifier: TC_InjiVerify_Edge_VcVerificationV2Edge_01
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VcVerificationV2Edge/ldp_vc_vc_verify_ldp_vc_missing_proof
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "200"
+      }'
+
+  Injiverify_Edge_VcVerificationV2Edge_ldp_vc_ldp_vc_blank_vc:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Edge case from Postman - v2/vc-verification/ldp_vc/ldp_vc blank vc
+      uniqueIdentifier: TC_InjiVerify_Edge_VcVerificationV2Edge_02
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VcVerificationV2Edge/ldp_vc_vc_verify_ldp_vc_blank_vc
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "200"
+      }'
+
+  Injiverify_Edge_VcVerificationV2Edge_ldp_vc_ldp_vc_status_check_error:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Edge case from Postman - v2/vc-verification/ldp_vc/ldp_vc status check error
+      uniqueIdentifier: TC_InjiVerify_Edge_VcVerificationV2Edge_03
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VcVerificationV2Edge/ldp_vc_vc_verify_ldp_vc_status_check_error
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "200"
+      }'

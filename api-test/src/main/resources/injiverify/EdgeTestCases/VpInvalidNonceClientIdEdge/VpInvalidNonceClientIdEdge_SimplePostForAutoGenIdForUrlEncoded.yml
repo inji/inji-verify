@@ -1,0 +1,32 @@
+VpInvalidNonceClientIdEdge:
+  Injiverify_Edge_VpInvalidNonceClientIdEdge_5_1_invalid_nonce_or_client_id_vp_submission_invalid_nonce:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/5.1. invalid nonce or client-id/vp submission invalid nonce
+      uniqueIdentifier: TC_InjiVerify_Edge_VpInvalidNonceClientIdEdge_39
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpInvalidNonceClientIdEdge/5_1_invalid_nonce_or_client_id_submit_vp_submission_invalid_nonce
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_VpInvalidNonceClientIdEdge_5_1_invalid_nonce_or_client_id_vp_request_with_invalid_nonce_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_Edge_VpInvalidNonceClientIdEdge_5_1_invalid_nonce_or_client_id_vp_submission_invalid_clientId:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/5.1. invalid nonce or client-id/vp submission invalid clientId
+      uniqueIdentifier: TC_InjiVerify_Edge_VpInvalidNonceClientIdEdge_41
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpInvalidNonceClientIdEdge/5_1_invalid_nonce_or_client_id_submit_vp_submission_invalid_clientId
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_VpInvalidNonceClientIdEdge_5_1_invalid_nonce_or_client_id_vp_request_with_invalid_clientId_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'

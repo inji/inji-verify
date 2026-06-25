@@ -1,0 +1,16 @@
+VpStatusCheckErrorEdge:
+  Injiverify_Edge_VpStatusCheckErrorEdge_1_7_ldp_vp_status_check_error_require_cryptographic_holder_binding_fal_token_vp_results:
+      endPoint: /v1/verify/vp-result/{transactionId}
+      description: Edge case from Postman - openid4vp/1.7. ldp_vp - status check error - require_cryptographic_holder_binding false/vp results
+      uniqueIdentifier: TC_InjiVerify_Edge_VpStatusCheckErrorEdge_28
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpStatusCheckErrorEdge/1_7_ldp_vp_status_check_error_require_cryptographic_holder_binding_fal_token
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "$ID:Edge_VpStatusCheckErrorEdge_1_7_ldp_vp_status_check_error_require_cryptographic_holder_binding_fal_vp_request_using_dcql_Sid_transactionId$"
+      }'
+      output: '{
+      "responseCode": "500"
+      }'

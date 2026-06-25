@@ -1,0 +1,16 @@
+VpRevokedEdge:
+  Injiverify_Edge_VpRevokedEdge_1_6_ldp_vp_revoked_require_cryptographic_holder_binding_false_vp_results_v2:
+      endPoint: /v1/verify/v2/vp-results/{transactionId}
+      description: Edge case from Postman - openid4vp/1.6. ldp_vp - revoked - require_cryptographic_holder_binding false/vp results v2
+      uniqueIdentifier: TC_InjiVerify_Edge_VpRevokedEdge_25
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpRevokedEdge/1_6_ldp_vp_revoked_require_cryptographic_holder_binding_false_results_
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "$ID:Edge_VpRevokedEdge_1_6_ldp_vp_revoked_require_cryptographic_holder_binding_false_vp_request_using_dcql_Sid_transactionId$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'

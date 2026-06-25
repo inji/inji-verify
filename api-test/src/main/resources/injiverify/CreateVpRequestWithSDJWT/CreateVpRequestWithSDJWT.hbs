@@ -1,36 +1,48 @@
 {
   "clientId": "{{clientId}}",
-  "presentationDefinition": {
-    "id":"{{id}}",
-    "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-    "input_descriptors": [
+  "nonce": "{{nonce}}",
+  "responseCodeValidationRequired": {{responseCodeValidationRequired}},
+  "dcqlQuery": {
+    "credentials": [
       {
-        "id": "pid_credential",
-        "format": {
-          "vc+sd-jwt": {
-            "sd-jwt_alg_values": [
-              "ES256",
-              "ES256K",
-              "EdDSA"
+        "id": "student_id_credential_query",
+        "format": "vc+sd-jwt",
+        "meta": {
+          "vct_values": [
+            "eu.europa.ec.eudi.msisdn.1"
+          ]
+        },
+        "require_cryptographic_holder_binding": false,
+        "claims": [
+          {
+            "id": "registered_family_name",
+            "path": [
+              "registered_family_name"
             ],
-            "kb-jwt_alg_values": [
-              "ES256",
-              "ES256K",
-              "EdDSA"
+            "values": ["Musterman"]
+          },
+          {
+            "id": "phone_number",
+            "path": [
+              "phone_number"
+            ]
+          },
+          {
+            "id": "verification_method_information",
+            "path": [
+              "verification_method_information"
             ]
           }
-        },
-        "constraints": {
-          "fields": [
-            {
-              "path": ["$.vct"],
-              "filter": {
-                "type": "string",
-                "const": "eu.europa.ec.eudi.pid.1"
-              }
-            }
+        ],
+        "claim_sets": [
+          [
+            "phone_number",
+            "verification_method_information"
+          ],
+          [
+            "registered_family_name"
           ]
-        }
+        ]
       }
     ]
   }

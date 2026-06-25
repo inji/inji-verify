@@ -1,23 +1,22 @@
 VpSubmission:
   Injiverify_VpSubmission_All_Valid_Smoke:
-      endPoint: /v1/verify/vp-submission/direct-post
-      description: Submitting the authorization response
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting the authorization response for DCQL sd-jwt with valid signature
       uniqueIdentifier: TC_InjiVerify_VpSubmission_01
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpSubmission/VpSubmission
+      inputTemplate: injiverify/VpSubmission/VpSubmissionDCQLSmoke
       outputTemplate: injiverify/responseCode
       input: '{
-      "state": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
-      "definition_id": "$PRESENTATIONDEFINITIONID$"
+      "state": "$ID:CreateVpRequestWithDCQL_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"
 }'
 
   Injiverify_VpSubmission_Random_State_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response with random value for state
       uniqueIdentifier: TC_InjiVerify_VpSubmission_02
       role: noauth
@@ -26,15 +25,14 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmission
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"hdbhgshaJ",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "state":"hdbhgshaJ"
       }'
       output: '{
-      "responseCode": "404"
+      "responseCode": "400"
 }'
 
   Injiverify_VpSubmission_RandomValue_VpToken_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response with random value for vp token
       uniqueIdentifier: TC_InjiVerify_VpSubmission_03
       role: noauth
@@ -43,15 +41,14 @@ VpSubmission:
       outputTemplate: injiverify/error2
       input: '{
       "state":"$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$",
       "vp_token": "bdhgyga"
       }'
       output: '{
-      "errorCode": "INVALID_VP_TOKEN"
+      "errorCode": "invalid_request"
 }'
 
   Injiverify_VpSubmission_Empty_VpToken_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response with empty vp token
       uniqueIdentifier: TC_InjiVerify_VpSubmission_04
       role: noauth
@@ -61,7 +58,6 @@ VpSubmission:
       outputTemplate: injiverify/responseCode
       input: '{
       "state":"$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$",
       "vp_token": ""
       }'
       output: '{
@@ -69,7 +65,7 @@ VpSubmission:
 }'
 
   Injiverify_VpSubmission_Empty_State_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response with empty state
       uniqueIdentifier: TC_InjiVerify_VpSubmission_05
       role: noauth
@@ -78,15 +74,14 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmission
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "state":""
       }'
       output: '{
       "responseCode": "400"
 }'
 
   Injiverify_VpSubmission_RandomValue_PresentationDefinitionId_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response with random value for presentation definition id
       uniqueIdentifier: TC_InjiVerify_VpSubmission_06
       role: noauth
@@ -103,7 +98,7 @@ VpSubmission:
 }'
 
   Injiverify_VpSubmission_Empty_PresentationDefinitionId_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response with empty presentation definition id
       uniqueIdentifier: TC_InjiVerify_VpSubmission_07
       role: noauth
@@ -116,11 +111,11 @@ VpSubmission:
       "definition_id":""
       }'
       output: '{
-      "responseCode": "400"
+      "responseCode": "200"
 }'
 
   Injiverify_VpSubmission_Without_PresentationDefinitionId_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response without presentation definition id
       uniqueIdentifier: TC_InjiVerify_VpSubmission_08
       role: noauth
@@ -137,7 +132,7 @@ VpSubmission:
 }'
 
   Injiverify_VpSubmission_Without_State_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response without state
       uniqueIdentifier: TC_InjiVerify_VpSubmission_09
       role: noauth
@@ -146,15 +141,14 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmission
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"$REMOVE$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "state":"$REMOVE$"
       }'
       output: '{
       "responseCode": "400"
 }'
 
   Injiverify_VpSubmission_Without_VpToken_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response without vp token
       uniqueIdentifier: TC_InjiVerify_VpSubmission_10
       role: noauth
@@ -164,7 +158,6 @@ VpSubmission:
       outputTemplate: injiverify/responseCode
       input: '{
       "state":"$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$",
       "vp_token": "$REMOVE$"
       }'
       output: '{
@@ -172,7 +165,7 @@ VpSubmission:
 }'
 
   Injiverify_VpSubmission_Invalid_Error_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response with invalid error value
       uniqueIdentifier: TC_InjiVerify_VpSubmission_11
       role: noauth
@@ -189,58 +182,54 @@ VpSubmission:
 }'
 
   Injiverify_VpSubmissionWithProof_All_Valid_Smoke:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response
       uniqueIdentifier: TC_InjiVerify_VpSubmission_WithProof_01
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpSubmission/VpSubmissionWithProofRequest
+      inputTemplate: injiverify/VpSubmission/VpSubmissionLDPSmoke
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"$ID:CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "state":"$ID:CreateNewVerificationRequest_WithProof_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"
 }'
 
   Injiverify_VpSubmissionWithOutProof_All_Valid_Smoke:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response
       uniqueIdentifier: TC_InjiVerify_VpSubmission_WithProof_02
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpSubmission/VpSubmissionWithoutProofRequest
+      inputTemplate: injiverify/VpSubmission/VpSubmissionDCQLSmoke
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"$ID:CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "state":"$ID:CreateNewVerificationRequest_WithoutVC_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"
 }'
 
   Injiverify_VpSubmission_With_PresentationId_All_Valid_Smoke:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting VC with valid Presentation Id data
       uniqueIdentifier: TC_InjiVerify_VpSubmission_12
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpSubmission/VpSubmission
+      inputTemplate: injiverify/VpSubmission/VpSubmissionDCQLSmoke
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$",
-      "challenge": "MTc2Mzk1NTY5NDI5NQ=="
+      "state":"$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"
       }'
   Injiverify_VpSubmissionForSessionRequest_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting VC to VP Session Request with valid data
       uniqueIdentifier: TC_InjiVerify_VpSubmission_13
       role: noauth
@@ -249,30 +238,27 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmission
       outputTemplate: injiverify/responseCode
       input: '{
-      "state": "$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$",
-      "definition_id": "$PRESENTATIONDEFINITIONID$"
+      "state": "$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"
 }'
   Injiverify_VpSubmissionForSessionRequest_duplicateRequestID_All_Valid_Smoke:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting VC to VP Session Request with valid and already used requestID
       uniqueIdentifier: TC_InjiVerify_VpSubmission_14
       role: noauth
       restMethod: post
-      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/VpSubmission/VpSubmission
-      outputTemplate: injiverify/responseCode
+      outputTemplate: injiverify/error2
       input: '{
-      "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
-      "responseCode": "200"
+      "errorCode": "invalid_request"
 }'
   Injiverify_VpSubmissionForSessionRequest_whenResponseCodeValidationIsFalse_All_Valid_Smoke:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting VC to VP Session Request with valid and responseCodeValidationRequired is false
       uniqueIdentifier: TC_InjiVerify_VpSubmission_15
       role: noauth
@@ -281,14 +267,13 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmission
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid_requestId$",
-      "definition_id":"$PRESENTATIONDEFINITIONID$"
+      "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_withResponseCodeValidationRequired_asFalse_Valid_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"
 }'
   Injiverify_VpSubmission_InvalidNonce_Neg:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting the authorization response with invalid nonce
       uniqueIdentifier: TC_InjiVerify_VpSubmission_16
       role: noauth
@@ -297,40 +282,37 @@ VpSubmission:
       outputTemplate: injiverify/error2
       input: '{
       "state": "$ID:CreateNewVerificationRequest_All_Valid_Smoke_Sid_requestId$",
-      "definition_id": "$PRESENTATIONDEFINITIONID$",
       "challenge": "invalid_nonce"
       }'
       output: '{
       "errorCode": "invalid_request"
 }'
   Injiverify_VpSubmissionForSessionRequest2_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting VC to VP Session Request with valid data
       uniqueIdentifier: TC_InjiVerify_VpSubmission_17
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpSubmission/VpSubmission2
+      inputTemplate: injiverify/VpSubmission/VpSubmissionLifeInsuranceDCQL
       outputTemplate: injiverify/responseCode
       input: '{
-      "state": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_requestId$",
-      "definition_id": "$PRESENTATIONDEFINITIONID$"
+      "state": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"
 }'
   Injiverify_VpSubmissionForSessionRequest3_Invalid_vp_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-submission/direct-post
+      endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting VC to VP Session Request with valid data
       uniqueIdentifier: TC_InjiVerify_VpSubmission_18
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpSubmission/VpSubmission3_invalid
+      inputTemplate: injiverify/VpSubmission/VpSubmissionInvalidHolderBindingDCQL
       outputTemplate: injiverify/responseCode
       input: '{
-      "state": "$ID:CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid_requestId$",
-      "definition_id": "$PRESENTATIONDEFINITIONID$"
+      "state": "$ID:CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"

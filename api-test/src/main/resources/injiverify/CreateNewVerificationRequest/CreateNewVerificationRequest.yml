@@ -1,7 +1,7 @@
 CreateNewVerificationRequest:
   Injiverify_CreateNewVerificationRequest_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
-      description: Creating a new verification request
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request with a valid DCQL query
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_01
       role: noauth
       restMethod: post
@@ -9,35 +9,35 @@ CreateNewVerificationRequest:
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
       outputTemplate: injiverify/responseCode
       input: '{
-      "clientId": "did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
-      "nonce": "Mi0vDP17DlFcu/8m+OcP9A==",
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
     "responseCode": "201"
 }'
 
   Injiverify_CreateNewVerificationRequest_ForExpiry_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
-      description: Creating a new verification request for expiry
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request for expiry with a valid DCQL query
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_02
       role: noauth
       restMethod: post
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
       outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
       input: '{
-      "clientId":"client123",
-      "id":"$PRESENTATIONDEFINITIONID$"
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-    "responseType": "vp_token",
-    "clientId": "client123",
-    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
-    "id": "$PRESENTATIONDEFINITIONID$"
+    "responseType": "vp_token"
 }'
 
   Injiverify_CreateNewVerificationRequest_Random_ClientId_Neg:
-      endPoint: /v1/verify/vp-request
+      endPoint: /v1/verify/v2/vp-request
       description: Creating a new verification request with random value for client id
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_03
       role: noauth
@@ -45,72 +45,75 @@ CreateNewVerificationRequest:
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
       outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
       input: '{
-      "clientId":"ygygduDS",
-      "id":"$PRESENTATIONDEFINITIONID$"
+      "clientId": "ygygduDS",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-    "responseType": "vp_token",
-    "clientId": "ygygduDS",
-    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
-    "id": "$PRESENTATIONDEFINITIONID$"
+    "responseType": "vp_token"
 }'
 
-  Injiverify_CreateNewVerificationRequest_Random_PresentationDefinitionId_Neg:
-      endPoint: /v1/verify/vp-request
-      description: Creating a new verification request with random value for presentation definition id
+  Injiverify_CreateNewVerificationRequest_Invalid_Nonce_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request with an invalid nonce and expect 400 status code
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_04
       role: noauth
       restMethod: post
+      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
-      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
+      outputTemplate: injiverify/responseCode
       input: '{
-      "clientId":"client123",
-      "id":"dsAygyasa"
+      "clientId": "client123",
+      "nonce": "invalidNonce123",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-    "responseType": "vp_token",
-    "clientId": "client123",
-    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
-    "id": "dsAygyasa"
+    "responseCode": "400"
 }'
 
   Injiverify_CreateNewVerificationRequest_Empty_ClientId_Neg:
-      endPoint: /v1/verify/vp-request
+      endPoint: /v1/verify/v2/vp-request
       description: Creating a new verification request with empty client id
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_05
       role: noauth
       restMethod: post
-      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
-      outputTemplate: injiverify/responseCode
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
-      "clientId":"",
-      "id":"$PRESENTATIONDEFINITIONID$"
+      "clientId": "",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-      "responseCode": "400"
+      "errorCode": "invalid_request",
+      "errorMessage": "client_id is required"
 }'
 
   Injiverify_CreateNewVerificationRequest_without_ClientId_Neg:
-      endPoint: /v1/verify/vp-request
+      endPoint: /v1/verify/v2/vp-request
       description: Creating a new verification request without client id
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_06
       role: noauth
       restMethod: post
-      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
-      outputTemplate: injiverify/responseCode
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
-      "clientId":"$REMOVE$",
-      "id":"$PRESENTATIONDEFINITIONID$"
+      "clientId": "$REMOVE$",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-      "responseCode": "400"
+      "errorCode": "invalid_request",
+      "errorMessage": "client_id is required"
 }'
 
-  Injiverify_CreateNewVerificationRequest_Empty_PresentationDefinitionId_Neg:
-      endPoint: /v1/verify/vp-request
-      description: Creating a new verification request with empty presentation definition id
+  Injiverify_CreateNewVerificationRequest_Empty_Nonce_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request with nonce as numbers and expect 400 status code
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_07
       role: noauth
       restMethod: post
@@ -118,16 +121,18 @@ CreateNewVerificationRequest:
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
       outputTemplate: injiverify/responseCode
       input: '{
-      "clientId":"client123",
-      "id":""
+      "clientId": "client123",
+      "nonce": "123",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-      "responseCode": "400"
+    "responseCode": "400"
 }'
 
-  Injiverify_CreateNewVerificationRequest_Without_PresentationDefinitionId_Neg:
-      endPoint: /v1/verify/vp-request
-      description: Creating a new verification request without presentation definition id
+  Injiverify_CreateNewVerificationRequest_Without_Nonce_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request with nonce not matching the regex and expect 400 status code
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_08
       role: noauth
       restMethod: post
@@ -135,34 +140,35 @@ CreateNewVerificationRequest:
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
       outputTemplate: injiverify/responseCode
       input: '{
-      "clientId":"client123",
-      "id":"$REMOVE$"
+      "clientId": "client123",
+      "nonce": "random naunce",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-      "responseCode": "400"
+    "responseCode": "400"
 }'
 
   Injiverify_CreateNewVerificationRequest_ForNeg_Valid_Sid:
-      endPoint: /v1/verify/vp-request
-      description: Creating a new verification request
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request with a valid DCQL query for downstream negative tests
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_09
       role: noauth
       restMethod: post
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
       outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
       input: '{
-      "clientId":"client123",
-      "id":"$PRESENTATIONDEFINITIONID$"
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
-    "responseType": "vp_token",
-    "clientId": "client123",
-    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
-    "id": "$PRESENTATIONDEFINITIONID$"
+    "responseType": "vp_token"
 }'
   Injiverify_CreateNewVerificationRequest_All_ValidForECCR1_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
-      description: Creating a new verification request for ECCR1
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request for ECCR1 with a valid DCQL query
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_10
       role: noauth
       restMethod: post
@@ -170,17 +176,18 @@ CreateNewVerificationRequest:
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestECCR1
       outputTemplate: injiverify/responseCode
       input: '{
-      "clientId": "did:jwk:eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6IkI3X0dpOFRhc3JPQ3d3d2xUbnZqUEtXY0d0empKTndBZUlTcVBLYm1wYVEiLCJ5IjoiSkVwNjFlbmE5NlNzc2JGOVlSV0xoZG1HNEtqY0JhTExmTFNqR2E3eXAwSSIsInVzZSI6InNpZyJ9#0",
-      "nonce": "bGvxyRYPVQewlMOAaRvk0w==",
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "clientId": "decentralized_identifier:did:jwk:eyJrdHkiOiJFQyIsImNydiI6IlAtMjU2IiwieCI6IkI3X0dpOFRhc3JPQ3d3d2xUbnZqUEtXY0d0empKTndBZUlTcVBLYm1wYVEiLCJ5IjoiSkVwNjFlbmE5NlNzc2JGOVlSV0xoZG1HNEtqY0JhTExmTFNqR2E3eXAwSSIsInVzZSI6InNpZyJ9#0",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
     "responseCode": "201"
 }'
 
   Injiverify_CreateNewVerificationRequest_All_ValidForECCK1_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
-      description: Creating a new verification request for ECCK1
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request for ECCK1 with a valid DCQL query
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_11
       role: noauth
       restMethod: post
@@ -188,10 +195,49 @@ CreateNewVerificationRequest:
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestECCR1
       outputTemplate: injiverify/responseCode
       input: '{
-      "clientId": "did:jwk:eyJrdHkiOiJFQyIsImNydiI6InNlY3AyNTZrMSIsIngiOiJDRTRWQkRiUTBaODJ3Rnp4elNLN0lGcTF0Sl9ORVc5OTRrUkpicFVJU193IiwieSI6IlBNRUdJb3J2VlpLMnRZZlNRaVNYSlJscTlxWkhkdWZMWmtiZkNKdFBZWTQiLCJ1c2UiOiJzaWcifQ#0",
-      "nonce": "bGvxyRYPVQewlMOAaRvk0w==",
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "clientId": "decentralized_identifier:did:jwk:eyJrdHkiOiJFQyIsImNydiI6InNlY3AyNTZrMSIsIngiOiJDRTRWQkRiUTBaODJ3Rnp4elNLN0lGcTF0Sl9ORVc5OTRrUkpicFVJU193IiwieSI6IlBNRUdJb3J2VlpLMnRZZlNRaVNYSlJscTlxWkhkdWZMWmtiZkNKdFBZWTQiLCJ1c2UiOiJzaWcifQ#0",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
     "responseCode": "201"
+}'
+
+  Injiverify_CreateNewVerificationRequest_with_v1_old_clientID_Neg:
+      endPoint: /v1/verify/vp-request
+      description: Creating a new verification request using V1 endpoint and expect 404 status code
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_with_v1_and_old_ClineID_12
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseCode": "404"
+}'
+
+  Injiverify_CreateNewVerificationRequest_with_v1_new_clientID_Neg:
+      endPoint: /v1/verify/vp-request
+      description: Creating a new verification request using V1 endpoint and expect 404 status code
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_with_v1_and_new_ClientID_13
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseCode": "404"
 }'

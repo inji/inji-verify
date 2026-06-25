@@ -1,0 +1,85 @@
+{
+  "description": "Edge and missing test cases extracted from Inji_Verify_Postman_Collection_NEW_final.json. Not included in the main injiverify smoke/regression suite.",
+  "source": "Postman collection openid4vp sections 1.3-1.7, 1.9, 2.1-2.2, 5.1, 6.1-6.11 and v2/vc-verification ldp_vc edge cases",
+  "totalTestCases": 63,
+  "runSuite": "injiverify/EdgeTestCases/injiverifyEdgeSuite.xml",
+  "groups": [
+    {
+      "folder": "VcVerificationV2Edge",
+      "postmanPaths": [
+        "v2/vc-verification/ldp_vc/ldp_vc missing proof",
+        "v2/vc-verification/ldp_vc/ldp_vc blank vc",
+        "v2/vc-verification/ldp_vc/ldp_vc status check error"
+      ],
+      "tests": 3
+    },
+    {
+      "folder": "VpRequestUriEdge",
+      "postmanPaths": [
+        "openid4vp/1.3. ldp_vp - valid signature - request_uri/*"
+      ],
+      "tests": 6
+    },
+    {
+      "folder": "VpExpiredEdge",
+      "postmanPaths": [
+        "openid4vp/1.4. ldp_vp - expired - require_cryptographic_holder_binding false/*",
+        "openid4vp/1.9. sd-jwt - expired - dcql request/*"
+      ],
+      "tests": 8
+    },
+    {
+      "folder": "VpInvalidSignatureEdge",
+      "postmanPaths": [
+        "openid4vp/1.5. ldp_vp - invalid signature - require_cryptographic_holder_binding false/*"
+      ],
+      "tests": 4
+    },
+    {
+      "folder": "VpRevokedEdge",
+      "postmanPaths": [
+        "openid4vp/1.6. ldp_vp - revoked - require_cryptographic_holder_binding false/*"
+      ],
+      "tests": 4
+    },
+    {
+      "folder": "VpStatusCheckErrorEdge",
+      "postmanPaths": [
+        "openid4vp/1.7. ldp_vp - status check error - require_cryptographic_holder_binding false/*"
+      ],
+      "tests": 4
+    },
+    {
+      "folder": "VpMultipleSubmissionEdge",
+      "postmanPaths": [
+        "openid4vp/2.1. multiple vp submission - ldp_vp, sd_jwt - require_cryptographic_holder_binding false/*",
+        "openid4vp/2.2. multiple vp submission - valid, expired, invalid - require_cryptographic_holder_binding false/*"
+      ],
+      "tests": 8
+    },
+    {
+      "folder": "VpInvalidNonceClientIdEdge",
+      "postmanPaths": [
+        "openid4vp/5.1. invalid nonce or client-id/*"
+      ],
+      "tests": 4
+    },
+    {
+      "folder": "DcqlQueryMatchingEdge",
+      "postmanPaths": [
+        "openid4vp/6.1. vp submission - dcql query matching - unknown credential id/*",
+        "openid4vp/6.2. vp submission - dcql query matching - missing credential id/*",
+        "openid4vp/6.3. vp submission - dcql query matching - format mismatch/*",
+        "openid4vp/6.4. vp submission - dcql query matching - type values mismatch/*",
+        "openid4vp/6.5. vp submission - dcql query matching - vct values mismatch/*",
+        "openid4vp/6.6. vp submission - dcql query matching - missing required claim/*",
+        "openid4vp/6.7. vp submission - dcql query matching - claim value mismatch/*",
+        "openid4vp/6.8. vp submission - dcql query matching - no satisfiable claim sets option/*",
+        "openid4vp/6.9. vp submission - dcql query matching - multiple credentials not allowed/*",
+        "openid4vp/6.10. vp submission - dcql query matching - sd-jwt missing cnf/*",
+        "openid4vp/6.11. vp submission - dcql query matching - sd-jwt missing key binding/*"
+      ],
+      "tests": 22
+    }
+  ]
+}

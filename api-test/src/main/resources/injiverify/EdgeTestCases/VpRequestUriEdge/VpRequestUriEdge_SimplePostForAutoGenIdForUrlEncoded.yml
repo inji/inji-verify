@@ -1,0 +1,16 @@
+VpRequestUriEdge:
+  Injiverify_Edge_VpRequestUriEdge_1_3_ldp_vp_valid_signature_request_uri_vp_submission_valid_signature:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Edge case from Postman - openid4vp/1.3. ldp_vp - valid signature - request_uri/vp submission valid signature
+      uniqueIdentifier: TC_InjiVerify_Edge_VpRequestUriEdge_06
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpRequestUriEdge/1_3_ldp_vp_valid_signature_request_uri_submit_vp_submission_valid_sign
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:Edge_VpRequestUriEdge_1_3_ldp_vp_valid_signature_request_uri_vp_request_with_request_uri_in_response_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "200"
+      }'

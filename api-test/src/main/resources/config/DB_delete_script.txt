@@ -1,1 +1,2 @@
-delete from verify.presentation_definition where id='200';
+delete from verify.authorization_request_details where request_id = 'req_49cdc238-de04-4cef-b4d8-66d9b1ac738b';
+delete from verify.vp_submission where request_id = 'req_49cdc238-de04-4cef-b4d8-66d9b1ac738b';

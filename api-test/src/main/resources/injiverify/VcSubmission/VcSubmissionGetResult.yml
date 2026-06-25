@@ -1,0 +1,48 @@
+VcSubmissionGetResult:
+  Injiverify_VcSubmission_GetResult_JsonLd_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-result/{transactionId}
+      description: Get json-ld VC submission verification result
+      uniqueIdentifier: TC_InjiVerify_VcSubmissionGetResult_01
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VcSubmission/VcSubmissionGetResult
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "$ID:VcSubmission_JsonLd_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+
+  Injiverify_VcSubmission_GetResult_SdJwt_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-result/{transactionId}
+      description: Get sd-jwt VC submission verification result
+      uniqueIdentifier: TC_InjiVerify_VcSubmissionGetResult_02
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VcSubmission/VcSubmissionGetResult
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "$ID:VcSubmission_SdJwt_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+
+  Injiverify_VcSubmission_GetResult_Cwt_All_Valid_Smoke:
+      endPoint: /v1/verify/vp-result/{transactionId}
+      description: Get cwt VC submission verification result
+      uniqueIdentifier: TC_InjiVerify_VcSubmissionGetResult_03
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VcSubmission/VcSubmissionGetResult
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "$ID:VcSubmission_Cwt_All_Valid_Smoke_Sid_transactionId$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'

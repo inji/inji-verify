@@ -1,0 +1,126 @@
+VpRequestWithDCQL:
+  Injiverify_CreateVpRequestWithDCQL_All_Valid_Smoke_Sid:
+    endPoint: /v1/verify/v2/vp-request
+    description: Creates a VP request with a valid DCQL query and returns authorization details
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithDCQL_01
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestWithDCQL/VpRequestWithDCQLSmoke
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "did:web:injiverify.dev-int-inji.mosip.net:v1:verify",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+    }'
+    output: '{
+      "responseCode": "201"
+}'
+
+  Injiverify_CreateVpRequestWithDCQL_Invalid_ClientId_Neg:
+    endPoint: /v1/verify/v2/vp-request
+    description: Creates a VP request with an invalid clientId and expect 201 status code
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithDCQL_02
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestWithDCQL/VpRequestWithDCQLSmoke
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "invalidClient123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+    }'
+    output: '{
+      "responseCode": "201"
+}'
+
+  Injiverify_CreateVpRequestWithDCQL_Empty_ClientId_Neg:
+    endPoint: /v1/verify/v2/vp-request
+    description: Creates a VP request with an empty clientId and expect 400 status code
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithDCQL_03
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestWithDCQL/VpRequestWithDCQLSmoke
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+    }'
+    output: '{
+      "responseCode": "400"
+}'
+
+  Injiverify_CreateVpRequestWithDCQL_Without_ClientId_Neg:
+    endPoint: /v1/verify/v2/vp-request
+    description: Creates a VP request without clientId and expect 400 status code
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithDCQL_04
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestWithDCQL/VpRequestWithDCQLSmoke
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "$REMOVE$",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+    }'
+    output: '{
+      "responseCode": "400"
+}'
+
+  Injiverify_CreateVpRequestWithDCQL_Invalid_Nonce_Neg:
+    endPoint: /v1/verify/v2/vp-request
+    description: Creates a VP request with an invalid nonce and expect 400 status code
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithDCQL_05
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestWithDCQL/VpRequestWithDCQLSmoke
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "did:web:injiverify.dev-int-inji.mosip.net:v1:verify",
+      "nonce": "invalidNonce123",
+      "responseCodeValidationRequired": false
+    }'
+    output: '{
+      "responseCode": "400"
+}'
+
+  Injiverify_CreateVpRequestWithDCQL_Empty_Nonce_Neg:
+    endPoint: /v1/verify/v2/vp-request
+    description: Creates a VP request with an empty nonce and expect 201 status code
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithDCQL_06
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestWithDCQL/VpRequestWithDCQLSmoke
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "did:web:injiverify.dev-int-inji.mosip.net:v1:verify",
+      "nonce": "",
+      "responseCodeValidationRequired": false
+    }'
+    output: '{
+      "responseCode": "201"
+}'
+
+  Injiverify_CreateVpRequestWithDCQL_Without_Nonce_Neg:
+    endPoint: /v1/verify/v2/vp-request
+    description: Creates a VP request without nonce and expect 201 status code
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithDCQL_07
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/VpRequestWithDCQL/VpRequestWithDCQLSmoke
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "did:web:injiverify.dev-int-inji.mosip.net:v1:verify",
+      "nonce": "$REMOVE$",
+      "responseCodeValidationRequired": false
+    }'
+    output: '{
+      "responseCode": "201"
+}'

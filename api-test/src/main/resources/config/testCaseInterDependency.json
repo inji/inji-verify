@@ -1,20 +1,228 @@
 {
-    "TC_InjiVerify_GetVpTokenForRequestSDJWT_01": ["TC_InjiVerify_CreateVpRequestWithSDJWT_01"],
-    "TC_InjiVerify_GetVpRequestStatusSDJWT_01": ["TC_InjiVerify_CreateVpRequestWithSDJWT_01"],
-    "TC_InjiVerify_GetVpRequestStatus_04": ["TC_InjiVerify_CreateNewVerificationRequest_02"],
-    "TC_InjiVerify_GetVpTokenForRequest_01": ["TC_InjiVerify_CreateNewVerificationRequest_01"],
-    "TC_InjiVerify_VpSubmissionSDJWT_01": ["TC_InjiVerify_CreateVpRequestWithSDJWT_01"],
-    "TC_InjiVerify_VpSubmission_01": ["TC_InjiVerify_CreateNewVerificationRequest_01"],
-    "TC_InjiVerify_VpSubmission_04": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
-    "TC_InjiVerify_VpSubmission_03": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
-    "TC_InjiVerify_GetVpRequestWithDID_02": ["TC_InjiVerify_CreateNewVerificationRequestWithDID_01"],
-    "TC_InjiVerify_VpSubmission_06": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
-    "TC_InjiVerify_GetVpRequestStatus_02": ["TC_InjiVerify_CreateNewVerificationRequest_02"],
-    "TC_InjiVerify_VpSubmission_08": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
-    "TC_InjiVerify_GetVpRequestStatus_01": ["TC_InjiVerify_CreateNewVerificationRequest_01"],
-    "TC_InjiVerify_VpSubmission_07": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
-    "TC_InjiVerify_VpSubmission_11": ["TC_InjiVerify_CreateNewVerificationRequest_01"],
-    "TC_InjiVerify_VpSubmission_10": ["TC_InjiVerify_CreateNewVerificationRequest_09"],
-    "TC_InjiVerify_VpSubmissionECR1_01": ["TC_InjiVerify_CreateNewVerificationRequest_10"],
-    "TC_InjiVerify_VpSubmissionECCK1_01": ["TC_InjiVerify_CreateNewVerificationRequest_11"]
+    "TC_DBDependent_GetVpRequestStatus_01": [
+        "TC_DBDependent_InsertQuery_02",
+        "TC_DBDependent_InsertQuery_03"
+    ],
+    "TC_InjiVerify_GetVpTokenForRequestSDJWT_01": [
+        "TC_InjiVerify_VpSubmissionSDJWT_01"
+    ],
+    "TC_InjiVerify_GetVpRequestStatusSDJWT_01": [
+        "TC_InjiVerify_VpSubmissionSDJWT_01"
+    ],
+    "TC_InjiVerify_GetVpRequestStatus_04": [
+        "TC_InjiVerify_CreateNewVerificationRequest_02"
+    ],
+    "TC_InjiVerify_GetVpTokenForRequest_01": [
+        "TC_InjiVerify_VpSubmission_17"
+    ],
+    "TC_InjiVerify_VpSubmissionSDJWT_01": [
+        "TC_InjiVerify_CreateVpRequestWithSDJWT_01"
+    ],
+    "TC_InjiVerify_VpSubmission_01": [
+        "TC_InjiVerify_VpRequestWithDCQL_01"
+    ],
+    "TC_InjiVerify_VpSubmission_04": [
+        "TC_InjiVerify_CreateNewVerificationRequest_09"
+    ],
+    "TC_InjiVerify_VpSubmission_03": [
+        "TC_InjiVerify_CreateNewVerificationRequest_09"
+    ],
+    "TC_INJI_2005_01": [
+        "TC_INJI_2005_01_Sid"
+    ],
+    "TC_InjiVerify_GetVpRequestWithDID_02": [
+        "TC_InjiVerify_CreateNewVerificationRequestWithDID_01"
+    ],
+    "TC_InjiVerify_GetVpRequestWithDID_v1_endpoint_03": [
+        "TC_InjiVerify_CreateNewVerificationRequestWithDID_01"
+    ],
+    "TC_InjiVerify_VpSubmission_06": [
+        "TC_InjiVerify_CreateNewVerificationRequest_09"
+    ],
+    "TC_InjiVerify_GetVpRequestStatus_02": [
+        "TC_InjiVerify_CreateNewVerificationRequest_02"
+    ],
+    "TC_InjiVerify_VpSubmission_08": [
+        "TC_InjiVerify_CreateNewVerificationRequest_09"
+    ],
+    "TC_InjiVerify_GetVpRequestStatus_01": [
+        "TC_InjiVerify_CreateNewVerificationRequest_01"
+    ],
+    "TC_InjiVerify_VpSubmission_07": [
+        "TC_InjiVerify_CreateNewVerificationRequest_09"
+    ],
+    "TC_InjiVerify_VpSubmission_11": [
+        "TC_InjiVerify_CreateNewVerificationRequest_01"
+    ],
+    "TC_InjiVerify_VpSubmission_10": [
+        "TC_InjiVerify_CreateNewVerificationRequest_09"
+    ],
+    "TC_InjiVerify_VpSubmissionECR1_01": [
+        "TC_InjiVerify_CreateNewVerificationRequest_10"
+    ],
+    "TC_InjiVerify_VpSubmissionECCK1_01": [
+        "TC_InjiVerify_CreateNewVerificationRequest_11"
+    ],
+    "TC_InjiVerify_VpSubmission_WithProof_01": [
+        "TC_InjiVerify_VcRevocationStatus_WithProof_01"
+    ],
+    "TC_InjiVerify_VpSubmission_WithProof_02": [
+        "TC_InjiVerify_VcRevocationStatus_WithProof_02"
+    ],
+    "TC_InjiVerify_VpSubmission_12": [
+        "TC_InjiVerify_VpRequestWithPresentationId_02"
+    ],
+    "TC_InjiVerify_VpSubmission_17": [
+        "TC_InjiVerify_VpRequestWithPresentationId_06"
+    ],
+    "TC_InjiVerify_VpSubmission_18": [
+        "TC_InjiVerify_VpRequestWithPresentationId_07"
+    ],
+    "TC_InjiVerify_GetVpTokenForRequest_04": [
+        "TC_InjiVerify_VpSubmission_WithProof_01"
+    ],
+    "TC_InjiVerify_GetVpTokenForRequest_05": [
+        "TC_InjiVerify_VpSubmission_17"
+    ],
+    "TC_InjiVerify_GetVpTokenForRequest_06": [
+        "TC_InjiVerify_VpSubmission_17"
+    ],
+    "TC_InjiVerify_GetVpRequestStatus_V2_01": [
+        "TC_InjiVerify_VpSubmission_17"
+    ],
+    "TC_InjiVerify_GetVpRequestStatus_V2_02": [
+        "TC_InjiVerify_VpSubmission_17"
+    ],
+    "TC_InjiVerify_GetVpRequestStatus_V2_03": [
+        "TC_InjiVerify_VpSubmission_17"
+    ],
+    "TC_InjiVerify_GetVpRequestStatus_V2_04": [
+        "TC_InjiVerify_VpSubmission_18"
+    ],
+    "TC_InjiVerify_Edge_VpRequestUriEdge_05": [
+        "TC_InjiVerify_Edge_VpRequestUriEdge_04"
+    ],
+    "TC_InjiVerify_Edge_VpRequestUriEdge_06": [
+        "TC_InjiVerify_Edge_VpRequestUriEdge_04"
+    ],
+    "TC_InjiVerify_Edge_VpRequestUriEdge_07": [
+        "TC_InjiVerify_Edge_VpRequestUriEdge_04"
+    ],
+    "TC_InjiVerify_Edge_VpRequestUriEdge_08": [
+        "TC_InjiVerify_Edge_VpRequestUriEdge_04"
+    ],
+    "TC_InjiVerify_Edge_VpRequestUriEdge_09": [
+        "TC_InjiVerify_Edge_VpRequestUriEdge_04"
+    ],
+    "TC_InjiVerify_Edge_VpExpiredEdge_11": [
+        "TC_InjiVerify_Edge_VpExpiredEdge_10"
+    ],
+    "TC_InjiVerify_Edge_VpExpiredEdge_12": [
+        "TC_InjiVerify_Edge_VpExpiredEdge_10"
+    ],
+    "TC_InjiVerify_Edge_VpExpiredEdge_13": [
+        "TC_InjiVerify_Edge_VpExpiredEdge_10"
+    ],
+    "TC_InjiVerify_Edge_VpExpiredEdge_15": [
+        "TC_InjiVerify_Edge_VpExpiredEdge_14"
+    ],
+    "TC_InjiVerify_Edge_VpExpiredEdge_16": [
+        "TC_InjiVerify_Edge_VpExpiredEdge_14"
+    ],
+    "TC_InjiVerify_Edge_VpExpiredEdge_17": [
+        "TC_InjiVerify_Edge_VpExpiredEdge_14"
+    ],
+    "TC_InjiVerify_Edge_VpInvalidSignatureEdge_19": [
+        "TC_InjiVerify_Edge_VpInvalidSignatureEdge_18"
+    ],
+    "TC_InjiVerify_Edge_VpInvalidSignatureEdge_20": [
+        "TC_InjiVerify_Edge_VpInvalidSignatureEdge_18"
+    ],
+    "TC_InjiVerify_Edge_VpInvalidSignatureEdge_21": [
+        "TC_InjiVerify_Edge_VpInvalidSignatureEdge_18"
+    ],
+    "TC_InjiVerify_Edge_VpRevokedEdge_23": [
+        "TC_InjiVerify_Edge_VpRevokedEdge_22"
+    ],
+    "TC_InjiVerify_Edge_VpRevokedEdge_24": [
+        "TC_InjiVerify_Edge_VpRevokedEdge_22"
+    ],
+    "TC_InjiVerify_Edge_VpRevokedEdge_25": [
+        "TC_InjiVerify_Edge_VpRevokedEdge_22"
+    ],
+    "TC_InjiVerify_Edge_VpStatusCheckErrorEdge_27": [
+        "TC_InjiVerify_Edge_VpStatusCheckErrorEdge_26"
+    ],
+    "TC_InjiVerify_Edge_VpStatusCheckErrorEdge_28": [
+        "TC_InjiVerify_Edge_VpStatusCheckErrorEdge_26"
+    ],
+    "TC_InjiVerify_Edge_VpStatusCheckErrorEdge_29": [
+        "TC_InjiVerify_Edge_VpStatusCheckErrorEdge_26"
+    ],
+    "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_31": [
+        "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_30"
+    ],
+    "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_32": [
+        "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_30"
+    ],
+    "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_33": [
+        "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_30"
+    ],
+    "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_35": [
+        "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_34"
+    ],
+    "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_36": [
+        "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_34"
+    ],
+    "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_37": [
+        "TC_InjiVerify_Edge_VpMultipleSubmissionEdge_34"
+    ],
+    "TC_InjiVerify_Edge_VpInvalidNonceClientIdEdge_39": [
+        "TC_InjiVerify_Edge_VpInvalidNonceClientIdEdge_38"
+    ],
+    "TC_InjiVerify_Edge_VpInvalidNonceClientIdEdge_41": [
+        "TC_InjiVerify_Edge_VpInvalidNonceClientIdEdge_40"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_43": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_42"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_45": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_44"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_47": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_46"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_49": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_48"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_51": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_50"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_53": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_52"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_55": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_54"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_57": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_56"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_59": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_58"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_61": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_60"
+    ],
+    "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_63": [
+        "TC_InjiVerify_Edge_DcqlQueryMatchingEdge_62"
+    ],
+    "TC_InjiVerify_VcSubmissionGetResult_01": [
+        "TC_InjiVerify_VcSubmission_01"
+    ],
+    "TC_InjiVerify_VcSubmissionGetResult_02": [
+        "TC_InjiVerify_VcSubmission_02"
+    ],
+    "TC_InjiVerify_VcSubmissionGetResult_03": [
+        "TC_InjiVerify_VcSubmission_03"
+    ]
 }

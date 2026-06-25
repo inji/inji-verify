@@ -1,16 +1,18 @@
 CreateNewVerificationRequestWithDID:
   Injiverify_CreateNewVerificationRequest_DID_ClientId_Valid_Smoke_Sid:
-      endPoint: /v1/verify/vp-request
-      description: Creating a new verification request with DID-based client id
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request with DID-based client id and DCQL query
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequestWithDID_01
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/CreateNewVerificationRequestWithDID/CreateNewVerificationRequestWithDID
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
       outputTemplate: injiverify/responseCode
       input: '{
-      "clientId":"did:client123",
-      "id":"$PRESENTATIONDEFINITIONID$"
+      "clientId": "decentralized_identifier:did:client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
       }'
       output: '{
       "responseCode": "201"

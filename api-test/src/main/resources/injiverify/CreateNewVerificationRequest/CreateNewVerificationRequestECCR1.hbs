@@ -1,35 +1,48 @@
 {
   "clientId": "{{clientId}}",
   "nonce": "{{nonce}}",
-  "presentationDefinition": {
-    "id": "{{id}}",
-    "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-    "input_descriptors": [
+  "responseCodeValidationRequired": {{responseCodeValidationRequired}},
+  "dcqlQuery": {
+    "credentials": [
       {
-        "id": "id card credential",
-        "name": "InsuranceCredential",
-        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-        "group": [""],
-        "format": {
-          "ldp_vc": {
-            "proof_type": [
-              "Ed25519Signature2020"
+        "id": "student_id_credential_query",
+        "format": "vc+sd-jwt",
+        "meta": {
+          "vct_values": [
+            "eu.europa.ec.eudi.msisdn.1"
+          ]
+        },
+        "require_cryptographic_holder_binding": false,
+        "claims": [
+          {
+            "id": "registered_family_name",
+            "path": [
+              "registered_family_name"
+            ],
+            "values": ["Musterman"]
+          },
+          {
+            "id": "phone_number",
+            "path": [
+              "phone_number"
+            ]
+          },
+          {
+            "id": "verification_method_information",
+            "path": [
+              "verification_method_information"
             ]
           }
-        },
-        "constraints": {
-          "fields": [
-            {
-              "path": [
-                "$.type"
-              ],
-              "filter": {
-                "type": "object",
-                "pattern": "InsuranceCredential"
-              }
-            }
+        ],
+        "claim_sets": [
+          [
+            "phone_number",
+            "verification_method_information"
+          ],
+          [
+            "registered_family_name"
           ]
-        }
+        ]
       }
     ]
   }

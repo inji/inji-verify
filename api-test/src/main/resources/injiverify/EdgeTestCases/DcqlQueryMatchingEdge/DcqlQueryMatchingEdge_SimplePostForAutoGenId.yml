@@ -1,0 +1,165 @@
+DcqlQueryMatchingEdge:
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_1_vp_submission_dcql_query_matching_unknown_credential_id_vp_request_unknown_credential_id_test_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.1. vp submission - dcql query matching - unknown credential id/vp request (unknown credential id test)
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_42
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_1_vp_submission_dcql_query_matching_unknown_credential_id_create_vp_
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_2_vp_submission_dcql_query_matching_missing_credential_id_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.2. vp submission - dcql query matching - missing credential id/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_44
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_2_vp_submission_dcql_query_matching_missing_credential_id_create_vp_
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_3_vp_submission_dcql_query_matching_format_mismatch_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.3. vp submission - dcql query matching - format mismatch/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_46
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_3_vp_submission_dcql_query_matching_format_mismatch_create_vp_reques
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_4_vp_submission_dcql_query_matching_type_values_mismatch_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.4. vp submission - dcql query matching - type values mismatch/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_48
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_4_vp_submission_dcql_query_matching_type_values_mismatch_create_vp_r
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_5_vp_submission_dcql_query_matching_vct_values_mismatch_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.5. vp submission - dcql query matching - vct values mismatch/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_50
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_5_vp_submission_dcql_query_matching_vct_values_mismatch_create_vp_re
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_6_vp_submission_dcql_query_matching_missing_required_claim_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.6. vp submission - dcql query matching - missing required claim/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_52
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_6_vp_submission_dcql_query_matching_missing_required_claim_create_vp
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_7_vp_submission_dcql_query_matching_claim_value_mismatch_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.7. vp submission - dcql query matching - claim value mismatch/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_54
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_7_vp_submission_dcql_query_matching_claim_value_mismatch_create_vp_r
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_8_vp_submission_dcql_query_matching_no_satisfiable_claim_sets_option_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.8. vp submission - dcql query matching - no satisfiable claim sets option/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_56
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_8_vp_submission_dcql_query_matching_no_satisfiable_claim_sets_option_create
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_9_vp_submission_dcql_query_matching_multiple_credentials_not_allowed_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.9. vp submission - dcql query matching - multiple credentials not allowed/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_58
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_9_vp_submission_dcql_query_matching_multiple_credentials_not_allowed_create
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_10_vp_submission_dcql_query_matching_sd_jwt_missing_cnf_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.10. vp submission - dcql query matching - sd-jwt missing cnf/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_60
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_10_vp_submission_dcql_query_matching_sd_jwt_missing_cnf_create_vp_re
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'
+
+  Injiverify_Edge_DcqlQueryMatchingEdge_6_11_vp_submission_dcql_query_matching_sd_jwt_missing_key_binding_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Edge case from Postman - openid4vp/6.11. vp submission - dcql query matching - sd-jwt missing key binding/vp request
+      uniqueIdentifier: TC_InjiVerify_Edge_DcqlQueryMatchingEdge_62
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/DcqlQueryMatchingEdge/6_11_vp_submission_dcql_query_matching_sd_jwt_missing_key_binding_crea
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'

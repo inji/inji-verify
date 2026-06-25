@@ -2,6 +2,7 @@ package io.inji.testrig.apirig.injiverify.utils;
 
 import static io.restassured.RestAssured.given;
 
+import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Base64;
 import java.util.LinkedHashMap;
@@ -21,11 +22,13 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 
 import io.mosip.testrig.apirig.dbaccess.DBManager;
 import io.mosip.testrig.apirig.dto.TestCaseDTO;
+import io.mosip.testrig.apirig.utils.AdminTestException;
 import io.mosip.testrig.apirig.utils.AdminTestUtil;
 import io.mosip.testrig.apirig.utils.CertsUtil;
 import io.mosip.testrig.apirig.utils.ConfigManager;
 import io.mosip.testrig.apirig.utils.GlobalConstants;
 import io.mosip.testrig.apirig.utils.GlobalMethods;
+import io.mosip.testrig.apirig.utils.SecurityXSSException;
 import io.mosip.testrig.apirig.utils.SkipTestCaseHandler;
 import io.restassured.RestAssured;
 import io.restassured.config.EncoderConfig;
@@ -301,6 +304,40 @@ public class InjiVerifyUtil extends AdminTestUtil {
 			}
 		}
 		return out;
+	}
+
+	protected Response postWithBodyAndCustomContentType(String url, String body, String contentType,
+			boolean auditLogCheck, String cookieName, String role, String testCaseName)
+			throws SecurityXSSException, AdminTestException {
+		Response response = null;
+		String requestBody = inputJsonKeyWordHandeler(body, testCaseName);
+		url = uriKeyWordHandelerUri(url, testCaseName);
+		url = GlobalMethods.addToServerEndPointMap(url);
+		logger.info(GlobalConstants.POST_REQ_URL + url);
+		GlobalMethods.reportRequest(null, requestBody, url);
+		try {
+			byte[] rawBody = requestBody.getBytes(StandardCharsets.UTF_8);
+			if ("noauth".equals(role)) {
+				response = given().relaxedHTTPSValidation().header("Content-Type", contentType)
+						.accept("application/json").body(rawBody).when().post(url).then().extract().response();
+			} else {
+				token = kernelAuthLib.getTokenByRole(role);
+				response = given().relaxedHTTPSValidation().header("Content-Type", contentType)
+						.accept("application/json").cookie(cookieName, token).body(rawBody).when().post(url).then()
+						.extract().response();
+			}
+			GlobalMethods.checkXSSProtectionHeader(response, url);
+			GlobalMethods.reportResponse(response.getHeaders().asList().toString(), url, response);
+			return response;
+		} catch (SecurityXSSException se) {
+			String responseHeadersString = (response == null) ? "No response"
+					: response.getHeaders().asList().toString();
+			logger.error("XSS check failed for URL: " + url + "\nHeaders: " + responseHeadersString, se);
+			throw se;
+		} catch (Exception e) {
+			logger.error(GlobalConstants.EXCEPTION_STRING_2 + e);
+			throw new AdminTestException("Failed to POST raw body to " + url + ": " + e.getMessage());
+		}
 	}
 
 	// Remove below two methods once after releasing the apitest-commons-1.3.3

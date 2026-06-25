@@ -1,0 +1,101 @@
+{
+  "clientId": "{{clientId}}",
+  "nonce": "{{nonce}}",
+  "responseCodeValidationRequired": {{responseCodeValidationRequired}},
+  "dcqlQuery": {
+  "credentials": [
+    {
+      "id": "student_id_credential_query",
+      "format": "dc+sd-jwt",
+      "meta": {
+        "vct_values": [
+          "student_id_credential"
+        ]
+      },
+      "claims": [
+        {
+          "id": "last_name",
+          "path": [
+            "last_name"
+          ]
+        },
+        {
+          "id": "first_name",
+          "path": [
+            "first_name"
+          ]
+        },
+        {
+          "id": "given_name",
+          "path": [
+            "first_name"
+          ]
+        }
+      ],
+      "claim_sets": [
+        [
+          "first_name",
+          "last_name"
+        ],
+        [
+          "given_name"
+        ]
+      ]
+    },
+    {
+      "id": "mosip_verifiable_credential_id",
+      "format": "ldp_vc",
+      "meta": {
+        "type_values": [
+          [
+            "https://www.w3.org/2018/credentials#VerifiableCredential",
+            "https://example.org/credentials#MOSIPVerifiableCredential"
+          ]
+        ]
+      },
+      "claims": [
+        {
+          "id": "male_gender",
+          "path": [
+            "gender",
+            null,
+            "value"
+          ],
+          "values": [
+            "MLE"
+          ]
+        },
+        {
+          "id": "full_name_eng",
+          "path": [
+            "fullName",
+            0,
+            "language"
+          ]
+        }
+      ],
+      "claim_sets": [
+        [
+          "male_gender",
+          "full_name_eng"
+        ],
+        [
+          "full_name_eng"
+        ]
+      ]
+    }
+  ],
+  "credential_sets": [
+    {
+      "options": [
+        [
+          "mosip_verifiable_credential_id"
+        ],
+        [
+          "student_id_credential_query"
+        ]
+      ]
+    }
+  ]
+}
+}

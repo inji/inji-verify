@@ -1,19 +1,18 @@
 CreateVpRequestWithSDJWT:
   InjiVerify_CreateVpRequestWithSDJWT_All_Valid_Smoke_Sid:
-    endPoint: /v1/verify/vp-request
-    description: Create VP request with SD-JWT
+    endPoint: /v1/verify/v2/vp-request
+    description: Create VP request with SD-JWT DCQL query
     uniqueIdentifier: TC_InjiVerify_CreateVpRequestWithSDJWT_01
     role: noauth
     restMethod: post
+    checkOnlyStatusCodeInResponse: true
     inputTemplate: injiverify/CreateVpRequestWithSDJWT/CreateVpRequestWithSDJWT
-    outputTemplate: injiverify/CreateVpRequestWithSDJWT/CreateVpRequestWithSDJWTResult
+    outputTemplate: injiverify/responseCode
     input: '{
-    "clientId": "client123",
-    "id":"$PRESENTATIONDEFINITIONID$"
+    "clientId": "injiverify.dev-int-inji.mosip.net",
+    "nonce": "yMRlSK2ZT31GdWbedhk4hA",
+    "responseCodeValidationRequired": false
     }'
     output: '{
-    "responseType": "vp_token",
-    "clientId": "client123",
-    "responseUri": "$INJIVERIFYBASEURL$/v1/verify/vp-submission/direct-post",
-    "id": "$PRESENTATIONDEFINITIONID$"
+    "responseCode": "201"
 }'

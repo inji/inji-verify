@@ -15,6 +15,8 @@ import org.testng.annotations.BeforeClass;
 import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
+import org.json.JSONObject;
+
 import com.auth0.jwt.JWT;
 import com.auth0.jwt.interfaces.DecodedJWT;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -104,19 +106,28 @@ public class GetWithParamAndHeader extends InjiVerifyUtil implements ITest {
 			response = getWithPathParamsBodyHeadersAndCookie(injiVerifyBaseUrl + testCaseDTO.getEndPoint(), inputJson,
 					COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams, headers);
 
-			if (testCaseName.contains("_GetVpRequestWithDID_")) {
-			    String finalJsonString = InjiVerifyUtil.decodeAndCombineJwt(response.asString());
+			if ((testCaseName.contains("_GetVpRequestWithDID_")
+					|| testCaseName.contains("CheckClinetMetaDataInVPResponse"))
+					&& !testCaseDTO.isCheckOnlyStatusCodeInResponse()) {
+				String finalJsonString = InjiVerifyUtil.decodeAndCombineJwt(response.asString());
 
-			    // Report both header and payload separately if needed
-			    DecodedJWT jwt = JWT.decode(response.asString());
-			    String headerJson = InjiVerifyUtil.decodeBase64Url(jwt.getHeader());
-			    String payloadJson = InjiVerifyUtil.decodeBase64Url(jwt.getPayload());
-			    GlobalMethods.reportResponse(headerJson, null, payloadJson, true);
+				// Report both header and payload separately if needed
+				DecodedJWT jwt = JWT.decode(response.asString());
+				String headerJson = InjiVerifyUtil.decodeBase64Url(jwt.getHeader());
+				String payloadJson = InjiVerifyUtil.decodeBase64Url(jwt.getPayload());
+				GlobalMethods.reportResponse(headerJson, null, payloadJson, true);
 
-			    ouputValid = OutputValidationUtil.doJsonOutputValidation(finalJsonString, outputJson, testCaseDTO,
-			            response.getStatusCode());
+				if (testCaseName.contains("CheckClinetMetaDataInVPResponse")) {
+					JSONObject payload = new JSONObject(payloadJson);
+					if (payload.has("client_metadata")) {
+						throw new AdminTestException(
+								"client_metadata must not be present in Authorization Request for pre-registered client_id");
+					}
+				}
+
+				ouputValid = OutputValidationUtil.doJsonOutputValidation(finalJsonString, outputJson, testCaseDTO,
+						response.getStatusCode());
 			} else {
-
 				ouputValid = OutputValidationUtil.doJsonOutputValidation(response.asString(), outputJson, testCaseDTO,
 						response.getStatusCode());
 			}
