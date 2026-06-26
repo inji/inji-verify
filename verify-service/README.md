@@ -1,34 +1,48 @@
 # Inji Verify Backend Service
 
 ### Contents
-* Features
-* Standards
 * Setup Guide
 * API docs
 
+> For features, supported VC formats, OpenID4VP standards, and endpoint details see:
+> - [docs/technical_docs/Inji_Verify_API_Overview.md](../docs/technical_docs/Inji_Verify_API_Overview.md)
+> - [docs/technical_docs/VC_Verification.md](../docs/technical_docs/VC_Verification.md)
+> - [docs/technical_docs/OpenID4VP-1.0.0.md](../docs/technical_docs/OpenID4VP-1.0.0.md)
 
-#### Features
-* ###### VC Verification
-  It offers an API for verifying VCs on the server side. The API takes a VC as input and carries out validation and proof verification using the [vc-verifier](https://github.com/mosip/vc-verifier/tree/master/vc-verifier/kotlin) module.
-
-* ###### OpenID4VP Sharing
-  It is designed to support OpenID4VP specification. The current supported draft is [draft 21](https://openid.net/specs/openid-4-verifiable-presentations-1_0-21.html).
-
-#### Standards
-  For OpenID4VP Sharing below are the supported features.
-- Cross Device Flow
-- Same Device Flow
-- `response_type` as `vp_token`
-- `response_mode` as `direct_post`
-- Verifiable Presentation proofs supported are `ED25519Signature2018`, `ED25519Signature2020` and `RSASignature2018`
-
-Out of scope items are
-- `response_type` with `vp_token id_token`
-- `response mode` with `direct_post.jwt
 ##### Setup Guide
 
-The link to set up guide can be found [here](../Readme.md).
+```shell
+cd verify-service
+mvn spring-boot:run                                      # HSQLDB in-memory (default, no DB setup needed)
+mvn spring-boot:run -Dspring.profiles.active=local       # same, explicitly
+mvn test                                                 # run all tests
+mvn test -Dtest=VPRequestControllerTest                  # run a single test class
+mvn -U -B package                                        # build jar
+```
+
+For PostgreSQL (production), apply the scripts in `db_scripts/` manually. `spring.jpa.hibernate.ddl-auto` is set to `none` for production profiles.
+
+##### Docker
+
+```shell
+mvn -U -B package
+docker build -t <dockerImageName>:<tag> .
+docker run -it -d -p 3000:8000 --env-file ./.env --name inji-verify-service-dev <dockerImageName>:<tag>
+```
+
+To build with the local HSQLDB profile:
+
+```shell
+docker build --build-arg active_profile=local -t <dockerImageName>:<tag> .
+```
+
+Stop and delete containers:
+
+```shell
+docker stop inji-verify-service-dev
+docker rm inji-verify-service-dev
+```
 
 ##### API docs
 
-The API docs are published in Stoplight, which can be found [here](https://mosip.stoplight.io/docs/inji-verify/branches/main).
+The API docs are published on Stoplight: [Inji Verify API documentation](https://mosip.stoplight.io/docs/inji-verify/branches/main).

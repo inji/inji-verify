@@ -1,0 +1,32 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="617" height="436" style="font-family: Arial,sans-serif; font-size:12px; background:#fff;">
+<defs>
+  <marker id="arr" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#333"/></marker>
+</defs>
+<text x="308" y="19" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a3c6e">QRCodeVerification — Server-to-Server Flow  (onVCReceived)</text>
+<line x1="85" y1="64" x2="85" y2="384" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="295" y1="64" x2="295" y2="384" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="505" y1="64" x2="505" y2="384" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="15" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="85" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">SDK</text>
+<rect x="15" y="384" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="85" y="408" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">SDK</text>
+<rect x="225" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="295" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="225" y="384" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="295" y="408" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="435" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="505" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">RP Backend</text>
+<rect x="435" y="384" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="505" y="408" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">RP Backend</text>
+<line x1="85" y1="112" x2="294" y2="112" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="190" y="108" text-anchor="middle" font-size="11" fill="#111">POST /vc-submission</text>
+<text x="190" y="127" text-anchor="middle" font-size="10" fill="#555" font-style="italic">{ vc }</text>
+<line x1="295" y1="168" x2="86" y2="168" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="190" y="164" text-anchor="middle" font-size="11" fill="#111">{ transactionId }</text>
+<line x1="85" y1="222" x2="504" y2="222" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="295" y="218" text-anchor="middle" font-size="11" fill="#111">onVCReceived(transactionId)</text>
+<line x1="505" y1="276" x2="296" y2="276" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="400" y="272" text-anchor="middle" font-size="11" fill="#111">POST /v2/vc-verification</text>
+<line x1="295" y1="330" x2="504" y2="330" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="400" y="326" text-anchor="middle" font-size="11" fill="#111">Verification result</text>
+</svg>

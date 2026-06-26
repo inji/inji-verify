@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="645" height="770" style="font-family: Arial, sans-serif; font-size: 12px; background: #fff;">
+<defs>
+  <marker id="arr" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0,9 3.5,0 7" fill="#333"/>
+  </marker>
+  <marker id="arrd" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0,9 3.5,0 7" fill="#333"/>
+  </marker>
+</defs>
+<text x="322" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a3c6e">Same-Device Flow — Web Wallet  (responseCodeValidationRequired = true)</text>
+<rect x="10" y="296" width="600" height="146" rx="4" fill="#f8f8f8" stroke="#9ab" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="10" y="296" width="70" height="16" rx="3" fill="#9ab"/>
+<text x="14" y="308" font-size="10" fill="#fff" font-style="italic">opt: DID-based clientId</text>
+<line x1="90" y1="66" x2="90" y2="718" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="20" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="90" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify UI</text>
+<rect x="20" y="718" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="90" y="742" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify UI</text>
+<line x1="310" y1="66" x2="310" y2="718" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="240" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="310" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="240" y="718" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="310" y="742" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<line x1="530" y1="66" x2="530" y2="718" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="460" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="530" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Web Wallet</text>
+<rect x="460" y="718" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="530" y="742" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Web Wallet</text>
+<line x1="90" y1="124" x2="309" y2="124" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="200" y="119" text-anchor="middle" font-size="11" fill="#111">POST /v2/vp-session-request</text>
+<text x="200" y="140" text-anchor="middle" font-size="10" fill="#555" font-style="italic">{ dcql_query, clientId, responseCodeValidationRequired: true }</text>
+<line x1="310" y1="188" x2="91" y2="188" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="200" y="168" text-anchor="middle" font-size="11" fill="#111">201 { transactionId, requestId,</text>
+<text x="200" y="183" text-anchor="middle" font-size="11" fill="#111">authorizationDetails }</text>
+<text x="200" y="204" text-anchor="middle" font-size="10" fill="#555" font-style="italic">+ Set-Cookie: transaction_id</text>
+<line x1="90" y1="252" x2="529" y2="252" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="310" y="232" text-anchor="middle" font-size="11" fill="#111">Redirect  {webWalletBaseUrl}/autho</text>
+<text x="310" y="247" text-anchor="middle" font-size="11" fill="#111">rize?{params}</text>
+<line x1="530" y1="326" x2="311" y2="326" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="420" y="321" text-anchor="middle" font-size="11" fill="#111">GET /v2/vp-request/{requestId}</text>
+<line x1="310" y1="382" x2="529" y2="382" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="420" y="377" text-anchor="middle" font-size="11" fill="#111">Signed Authorization Request JWT</text>
+<line x1="530" y1="446" x2="311" y2="446" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="420" y="441" text-anchor="middle" font-size="11" fill="#111">POST /v2/vp-submission/direct-post</text>
+<text x="420" y="462" text-anchor="middle" font-size="10" fill="#555" font-style="italic">{ vp_token, state }</text>
+<line x1="310" y1="502" x2="529" y2="502" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="420" y="497" text-anchor="middle" font-size="11" fill="#111">200 { redirect_uri:</text>
+<text x="420" y="518" text-anchor="middle" font-size="10" fill="#555" font-style="italic">&quot;https://verifier.example.com/#response_code=abc&quot; }</text>
+<line x1="530" y1="550" x2="91" y2="550" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="310" y="545" text-anchor="middle" font-size="11" fill="#111">Redirect back  #response_code=abc</text>
+<line x1="90" y1="614" x2="309" y2="614" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="200" y="609" text-anchor="middle" font-size="11" fill="#111">POST /vp-session-results</text>
+<text x="200" y="630" text-anchor="middle" font-size="10" fill="#555" font-style="italic">Cookie: transaction_id  +  { responseCode: &#x27;abc&#x27; }</text>
+<line x1="310" y1="662" x2="91" y2="662" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="200" y="657" text-anchor="middle" font-size="11" fill="#111">Verification result</text>
+</svg>

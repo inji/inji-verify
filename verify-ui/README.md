@@ -1,10 +1,8 @@
 # Inji Verify
 
-Injiverify is a web interface to verify the validity of the QR / credential using a browser from smartphone / tablet / computer. A user should be able to do primariliy 4 key actions - Scan, Validate, Fetch, Display.
+React/TypeScript frontend for verifying Verifiable Credentials via QR code scan/upload and OpenID4VP.
 
 # Contents:
-
-This document contains the following sections:
 
 - Installations
 - Configuration
@@ -35,9 +33,9 @@ Prerequisites:
 
 # Configuration:
 
-The configuration to the Inji Verify application can be passed using the .env file which is present inside the **verify-ui** folder.
+Configuration is passed via the `.env` file inside the **verify-ui** folder. At startup, `npm start` generates `public/env.config.js` from this file and injects values as `window._env_`.
 
-It accepts INTERNET_CONNECTIVITY_CHECK_ENDPOINT and INTERNET_CONNECTIVITY_CHECK_TIMEOUT variables at this moment. These are used to check the availability of the internet connection and can be configured when required. The default values are added in the .env file.
+For a full description of all environment variables see [docs/technical_docs/Inji_Verify_API_Overview.md](../docs/technical_docs/Inji_Verify_API_Overview.md).
 
 ---
 
@@ -57,7 +55,13 @@ To get a development server up and running, run the following commands:
 
 ```shell
 npm install
-npm start
+npm start   # NOTE: prestart runs all tests first
+```
+
+To skip the prestart test run during development:
+
+```shell
+react-app-rewired start
 ```
 
 ### Run Docker Image:
@@ -74,7 +78,7 @@ docker run -it -d -p 3000:8000 --env-file ./.env --name inji-verify-dev <dockerI
 To build the Docker image locally, use the following command. Ensure you are in the directory containing the Dockerfile:
 
 ```shell
-docker build -t inji-verify:local
+docker build -t inji-verify:local .
 ```
 
 Stop and delete the docker containers using the following commands:
@@ -86,47 +90,19 @@ docker rm inji-verify-dev
 
 # Demo Setup:
 
-This section helps to quickly get started with a demo of the Inji Verify application
+This section helps to quickly get started with a demo of the Inji Verify application.
 
-Once the repository is cloned, move into the inji-verify repository directory.
-Choose one of the branches that are currently available for the demo:
-
-release branches:
-
-- release-0.8.x
-- release-0.9.x
-- release-0.10.x
-- release-0.11.x
-- release-0.12.x
-- release-0.13.x
-- release-0.14.x
-
-tags :
-
-- v0.14.0
-- v0.13.0
-- v0.12.3
-- v0.11.1
-- v0.11.0
-- v0.10.0
-- v0.9.0
-- v0.8.1
-- v0.8.0
-
-active branches:
-
-- master
-- develop
+Once the repository is cloned, move into the inji-verify repository directory and check out the desired branch or tag:
 
 ```shell
 cd ./inji-verify # repository folder
-git checkout branchName/tagname # choose from any of the above branches
+git checkout branchName/tagname
 ```
 
 To start the application, run the following commands:
 
 ```shell
-$ cd ./inji-verify # source code folder
+$ cd ./verify-ui # source code folder
 $ docker-compose up -d # if docker compose is installed as a standalone command.
 $ docker compose up -d # if docker compose is installed as a plugin to docker command
 ```
@@ -142,7 +118,7 @@ $ docker compose down # if docker compose is installed as a plugin to docker com
 
 # Troubleshoot:
 
-This section contains some common problems that could occur during the setup and steps to resolve then:
+This section contains some common problems that could occur during the setup and steps to resolve them:
 
 ## Issue with starting docker compose:
 

@@ -1,0 +1,73 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="827" height="1088" style="font-family: Arial,sans-serif; font-size:12px; background:#fff;">
+<defs>
+  <marker id="arr" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#333"/></marker>
+</defs>
+<text x="413" y="19" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a3c6e">QRCodeVerification — Data-Share (INJI_OVP://) Flow</text>
+<rect x="7" y="200" width="786" height="546" rx="4" fill="#f0f4ff" stroke="#9ab" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="7" y="200" width="120" height="15" rx="3" fill="#9ab"/>
+<text x="11" y="211" font-size="10" fill="#fff" font-style="italic">isVPSubmissionSupported = true</text>
+<rect x="7" y="738" width="786" height="302" rx="4" fill="#f8f8f8" stroke="#9ab" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="7" y="738" width="120" height="15" rx="3" fill="#9ab"/>
+<text x="11" y="749" font-size="10" fill="#fff" font-style="italic">isVPSubmissionSupported = false (default)</text>
+<line x1="85" y1="64" x2="85" y2="1036" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="295" y1="64" x2="295" y2="1036" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="505" y1="64" x2="505" y2="1036" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="715" y1="64" x2="715" y2="1036" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="15" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="85" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">User</text>
+<rect x="15" y="1036" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="85" y="1060" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">User</text>
+<rect x="225" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="295" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">SDK</text>
+<rect x="225" y="1036" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="295" y="1060" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">SDK</text>
+<rect x="435" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="505" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="435" y="1036" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="505" y="1060" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="645" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="715" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Online VC Provider</text>
+<rect x="645" y="1036" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="715" y="1060" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Online VC Provider</text>
+<line x1="85" y1="112" x2="294" y2="112" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="190" y="108" text-anchor="middle" font-size="11" fill="#111">Scan QR  (INJI_OVP:// URL)</text>
+<rect x="235" y="163" width="160" height="26" rx="4" fill="#fffde7" stroke="#f9a825" stroke-width="1"/>
+<text x="315" y="177" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Extract redirect URL and dcql_query from QR</text>
+<line x1="295" y1="226" x2="504" y2="226" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="400" y="222" text-anchor="middle" font-size="11" fill="#111">POST /v2/vp-session-request</text>
+<text x="400" y="241" text-anchor="middle" font-size="10" fill="#555" font-style="italic">dcql_query from QR redirect URL</text>
+<line x1="505" y1="298" x2="296" y2="298" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="400" y="266" text-anchor="middle" font-size="11" fill="#111">{ requestId,</text>
+<text x="400" y="280" text-anchor="middle" font-size="11" fill="#111">authorizationDetails } + Set-</text>
+<text x="400" y="294" text-anchor="middle" font-size="11" fill="#111">Cookie</text>
+<line x1="295" y1="362" x2="714" y2="362" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="505" y="344" text-anchor="middle" font-size="11" fill="#111">Redirect with state,</text>
+<text x="505" y="358" text-anchor="middle" font-size="11" fill="#111">response_uri, nonce</text>
+<line x1="715" y1="418" x2="506" y2="418" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="610" y="400" text-anchor="middle" font-size="11" fill="#111">POST /v2/vp-submission/direct-</text>
+<text x="610" y="414" text-anchor="middle" font-size="11" fill="#111">post</text>
+<line x1="505" y1="474" x2="714" y2="474" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="610" y="456" text-anchor="middle" font-size="11" fill="#111">200 { redirect_uri:</text>
+<text x="610" y="470" text-anchor="middle" font-size="11" fill="#111">&#x27;...#response_code=abc&#x27; }</text>
+<line x1="715" y1="530" x2="296" y2="530" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="505" y="512" text-anchor="middle" font-size="11" fill="#111">Redirect back with</text>
+<text x="505" y="526" text-anchor="middle" font-size="11" fill="#111">#response_code=abc</text>
+<line x1="295" y1="578" x2="504" y2="578" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="400" y="574" text-anchor="middle" font-size="11" fill="#111">POST /vp-session-results</text>
+<text x="400" y="593" text-anchor="middle" font-size="10" fill="#555" font-style="italic">Cookie + responseCode</text>
+<line x1="505" y1="634" x2="296" y2="634" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="400" y="630" text-anchor="middle" font-size="11" fill="#111">Verification result</text>
+<line x1="295" y1="688" x2="86" y2="688" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="190" y="684" text-anchor="middle" font-size="11" fill="#111">onVCProcessed(result)</text>
+<line x1="295" y1="772" x2="714" y2="772" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="505" y="754" text-anchor="middle" font-size="11" fill="#111">Redirect with client_id +</text>
+<text x="505" y="768" text-anchor="middle" font-size="11" fill="#111">redirect_uri</text>
+<line x1="715" y1="820" x2="296" y2="820" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="505" y="816" text-anchor="middle" font-size="11" fill="#111">Redirect back with vc</text>
+<line x1="295" y1="874" x2="504" y2="874" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="400" y="870" text-anchor="middle" font-size="11" fill="#111">POST /v2/vc-verification</text>
+<line x1="505" y1="928" x2="296" y2="928" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="400" y="924" text-anchor="middle" font-size="11" fill="#111">Verification result</text>
+<line x1="295" y1="982" x2="86" y2="982" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="190" y="978" text-anchor="middle" font-size="11" fill="#111">onVCProcessed(result)</text>
+</svg>

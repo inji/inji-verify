@@ -1,0 +1,56 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="865" height="672" style="font-family: Arial, sans-serif; font-size: 12px; background: #fff;">
+<defs>
+  <marker id="arr" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0,9 3.5,0 7" fill="#333"/>
+  </marker>
+  <marker id="arrd" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0,9 3.5,0 7" fill="#333"/>
+  </marker>
+</defs>
+<text x="432" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a3c6e">OpenID4VP — Overall Flow</text>
+<line x1="90" y1="66" x2="90" y2="620" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="20" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="90" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">User</text>
+<rect x="20" y="620" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="90" y="644" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">User</text>
+<line x1="310" y1="66" x2="310" y2="620" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="240" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="310" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify UI</text>
+<rect x="240" y="620" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="310" y="644" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify UI</text>
+<line x1="530" y1="66" x2="530" y2="620" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="460" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="530" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="460" y="620" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="530" y="644" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<line x1="750" y1="66" x2="750" y2="620" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="680" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="750" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Wallet / Web Wallet</text>
+<rect x="680" y="620" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="750" y="644" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Wallet / Web Wallet</text>
+<line x1="90" y1="124" x2="309" y2="124" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="200" y="104" text-anchor="middle" font-size="11" fill="#111">Select credentials &amp; start</text>
+<text x="200" y="119" text-anchor="middle" font-size="11" fill="#111">verification</text>
+<line x1="310" y1="172" x2="529" y2="172" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="420" y="167" text-anchor="middle" font-size="11" fill="#111">POST /v2/vp-session-request</text>
+<line x1="530" y1="244" x2="311" y2="244" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="420" y="209" text-anchor="middle" font-size="11" fill="#111">201 { requestId,</text>
+<text x="420" y="224" text-anchor="middle" font-size="11" fill="#111">authorizationDetails } + Set-</text>
+<text x="420" y="239" text-anchor="middle" font-size="11" fill="#111">Cookie: transaction_id</text>
+<rect x="250" y="296" width="160" height="28" rx="4" fill="#fffde7" stroke="#f9a825" stroke-width="1"/>
+<text x="330" y="312" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Show QR / redirect to wallet</text>
+<line x1="750" y1="348" x2="531" y2="348" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="640" y="328" text-anchor="middle" font-size="11" fill="#111">POST /v2/vp-submission/direct-post</text>
+<text x="640" y="343" text-anchor="middle" font-size="11" fill="#111">(vp_token)</text>
+<line x1="530" y1="404" x2="749" y2="404" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="640" y="384" text-anchor="middle" font-size="11" fill="#111">200 OK { redirect_uri (web wallet</text>
+<text x="640" y="399" text-anchor="middle" font-size="11" fill="#111">only) }</text>
+<line x1="310" y1="460" x2="529" y2="460" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="420" y="440" text-anchor="middle" font-size="11" fill="#111">POST /vp-session-results (Cookie:</text>
+<text x="420" y="455" text-anchor="middle" font-size="11" fill="#111">transaction_id)</text>
+<line x1="530" y1="508" x2="311" y2="508" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="420" y="503" text-anchor="middle" font-size="11" fill="#111">Verification result</text>
+<line x1="310" y1="572" x2="91" y2="572" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="200" y="552" text-anchor="middle" font-size="11" fill="#111">Display credential verification</text>
+<text x="200" y="567" text-anchor="middle" font-size="11" fill="#111">result</text>
+</svg>

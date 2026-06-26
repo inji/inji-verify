@@ -78,13 +78,15 @@ function MyApp() {
         triggerElement={<button>Show QR for Wallet Scan</button>}
         verifyServiceUrl="https://your-backend.com/v1/verify"
         clientId="did:example:123456789" // DID example
-        presentationDefinitionId="your-definition-id"
+        dcqlQuery={{
+            credentials: [{ id: "id_card", format: "ldp_vc", meta: {} }]
+        }}
         isSameDeviceFlowEnabled={false} // QR code flow
         onVPProcessed={(result) => {
             console.log("VP processed:", result);
         }}
         onQrCodeExpired={() => {
-            console.log(" QR code expired - ask user to retry");
+            console.log("QR code expired - ask user to retry");
         }}
         onError={(error) => {
             console.error("Verification error:", error);
@@ -265,7 +267,7 @@ If `summariseResults = false`, the response will be:
     "allChecksSuccessful": true, 
     "schemaAndSignatureCheck": { "valid": true, "error": null },
     "expiryCheck": { "valid": true },
-    "statusChecks": [
+    "statusCheck": [
         { "purpose": "revocation", "valid": true, "error": null }
     ], 
     "claims": {...}
@@ -279,10 +281,10 @@ If `summariseResults = false`, the response will be:
 | `allChecksSuccessful`     | boolean | Final aggregated validation flag                          |
 | `schemaAndSignatureCheck` | object  | Validates schema and signature check                      |
 | `expiryCheck`             | object  | If false, the credential is EXPIRED                       |
-| `statusChecks`            | array   | Contains revocation and other status validations          |
-| `statusChecks.error`      | object  | If present, throws an error instead of returning a status |
-| `statusChecks.purpose`    | string  | Identifies purpose (e.g., "revocation")                   |
-| `statusChecks.valid`      | boolean | If false for revocation → credential is revoked           |
+| `statusCheck`             | array   | Contains revocation and other status validations          |
+| `statusCheck[].error`     | object  | If present, throws an error instead of returning a status |
+| `statusCheck[].purpose`   | string  | Identifies purpose (e.g., "revocation")                   |
+| `statusCheck[].valid`     | boolean | If false for revocation → credential is revoked           |
 | `claims`                  | object  | Includes all claims from credentialSubject                |
 
 ### Option B: OpenID4VP Verification
@@ -307,42 +309,24 @@ export default function VerifyCrossDevice() {
             triggerElement={<button>Show QR for Wallet Scan</button>}
             verifyServiceUrl="https://your-backend.com/v1/verify"
             clientId="did:example:123456789" // DID example
-            presentationDefinition={{
-                id: "custom-verification",
-                purpose: "We need to verify your identity",
-                format: {
-                    ldp_vc: {
-                        proof_type: ["Ed25519Signature2020"],
-                    },
-                },
-                input_descriptors: [
-                    {
-                        id: "id-card-check",
-                        constraints: {
-                            fields: [
-                                {
-                                    path: ["$.type"],
-                                    filter: {
-                                        type: "object",
-                                        pattern: "DriverLicenseCredential",
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
+            dcqlQuery={{
+                credentials: [{
+                    id: "id_card",
+                    format: "ldp_vc",
+                    meta: { type_values: [["DriverLicenseCredential"]] },
+                    claims: [{ path: ["$.credentialSubject.name"] }]
+                }]
             }}
             isSameDeviceFlowEnabled={false} // QR code flow
             onVPProcessed={(result) => {
                 console.log("VP processed:", result);
             }}
             onQrCodeExpired={() => {
-                console.log(" QR code expired - ask user to retry");
+                console.log("QR code expired - ask user to retry");
             }}
             onError={(error) => {
                 console.error("Verification error:", error);
             }}
-           
         />
     );
 }
@@ -357,12 +341,12 @@ sequenceDiagram
     UserBrowser->>VerifierBackend: Start verification(/vp-session-request,response_code_validation_required=false)
 
     VerifierBackend->>VerifierBackend: Generate transaction_id and request_id
-    VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (txn_id)
+    VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (transaction_id)
     VerifierBackend-->>UserBrowser: Return OpenID4VP request + QR code
 
     UserBrowser->>MobileWallet: User scans QR code
 
-    MobileWallet->>VerifierBackend: Submit vp_token + presentation_submission
+    MobileWallet->>VerifierBackend: Submit vp_token (form-encoded, keyed by DCQL query_id)
 
     loop Long Polling
         UserBrowser->>VerifierBackend: GET /vp-request/{requestId}/status
@@ -371,9 +355,9 @@ sequenceDiagram
 
     VerifierBackend-->>UserBrowser: Completed
 
-    UserBrowser->>VerifierBackend: GET /vp-session-results (Cookie txn_id automatically sent)
+    UserBrowser->>VerifierBackend: POST /vp-session-results (Cookie transaction_id automatically sent)
 
-    VerifierBackend->>VerifierBackend: Resolve txn_id from cookie
+    VerifierBackend->>VerifierBackend: Resolve transaction_id from cookie
     VerifierBackend->>VerifierBackend: Fetch transaction state
 
     VerifierBackend-->>UserBrowser: Verification result
@@ -390,30 +374,12 @@ export default function VerifySameDevice() {
             triggerElement={<button>Verify with Wallet</button>}
             verifyServiceUrl="https://your-backend.com/v1/verify"
             clientId="client-12345" // non-DID example
-            presentationDefinition={{
-                id: "custom-verification",
-                purpose: "We need to verify your identity",
-                format: {
-                    ldp_vc: {
-                        proof_type: ["Ed25519Signature2020"],
-                    },
-                },
-                input_descriptors: [
-                    {
-                        id: "id-card-check",
-                        constraints: {
-                            fields: [
-                                {
-                                    path: ["$.type"],
-                                    filter: {
-                                        type: "object",
-                                        pattern: "DriverLicenseCredential",
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
+            dcqlQuery={{
+                credentials: [{
+                    id: "id_card",
+                    format: "ldp_vc",
+                    meta: { type_values: [["DriverLicenseCredential"]] }
+                }]
             }}
             isSameDeviceFlowEnabled={true} //default value
             // No webWalletBaseUrl → triggers mobile wallet via deep link
@@ -438,12 +404,12 @@ sequenceDiagram
     UserBrowser->>VerifierBackend: Start verification(/vp-session-request,response_code_validation_required=false)
 
     VerifierBackend->>VerifierBackend: Generate transaction_id and request_id
-    VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (txn_id)
+    VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (transaction_id)
     VerifierBackend-->>UserBrowser: Return OpenID4VP authorization request
 
     UserBrowser->>MobileWallet: Open mobile wallet via deep link
 
-    MobileWallet->>VerifierBackend: Submit vp_token + presentation_submission
+    MobileWallet->>VerifierBackend: Submit vp_token (form-encoded, keyed by DCQL query_id)
 
     Note right of MobileWallet: User manually switches back to browser
 
@@ -454,13 +420,13 @@ sequenceDiagram
 
     VerifierBackend-->>UserBrowser: Completed
 
-    UserBrowser->>VerifierBackend: GET /vp-session-results (Cookie txn_id automatically sent)
+    UserBrowser->>VerifierBackend: POST /vp-session-results (Cookie transaction_id automatically sent)
 
-    VerifierBackend->>VerifierBackend: Resolve txn_id from cookie
+    VerifierBackend->>VerifierBackend: Resolve transaction_id from cookie
     VerifierBackend->>VerifierBackend: Fetch transaction state
 
     VerifierBackend-->>UserBrowser: Verification result
-    VerifierBackend-->>UserBrowser: Clear cookie (txn_id)
+    VerifierBackend-->>UserBrowser: Clear cookie (transaction_id)
 ```
 
 #### 3. Same Device Flow with Web Wallet 
@@ -474,30 +440,12 @@ export default function VerifySameDevice() {
             triggerElement={<button>Verify with Wallet</button>}
             verifyServiceUrl="https://your-backend.com/v1/verify"
             clientId="did:example:123456789" // DID example
-            presentationDefinition={{
-                id: "custom-verification",
-                purpose: "We need to verify your identity",
-                format: {
-                    ldp_vc: {
-                        proof_type: ["Ed25519Signature2020"],
-                    },
-                },
-                input_descriptors: [
-                    {
-                        id: "id-card-check",
-                        constraints: {
-                            fields: [
-                                {
-                                    path: ["$.type"],
-                                    filter: {
-                                        type: "object",
-                                        pattern: "DriverLicenseCredential",
-                                    },
-                                },
-                            ],
-                        },
-                    },
-                ],
+            dcqlQuery={{
+                credentials: [{
+                    id: "id_card",
+                    format: "ldp_vc",
+                    meta: { type_values: [["DriverLicenseCredential"]] }
+                }]
             }}
             isSameDeviceFlowEnabled={true} //default value
             webWalletBaseUrl="https://wallet.example.com" // required to support web-wallets 
@@ -522,25 +470,25 @@ sequenceDiagram
     UserBrowser->>VerifierBackend: Start verification\n(/vp-session-request,\nresponse_code_validation_required=true)
 
     VerifierBackend->>VerifierBackend: Generate transaction_id\nand request_id
-    VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (txn_id)
+    VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (transaction_id)
     VerifierBackend-->>UserBrowser: Return OpenID4VP authorization request
 
     UserBrowser->>WebWallet: Open Web Wallet
 
-    WebWallet->>VerifierBackend: Submit vp_token + presentation_submission
+    WebWallet->>VerifierBackend: Submit vp_token (form-encoded, keyed by DCQL query_id)
     VerifierBackend-->>WebWallet: Return response_code
 
     WebWallet-->>UserBrowser: Redirect to redirect_uri
 
     UserBrowser->>UserBrowser: Extract response_code
 
-    UserBrowser->>VerifierBackend: GET /vp-session-results?response_code=xyz\n(Cookie txn_id automatically sent)
+    UserBrowser->>VerifierBackend: POST /vp-session-results?response_code=xyz\n(Cookie transaction_id automatically sent)
 
-    VerifierBackend->>VerifierBackend: Validate response_code + txn_id
+    VerifierBackend->>VerifierBackend: Validate response_code + transaction_id
     VerifierBackend->>VerifierBackend: Fetch transaction state
 
     VerifierBackend-->>UserBrowser: Verification result
-    VerifierBackend-->>UserBrowser: Clear cookie (txn_id)
+    VerifierBackend-->>UserBrowser: Clear cookie (transaction_id)
 ```
 
 > **NOTE**
@@ -559,31 +507,13 @@ export default function VerifyServerToServer() {
             triggerElement={<button>Start Verification</button>}
             verifyServiceUrl="https://your-backend.com/v1/verify"
             clientId="did:example:123456789" // DID example
-            presentationDefinition={{
-            id: "custom-verification",
-            purpose: "We need to verify your identity",
-            format: {
-                ldp_vc: {
-                    proof_type: ["Ed25519Signature2020"],
-                },
-            },
-            input_descriptors: [
-                {
-                    id: "id-card-check",
-                    constraints: {
-                        fields: [
-                            {
-                                path: ["$.type"],
-                                filter: {
-                                    type: "object",
-                                    pattern: "DriverLicenseCredential",
-                                },
-                            },
-                        ],
-                    },
-                },
-            ],
-        }}            
+            dcqlQuery={{
+                credentials: [{
+                    id: "id_card",
+                    format: "ldp_vc",
+                    meta: { type_values: [["DriverLicenseCredential"]] }
+                }]
+            }}
             isSameDeviceFlowEnabled={false}
             onVPReceived={(transactionId) => {
                 //using the transactionId one can securely fetch the result from service
@@ -655,51 +585,51 @@ If `summariseResults = false`, the response will be:
 | `statusChecks.valid`      | boolean | If false for revocation → credential is revoked           |
 | `claims`                  | object  | Includes all claims from credentialSubject                |
 
-### Presentation Definition:
+### DCQL Query:
 
-#### Define What to Verify:
+The `dcqlQuery` prop describes which credentials to request from the wallet, following the [DCQL (Digital Credentials Query Language)](https://openid.net/specs/openid-4-verifiable-presentations-1_0.html) format.
 
-**Option 1: Use a predefined template ID**
-
-```javascript
-presentationDefinitionId = "drivers-license-check";
-```
-
-**Option 2: Define Presentation Definition**
+**Minimal example — request a single ldp_vc:**
 
 ```javascript
-presentationDefinition={{
-  id: "custom-verification",
-  purpose: "We need to verify your identity",
-  format: {
-    ldp_vc: {
-      proof_type: ["Ed25519Signature2020"],
-    },
-  },
-  input_descriptors: [
-    {
-      id: "id-card-check",
-      constraints: {
-        fields: [
-          {
-            path: ["$.type"],
-            filter: {
-              type: "object",
-              pattern: "DriverLicenseCredential",
-            },
-          },
-        ],
-      },
-    },
-  ],
+dcqlQuery={{
+  credentials: [{
+    id: "id_card",
+    format: "ldp_vc",
+    meta: { type_values: [["DriverLicenseCredential"]] }
+  }]
 }}
 ```
-> **NOTE**
->
-> Only one of presentationDefinitionId or presentationDefinition should be provided at a time.
-> It is recommended to use:
->- presentationDefinitionId when leveraging predefined templates.
->- presentationDefinition when custom verification requirements are needed.
+
+**Request specific claims:**
+
+```javascript
+dcqlQuery={{
+  credentials: [{
+    id: "id_card",
+    format: "dc+sd-jwt",
+    meta: { vct_values: ["DriverLicenseCredential"] },
+    claims: [
+      { path: ["$.given_name"] },
+      { path: ["$.birth_date"] }
+    ]
+  }]
+}}
+```
+
+**Request multiple credential types (OR logic via credential_sets):**
+
+```javascript
+dcqlQuery={{
+  credentials: [
+    { id: "mdl", format: "dc+sd-jwt", meta: { vct_values: ["DriverLicense"] } },
+    { id: "pid", format: "ldp_vc",    meta: { type_values: [["PersonalID"]] } }
+  ],
+  credential_sets: [
+    { options: [["mdl"], ["pid"]] }  // wallet can satisfy with either
+  ]
+}}
+```
 
 ## 🎛️ Component Options Reference
 
@@ -730,17 +660,16 @@ presentationDefinition={{
 
 ### OpenID4VPVerification Specific
 
-| Property                 | Type     | Default        | Description                               |
-|--------------------------| -------- |----------------|-------------------------------------------|
-| `protocol`               | string   | "openid4vp://" | Protocol for QR codes (optional)          |
-| `presentationDefinitionId` | string   | -              | Predefined verification template          |
-| `presentationDefinition` | object   | -              | Custom verification rules                 |
-| `onVPProcessed`          | function | -              | Get full results immediately              |
-| `onVPReceived`           | function | -              | Get transaction ID only                   |
-| `onQrCodeExpired`        | function | -              | Handle QR code expiration                 |
+| Property                  | Type     | Default        | Description                               |
+|---------------------------| -------- |----------------|-------------------------------------------|
+| `dcqlQuery`               | object   | -              | DCQL query describing requested credentials (required) |
+| `protocol`                | string   | "openid4vp://" | Protocol for QR codes (optional)          |
+| `onVPProcessed`           | function | -              | Get full results immediately              |
+| `onVPReceived`            | function | -              | Get transaction ID only                   |
+| `onQrCodeExpired`         | function | -              | Handle QR code expiration                 |
 | `isSameDeviceFlowEnabled` | boolean  | true           | Enable same-device flow (optional)        |
-| `qrCodeStyles`           | object   | -              | Customize QR code appearance              |
-| `vpVerificationRequest`  | object   | -              | contains request body for VP Verification |
+| `qrCodeStyles`            | object   | -              | Customize QR code appearance              |
+| `vpVerificationRequest`   | object   | -              | contains request body for VP Verification |
 
 ## ⚠️ Important Limitations
 

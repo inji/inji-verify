@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="740" height="560" style="font-family:Arial,sans-serif;font-size:12px;background:#fff;">
+<defs>
+  <marker id="arr" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0,9 3.5,0 7" fill="#333"/>
+  </marker>
+</defs>
+<text x="370" y="22" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a3c6e">QRCodeVerification — Scan / Upload VC Verification Flow</text>
+
+<!-- participants: User | SDK | Verify Backend -->
+<!-- x centres: 90, 340, 600 -->
+
+<!-- lifelines -->
+<line x1="90"  y1="60" x2="90"  y2="520" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="370" y1="60" x2="370" y2="520" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="630" y1="60" x2="630" y2="520" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+
+<!-- participant boxes top -->
+<rect x="20"  y="30" width="140" height="36" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="90"  y="53" text-anchor="middle" font-weight="bold" fill="#1a3c6e">User</text>
+<rect x="300" y="30" width="140" height="36" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="370" y="53" text-anchor="middle" font-weight="bold" fill="#1a3c6e">QRCodeVerification</text>
+<rect x="560" y="30" width="140" height="36" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="630" y="53" text-anchor="middle" font-weight="bold" fill="#1a3c6e">Verify Backend</text>
+
+<!-- 1: User scans or uploads -->
+<line x1="90" y1="100" x2="369" y2="100" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="228" y="93" text-anchor="middle" font-size="11" fill="#111">Scan QR with camera  or  upload file</text>
+
+<!-- file check note -->
+<rect x="255" y="112" width="230" height="24" rx="4" fill="#fffde7" stroke="#f9a825" stroke-width="1"/>
+<text x="370" y="128" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Validate format (PNG/JPEG/JPG/PDF) &amp; size (10KB–5MB)</text>
+
+<!-- decode note -->
+<rect x="255" y="148" width="230" height="24" rx="4" fill="#fffde7" stroke="#f9a825" stroke-width="1"/>
+<text x="370" y="164" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Decode QR via PixelPass / zxing-wasm</text>
+
+<!-- alt region: embedded VC -->
+<rect x="38" y="182" width="680" height="82" rx="4" fill="#f0f4ff" stroke="#9ab" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="38" y="182" width="100" height="15" rx="3" fill="#9ab"/>
+<text x="42" y="193" font-size="10" fill="#fff" font-style="italic">Embedded VC</text>
+
+<line x1="370" y1="200" x2="629" y2="200" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="498" y="193" text-anchor="middle" font-size="11" fill="#111">POST /v2/vc-verification</text>
+<text x="498" y="208" text-anchor="middle" font-size="10" fill="#555" font-style="italic">{ vc, skipStatusChecks, statusCheckFilters, includeClaims }</text>
+
+<line x1="630" y1="232" x2="371" y2="232" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="498" y="225" text-anchor="middle" font-size="11" fill="#111">{ allChecksSuccessful, schemaAndSignatureCheck, ... }</text>
+
+<!-- alt region: data-share -->
+<rect x="38" y="278" width="680" height="122" rx="4" fill="#f8f8f8" stroke="#9ab" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="38" y="278" width="130" height="15" rx="3" fill="#9ab"/>
+<text x="42" y="289" font-size="10" fill="#fff" font-style="italic">Data-share (INJI_OVP://)</text>
+
+<!-- isVPSubmission = false -->
+<text x="55" y="312" font-size="10" fill="#777" font-style="italic">isVPSubmissionSupported = false</text>
+<line x1="370" y1="320" x2="631" y2="320" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="498" y="313" text-anchor="middle" font-size="11" fill="#111">Redirect to Online VC Provider</text>
+<line x1="630" y1="344" x2="371" y2="344" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="498" y="337" text-anchor="middle" font-size="11" fill="#111">Redirect back → POST /v2/vc-verification</text>
+
+<!-- isVPSubmission = true -->
+<text x="55" y="368" font-size="10" fill="#777" font-style="italic">isVPSubmissionSupported = true</text>
+<line x1="370" y1="376" x2="631" y2="376" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+<text x="498" y="369" text-anchor="middle" font-size="11" fill="#111">Full VP session → POST /vp-session-results</text>
+<line x1="630" y1="392" x2="371" y2="392" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="498" y="388" text-anchor="middle" font-size="11" fill="#111">Verification result</text>
+
+<!-- callback -->
+<line x1="370" y1="430" x2="91" y2="430" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="228" y="423" text-anchor="middle" font-size="11" fill="#111">onVCProcessed(result)  or  onVCReceived(txnId)</text>
+
+<!-- participant boxes bottom -->
+<rect x="20"  y="480" width="140" height="36" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="90"  y="503" text-anchor="middle" font-weight="bold" fill="#1a3c6e">User</text>
+<rect x="300" y="480" width="140" height="36" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="370" y="503" text-anchor="middle" font-weight="bold" fill="#1a3c6e">QRCodeVerification</text>
+<rect x="560" y="480" width="140" height="36" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="630" y="503" text-anchor="middle" font-weight="bold" fill="#1a3c6e">Verify Backend</text>
+</svg>

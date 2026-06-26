@@ -24,7 +24,10 @@ info:
   license:
     name: MPL-2.0
     url: 'https://www.mozilla.org/en-US/MPL/2.0/'
-  description: API for VC verification and OpenID4VP
+  description: |-
+    API for VC verification and OpenID4VP.
+
+    This API documentation refers to **draft 23** of the OpenID4VP Verifier API specification. The latest release of Inji Verify that implements this specification is **version 0.18.1**.
 paths:
   /vp-request:
     post:
@@ -1112,7 +1115,7 @@ paths:
         '500':
           description: Internal server error
   /well-known/did.json:
-    post:
+    get:
       summary: Get the DID document
       description: |-
         ## Description

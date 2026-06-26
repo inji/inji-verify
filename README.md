@@ -1,7 +1,13 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=develop&project=inji_inji-verify-verify-service&id=inji_inji-verify-verify-service&metric=alert_status)](https://sonarcloud.io/dashboard?branch=develop&id=inji_inji-verify-verify-service)
 # Inji Verify
 
-Injiverify is a web interface to verify the validity of the QR / credential using a browser from smartphone / tablet / computer. A user should be able to do primariliy 4 key actions - Scan, Validate, Fetch and Display.
+Inji Verify is a web application for verifying Verifiable Credentials (VCs) via QR code scan/upload and the OpenID4VP protocol.
+
+The repository contains three independently deployable components:
+
+- **`verify-ui/`** — React/TypeScript frontend (Node 18)
+- **`verify-service/`** — Spring Boot backend (Java 21, Maven)
+- **`inji-verify-sdk/`** — React component library (`@injistack/react-inji-verify-sdk`)
 
 # Contents:
 
@@ -16,17 +22,27 @@ This document contains the following sections:
 
 # Installations:
 
-Prerequisites:
+Prerequisites (per component):
 
-- **JAVA 21**
+- **verify-ui / inji-verify-sdk** — Node 18
 
-  Can be installed using [sdkman](https://sdkman.io/). Run following commands to install node
+  Can be installed using [nvm](https://github.com/nvm-sh/nvm):
+
+  ```shell
+  $ curl -o- https://raw.githubusercontent.com/nvm-sh/nvm/v0.39.7/install.sh | bash
+  $ nvm install 18
+  ```
+
+- **verify-service** — Java 21
+
+  Can be installed using [sdkman](https://sdkman.io/):
 
   ```shell
   $ curl -s "https://get.sdkman.io" | bash
   $ sdk install java 21.0.5-tem
   ```
-- [Maven](https://maven.apache.org/install.html) 
+
+- [Maven](https://maven.apache.org/install.html) (for verify-service)
 
 # Folder Structure:
 
@@ -71,20 +87,28 @@ cd inji-verify # move into the repository folder
 git checkout develop
 ```
 
-### Development server:
-
-To get a development server up and running, run the following commands:
+### verify-ui (frontend)
 
 ```shell
-mvn clean
-mvn spring-boot:run
+cd verify-ui
+npm install
+npm start          # generates env.config.js from .env, then runs the app
+                   # NOTE: prestart runs all tests first; skip with: react-app-rewired start
 ```
 
-### Run Docker Image:
+### verify-service (backend)
+
+The default profile uses HSQLDB in-memory — no database setup needed locally.
+
+```shell
+cd verify-service
+mvn spring-boot:run                          # run with HSQLDB in-memory (default)
+mvn spring-boot:run -Dspring.profiles.active=local  # same, explicitly
+```
+
+### Run Docker Image (verify-service):
 
 (Note: Make sure that the following commands are run in the directory where Dockerfile is present)
-
-Run the following commands to build and test the application as docker images
 
 ```shell
 mvn -U -B package
@@ -92,8 +116,7 @@ docker build -t <dockerImageName>:<tag> .
 docker run -it -d -p 3000:8000 --env-file ./.env --name inji-verify-service-dev <dockerImageName>:<tag>
 ```
 
-Inji verify backend is designed to run in local with in memory H2 DB also we have another spring profile to do same. This can
-be controlled by passing `active_profile_env` environment variable while building the docker image
+To build with the local HSQLDB profile:
 
 ```shell
 mvn -U -B package
@@ -104,7 +127,7 @@ docker run -it -d -p 3000:8000 --env-file ./.env --name inji-verify-service-dev 
 To build the Docker image locally, use the following command. Ensure you are in the directory containing the Dockerfile:
 
 ```shell
-docker build -t inji-verify-service:local
+docker build -t inji-verify-service:local .
 ```
 
 Stop and delete the docker containers using the following commands:
