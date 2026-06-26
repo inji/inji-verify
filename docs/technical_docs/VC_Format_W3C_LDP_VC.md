@@ -71,7 +71,7 @@ The examples below highlight only the fields that differ between the two version
 
 In summary: `@context` URL, date field names (`issuanceDate`/`expirationDate` → `validFrom`/`validUntil`), native `renderMethod` support, and the preferred proof suite (`Ed25519Signature2020` with `proofValue` instead of `jws`).
 
-Both are accepted by the `POST /v2/vc-verification` endpoint and via the OpenID4VP `vp_token` submission.
+Both are accepted by the `POST /v2/vc-verification` endpoint, which takes a plain verifiable credential in the request body. The OpenID4VP `vp_token` submission is a separate flow — credentials are delivered by a wallet via `POST /v2/vp-submission/direct-post` and verified as part of the VP processing pipeline, not through `/v2/vc-verification`.
 
 ---
 

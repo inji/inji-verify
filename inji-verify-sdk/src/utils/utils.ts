@@ -89,8 +89,8 @@ export const summariseVPResult = (cred: CredentialResult): "SUCCESS" | "INVALID"
 
     if (cred.expiryCheck?.valid === false) return "EXPIRED";
 
-    if (cred.statusChecks?.length) {
-        for (const status of cred.statusChecks) {
+    if (cred.statusCheck?.length) {
+        for (const status of cred.statusCheck) {
             if (status.error) {
                 throw new Error(status.error.errorMessage || "Status check error occurred");}
 

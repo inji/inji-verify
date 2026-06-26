@@ -280,7 +280,7 @@ When the Relying Party has its own backend and wants to process results there, u
       "holderProofCheck": { "valid": true, "error": null },
       "schemaAndSignatureCheck": { "valid": true, "error": null },
       "expiryCheck": { "valid": true },
-      "statusChecks": [{ "purpose": "revocation", "valid": true, "error": null }],
+      "statusCheck": [{ "purpose": "revocation", "valid": true, "error": null }],
       "claims": { "givenName": "Alice" }
     }
   }
