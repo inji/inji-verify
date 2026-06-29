@@ -24,6 +24,12 @@ inji-verify-sdk/
 │   │   └── openid4vp-verification/     # OpenID4VPVerification component
 │   ├── types/                          # Shared type declarations
 │   └── utils/                          # Shared utilities
+├── __tests__/                          # All tests (mirrors src/ structure)
+│   ├── components/
+│   │   ├── qrcode-verification/
+│   │   └── openid4vp-verification/
+│   └── utils/
+├── __mocks__/                          # Jest module mocks (e.g. CSS stub)
 ├── dist/                               # Build output (generated)
 │   ├── index.js                        # UMD bundle
 │   └── index.d.ts                      # TypeScript declarations
@@ -130,7 +136,7 @@ Rebuild the SDK (`webpack --config webpack.config.js && tsc ...`) after each cha
    ```ts
    export type { YourComponentProps } from './components/your-component/YourComponent.types';
    ```
-5. Add tests under `src/components/your-component/__tests__/`.
+5. Add tests under `__tests__/components/your-component/`.
 
 ---
 
