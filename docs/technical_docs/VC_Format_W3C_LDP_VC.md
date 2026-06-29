@@ -228,6 +228,8 @@ Revocation checks can be controlled per-request:
 
 When requesting JSON-LD credentials via OpenID4VP, use `ldp_vc` as the format. The full set of supported fields per credential query entry:
 
+> **Unsupported:** `trusted_authorities` is not currently supported. DCQL queries containing `trusted_authorities` will be rejected with `UNKNOWN_FIELD`.
+
 | Field | Type | Description |
 |---|---|---|
 | `id` | string | Required. Alphanumeric, `_`, `-` only. Must be unique across credentials. |

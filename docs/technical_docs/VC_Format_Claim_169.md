@@ -195,7 +195,7 @@ The backend hex-decodes the string, CBOR-decodes it, and passes the CWT to the `
 
 ### 1. Decode QR
 
-The `QRCodeVerification` SDK component decodes the scanned/uploaded QR via PixelPass:
+The `QRCodeVerification` SDK component decodes the scanned/uploaded QR via [PixelPass](https://github.com/inji/pixelpass):
 
 1. Base45-decode
 2. Detect compression format (zlib magic number → zlib; else → Brotli)
@@ -221,7 +221,7 @@ The backend runs these steps via `vc-verifier`:
 After verification, the UI:
 1. Decodes the CWT to extract the raw CBOR payload
 2. Extracts the Claim 169 numeric map under tag `169`
-3. Passes it to `PixelPass.decodeMappedData()` which reverse-maps numeric keys to human-readable field names
+3. Passes it to [`PixelPass.decodeMappedData()`](https://github.com/inji/pixelpass) which reverse-maps numeric keys to human-readable field names
 4. Displays the mapped claims alongside the verification status
 
 ---

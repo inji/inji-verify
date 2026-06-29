@@ -168,7 +168,7 @@ Create a VP request and establish a browser session. Used by the Inji Verify SDK
     "nonce": "abc123",
     "responseUri": "https://verify.example.com/v1/verify/v2/vp-submission/direct-post",
     "responseCodeValidationRequired": false,
-    "acceptVPWithoutHolderProof": false
+    "acceptVPWithoutHolderProof": false // deprecated, always false
   }
 }
 ```

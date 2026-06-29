@@ -24,6 +24,7 @@ The SDK is published as `@injistack/react-inji-verify-sdk` and provides two inde
    - [Flow Selection Logic](#flow-selection-logic)
    - [Result Shapes](#result-shapes-1)
    - [Basic Usage Example](#basic-usage-example-1)
+4. [`require_cryptographic_holder_binding`](#require_cryptographic_holder_binding)
 
 ---
 
@@ -37,7 +38,7 @@ npm install @injistack/react-inji-verify-sdk
 
 ## QRCodeVerification
 
-Handles VC verification via camera scan or file upload. Decodes QR codes using the PixelPass library, then calls the Verify Backend to verify the credential.
+Handles VC verification via camera scan or file upload. Decodes QR codes using the [PixelPass](https://github.com/inji/pixelpass) library, then calls the Verify Backend to verify the credential.
 
 Also handles **data-share (online VC) QR codes** — QR codes that contain a redirect URL to an Online VC Provider rather than an embedded credential.
 
@@ -96,7 +97,7 @@ import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
 
 | QR content | Behaviour |
 |---|---|
-| Embedded VC (JSON-LD, SD-JWT, CWT) | Decoded with PixelPass, verified via `/v2/vc-verification` |
+| Embedded VC (JSON-LD, SD-JWT, CWT) | Decoded with [PixelPass](https://github.com/inji/pixelpass), verified via `/v2/vc-verification` |
 | Data-share URL (starts with `INJI_OVP://`) | See data-share flow below |
 
 ### Sequence — Standard Scan/Upload Flow
@@ -149,6 +150,23 @@ Use `onVCReceived` when the Relying Party backend handles verification:
 ]
 ```
 
+#### Response Fields Summary
+
+| Property | Type | Description |
+|---|---|---|
+| `vc` | object | The VC that has been verified |
+| `allChecksSuccessful` | boolean | Final aggregated validation flag |
+| `schemaAndSignatureCheck` | object | Schema and signature validation result |
+| `schemaAndSignatureCheck.valid` | boolean | If false, credential signature or schema is invalid |
+| `schemaAndSignatureCheck.error` | object | Non-null if the check could not be performed |
+| `expiryCheck` | object | Expiry validation result |
+| `expiryCheck.valid` | boolean | If false, the credential is EXPIRED |
+| `statusCheck` | array | Contains revocation and other status validations |
+| `statusCheck[].purpose` | string | Identifies purpose (e.g., "revocation") |
+| `statusCheck[].valid` | boolean | If false for revocation and `error` is null → credential is revoked |
+| `statusCheck[].error` | object | Non-null if the status check could not be performed (e.g. status list unreachable) |
+| `claims` | object | Includes all claims from credentialSubject |
+
 ### Basic Usage Example
 
 ```tsx
@@ -188,7 +206,7 @@ import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 |---|---|---|
 | `verifyServiceUrl` | `string` | Base URL of the Verify Backend (e.g. `https://verify.example.com/v1/verify`) |
 | `clientId` | `string` | Verifier client identifier. Use the pre-registered string for by-value flows or `decentralized_identifier:did:...` for DID-based by-reference flows |
-| `dcqlQuery` | `DcqlQuery` | DCQL query describing which credentials to request. Replaces `presentationDefinition` |
+| `dcqlQuery` | `DcqlQuery` | DCQL query describing which credentials to request. Replaces `presentationDefinition`. Note: `trusted_authorities` is not supported — queries containing it will be rejected. |
 | `onQrCodeExpired` | `() => void` | Called when the QR code / authorization request expires before submission |
 | `onError` | `(error: AppError) => void` | Called on any error during the flow |
 
@@ -257,17 +275,35 @@ When the Relying Party has its own backend and wants to process results there, u
 ### Result Shapes
 
 **`summariseResults=true` (default):**
+
+The outer array has one element per credential requested. Each element's `verificationResponse` contains the full `vcResults` list (all credentials) and the overall `vpResultStatus`. For a two-credential VP request:
+
 ```json
 [
   {
-    "vc": { "...": "..." },
+    "vc": { "...": "credential-1 data..." },
     "verificationResponse": {
-      "vcResults": [{ "vc": { "...": "..." }, "vcStatus": "SUCCESS" }],
+      "vcResults": [
+        { "vc": { "...": "credential-1 data..." }, "vcStatus": "SUCCESS" },
+        { "vc": { "...": "credential-2 data..." }, "vcStatus": "SUCCESS" }
+      ],
+      "vpResultStatus": "SUCCESS"
+    }
+  },
+  {
+    "vc": { "...": "credential-2 data..." },
+    "verificationResponse": {
+      "vcResults": [
+        { "vc": { "...": "credential-1 data..." }, "vcStatus": "SUCCESS" },
+        { "vc": { "...": "credential-2 data..." }, "vcStatus": "SUCCESS" }
+      ],
       "vpResultStatus": "SUCCESS"
     }
   }
 ]
 ```
+
+`vpResultStatus` values: `"SUCCESS"` or `"INVALID"`. `vcStatus` values: `"SUCCESS"`, `"INVALID"`, `"EXPIRED"`, `"REVOKED"`.
 
 **`summariseResults=false`:**
 ```json
@@ -286,6 +322,26 @@ When the Relying Party has its own backend and wants to process results there, u
   }
 ]
 ```
+
+#### Response Fields Summary
+
+| Property | Type | Description |
+|---|---|---|
+| `allChecksSuccessful` | boolean | Final aggregated validation flag |
+| `verifiableCredential` | string | The VC that has been verified |
+| `holderProofCheck` | object | Holder binding result. `null` when `require_cryptographic_holder_binding=false` |
+| `holderProofCheck.valid` | boolean | If false, presenter does not own the credential |
+| `holderProofCheck.error` | object | Non-null if the check could not be performed |
+| `schemaAndSignatureCheck` | object | Schema and signature validation result |
+| `schemaAndSignatureCheck.valid` | boolean | If false, credential signature or schema is invalid |
+| `schemaAndSignatureCheck.error` | object | Non-null if the check could not be performed |
+| `expiryCheck` | object | Expiry validation result |
+| `expiryCheck.valid` | boolean | If false, the credential is EXPIRED |
+| `statusCheck` | array | Contains revocation and other status validations |
+| `statusCheck[].purpose` | string | Identifies purpose (e.g., "revocation") |
+| `statusCheck[].valid` | boolean | If false for revocation and `error` is null → credential is revoked |
+| `statusCheck[].error` | object | Non-null if the status check could not be performed (e.g. status list unreachable) |
+| `claims` | object | Includes all claims from credentialSubject |
 
 ### Error Object
 
@@ -322,3 +378,31 @@ import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
   vpVerificationRequest={{ skipStatusChecks: false, statusCheckFilters: ["revocation"], includeClaims: true }}
 />
 ```
+
+---
+
+## `require_cryptographic_holder_binding`
+
+Each credential entry in `dcqlQuery` accepts a `require_cryptographic_holder_binding` flag (default `true`) that controls whether the wallet must prove cryptographic ownership of the credential.
+
+| Value | Behavior | `holderProofCheck` in result |
+|---|---|---|
+| `true` (default) | Wallet must wrap the VC in a signed VP. The verifier checks that the presenter owns the credential. | Populated — `valid: true` if holder proof passes |
+| `false` | Wallet may submit the VC without a VP wrapper (bare VC). No holder binding check is performed. | `null` |
+
+**Format-specific behavior:**
+
+- **`ldp_vc`**: when `true`, the wallet submits a JSON-LD VP with a `proof` field. When `false`, a bare VC is accepted.
+- **`dc+sd-jwt` / `vc+sd-jwt`**: when `true`, a Key Binding JWT (KB-JWT) is required. The KB-JWT payload must contain all four fields: `aud`, `nonce`, `iat`, `sd_hash`. When `false`, KB-JWT validation is skipped.
+
+**Example — disable holder binding for a specific credential:**
+
+```tsx
+dcqlQuery={{
+  credentials: [{
+    id: "age_credential",
+    format: "ldp_vc",
+    meta: { type_values: [["VerifiableCredential", "AgeCredential"]] },
+    require_cryptographic_holder_binding: false  // accept bare VC, holderProofCheck will be null
+  }]
+}}

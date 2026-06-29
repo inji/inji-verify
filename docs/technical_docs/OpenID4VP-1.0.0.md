@@ -45,6 +45,8 @@ Every OpenID4VP verification follows the same four steps regardless of which dev
 
 A verifier declares a `dcqlQuery` with a `credentials` array — each entry describes one credential to request. When the wallet responds, `vp_token` is a JSON object where each key matches a credential `id` and the value is an array of matching presentations. There is no `presentation_submission` object.
 
+> **Unsupported:** `trusted_authorities` is not currently supported. DCQL queries containing `trusted_authorities` will be rejected with `UNKNOWN_FIELD`.
+
 ### Credential Query Fields
 
 Each entry in `credentials` supports:

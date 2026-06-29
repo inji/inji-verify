@@ -118,7 +118,9 @@ SD-JWT credentials are used in both scan/upload and OpenID4VP flows. The format-
 
 ## DCQL Query for SD-JWT
 
-When requesting SD-JWT credentials via OpenID4VP, the `dcql_query` uses `dc+sd-jwt` or `vc+sd-jwt` as the format and `vct_values` in `meta` to constrain the credential type:
+When requesting SD-JWT credentials via OpenID4VP, the `dcqlQuery` uses `dc+sd-jwt` or `vc+sd-jwt` as the format and `vct_values` in `meta` to constrain the credential type:
+
+> **Unsupported:** `trusted_authorities` is not currently supported. DCQL queries containing `trusted_authorities` will be rejected with `UNKNOWN_FIELD`.
 
 ```json
 {

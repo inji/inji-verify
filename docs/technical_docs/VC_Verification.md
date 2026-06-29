@@ -36,7 +36,7 @@ The component detects the format automatically after decoding.
 ### Embedded VC (JSON-LD, SD-JWT, CWT)
 
 1. User scans or uploads a file containing an embedded VC.
-2. SDK decodes the QR using PixelPass / `zxing-wasm`.
+2. SDK decodes the QR using [PixelPass](https://github.com/inji/pixelpass) / `zxing-wasm`.
 3. SDK submits the credential to `POST /v2/vc-verification`.
 4. Backend verifies via the `vc-verifier` library and returns the result.
 5. SDK calls `onVCProcessed(result)` or `onVCReceived(txnId)`.
@@ -49,7 +49,7 @@ When the QR contains a redirect URL to an Online VC Provider rather than an embe
 
 **`isVPSubmissionSupported=true`:** SDK creates a full VP session (`POST /v2/vp-session-request`), redirects to the provider with the full authorization parameters, receives a `response_code` on return, and fetches results via `POST /vp-session-results`. See [OpenID4VP-1.0.0.md](./OpenID4VP-1.0.0.md) for the complete VP flow.
 
-**Note:** Verify UI sets `isVPSubmissionSupported` via configuration `VP_SUBMISSION_SUPPORTED` and it is true by default.
+**Note:** Verify UI sets `isVPSubmissionSupported` via configuration `VP_SUBMISSION_SUPPORTED` and it is **true** by default.
 
 ---
 
