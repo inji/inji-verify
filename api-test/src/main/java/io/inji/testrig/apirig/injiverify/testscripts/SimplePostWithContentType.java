@@ -68,7 +68,7 @@ public class SimplePostWithContentType extends InjiVerifyUtil implements ITest {
 		}
 
 		String contentType = "application/json";
-		String templateInput = testCaseDTO.getInput();
+		String templateInput;
 		try {
 			JSONObject inputObj = new JSONObject(testCaseDTO.getInput());
 			if (inputObj.has(CONTENT_TYPE_FIELD)) {
@@ -77,7 +77,8 @@ public class SimplePostWithContentType extends InjiVerifyUtil implements ITest {
 			}
 			templateInput = inputObj.toString();
 		} catch (Exception e) {
-			logger.error("Error parsing input JSON for content type handling", e);
+			logger.error("Error parsing input JSON for content type handling in " + testCaseName, e);
+			throw new AdminTestException("Malformed input JSON for " + testCaseName + ": " + e.getMessage());
 		}
 
 		String requestBody = getJsonFromTemplate(templateInput, testCaseDTO.getInputTemplate());
