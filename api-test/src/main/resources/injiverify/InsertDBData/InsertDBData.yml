@@ -1,18 +1,4 @@
 InsertDBData:
-   InjiVerify_InsertDBData_For_PresentationDefinitionId_Neg:
-      endPoint: no endpoint
-      uniqueIdentifier: TC_DBDependent_InsertQuery_01
-      description: Verify insert into verify.presentation_definition fails as table no longer exists
-      role: idrepo
-      restMethod: post
-      checkErrorsOnlyInResponse: true
-      inputTemplate: injiverify/InsertDBData/InsertpresentationDefinitionIdData
-      outputTemplate: injiverify/InsertDBData/InsertDBDataResult
-      input: '{
-}'
-      output: '{
-}'
-
    InjiVerify_InsertDBData_For_AuthorizationRequestDetails_Valid_smoke:
       endPoint: no endpoint
       uniqueIdentifier: TC_DBDependent_InsertQuery_02

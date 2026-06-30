@@ -107,7 +107,7 @@ public class GetWithParamAndHeader extends InjiVerifyUtil implements ITest {
 					COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams, headers);
 
 			if ((testCaseName.contains("_GetVpRequestWithDID_")
-					|| testCaseName.contains("CheckClinetMetaDataInVPResponse"))
+					|| testCaseName.contains("CheckClientMetaDataInVPResponse"))
 					&& !testCaseDTO.isCheckOnlyStatusCodeInResponse()) {
 				String finalJsonString = InjiVerifyUtil.decodeAndCombineJwt(response.asString());
 
@@ -117,7 +117,7 @@ public class GetWithParamAndHeader extends InjiVerifyUtil implements ITest {
 				String payloadJson = InjiVerifyUtil.decodeBase64Url(jwt.getPayload());
 				GlobalMethods.reportResponse(headerJson, null, payloadJson, true);
 
-				if (testCaseName.contains("CheckClinetMetaDataInVPResponse")) {
+				if (testCaseName.contains("CheckClientMetaDataInVPResponse")) {
 					JSONObject payload = new JSONObject(payloadJson);
 					if (payload.has("client_metadata")) {
 						throw new AdminTestException(

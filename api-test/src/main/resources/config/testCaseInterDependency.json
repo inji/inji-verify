@@ -1,5 +1,5 @@
 {
-    "TC_DBDependent_GetVpRequestStatus_01": [
+    "TC_InjiVerify_InsertDBData_GetVpRequestStatus_01": [
         "TC_DBDependent_InsertQuery_02",
         "TC_DBDependent_InsertQuery_03"
     ],
@@ -27,8 +27,8 @@
     "TC_InjiVerify_VpSubmission_03": [
         "TC_InjiVerify_CreateNewVerificationRequest_09"
     ],
-    "TC_INJI_2005_01": [
-        "TC_INJI_2005_01_Sid"
+    "TC_InjiVerify_CheckClientMetaDataInVPResponse_01": [
+        "TC_InjiVerify_CreateVPRequestWithClientMetaData_01"
     ],
     "TC_InjiVerify_GetVpRequestWithDID_02": [
         "TC_InjiVerify_CreateNewVerificationRequestWithDID_01"
@@ -70,13 +70,13 @@
         "TC_InjiVerify_VcRevocationStatus_WithProof_02"
     ],
     "TC_InjiVerify_VpSubmission_12": [
-        "TC_InjiVerify_VpRequestWithPresentationId_02"
+        "TC_InjiVerify_VpRequestWithvaliddata_02"
     ],
     "TC_InjiVerify_VpSubmission_17": [
-        "TC_InjiVerify_VpRequestWithPresentationId_06"
+        "TC_InjiVerify_VpRequestWithvaliddata_06"
     ],
     "TC_InjiVerify_VpSubmission_18": [
-        "TC_InjiVerify_VpRequestWithPresentationId_07"
+        "TC_InjiVerify_VpRequestWithvaliddata_07"
     ],
     "TC_InjiVerify_GetVpTokenForRequest_04": [
         "TC_InjiVerify_VpSubmission_WithProof_01"

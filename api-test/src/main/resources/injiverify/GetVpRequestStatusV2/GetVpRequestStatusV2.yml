@@ -11,10 +11,10 @@ GetVpRequestStatusV2.yml:
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
       "includeClaims": true,
-      "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId": "$ID:CreateNewVerificationRequest_Withvaliddata2_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-  "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$",
+  "transactionId": "$ID:CreateNewVerificationRequest_Withvaliddata2_All_Valid_Smoke_Sid_transactionId$",
   "allChecksSuccessful": true,
   "credentialResults": [
     {
@@ -58,10 +58,10 @@ GetVpRequestStatusV2.yml:
       "skipStatusChecks": false,
       "statusCheckFilters": ["revocation", "suspension"],
       "includeClaims": false,
-      "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId": "$ID:CreateNewVerificationRequest_Withvaliddata2_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-  "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$",
+  "transactionId": "$ID:CreateNewVerificationRequest_Withvaliddata2_All_Valid_Smoke_Sid_transactionId$",
   "allChecksSuccessful": true,
   "credentialResults": [
     {
@@ -95,10 +95,10 @@ GetVpRequestStatusV2.yml:
       "skipStatusChecks": true,
       "statusCheckFilters": ["revocation", "suspension"],
       "includeClaims": true,
-      "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId": "$ID:CreateNewVerificationRequest_Withvaliddata2_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-  "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_transactionId$",
+  "transactionId": "$ID:CreateNewVerificationRequest_Withvaliddata2_All_Valid_Smoke_Sid_transactionId$",
   "allChecksSuccessful": true,
   "credentialResults": [
     {
@@ -142,10 +142,10 @@ GetVpRequestStatusV2.yml:
       "skipStatusChecks": true,
       "statusCheckFilters": ["revocation", "suspension"],
       "includeClaims": true,
-      "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid_transactionId$"
+      "transactionId": "$ID:CreateNewVerificationRequest_Withvaliddata3_using_for_Neg_All_Valid_Smoke_Sid_transactionId$"
       }'
       output: '{
-  "transactionId": "$ID:CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid_transactionId$",
+  "transactionId": "$ID:CreateNewVerificationRequest_Withvaliddata3_using_for_Neg_All_Valid_Smoke_Sid_transactionId$",
   "allChecksSuccessful": false,
   "credentialResults": [
     {

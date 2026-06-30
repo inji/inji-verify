@@ -1,29 +1,11 @@
-VpRequestWithPresentationId:
-  Injiverify_CreateNewVerificationRequest_WithPresentationId_Neg:
-      endPoint: /v1/verify/v2/vp-request
-      description: Creates a VP request with a valid presentationDefinitionId should give 400 status code.
-      uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_01
-      role: noauth
-      restMethod: post
-      checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
-      outputTemplate: injiverify/responseCode
-      input: '{
-      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
-      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
-      "presentationDefinitionId": "200"
-      }'
-      output: '{
-      "responseCode": "400"
-}'
-
-  Injiverify_CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid:
+VpRequestWithvaliddata:
+  Injiverify_CreateNewVerificationRequest_Withvaliddata_All_Valid_Smoke_Sid:
     endPoint: /v1/verify/v2/vp-request
     description: Creates a VP request with a valid presentationDefinitionId for VP submission with presentation id
-    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_02
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithvaliddata_02
     role: noauth
     restMethod: post
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdRequest
+    inputTemplate: injiverify/VpRequestWithvaliddata/VpRequestWithvaliddataRequest
     outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
     input: '{
       "clientId": "injiverify.dev-int-inji.mosip.net",
@@ -34,14 +16,14 @@ VpRequestWithPresentationId:
     "responseType": "vp_token"
 }'
 
-  Injiverify_CreateNewVerificationRequest_WithPresentationIdForVpSessionRequest_All_Valid_Smoke_Sid:
+  Injiverify_CreateNewVerificationRequest_WithvaliddataForVpSessionRequest_All_Valid_Smoke_Sid:
     endPoint: /v1/verify/v2/vp-request
     description: Creates a VP request with a valid presentationDefinitionId for VP session result
-    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_03
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithvaliddata_03
     role: noauth
     restMethod: post
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionRequest
-    outputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdForVpSessionResult
+    inputTemplate: injiverify/VpRequestWithvaliddata/VpRequestWithvaliddataForVpSessionRequest
+    outputTemplate: injiverify/VpRequestWithvaliddata/VpRequestWithvaliddataForVpSessionResult
     input: '{
       "clientId": "injiverify.mosip.net",
       "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
@@ -54,14 +36,14 @@ VpRequestWithPresentationId:
       "responseType": "vp_token"
 }'
 
-  Injiverify_CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid:
+  Injiverify_CreateNewVerificationRequest_Withvaliddata2_All_Valid_Smoke_Sid:
     endPoint: /v1/verify/v2/vp-request
     description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details 2.
-    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_06
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithvaliddata_06
     role: noauth
     restMethod: post
     checkOnlyStatusCodeInResponse: true
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdDCQL31LifeInsurance
+    inputTemplate: injiverify/VpRequestWithvaliddata/VpRequestWithvaliddataDCQL31LifeInsurance
     outputTemplate: injiverify/responseCode
     input: '{
       "clientId": "decentralized_identifier:did:web:injiverify.dev-int-inji.mosip.net:v1:verify",
@@ -72,13 +54,13 @@ VpRequestWithPresentationId:
     "responseCode": "201"
 }'
 
-  Injiverify_CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid:
+  Injiverify_CreateNewVerificationRequest_Withvaliddata3_using_for_Neg_All_Valid_Smoke_Sid:
     endPoint: /v1/verify/v2/vp-request
     description: Creates a VP request with a valid presentationDefinitionId and returns vp_token details 3.
-    uniqueIdentifier: TC_InjiVerify_VpRequestWithPresentationId_07
+    uniqueIdentifier: TC_InjiVerify_VpRequestWithvaliddata_07
     role: noauth
     restMethod: post
-    inputTemplate: injiverify/VpRequestWithPresentationId/VpRequestWithPresentationIdDCQL41
+    inputTemplate: injiverify/VpRequestWithvaliddata/VpRequestWithvaliddataDCQL41
     outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
     input: '{
       "clientId": "redirect_uri:https://faceb18cd424.ngrok-free.app/verifier/vp-response",

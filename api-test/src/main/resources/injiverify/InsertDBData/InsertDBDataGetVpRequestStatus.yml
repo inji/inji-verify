@@ -2,7 +2,7 @@ InsertDBDataGetVpRequestStatus:
   InjiVerify_InsertDBData_GetVpRequestStatus_All_Valid_Smoke:
       endPoint: /v1/verify/vp-request/{requestId}/status
       description: Get VP request status for DB-seeded requestId
-      uniqueIdentifier: TC_DBDependent_GetVpRequestStatus_01
+      uniqueIdentifier: TC_InjiVerify_InsertDBData_GetVpRequestStatus_01
       role: noauth
       restMethod: get
       inputTemplate: injiverify/GetVpRequestStatus/GetVpRequestStatus

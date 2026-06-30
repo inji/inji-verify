@@ -1,0 +1,16 @@
+CheckClientMetaDataInVPResponseGet:
+  Injiverify_CheckClientMetaDataInVPResponse_All_Valid_Smoke:
+      endPoint: /v1/verify/v2/vp-request/{requestId}
+      description: Verify pre-registered clientId VP request JWT excludes client_metadata
+      uniqueIdentifier: TC_InjiVerify_CheckClientMetaDataInVPResponse_01
+      role: noauth
+      restMethod: get
+      inputTemplate: injiverify/CheckClientMetaDataInVPResponse/CheckClientMetaDataInVPResponseGet
+      outputTemplate: injiverify/CheckClientMetaDataInVPResponse/CheckClientMetaDataInVPResponseGetResult
+      input: '{
+      "requestId": "$ID:CheckClientMetaDataInVPResponse_All_Valid_Smoke_Sid_requestId$",
+      "acceptHeader": "*/*"
+      }'
+      output: '{
+      "client_id": "injiverify.dev-int-inji.mosip.net/"
+      }'

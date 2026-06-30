@@ -213,7 +213,7 @@ VpSubmission:
       "responseCode": "200"
 }'
 
-  Injiverify_VpSubmission_With_PresentationId_All_Valid_Smoke:
+  Injiverify_VpSubmission_With_validdata_All_Valid_Smoke:
       endPoint: /v1/verify/v2/vp-submission/direct-post
       description: Submitting VC with valid Presentation Id data
       uniqueIdentifier: TC_InjiVerify_VpSubmission_12
@@ -223,7 +223,7 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmissionDCQLSmoke
       outputTemplate: injiverify/responseCode
       input: '{
-      "state":"$ID:CreateNewVerificationRequest_WithPresentationId_All_Valid_Smoke_Sid_requestId$"
+      "state":"$ID:CreateNewVerificationRequest_Withvaliddata_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"
@@ -297,7 +297,7 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmissionLifeInsuranceDCQL
       outputTemplate: injiverify/responseCode
       input: '{
-      "state": "$ID:CreateNewVerificationRequest_WithPresentationId2_All_Valid_Smoke_Sid_requestId$"
+      "state": "$ID:CreateNewVerificationRequest_Withvaliddata2_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"
@@ -312,7 +312,7 @@ VpSubmission:
       inputTemplate: injiverify/VpSubmission/VpSubmissionInvalidHolderBindingDCQL
       outputTemplate: injiverify/responseCode
       input: '{
-      "state": "$ID:CreateNewVerificationRequest_WithPresentationId3_using_for_Neg_All_Valid_Smoke_Sid_requestId$"
+      "state": "$ID:CreateNewVerificationRequest_Withvaliddata3_using_for_Neg_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
       "responseCode": "200"

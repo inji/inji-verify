@@ -251,9 +251,9 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
 		</classes>
 	</test>
-	<test name="CheckClinetMetaDataInVPResponse">
+	<test name="CheckClientMetaDataInVPResponse">
 		<parameter name="ymlFile"
-			value="injiverify/CheckClinetMetaDataInVPResponse/CheckClinetMetaDataInVPResponse.yml" />
+			value="injiverify/CheckClientMetaDataInVPResponse/CheckClientMetaDataInVPResponse.yml" />
 		<parameter name="idKeyName"
 			value="transactionId,requestId,requestUri" />
 		<classes>
@@ -261,9 +261,9 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
 		</classes>
 	</test>
-	<test name="CheckClinetMetaDataInVPResponseGet">
+	<test name="CheckClientMetaDataInVPResponseGet">
 		<parameter name="ymlFile"
-			value="injiverify/CheckClinetMetaDataInVPResponse/CheckClinetMetaDataInVPResponseGet.yml" />
+			value="injiverify/CheckClientMetaDataInVPResponse/CheckClientMetaDataInVPResponseGet.yml" />
 		<parameter name="pathParams" value="requestId" />
 		<parameter name="headers" value="" />
 		<classes>

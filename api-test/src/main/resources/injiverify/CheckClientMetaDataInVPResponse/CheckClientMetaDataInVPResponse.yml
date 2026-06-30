@@ -1,12 +1,12 @@
-CheckClinetMetaDataInVPResponse:
-  Injiverify_CheckClinetMetaDataInVPResponse_All_Valid_Smoke_Sid:
+CheckClientMetaDataInVPResponse:
+  Injiverify_CheckClientMetaDataInVPResponse_All_Valid_Smoke_Sid:
       endPoint: /v1/verify/v2/vp-request
       description: Create VP request with pre-registered clientId for client_metadata validation
-      uniqueIdentifier: TC_INJI_2005_01_Sid
+      uniqueIdentifier: TC_InjiVerify_CreateVPRequestWithClientMetaData_01
       role: noauth
       restMethod: post
       checkOnlyStatusCodeInResponse: true
-      inputTemplate: injiverify/CheckClinetMetaDataInVPResponse/CheckClinetMetaDataInVPResponse
+      inputTemplate: injiverify/CheckClientMetaDataInVPResponse/CheckClientMetaDataInVPResponse
       outputTemplate: injiverify/responseCode
       input: '{
       }'
