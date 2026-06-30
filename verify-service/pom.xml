@@ -7,11 +7,11 @@
     <parent>
         <groupId>io.inji.verify</groupId>
         <artifactId>verify-service-parent</artifactId>
-        <version>0.18.1</version>
+        <version>0.18.2-SNAPSHOT</version>
     </parent>
 
     <artifactId>verify-service</artifactId>
-    <version>0.18.1</version>
+    <version>0.18.2-SNAPSHOT</version>
     <name>verify-service</name>
     <description>Inji verify backend server implementing the OpenId4VP flow and online verification of VC</description>
     <packaging>jar</packaging>
@@ -156,6 +156,20 @@
                             <goal>build-info</goal>
                             <goal>repackage</goal>
                         </goals>
+                    </execution>
+                </executions>
+            </plugin>
+            <plugin>
+                <artifactId>maven-jar-plugin</artifactId>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>jar</goal>
+                        </goals>
+                        <configuration>
+                            <classifier>lib</classifier>
+                        </configuration>
                     </execution>
                 </executions>
             </plugin>
