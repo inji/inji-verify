@@ -44,7 +44,7 @@ Add the following to your `pom.xml`:
 <dependency>
     <groupId>io.inji.verify</groupId>
     <artifactId>verify-service</artifactId>
-    <version>0.18.2-SNAPSHOT</version>
+    <version>${verify-service.version}</version>
 </dependency>
 ```
 
