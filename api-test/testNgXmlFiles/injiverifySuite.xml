@@ -19,9 +19,9 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
 		</classes>
 	</test>
-	<test name="VpRequestWithPresentationId">
+	<test name="VpRequestWithvaliddata">
 		<parameter name="ymlFile"
-			value="injiverify/VpRequestWithPresentationId/VpRequestWithPresentationId.yml" />
+			value="injiverify/VpRequestWithvaliddata/VpRequestWithvaliddata.yml" />
 		<parameter name="idKeyName"
 			value="transactionId,requestId,id,nonce" />
 		<classes>
