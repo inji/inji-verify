@@ -48,28 +48,12 @@ Add the following to your `pom.xml`:
 </dependency>
 ```
 
-**Repositories** (some transitive dependencies are not available on Maven Central):
-```xml
-<repositories>
-    <repository>
-        <id>ossrh-inji</id>
-        <name>CentralRepositoryInji</name>
-        <url>https://central.sonatype.com/repository/maven-snapshots</url>
-        <snapshots>
-            <enabled>true</enabled>
-        </snapshots>
-    </repository>
-    <repository>
-        <id>danubetech</id>
-        <name>danubetech</name>
-        <url>https://repo.danubetech.com/repository/maven-public/</url>
-    </repository>
-    <repository>
-        <id>google</id>
-        <name>GoogleMaven</name>
-        <url>https://maven.google.com</url>
-    </repository>
-</repositories>
-```
+**Repositories:**
+
+Some transitive dependencies are not available on Maven Central. Ensure the following repositories are configured in your `pom.xml` or `settings.xml`:
+
+- **Sonatype (INJI snapshots)** — for `io.inji` artifacts (`vcverifier-jar`, `pixelpass-jar`)
+- **Danubetech** — for `ld-signatures-java` and `jsonld-common-java`
+- **Google Maven** — for `com.android.identity:identity-credential`
 
 Maven will automatically resolve all transitive dependencies from the published POM.
