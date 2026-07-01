@@ -65,7 +65,7 @@ jobs:
     with:
       SERVICE_LOCATION: ./
       BUILD_ARTIFACT: inji-verify-service
-      MAVEN_NON_EXEC_ARTIFACTS : "verify-service*.jar"
+      MAVEN_NON_EXEC_ARTIFACTS : "verify-service*-exec.jar"
     secrets:
       OSSRH_USER: ${{ secrets.OSSRH_INJI_USER }}
       OSSRH_SECRET: ${{ secrets.OSSRH_INJI_SECRET }}
