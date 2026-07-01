@@ -32,3 +32,44 @@ The link to set up guide can be found [here](../Readme.md).
 ##### API docs
 
 The API docs are published in Stoplight, which can be found [here](https://mosip.stoplight.io/docs/inji-verify/branches/main).
+
+#### Using verify-service as a Library Dependency
+
+`verify-service` publishes a plain JAR (without bundled dependencies) that can be consumed by other Maven projects.
+
+Add the following to your `pom.xml`:
+
+**Dependency:**
+```xml
+<dependency>
+    <groupId>io.inji.verify</groupId>
+    <artifactId>verify-service</artifactId>
+    <version>0.18.2-SNAPSHOT</version>
+</dependency>
+```
+
+**Repositories** (some transitive dependencies are not available on Maven Central):
+```xml
+<repositories>
+    <repository>
+        <id>ossrh-inji</id>
+        <name>CentralRepositoryInji</name>
+        <url>https://central.sonatype.com/repository/maven-snapshots</url>
+        <snapshots>
+            <enabled>true</enabled>
+        </snapshots>
+    </repository>
+    <repository>
+        <id>danubetech</id>
+        <name>danubetech</name>
+        <url>https://repo.danubetech.com/repository/maven-public/</url>
+    </repository>
+    <repository>
+        <id>google</id>
+        <name>GoogleMaven</name>
+        <url>https://maven.google.com</url>
+    </repository>
+</repositories>
+```
+
+Maven will automatically resolve all transitive dependencies from the published POM.
