@@ -4,11 +4,11 @@
 
 -- -------------------------------------------------------------------------------------------------
 -- Rollback Script: v0.13.0 to v0.12.3
--- Database       : inji_verify
+-- Database       : :dbname
 -- Purpose        : Revert schema changes introduced in version 0.13.0
 -- -------------------------------------------------------------------------------------------------
 
-\c inji_verify
+\c :dbname
 
 -- -------------------------------------------------------------------------------------------------
 -- SECTION 1: Revert column types (from TEXT back to JSONB)
