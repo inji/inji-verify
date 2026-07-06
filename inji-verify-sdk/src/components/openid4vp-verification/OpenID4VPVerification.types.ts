@@ -254,7 +254,7 @@ export interface CredentialResult {
     expiryCheck?: {
         valid: boolean;
     };
-    statusChecks?: {
+    statusCheck?: {
         purpose: string;
         valid: boolean;
         error: any;

@@ -1,0 +1,79 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="620" height="500" style="font-family: Arial, sans-serif; font-size: 13px; background: #fff;">
+  <defs>
+    <marker id="arr" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+      <polygon points="0 0,9 3.5,0 7" fill="#333"/>
+    </marker>
+  </defs>
+
+  <!-- VC Received -->
+  <rect x="210" y="20" width="200" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+  <text x="310" y="44" text-anchor="middle" font-weight="bold" fill="#1a3c6e">VC received (ldp_vc)</text>
+
+  <!-- arrow down -->
+  <line x1="310" y1="58" x2="310" y2="80" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- renderMethod present? -->
+  <polygon points="310,80 430,118 310,156 190,118" fill="#fff9e6" stroke="#c8a000" stroke-width="1.5"/>
+  <text x="310" y="113" text-anchor="middle" fill="#555">renderMethod</text>
+  <text x="310" y="130" text-anchor="middle" fill="#555">present?</text>
+
+  <!-- No branch — left -->
+  <line x1="190" y1="118" x2="80" y2="118" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="135" y="110" text-anchor="middle" font-size="11" fill="#555">No</text>
+  <rect x="10" y="98" width="70" height="0" fill="none"/> <!-- spacer -->
+
+  <!-- Default UI box -->
+  <rect x="10" y="98" width="140" height="40" rx="6" fill="#e8f5e9" stroke="#388e3c" stroke-width="1.5"/>
+  <text x="80" y="115" text-anchor="middle" fill="#1b5e20" font-size="12">Default key–value</text>
+  <text x="80" y="130" text-anchor="middle" fill="#1b5e20" font-size="12">UI</text>
+
+  <!-- Yes branch — down -->
+  <line x1="310" y1="156" x2="310" y2="186" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="320" y="176" font-size="11" fill="#555">Yes</text>
+
+  <!-- template.id URL? -->
+  <polygon points="310,186 430,218 310,250 190,218" fill="#fff9e6" stroke="#c8a000" stroke-width="1.5"/>
+  <text x="310" y="213" text-anchor="middle" fill="#555">template.id</text>
+  <text x="310" y="230" text-anchor="middle" fill="#555">is URL?</text>
+
+  <!-- No branch inline SVG -->
+  <line x1="430" y1="218" x2="530" y2="218" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="478" y="210" text-anchor="middle" font-size="11" fill="#555">No</text>
+  <rect x="530" y="198" width="82" height="40" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="571" y="215" text-anchor="middle" fill="#0d47a1" font-size="12">Use inline</text>
+  <text x="571" y="230" text-anchor="middle" fill="#0d47a1" font-size="12">SVG</text>
+
+  <!-- Yes branch fetch -->
+  <line x1="310" y1="250" x2="310" y2="280" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="320" y="270" font-size="11" fill="#555">Yes</text>
+
+  <!-- Fetch SVG -->
+  <rect x="210" y="280" width="200" height="38" rx="6" fill="#e3f2fd" stroke="#1565c0" stroke-width="1.5"/>
+  <text x="310" y="304" text-anchor="middle" fill="#0d47a1">Fetch SVG from issuer URL</text>
+
+  <line x1="310" y1="318" x2="310" y2="346" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+
+  <!-- Fetch success? -->
+  <polygon points="310,346 410,372 310,398 210,372" fill="#fff9e6" stroke="#c8a000" stroke-width="1.5"/>
+  <text x="310" y="367" text-anchor="middle" fill="#555">Fetch</text>
+  <text x="310" y="384" text-anchor="middle" fill="#555">success?</text>
+
+  <!-- No fallback -->
+  <line x1="210" y1="372" x2="80" y2="372" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="145" y="364" text-anchor="middle" font-size="11" fill="#555">No</text>
+  <line x1="80" y1="372" x2="80" y2="118" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="58" y="250" font-size="11" fill="#888" font-style="italic">fallback</text>
+
+  <!-- Yes process -->
+  <line x1="310" y1="398" x2="310" y2="428" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+  <text x="320" y="418" font-size="11" fill="#555">Yes</text>
+
+  <!-- Process + render box -->
+  <rect x="180" y="428" width="260" height="52" rx="6" fill="#e8f5e9" stroke="#388e3c" stroke-width="1.5"/>
+  <text x="310" y="449" text-anchor="middle" fill="#1b5e20">Apply Mustache → bind VC data</text>
+  <text x="310" y="467" text-anchor="middle" fill="#1b5e20">Render &amp; display SVG</text>
+
+  <!-- inline SVG arrow down to process -->
+  <line x1="571" y1="238" x2="571" y2="454" stroke="#333" stroke-width="1.5"/>
+  <line x1="571" y1="454" x2="440" y2="454" stroke="#333" stroke-width="1.5" marker-end="url(#arr)"/>
+</svg>

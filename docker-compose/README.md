@@ -50,56 +50,40 @@ docker compose up -d
 
 Located in: `config/`
 
-## Example 
-```
+## Example
+
+```json
 {
-      "logo": "/assets/cert.png",
-      "name": "Health Insurance",
-      "type": "InsuranceCredential",
-      "clientIdScheme":"pre_registered",
-      "definition": {
-        "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
-        "format": {
-          "ldp_vc": {
-            "proof_type": ["Ed25519Signature2018"]
-          }
-        },
-        "input_descriptors": [
-          {
-            "id": "id card credential",
-            "format": {
-              "ldp_vc": {
-                "proof_type": ["Ed25519Signature2020"]
-              }
-            },
-            "constraints": {
-              "fields": [
-                {
-                  "path": ["$.type"],
-                  "filter": {
-                    "type": "object",
-                    "pattern": "InsuranceCredential"
-                  }
-                }
-              ]
-            }
-          }
-        ]
+  "logo": "/assets/cert.png",
+  "name": "Health Insurance",
+  "clientIdPrefix": "decentralized_identifier",
+  "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+  "dcqlQuery": {
+    "credentials": [
+      {
+        "id": "health_insurance_credential_id",
+        "format": "ldp_vc",
+        "meta": {
+          "type_values": [
+            ["https://inji.github.io/inji-config/contexts/insurance-context.json#InsuranceCredential"]
+          ]
+        }
       }
-    }
- ```   
+    ]
+  }
+}
+```
 
 ## Key Fields
 
 * `logo` → Display image
 * `name` → Credential name
-* `type` → Credential identifier
 * `essential` → Required or optional
-* `clientIdScheme`
+* `clientIdPrefix`
 
-  * `did` → Uses request_uri
-  * `pre_registered` → Embedded request
-* `definition` → Presentation Exchange spec
+  * `decentralized_identifier` → Uses `request_uri` (DID-based signed JWT)
+  * `pre_registered` → Embedded request; wallet must have `inji-verify-ui` registered as trusted verifier
+* `dcqlQuery` → DCQL credential query (`type_values` for `ldp_vc`, `vct_values` for SD-JWT)
 
 ---
 
@@ -114,7 +98,7 @@ File: `config/config.json`
       "id": "inji-wallet",
       "name": "Inji Wallet",
       "iconUrl": "/assets/inji-web-wallet-icon.svg",
-      "walletBaseUrl": "http://localhost:3001"
+      "walletBaseUrl": "https://injiweb.dev.mosip.net"
     }
   ]
 }
@@ -122,13 +106,8 @@ File: `config/config.json`
 
 ## ⚠️ Important
 
-Default wallet URL may fail if unreachable.
-
-### Options:
-
-* Use hosted wallet
-* Run locally → `http://localhost:3001`
-* Remove entry to disable
+* Replace `walletBaseUrl` with your own wallet URL if needed
+* Set to empty string to disable the wallet button
 
 ---
 
@@ -172,17 +151,20 @@ abc123.ngrok.app
 
 ## Cross Device Flow
 
-To test the cross-device flow on a mobile or tablet device, scan the VP request QR code directly. For credentials with `client_id_scheme` set to `pre_registered`, the wallet cannot share the VC unless the locally running Verify application is registered as a trusted verifier. For credentials with `client_id_scheme` set to `did`, the wallet can share the VC. For `pre_registered`, add the client ID to `mimoto-trusted-verifiers.json`, which Inji Wallet uses as its trusted verifier list.
+To test the cross-device flow on a mobile or tablet device, scan the VP request QR code directly. For credentials with `clientIdPrefix` set to `pre_registered`, the wallet cannot share the VC unless the locally running Verify application is registered as a trusted verifier. For credentials with `clientIdPrefix` set to `decentralized_identifier`, the wallet can share the VC. For `pre_registered`, add the client ID to `mimoto-trusted-verifiers.json`, which Inji Wallet uses as its trusted verifier list.
 
 ### Behavior:
 
-* `did` → Works directly
+* `decentralized_identifier` → Works directly
 * `pre_registered` → Needs trusted verifier config
+
 ---
 
 ## Same Device Flow
 
-To test the Same Device flow on your mobile / tablet device, hit the URL https://proxyurl.ngrok.app. This will open app.
+To test the Same Device flow on your mobile / tablet device, hit the URL https://proxyurl.ngrok.app. This will open the app.
+
+> **Note:** VP submission is disabled by default (`VP_SUBMISSION_SUPPORTED=false`). Set it to `true` in `docker-compose.yml` to enable the OpenID4VP tab.
 
 ---
 
@@ -214,7 +196,7 @@ docker compose logs -f
 
 ---
 
-# 🛠 Local Development 
+# 🛠 Local Development
 
 ## 1. Enable Local Build
 
@@ -230,6 +212,7 @@ verify-ui:
     context: ../verify-ui
   image: inji-verify-ui:local    
 ```
+
 ---
 
 ## 2. Clear Cache and Start Docker Compose
@@ -261,7 +244,6 @@ https://<ngrok-url>
 
 ```bash
 docker compose down --volumes --remove-orphans
-or
 # Last resort only: this removes unused Docker resources across your machine.
 docker system prune -a --volumes
 ```

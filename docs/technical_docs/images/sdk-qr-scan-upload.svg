@@ -1,0 +1,33 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="617" height="422" style="font-family: Arial,sans-serif; font-size:12px; background:#fff;">
+<defs>
+  <marker id="arr" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#333"/></marker>
+</defs>
+<text x="308" y="19" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a3c6e">QRCodeVerification — Scan / Upload Flow</text>
+<line x1="85" y1="64" x2="85" y2="370" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="295" y1="64" x2="295" y2="370" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="505" y1="64" x2="505" y2="370" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="15" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="85" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">User</text>
+<rect x="15" y="370" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="85" y="394" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">User</text>
+<rect x="225" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="295" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">SDK</text>
+<rect x="225" y="370" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="295" y="394" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">SDK</text>
+<rect x="435" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="505" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="435" y="370" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="505" y="394" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<line x1="85" y1="120" x2="294" y2="120" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="190" y="102" text-anchor="middle" font-size="11" fill="#111">Scan QR or upload file (PNG /</text>
+<text x="190" y="116" text-anchor="middle" font-size="11" fill="#111">JPEG / PDF)</text>
+<rect x="235" y="165" width="160" height="26" rx="4" fill="#fffde7" stroke="#f9a825" stroke-width="1"/>
+<text x="315" y="179" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Decode QR using PixelPass / zxing-wasm</text>
+<line x1="295" y1="206" x2="504" y2="206" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="400" y="202" text-anchor="middle" font-size="11" fill="#111">POST /v2/vc-verification</text>
+<text x="400" y="221" text-anchor="middle" font-size="10" fill="#555" font-style="italic">{ verifiableCredential }</text>
+<line x1="505" y1="262" x2="296" y2="262" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="400" y="258" text-anchor="middle" font-size="11" fill="#111">Verification result</text>
+<line x1="295" y1="316" x2="86" y2="316" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="190" y="312" text-anchor="middle" font-size="11" fill="#111">onVCProcessed(result)</text>
+</svg>

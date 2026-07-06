@@ -110,7 +110,7 @@ paths:
                 summary: Pre-registered clientId with DCQL query (by value)
                 value:
                   clientId: client123
-                  dcql_query:
+                  dcqlQuery:
                     credentials:
                       - id: age_credential_query
                         format: ldp_vc
@@ -123,7 +123,7 @@ paths:
                 summary: DID-based clientId with DCQL query (by reference)
                 value:
                   clientId: 'decentralized_identifier:did:example:verifier123'
-                  dcql_query:
+                  dcqlQuery:
                     credentials:
                       - id: age_credential_query
                         format: dc+sd-jwt
@@ -155,7 +155,7 @@ paths:
                       responseMode: direct_post
                       clientId: client123
                       nonce: T3yeEqs0zVbveJASNFZ4kA
-                      dcql_query:
+                      dcqlQuery:
                         credentials:
                           - id: age_credential_query
                             format: ldp_vc
@@ -183,7 +183,7 @@ paths:
                             kb-jwt_alg_values:
                               - ES256
                               - ES384
-                      iat: 1752838929
+                      issuedAt: 1752838929000
                     expiresAt: 1752838929
                 by_reference:
                   summary: Authorization by reference (decentralized_identifier clientId)
@@ -315,7 +315,7 @@ paths:
               $ref: '#/components/schemas/VPRequestCreate'
             example:
               clientId: client123
-              dcql_query:
+              dcqlQuery:
                 credentials:
                   - id: age_credential_query
                     format: ldp_vc
@@ -1136,7 +1136,7 @@ paths:
               schema:
                 $ref: '#/components/schemas/InternalErrorResponse'
   /well-known/did.json:
-    post:
+    get:
       summary: Get the DID document
       description: |-
         ## Description
@@ -1179,7 +1179,7 @@ components:
       type: object
       required:
         - clientId
-        - dcql_query
+        - dcqlQuery
       properties:
         clientId:
           type: string
@@ -1189,7 +1189,7 @@ components:
             - **Pre-registered**: simple string (e.g., `client123`). Authorization Request is returned by value. `client_metadata` MUST NOT be included.
             - **Decentralized Identifier**: must use the `decentralized_identifier:` prefix per OpenID4VP v1.0 Section 5.9.3 (e.g., `decentralized_identifier:did:example:verifier123`). Authorization Request is returned by reference. The legacy `did:` prefix is rejected with `INVALID_CLIENT_IDENTIFIER`.
           example: client123
-        dcql_query:
+        dcqlQuery:
           $ref: '#/components/schemas/DcqlQuery'
           description: DCQL query specifying the credentials to request, per OpenID4VP v1.0. Required. `presentationDefinition` and `presentationDefinitionId` are not supported.
         responseCodeValidationRequired:
@@ -1429,17 +1429,17 @@ components:
           type: string
           description: Cryptographic nonce binding the VP to this session. Base64URL-encoded without padding.
           example: T3yeEqs0zVbveJASNFZ4kA
-        dcql_query:
+        dcqlQuery:
           $ref: '#/components/schemas/DcqlQuery'
           description: DCQL query specifying the credentials requested.
         client_metadata:
           $ref: '#/components/schemas/ClientMetadata'
           description: Verifier metadata including supported VP formats. Included for pre-registered clients only when applicable.
-        iat:
+        issuedAt:
           type: integer
           format: int64
-          description: Unix timestamp of when the request was issued.
-          example: 1752838929
+          description: Unix timestamp (milliseconds) of when the request was issued.
+          example: 1752838929000
     ClientMetadata:
       type: object
       description: Verifier client metadata per OpenID4VP v1.0 Section 5.
@@ -1680,7 +1680,7 @@ components:
           $ref: '#/components/schemas/ValidationResult'
         expiryCheck:
           $ref: '#/components/schemas/ExpiryCheckResult'
-        statusChecks:
+        statusCheck:
           type: array
           items:
             $ref: '#/components/schemas/StatusCheckResult'
@@ -1722,7 +1722,7 @@ components:
           $ref: '#/components/schemas/ValidationResult'
         expiryCheck:
           $ref: '#/components/schemas/ExpiryCheckResult'
-        statusChecks:
+        statusCheck:
           type: array
           items:
             $ref: '#/components/schemas/StatusCheckResult'

@@ -1,0 +1,54 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="827" height="746" style="font-family: Arial,sans-serif; font-size:12px; background:#fff;">
+<defs>
+  <marker id="arr" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto"><polygon points="0 0,9 3.5,0 7" fill="#333"/></marker>
+</defs>
+<text x="413" y="19" text-anchor="middle" font-size="13" font-weight="bold" fill="#1a3c6e">OpenID4VPVerification — Cross-Device Flow</text>
+<line x1="85" y1="64" x2="85" y2="694" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="295" y1="64" x2="295" y2="694" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="505" y1="64" x2="505" y2="694" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<line x1="715" y1="64" x2="715" y2="694" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="15" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="85" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">RP UI</text>
+<rect x="15" y="694" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="85" y="718" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">RP UI</text>
+<rect x="225" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="295" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">SDK</text>
+<rect x="225" y="694" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="295" y="718" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">SDK</text>
+<rect x="435" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="505" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="435" y="694" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="505" y="718" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="645" y="28" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="715" y="52" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Wallet</text>
+<rect x="645" y="694" width="140" height="38" rx="5" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="715" y="718" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Wallet</text>
+<line x1="85" y1="128" x2="294" y2="128" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="190" y="96" text-anchor="middle" font-size="11" fill="#111">&lt;OpenID4VPVerification</text>
+<text x="190" y="110" text-anchor="middle" font-size="11" fill="#111">isSameDeviceFlowEnabled={false}</text>
+<text x="190" y="124" text-anchor="middle" font-size="11" fill="#111">/&gt;</text>
+<line x1="295" y1="184" x2="504" y2="184" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="400" y="180" text-anchor="middle" font-size="11" fill="#111">POST /v2/vp-session-request</text>
+<line x1="505" y1="254" x2="296" y2="254" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="400" y="222" text-anchor="middle" font-size="11" fill="#111">201 { requestId,</text>
+<text x="400" y="236" text-anchor="middle" font-size="11" fill="#111">authorizationDetails } + Set-</text>
+<text x="400" y="250" text-anchor="middle" font-size="11" fill="#111">Cookie</text>
+<rect x="25" y="307" width="330" height="26" rx="4" fill="#fffde7" stroke="#f9a825" stroke-width="1"/>
+<text x="190" y="321" text-anchor="middle" font-size="11" fill="#555" font-style="italic">SDK renders QR code (embedded or request_uri)</text>
+<line x1="295" y1="356" x2="504" y2="356" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="400" y="338" text-anchor="middle" font-size="11" fill="#111">GET /vp-</text>
+<text x="400" y="352" text-anchor="middle" font-size="11" fill="#111">request/{requestId}/status</text>
+<text x="400" y="371" text-anchor="middle" font-size="10" fill="#555" font-style="italic">(long-poll)</text>
+<line x1="715" y1="428" x2="506" y2="428" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="610" y="410" text-anchor="middle" font-size="11" fill="#111">Scan QR → POST /v2/vp-</text>
+<text x="610" y="424" text-anchor="middle" font-size="11" fill="#111">submission/direct-post</text>
+<line x1="505" y1="476" x2="296" y2="476" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="400" y="472" text-anchor="middle" font-size="11" fill="#111">status: VP_SUBMITTED</text>
+<line x1="295" y1="530" x2="504" y2="530" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="400" y="526" text-anchor="middle" font-size="11" fill="#111">POST /vp-session-results</text>
+<text x="400" y="545" text-anchor="middle" font-size="10" fill="#555" font-style="italic">Cookie: transaction_id</text>
+<line x1="505" y1="586" x2="296" y2="586" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="400" y="582" text-anchor="middle" font-size="11" fill="#111">Verification result</text>
+<line x1="295" y1="640" x2="86" y2="640" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="190" y="636" text-anchor="middle" font-size="11" fill="#111">onVPProcessed(results)</text>
+</svg>

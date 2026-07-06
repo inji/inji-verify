@@ -1,0 +1,59 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="645" height="850" style="font-family: Arial, sans-serif; font-size: 12px; background: #fff;">
+<defs>
+  <marker id="arr" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0,9 3.5,0 7" fill="#333"/>
+  </marker>
+  <marker id="arrd" markerWidth="9" markerHeight="7" refX="9" refY="3.5" orient="auto">
+    <polygon points="0 0,9 3.5,0 7" fill="#333"/>
+  </marker>
+</defs>
+<text x="322" y="20" text-anchor="middle" font-size="14" font-weight="bold" fill="#1a3c6e">Cross-Device Flow  (responseCodeValidationRequired = false)</text>
+<rect x="10" y="376" width="600" height="146" rx="4" fill="#f8f8f8" stroke="#9ab" stroke-width="1" stroke-dasharray="4,3"/>
+<rect x="10" y="376" width="70" height="16" rx="3" fill="#9ab"/>
+<text x="14" y="388" font-size="10" fill="#fff" font-style="italic">opt: DID-based clientId</text>
+<line x1="90" y1="66" x2="90" y2="798" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="20" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="90" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify UI</text>
+<rect x="20" y="798" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="90" y="822" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify UI</text>
+<line x1="310" y1="66" x2="310" y2="798" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="240" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="310" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<rect x="240" y="798" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="310" y="822" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Verify Backend</text>
+<line x1="530" y1="66" x2="530" y2="798" stroke="#aaa" stroke-width="1" stroke-dasharray="5,4"/>
+<rect x="460" y="30" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="530" y="54" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Wallet</text>
+<rect x="460" y="798" width="140" height="38" rx="6" fill="#ddeeff" stroke="#336699" stroke-width="1.5"/>
+<text x="530" y="822" text-anchor="middle" font-weight="bold" fill="#1a3c6e" font-size="12">Wallet</text>
+<line x1="90" y1="124" x2="309" y2="124" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="200" y="119" text-anchor="middle" font-size="11" fill="#111">POST /v2/vp-session-request</text>
+<text x="200" y="140" text-anchor="middle" font-size="10" fill="#555" font-style="italic">{ dcql_query, clientId }</text>
+<line x1="310" y1="188" x2="91" y2="188" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="200" y="168" text-anchor="middle" font-size="11" fill="#111">201 { transactionId, requestId,</text>
+<text x="200" y="183" text-anchor="middle" font-size="11" fill="#111">authorizationDetails }</text>
+<text x="200" y="204" text-anchor="middle" font-size="10" fill="#555" font-style="italic">+ Set-Cookie: transaction_id</text>
+<rect x="30" y="240" width="160" height="28" rx="4" fill="#fffde7" stroke="#f9a825" stroke-width="1"/>
+<text x="110" y="256" text-anchor="middle" font-size="11" fill="#555" font-style="italic">Render QR code  openid4vp://authorize?...</text>
+<line x1="90" y1="292" x2="309" y2="292" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="200" y="287" text-anchor="middle" font-size="11" fill="#111">GET /vp-request/{requestId}/status</text>
+<text x="200" y="308" text-anchor="middle" font-size="10" fill="#555" font-style="italic">(long-poll, ~55 s timeout)</text>
+<rect x="470" y="336" width="160" height="28" rx="4" fill="#fffde7" stroke="#f9a825" stroke-width="1"/>
+<text x="550" y="352" text-anchor="middle" font-size="11" fill="#555" font-style="italic">User scans QR code</text>
+<line x1="530" y1="406" x2="311" y2="406" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="420" y="401" text-anchor="middle" font-size="11" fill="#111">GET /v2/vp-request/{requestId}</text>
+<line x1="310" y1="462" x2="529" y2="462" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="420" y="457" text-anchor="middle" font-size="11" fill="#111">Signed Authorization Request JWT</text>
+<line x1="530" y1="526" x2="311" y2="526" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="420" y="521" text-anchor="middle" font-size="11" fill="#111">POST /v2/vp-submission/direct-post</text>
+<text x="420" y="542" text-anchor="middle" font-size="10" fill="#555" font-style="italic">{ vp_token, state }</text>
+<line x1="310" y1="574" x2="529" y2="574" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="420" y="569" text-anchor="middle" font-size="11" fill="#111">200 OK</text>
+<line x1="310" y1="630" x2="91" y2="630" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="200" y="625" text-anchor="middle" font-size="11" fill="#111">status: VP_SUBMITTED</text>
+<line x1="90" y1="694" x2="309" y2="694" stroke="#333" stroke-width="1.5"  marker-end="url(#arr)"/>
+<text x="200" y="689" text-anchor="middle" font-size="11" fill="#111">POST /vp-session-results</text>
+<text x="200" y="710" text-anchor="middle" font-size="10" fill="#555" font-style="italic">Cookie: transaction_id</text>
+<line x1="310" y1="742" x2="91" y2="742" stroke="#333" stroke-width="1.5" stroke-dasharray="7,5" marker-end="url(#arr)"/>
+<text x="200" y="737" text-anchor="middle" font-size="11" fill="#111">Verification result</text>
+</svg>
