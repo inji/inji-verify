@@ -15,7 +15,7 @@ public class SecurityUtils {
     private static final SecureRandom random = new SecureRandom();
 
     public static String generateNonce() {
-        byte[] randomBytes = new byte[16];
+        byte[] randomBytes = new byte[24];
         random.nextBytes(randomBytes);
         return Base64.getUrlEncoder().withoutPadding().encodeToString(randomBytes);
     }

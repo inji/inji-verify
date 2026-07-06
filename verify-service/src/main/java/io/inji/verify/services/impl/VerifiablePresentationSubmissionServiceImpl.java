@@ -314,6 +314,44 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     }
 
     /**
+     * Validates the KB-JWT {@code iat} claim for all SD-JWT tokens in a single pass.
+     * Checks that {@code iat} is present and not in the future beyond clock skew.
+     * No max-age check — per SD-JWT RFC 9901, {@code nonce} is the replay-protection
+     * mechanism; {@code iat} only needs to be a valid past/present timestamp.
+     * Only applies to query IDs where {@code require_cryptographic_holder_binding=true}.
+     * Returns the first {@link ErrorCode} encountered, or null if all tokens pass.
+     */
+    @Override
+    public ErrorCode processSdJwtKbJwtIat(AuthorizationRequestResponseDto authRequest, Map<String, List<String>> sdJwtTokens) {
+        final long clockSkewSeconds = 60L;
+        for (Map.Entry<String, List<String>> entry : sdJwtTokens.entrySet()) {
+            String queryId = entry.getKey();
+            if (!isCryptographicHolderBindingRequired(authRequest, queryId)) {
+                log.debug("Skipping KB-JWT iat validation for query ID {} since require_cryptographic_holder_binding is false", queryId);
+                continue;
+            }
+            for (String sdJwt : entry.getValue()) {
+                JSONObject kbPayload = Utils.extractKbJwtPayload(sdJwt);
+                if (kbPayload == null) {
+                    log.error("KB-JWT payload could not be decoded for iat check, query ID: {}", queryId);
+                    return ErrorCode.KB_JWT_IAT_MISSING_OR_INVALID;
+                }
+                long iat = kbPayload.optLong("iat", -1);
+                if (iat <= 0) {
+                    log.error("KB-JWT iat is missing or invalid for query ID: {}", queryId);
+                    return ErrorCode.KB_JWT_IAT_MISSING_OR_INVALID;
+                }
+                long nowSeconds = System.currentTimeMillis() / 1000;
+                if (iat > nowSeconds + clockSkewSeconds) {
+                    log.error("KB-JWT iat is in the future for query ID: {}, iat={}, now={}", queryId, iat, nowSeconds);
+                    return ErrorCode.KB_JWT_IAT_IN_FUTURE;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
      * This method generates a unique response code using UUID if the authorization request requires response code validation. If response code validation is not required, it returns null.
      * @param authRequest
      * @return

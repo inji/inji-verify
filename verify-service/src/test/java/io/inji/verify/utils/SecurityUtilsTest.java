@@ -15,7 +15,7 @@ class SecurityUtilsTest {
     void testGenerateNonce_LengthAndFormat() {
         String nonce = SecurityUtils.generateNonce();
 
-        assertEquals(22, nonce.length());
+        assertEquals(32, nonce.length()); // 24 bytes → 32 base64url chars (no padding)
 
         // Base64URL without padding: [A-Za-z0-9\-_], no '=' padding
         assertTrue(Pattern.matches("^[A-Za-z0-9\\-_]+$", nonce));

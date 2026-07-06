@@ -577,11 +577,44 @@ class VPSubmissionControllerTest {
         when(auth.getAuthorizationDetails()).thenReturn(mock(AuthorizationRequestResponseDto.class));
 
         when(vpSubmissionService.processSdJwtClientIdAndNonce(any(), any())).thenReturn(null);
+        when(vpSubmissionService.processSdJwtKbJwtIat(any(), any())).thenReturn(null);
 
         ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
 
         assertEquals(HttpStatus.OK, response.getStatusCode());
         verify(vpSubmissionService).submitVpToken(any(), any(), any(), any(), any(), any(), any());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenSdJwtKbJwtIatMissingOrInvalid() {
+        mockActiveAuth();
+
+        when(vpSubmissionService.processSdJwtClientIdAndNonce(any(), any())).thenReturn(null);
+        when(vpSubmissionService.processSdJwtKbJwtIat(any(), any()))
+                .thenReturn(ErrorCode.KB_JWT_IAT_MISSING_OR_INVALID);
+
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.KB_JWT_IAT_MISSING_OR_INVALID.getErrorCode(), body.getErrorCode());
+    }
+
+    @Test
+    void shouldReturnBadRequest_whenSdJwtKbJwtIatInFuture() {
+        mockActiveAuth();
+
+        when(vpSubmissionService.processSdJwtClientIdAndNonce(any(), any())).thenReturn(null);
+        when(vpSubmissionService.processSdJwtKbJwtIat(any(), any()))
+                .thenReturn(ErrorCode.KB_JWT_IAT_IN_FUTURE);
+
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.KB_JWT_IAT_IN_FUTURE.getErrorCode(), body.getErrorCode());
     }
 
     // ---- validateRequest missing paths ----

@@ -2341,22 +2341,33 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         private static final String CRED_SIG = b64("sig");
         private static final String KB_HEADER = b64("{\"typ\":\"kb+jwt\"}");
         private static final String KB_SIG = b64("kbsig");
+        private static final long NOW_SEC = System.currentTimeMillis() / 1000;
 
         private static final String SD_JWT_VALID_KB =
                 CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
-                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\"}") + "." + KB_SIG;
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\",\"iat\":" + NOW_SEC + "}") + "." + KB_SIG;
 
         private static final String SD_JWT_WRONG_NONCE =
                 CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
-                + KB_HEADER + "." + b64("{\"nonce\":\"wrong-nonce\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\"}") + "." + KB_SIG;
+                + KB_HEADER + "." + b64("{\"nonce\":\"wrong-nonce\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\",\"iat\":" + NOW_SEC + "}") + "." + KB_SIG;
 
         private static final String SD_JWT_WRONG_AUD =
                 CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
-                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"https://wrong.example.com\"}") + "." + KB_SIG;
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"https://wrong.example.com\",\"iat\":" + NOW_SEC + "}") + "." + KB_SIG;
 
         /** SD-JWT without a KB-JWT (trailing ~ only — KB-JWT payload will be undecodable). */
         private static final String SD_JWT_NO_KB =
                 CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~";
+
+        /** SD-JWT with KB-JWT missing the iat claim. */
+        private static final String SD_JWT_IAT_MISSING =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\"}") + "." + KB_SIG;
+
+        /** SD-JWT with KB-JWT iat 2 minutes in the future (beyond 60s clock skew). */
+        private static final String SD_JWT_IAT_IN_FUTURE =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\",\"iat\":" + (NOW_SEC + 120) + "}") + "." + KB_SIG;
 
         /** Builds an auth request with require_cryptographic_holder_binding=true for "cred1". */
         private AuthorizationRequestResponseDto buildAuthRequest() {
@@ -2424,6 +2435,107 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             // Even a token with wrong aud/nonce passes when binding is not required
             ErrorCode result = verifiablePresentationSubmissionService
                     .processSdJwtClientIdAndNonce(authRequest, tokens(SD_JWT_WRONG_AUD));
+            assertNull(result);
+        }
+    }
+
+    @Nested
+    class ProcessSdJwtKbJwtIat {
+
+        private static final String EXPECTED_NONCE = "test-nonce-value";
+        private static final String EXPECTED_CLIENT_ID = "https://verifier.example.com";
+
+        private static String b64(String json) {
+            return Base64.getUrlEncoder().withoutPadding().encodeToString(json.getBytes());
+        }
+
+        private static final String CRED_HEADER = b64("{\"typ\":\"dc+sd-jwt\"}");
+        private static final String CRED_PAYLOAD = b64("{\"sub\":\"123\",\"cnf\":{\"kid\":\"k1\"}}");
+        private static final String CRED_SIG = b64("sig");
+        private static final String KB_HEADER = b64("{\"typ\":\"kb+jwt\"}");
+        private static final String KB_SIG = b64("kbsig");
+        private static final long NOW_SEC = System.currentTimeMillis() / 1000;
+
+        private static final String SD_JWT_VALID_IAT =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\",\"iat\":" + NOW_SEC + "}") + "." + KB_SIG;
+
+        private static final String SD_JWT_IAT_MISSING =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\"}") + "." + KB_SIG;
+
+        private static final String SD_JWT_IAT_IN_FUTURE =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\",\"iat\":" + (NOW_SEC + 120) + "}") + "." + KB_SIG;
+
+        private static final String SD_JWT_NO_KB =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~";
+
+        private AuthorizationRequestResponseDto buildAuthRequest() {
+            DCQLQueryDto dcql = new DCQLQueryDto(
+                    List.of(new CredentialQueryDto(
+                            "cred1", "dc+sd-jwt",
+                            new CredentialMetaDto(List.of("cred1"), null),
+                            true, false, null, null)),
+                    null);
+            return new AuthorizationRequestResponseDto(EXPECTED_CLIENT_ID, dcql, null, EXPECTED_NONCE, "responseUri", false, false);
+        }
+
+        private Map<String, List<String>> tokens(String sdJwt) {
+            Map<String, List<String>> map = new HashMap<>();
+            map.put("cred1", List.of(sdJwt));
+            return map;
+        }
+
+        @Test
+        void shouldReturnNull_whenKbJwtIatIsValid() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtKbJwtIat(buildAuthRequest(), tokens(SD_JWT_VALID_IAT));
+            assertNull(result);
+        }
+
+        @Test
+        void shouldReturnNull_whenSdJwtTokensMapIsEmpty() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtKbJwtIat(buildAuthRequest(), new HashMap<>());
+            assertNull(result);
+        }
+
+        @Test
+        void shouldReturnIatMissingOrInvalid_whenKbJwtIatAbsent() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtKbJwtIat(buildAuthRequest(), tokens(SD_JWT_IAT_MISSING));
+            assertEquals(ErrorCode.KB_JWT_IAT_MISSING_OR_INVALID, result);
+        }
+
+        @Test
+        void shouldReturnIatMissingOrInvalid_whenKbJwtAbsent() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtKbJwtIat(buildAuthRequest(), tokens(SD_JWT_NO_KB));
+            assertEquals(ErrorCode.KB_JWT_IAT_MISSING_OR_INVALID, result);
+        }
+
+        @Test
+        void shouldReturnIatInFuture_whenKbJwtIatIsInFuture() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtKbJwtIat(buildAuthRequest(), tokens(SD_JWT_IAT_IN_FUTURE));
+            assertEquals(ErrorCode.KB_JWT_IAT_IN_FUTURE, result);
+        }
+
+        @Test
+        void shouldReturnNull_whenHolderBindingNotRequired() {
+            DCQLQueryDto dcql = new DCQLQueryDto(
+                    List.of(new CredentialQueryDto(
+                            "cred1", "dc+sd-jwt",
+                            new CredentialMetaDto(List.of("cred1"), null),
+                            false, false, null, null)),
+                    null);
+            AuthorizationRequestResponseDto authRequest = new AuthorizationRequestResponseDto(
+                    EXPECTED_CLIENT_ID, dcql, null, EXPECTED_NONCE, "responseUri", false, false);
+
+            // iat is not checked when holder binding is not required
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtKbJwtIat(authRequest, tokens(SD_JWT_IAT_MISSING));
             assertNull(result);
         }
     }
