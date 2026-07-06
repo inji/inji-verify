@@ -4,12 +4,14 @@ import static io.restassured.RestAssured.given;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Base64;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 
 import org.apache.log4j.Logger;
+import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.SkipException;
 
@@ -401,6 +403,87 @@ public class InjiVerifyUtil extends AdminTestUtil {
 
 	public static String decodeBase64Url(String encoded) {
 		return new String(Base64.getUrlDecoder().decode(encoded));
+	}
+
+	/**
+	 * Validates client_metadata in Authorization Request JWT payloads conforms to
+	 * OpenID4VP v1.0: vp_formats_supported (not vp_formats), ldp_vc (not ldp_vp),
+	 * and no client_name. Validated in Java because Mosip output validation cannot
+	 * resolve JSON paths containing '+' (e.g. vc+sd-jwt, dc+sd-jwt).
+	 */
+	private static final List<String> EXPECTED_LDP_PROOF_TYPES = Arrays.asList(
+			"Ed25519Signature2018", "Ed25519Signature2020", "RsaSignature2018");
+	private static final List<String> EXPECTED_SD_JWT_ALGS = Arrays.asList(
+			"RS256", "ES256", "ES256K", "EdDSA");
+	private static final String VC_SD_JWT = "vc+sd-jwt";
+	private static final String DC_SD_JWT = "dc+sd-jwt";
+
+	public static void validateOpenId4VpClientMetadata(String payloadJson) throws AdminTestException {
+		JSONObject payload = new JSONObject(payloadJson);
+
+		if (!payload.has("client_metadata")) {
+			throw new AdminTestException(
+					"client_metadata must be present in Authorization Request for decentralized_identifier client_id");
+		}
+
+		JSONObject clientMetadata = payload.getJSONObject("client_metadata");
+
+		if (clientMetadata.has("vp_formats")) {
+			throw new AdminTestException(
+					"Deprecated vp_formats must not be present in client_metadata; expected vp_formats_supported per OpenID4VP v1.0");
+		}
+		if (clientMetadata.has("client_name")) {
+			throw new AdminTestException("client_name must not be present in client_metadata");
+		}
+		if (!clientMetadata.has("vp_formats_supported")) {
+			throw new AdminTestException(
+					"client_metadata must include vp_formats_supported per OpenID4VP v1.0");
+		}
+
+		JSONObject vpFormatsSupported = clientMetadata.getJSONObject("vp_formats_supported");
+
+		if (vpFormatsSupported.has("ldp_vp")) {
+			throw new AdminTestException(
+					"Deprecated ldp_vp must not be present in vp_formats_supported; expected ldp_vc per OpenID4VP v1.0");
+		}
+		if (!vpFormatsSupported.has("ldp_vc")) {
+			throw new AdminTestException(
+					"vp_formats_supported must include ldp_vc for Linked Data Proof credentials");
+		}
+
+		JSONObject ldpVc = vpFormatsSupported.getJSONObject("ldp_vc");
+		assertStringArrayEquals("ldp_vc.proof_type", toStringList(ldpVc.getJSONArray("proof_type")),
+				EXPECTED_LDP_PROOF_TYPES);
+
+		assertSdJwtFormat(vpFormatsSupported, VC_SD_JWT);
+		assertSdJwtFormat(vpFormatsSupported, DC_SD_JWT);
+	}
+
+	private static void assertSdJwtFormat(JSONObject vpFormatsSupported, String formatKey)
+			throws AdminTestException {
+		if (!vpFormatsSupported.has(formatKey)) {
+			throw new AdminTestException("vp_formats_supported must include " + formatKey);
+		}
+		JSONObject sdJwtFormat = vpFormatsSupported.getJSONObject(formatKey);
+		assertStringArrayEquals(formatKey + ".sd-jwt_alg_values",
+				toStringList(sdJwtFormat.getJSONArray("sd-jwt_alg_values")), EXPECTED_SD_JWT_ALGS);
+		assertStringArrayEquals(formatKey + ".kb-jwt_alg_values",
+				toStringList(sdJwtFormat.getJSONArray("kb-jwt_alg_values")), EXPECTED_SD_JWT_ALGS);
+	}
+
+	private static List<String> toStringList(JSONArray array) {
+		List<String> values = new ArrayList<>();
+		for (int i = 0; i < array.length(); i++) {
+			values.add(array.getString(i));
+		}
+		return values;
+	}
+
+	private static void assertStringArrayEquals(String field, List<String> actual, List<String> expected)
+			throws AdminTestException {
+		if (!actual.equals(expected)) {
+			throw new AdminTestException(field + " expected " + expected + " but was " + actual);
+		}
 	}
 
 	public static String decodeAndCombineJwt(String jwtString) {

@@ -125,6 +125,10 @@ public class GetWithParamAndHeader extends InjiVerifyUtil implements ITest {
 					}
 				}
 
+				if (testCaseName.contains("_GetVpRequestWithDID_")) {
+					InjiVerifyUtil.validateOpenId4VpClientMetadata(payloadJson);
+				}
+
 				ouputValid = OutputValidationUtil.doJsonOutputValidation(finalJsonString, outputJson, testCaseDTO,
 						response.getStatusCode());
 			} else {

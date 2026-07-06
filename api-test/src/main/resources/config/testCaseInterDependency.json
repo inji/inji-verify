@@ -33,6 +33,9 @@
     "TC_InjiVerify_GetVpRequestWithDID_02": [
         "TC_InjiVerify_CreateNewVerificationRequestWithDID_01"
     ],
+    "TC_InjiVerify_GetVpRequestWithDID_04": [
+        "TC_InjiVerify_VpRequestWithvaliddata_06"
+    ],
     "TC_InjiVerify_GetVpRequestWithDID_v1_endpoint_03": [
         "TC_InjiVerify_CreateNewVerificationRequestWithDID_01"
     ],
