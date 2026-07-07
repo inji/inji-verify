@@ -6,9 +6,12 @@ import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Base64;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 
 import org.apache.log4j.Logger;
 import org.json.JSONArray;
@@ -415,48 +418,79 @@ public class InjiVerifyUtil extends AdminTestUtil {
 			"Ed25519Signature2018", "Ed25519Signature2020", "RsaSignature2018");
 	private static final List<String> EXPECTED_SD_JWT_ALGS = Arrays.asList(
 			"RS256", "ES256", "ES256K", "EdDSA");
+	private static final String CLIENT_METADATA = "client_metadata";
+	private static final String VP_FORMATS = "vp_formats";
+	private static final String VP_FORMATS_SUPPORTED = "vp_formats_supported";
+	private static final String CLIENT_NAME = "client_name";
+	private static final String LDP_VP = "ldp_vp";
+	private static final String LDP_VC = "ldp_vc";
+	private static final String PROOF_TYPE = "proof_type";
+	private static final String SD_JWT_ALG_VALUES = "sd-jwt_alg_values";
+	private static final String KB_JWT_ALG_VALUES = "kb-jwt_alg_values";
 	private static final String VC_SD_JWT = "vc+sd-jwt";
 	private static final String DC_SD_JWT = "dc+sd-jwt";
+	private static final String AUTHORIZATION_DETAILS = "authorizationDetails";
+	private static final String RESPONSE_CODE_VALIDATION_REQUIRED = "responseCodeValidationRequired";
+	private static final String VP_REQUEST_WITH_VALID_DATA_FOR_VP_SESSION_RESULT_TEMPLATE =
+			"VpRequestWithvaliddataForVpSessionResult";
 
 	public static void validateOpenId4VpClientMetadata(String payloadJson) throws AdminTestException {
 		JSONObject payload = new JSONObject(payloadJson);
 
-		if (!payload.has("client_metadata")) {
+		if (!payload.has(CLIENT_METADATA)) {
 			throw new AdminTestException(
 					"client_metadata must be present in Authorization Request for decentralized_identifier client_id");
 		}
 
-		JSONObject clientMetadata = payload.getJSONObject("client_metadata");
+		JSONObject clientMetadata = payload.getJSONObject(CLIENT_METADATA);
+		assertForbiddenClientMetadataKeys(clientMetadata);
 
-		if (clientMetadata.has("vp_formats")) {
-			throw new AdminTestException(
-					"Deprecated vp_formats must not be present in client_metadata; expected vp_formats_supported per OpenID4VP v1.0");
-		}
-		if (clientMetadata.has("client_name")) {
-			throw new AdminTestException("client_name must not be present in client_metadata");
-		}
-		if (!clientMetadata.has("vp_formats_supported")) {
+		if (!clientMetadata.has(VP_FORMATS_SUPPORTED)) {
 			throw new AdminTestException(
 					"client_metadata must include vp_formats_supported per OpenID4VP v1.0");
 		}
 
-		JSONObject vpFormatsSupported = clientMetadata.getJSONObject("vp_formats_supported");
+		JSONObject vpFormatsSupported = clientMetadata.getJSONObject(VP_FORMATS_SUPPORTED);
+		assertVpFormatsSupportedKeys(vpFormatsSupported);
 
-		if (vpFormatsSupported.has("ldp_vp")) {
-			throw new AdminTestException(
-					"Deprecated ldp_vp must not be present in vp_formats_supported; expected ldp_vc per OpenID4VP v1.0");
-		}
-		if (!vpFormatsSupported.has("ldp_vc")) {
-			throw new AdminTestException(
-					"vp_formats_supported must include ldp_vc for Linked Data Proof credentials");
-		}
-
-		JSONObject ldpVc = vpFormatsSupported.getJSONObject("ldp_vc");
-		assertStringArrayEquals("ldp_vc.proof_type", toStringList(ldpVc.getJSONArray("proof_type")),
+		JSONObject ldpVc = vpFormatsSupported.getJSONObject(LDP_VC);
+		assertStringArrayEquals(LDP_VC + "." + PROOF_TYPE, toStringList(ldpVc.getJSONArray(PROOF_TYPE)),
 				EXPECTED_LDP_PROOF_TYPES);
 
 		assertSdJwtFormat(vpFormatsSupported, VC_SD_JWT);
 		assertSdJwtFormat(vpFormatsSupported, DC_SD_JWT);
+	}
+
+	private static void assertForbiddenClientMetadataKeys(JSONObject clientMetadata) throws AdminTestException {
+		Iterator<String> keys = clientMetadata.keys();
+		while (keys.hasNext()) {
+			switch (keys.next()) {
+				case VP_FORMATS:
+					throw new AdminTestException(
+							"Deprecated vp_formats must not be present in client_metadata; expected vp_formats_supported per OpenID4VP v1.0");
+				case CLIENT_NAME:
+					throw new AdminTestException("client_name must not be present in client_metadata");
+				default:
+					break;
+			}
+		}
+	}
+
+	private static void assertVpFormatsSupportedKeys(JSONObject vpFormatsSupported) throws AdminTestException {
+		Iterator<String> keys = vpFormatsSupported.keys();
+		while (keys.hasNext()) {
+			switch (keys.next()) {
+				case LDP_VP:
+					throw new AdminTestException(
+							"Deprecated ldp_vp must not be present in vp_formats_supported; expected ldp_vc per OpenID4VP v1.0");
+				default:
+					break;
+			}
+		}
+		if (!vpFormatsSupported.has(LDP_VC)) {
+			throw new AdminTestException(
+					"vp_formats_supported must include ldp_vc for Linked Data Proof credentials");
+		}
 	}
 
 	private static void assertSdJwtFormat(JSONObject vpFormatsSupported, String formatKey)
@@ -465,10 +499,10 @@ public class InjiVerifyUtil extends AdminTestUtil {
 			throw new AdminTestException("vp_formats_supported must include " + formatKey);
 		}
 		JSONObject sdJwtFormat = vpFormatsSupported.getJSONObject(formatKey);
-		assertStringArrayEquals(formatKey + ".sd-jwt_alg_values",
-				toStringList(sdJwtFormat.getJSONArray("sd-jwt_alg_values")), EXPECTED_SD_JWT_ALGS);
-		assertStringArrayEquals(formatKey + ".kb-jwt_alg_values",
-				toStringList(sdJwtFormat.getJSONArray("kb-jwt_alg_values")), EXPECTED_SD_JWT_ALGS);
+		assertStringArrayEquals(formatKey + "." + SD_JWT_ALG_VALUES,
+				toStringList(sdJwtFormat.getJSONArray(SD_JWT_ALG_VALUES)), EXPECTED_SD_JWT_ALGS);
+		assertStringArrayEquals(formatKey + "." + KB_JWT_ALG_VALUES,
+				toStringList(sdJwtFormat.getJSONArray(KB_JWT_ALG_VALUES)), EXPECTED_SD_JWT_ALGS);
 	}
 
 	private static List<String> toStringList(JSONArray array) {
@@ -481,9 +515,39 @@ public class InjiVerifyUtil extends AdminTestUtil {
 
 	private static void assertStringArrayEquals(String field, List<String> actual, List<String> expected)
 			throws AdminTestException {
-		if (!actual.equals(expected)) {
-			throw new AdminTestException(field + " expected " + expected + " but was " + actual);
+		Set<String> actualSet = new HashSet<>(actual);
+		Set<String> expectedSet = new HashSet<>(expected);
+		if (!actualSet.equals(expectedSet)) {
+			throw new AdminTestException(field + " expected " + expectedSet + " but was " + actualSet);
 		}
+	}
+
+	/**
+	 * Validates authorizationDetails.responseCodeValidationRequired in VP request
+	 * create responses. Done in Java because Mosip output validation does not
+	 * reliably resolve nested boolean fields.
+	 */
+	public static void validateAuthorizationDetailsResponseCodeValidationRequired(String responseJson,
+			boolean expected) throws AdminTestException {
+		JSONObject response = new JSONObject(responseJson);
+		if (!response.has(AUTHORIZATION_DETAILS) || response.isNull(AUTHORIZATION_DETAILS)) {
+			throw new AdminTestException(
+					"authorizationDetails must be present in VP request create response for pre-registered clientId");
+		}
+		JSONObject authorizationDetails = response.getJSONObject(AUTHORIZATION_DETAILS);
+		if (!authorizationDetails.has(RESPONSE_CODE_VALIDATION_REQUIRED)) {
+			throw new AdminTestException("authorizationDetails must include " + RESPONSE_CODE_VALIDATION_REQUIRED);
+		}
+		boolean actual = authorizationDetails.getBoolean(RESPONSE_CODE_VALIDATION_REQUIRED);
+		if (actual != expected) {
+			throw new AdminTestException(AUTHORIZATION_DETAILS + "." + RESPONSE_CODE_VALIDATION_REQUIRED
+					+ " expected " + expected + " but was " + actual);
+		}
+	}
+
+	public static boolean usesVpSessionResultOutputTemplate(String outputTemplate) {
+		return outputTemplate != null
+				&& outputTemplate.contains(VP_REQUEST_WITH_VALID_DATA_FOR_VP_SESSION_RESULT_TEMPLATE);
 	}
 
 	public static String decodeAndCombineJwt(String jwtString) {

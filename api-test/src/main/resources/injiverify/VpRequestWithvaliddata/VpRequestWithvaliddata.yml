@@ -32,7 +32,7 @@ VpRequestWithvaliddata:
       "id": "$PRESENTATIONDEFINITIONID$"
     }'
     output: '{
-      "responseCodeValidationRequired": "true",
+      "responseCodeValidationRequired": true,
       "responseType": "vp_token"
 }'
 
