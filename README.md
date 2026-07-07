@@ -1,4 +1,4 @@
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=develop&project=inji_inji-verify-verify-service&id=inji_inji-verify-verify-service&metric=alert_status)](https://sonarcloud.io/dashboard?branch=develop&id=inji_inji-verify-verify-service)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=release-1.0.x&project=inji_inji-verify-verify-service&id=inji_inji-verify-verify-service&metric=alert_status)](https://sonarcloud.io/dashboard?branch=release-1.0.x&id=inji_inji-verify-verify-service)
 # Inji Verify
 
 Inji Verify is a web application for verifying Verifiable Credentials (VCs) via QR code scan/upload and the OpenID4VP protocol.
@@ -80,11 +80,11 @@ Once the repository is cloned, following folders can be found under the inji-ver
 
 # Developer Setup:
 
-Once the repo is cloned, move into the inji-verify repository folder and run the following command to check out to the develop branch:
+Once the repo is cloned, move into the inji-verify repository folder and run the following command to check out to the `release-1.0.x` branch:
 
 ```shell
 cd inji-verify # move into the repository folder
-git checkout develop
+git checkout release-1.0.x
 ```
 
 ### verify-ui (frontend)

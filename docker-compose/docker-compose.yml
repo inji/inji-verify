@@ -3,7 +3,7 @@ version: '3.8'
 services:
   verify-service:
     container_name: verify-service
-    image: injistackdev/inji-verify-service:develop
+    image: injistackqa/inji-verify-service:1.0.x
 #    build:
 #      context: ../verify-service
 #      dockerfile: Dockerfile
@@ -33,7 +33,7 @@ services:
 
   verify-ui:
     container_name: verify-ui
-    image: injistackdev/inji-verify-ui:develop
+    image: injistackqa/inji-verify-ui:1.0.x
 #    build:
 #      context: ../verify-ui
 #      dockerfile: Dockerfile

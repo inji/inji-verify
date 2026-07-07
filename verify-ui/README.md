@@ -41,11 +41,11 @@ For a full description of all environment variables see [docs/technical_docs/Inj
 
 # Developer Setup:
 
-Once the repo is cloned, move into the inji-verify repository folder and run the following command to check out to the develop branch:
+Once the repo is cloned, move into the inji-verify repository folder and run the following command to check out to the `release-1.0.x` branch:
 
 ```shell
 cd inji-verify # move into the repository folder
-git checkout develop
+git checkout release-1.0.x
 cd verify-ui # contains source code and Dockerfile
 ```
 
