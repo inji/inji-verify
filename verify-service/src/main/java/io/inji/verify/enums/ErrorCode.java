@@ -88,7 +88,8 @@ public enum ErrorCode {
     VP_TOKEN_CLAIM_VALUE_MISMATCH("invalid_request", "vp_token ldp_vc credential claim value does not match any of the declared values in the DCQL query."),
     VP_TOKEN_CLAIM_SETS_NOT_SATISFIED("invalid_request", "vp_token credential does not satisfy any of the claim_sets options declared in the DCQL query."),
     KB_JWT_IAT_MISSING_OR_INVALID("invalid_request", "KB-JWT iat claim is missing or invalid."),
-    KB_JWT_IAT_IN_FUTURE("invalid_request", "KB-JWT iat is in the future beyond the allowed clock skew.");
+    KB_JWT_IAT_IN_FUTURE("invalid_request", "KB-JWT iat is in the future beyond the allowed clock skew."),
+    KB_JWT_IAT_TOO_OLD("invalid_request", "KB-JWT iat is too far in the past beyond the allowed max age.");
 
     private final String errorCode;
     private final String errorMessage;

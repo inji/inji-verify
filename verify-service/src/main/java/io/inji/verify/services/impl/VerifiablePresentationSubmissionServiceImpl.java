@@ -80,6 +80,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Value("${inji.verify.redirect-uri}")
     String redirectUri;
 
+    @Value("${inji.verify.kb-jwt-max-age-seconds:#{600}}")
+    long kbJwtMaxAgeSeconds;
+
     final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
     final VPSubmissionRepository vpSubmissionRepository;
     final CredentialsVerifier credentialsVerifier;
@@ -315,9 +318,15 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 
     /**
      * Validates the KB-JWT {@code iat} claim for all SD-JWT tokens in a single pass.
-     * Checks that {@code iat} is present and not in the future beyond clock skew.
-     * No max-age check — per SD-JWT RFC 9901, {@code nonce} is the replay-protection
-     * mechanism; {@code iat} only needs to be a valid past/present timestamp.
+     * Checks that {@code iat} is:
+     * <ul>
+     *   <li>present and a positive value</li>
+     *   <li>not in the future beyond {@code clockSkewSeconds} (60 s)</li>
+     *   <li>not older than {@code kbJwtMaxAgeSeconds} (default: 600 s / 10 minutes)</li>
+     * </ul>
+     * The {@code nonce} is the primary replay-protection mechanism per SD-JWT RFC 9901;
+     * {@code kbJwtMaxAgeSeconds} guards against very stale KB-JWTs (e.g. replayed presentations).
+     * Configurable via {@code inji.verify.kb-jwt-max-age-seconds} (default: 600 s / 10 minutes).
      * Only applies to query IDs where {@code require_cryptographic_holder_binding=true}.
      * Returns the first {@link ErrorCode} encountered, or null if all tokens pass.
      */
@@ -345,6 +354,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 if (iat > nowSeconds + clockSkewSeconds) {
                     log.error("KB-JWT iat is in the future for query ID: {}, iat={}, now={}", queryId, iat, nowSeconds);
                     return ErrorCode.KB_JWT_IAT_IN_FUTURE;
+                }
+                if (iat < nowSeconds - kbJwtMaxAgeSeconds) {
+                    log.error("KB-JWT iat is too old for query ID: {}, iat={}, now={}, maxAge={}s", queryId, iat, nowSeconds, kbJwtMaxAgeSeconds);
+                    return ErrorCode.KB_JWT_IAT_TOO_OLD;
                 }
             }
         }
