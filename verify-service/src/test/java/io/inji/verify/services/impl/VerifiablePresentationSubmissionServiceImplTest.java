@@ -2468,6 +2468,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
                 CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
                 + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\",\"iat\":" + (NOW_SEC + 120) + "}") + "." + KB_SIG;
 
+        // iat = 1 year in the past (exceeds 600 s / 10 min default max-age)
+        private static final String SD_JWT_IAT_TOO_OLD =
+                CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~"
+                + KB_HEADER + "." + b64("{\"nonce\":\"" + EXPECTED_NONCE + "\",\"aud\":\"" + EXPECTED_CLIENT_ID + "\",\"iat\":" + (NOW_SEC - 31536000) + "}") + "." + KB_SIG;
+
         private static final String SD_JWT_NO_KB =
                 CRED_HEADER + "." + CRED_PAYLOAD + "." + CRED_SIG + "~";
 
@@ -2520,6 +2525,13 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             ErrorCode result = verifiablePresentationSubmissionService
                     .processSdJwtKbJwtIat(buildAuthRequest(), tokens(SD_JWT_IAT_IN_FUTURE));
             assertEquals(ErrorCode.KB_JWT_IAT_IN_FUTURE, result);
+        }
+
+        @Test
+        void shouldReturnIatTooOld_whenKbJwtIatExceedsMaxAge() {
+            ErrorCode result = verifiablePresentationSubmissionService
+                    .processSdJwtKbJwtIat(buildAuthRequest(), tokens(SD_JWT_IAT_TOO_OLD));
+            assertEquals(ErrorCode.KB_JWT_IAT_TOO_OLD, result);
         }
 
         @Test
