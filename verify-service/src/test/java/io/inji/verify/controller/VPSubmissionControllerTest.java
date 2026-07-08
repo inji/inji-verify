@@ -617,6 +617,22 @@ class VPSubmissionControllerTest {
         assertEquals(ErrorCode.KB_JWT_IAT_IN_FUTURE.getErrorCode(), body.getErrorCode());
     }
 
+    @Test
+    void shouldReturnBadRequest_whenSdJwtKbJwtIatTooOld() {
+        mockActiveAuth();
+
+        when(vpSubmissionService.processSdJwtClientIdAndNonce(any(), any())).thenReturn(null);
+        when(vpSubmissionService.processSdJwtKbJwtIat(any(), any()))
+                .thenReturn(ErrorCode.KB_JWT_IAT_TOO_OLD);
+
+        ResponseEntity<?> response = controller.submitVP(VALID_VP_TOKEN, STATE, null, null, request);
+
+        assertEquals(HttpStatus.BAD_REQUEST, response.getStatusCode());
+        ErrorDto body = (ErrorDto) response.getBody();
+        assertNotNull(body);
+        assertEquals(ErrorCode.KB_JWT_IAT_TOO_OLD.getErrorCode(), body.getErrorCode());
+    }
+
     // ---- validateRequest missing paths ----
 
     @Test

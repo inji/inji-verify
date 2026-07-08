@@ -1114,12 +1114,12 @@ paths:
           description: Invalid request payload
         '500':
           description: Internal server error
-  /well-known/did.json:
+  /did.json:
     get:
       summary: Get the DID document
       description: |-
         ## Description
-        This endpoint is part of a standard DID discovery mechanism, following the .well-known pattern. It is used to retrieve a DID (Decentralized Identifier) document for a given DID. A DID document contains crucial information for interacting with a DID, including public keys for authentication and service endpoints. This is introduced in version *0.14.x*.
+        This endpoint is used to retrieve a DID (Decentralized Identifier) document for a given DID. A DID document contains crucial information for interacting with a DID, including public keys for authentication and service endpoints. This is introduced in version *0.14.x*.
       tags:
         - VP Request
       responses:
