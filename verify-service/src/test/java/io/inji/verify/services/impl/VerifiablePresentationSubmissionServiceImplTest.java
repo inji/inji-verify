@@ -2442,6 +2442,11 @@ public class VerifiablePresentationSubmissionServiceImplTest {
     @Nested
     class ProcessSdJwtKbJwtIat {
 
+        @BeforeEach
+        void setMaxAge() {
+            ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "kbJwtMaxAgeSeconds", 600L);
+        }
+
         private static final String EXPECTED_NONCE = "test-nonce-value";
         private static final String EXPECTED_CLIENT_ID = "https://verifier.example.com";
 
