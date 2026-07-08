@@ -1135,12 +1135,12 @@ paths:
             application/json:
               schema:
                 $ref: '#/components/schemas/InternalErrorResponse'
-  /well-known/did.json:
+  /did.json:
     get:
       summary: Get the DID document
       description: |-
         ## Description
-        Retrieves the DID (Decentralized Identifier) document for the verifier, following the `.well-known` discovery pattern.
+        Retrieves the DID (Decentralized Identifier) document for the verifier.
         The DID document contains public keys for authentication and service endpoints. Supports Authorization Requests by reference with DID-based `client_id` (using the `decentralized_identifier:` prefix per OpenID4VP v1.0).
       tags:
         - VP Request
