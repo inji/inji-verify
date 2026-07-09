@@ -550,6 +550,39 @@ public class InjiVerifyUtil extends AdminTestUtil {
 				&& outputTemplate.contains(VP_REQUEST_WITH_VALID_DATA_FOR_VP_SESSION_RESULT_TEMPLATE);
 	}
 
+	/**
+	 * Validates authorizationDetails.responseCodeValidationRequired when the test
+	 * uses the VP session result output template. Skips when only status code is
+	 * checked or input JSON is unavailable.
+	 */
+	public static void validateAuthorizationDetailsResponseCodeValidationRequiredFromInput(
+			String outputTemplate, boolean checkOnlyStatusCodeInResponse, String inputJson, String responseJson)
+			throws AdminTestException {
+		if (!usesVpSessionResultOutputTemplate(outputTemplate) || checkOnlyStatusCodeInResponse) {
+			return;
+		}
+		if (inputJson == null || inputJson.trim().isEmpty()) {
+			throw new AdminTestException(
+					"Input JSON is required to validate authorizationDetails.responseCodeValidationRequired");
+		}
+		if (responseJson == null || responseJson.trim().isEmpty()) {
+			throw new AdminTestException(
+					"Response body is required to validate authorizationDetails.responseCodeValidationRequired");
+		}
+		try {
+			JSONObject requestJson = new JSONObject(inputJson);
+			if (requestJson.has(RESPONSE_CODE_VALIDATION_REQUIRED)) {
+				validateAuthorizationDetailsResponseCodeValidationRequired(responseJson,
+						requestJson.getBoolean(RESPONSE_CODE_VALIDATION_REQUIRED));
+			}
+		} catch (AdminTestException e) {
+			throw e;
+		} catch (Exception e) {
+			throw new AdminTestException(
+					"Failed to parse input JSON for responseCodeValidationRequired validation: " + e.getMessage());
+		}
+	}
+
 	public static String decodeAndCombineJwt(String jwtString) {
 		try {
 			DecodedJWT jwt = JWT.decode(jwtString);

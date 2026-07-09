@@ -155,14 +155,9 @@ public class SimplePostForAutoGenId extends InjiVerifyUtil implements ITest {
 			logger.error("Error while extracting transaction cookie from response", e);
 		}
 
-		if (InjiVerifyUtil.usesVpSessionResultOutputTemplate(testCaseDTO.getOutputTemplate())
-				&& !testCaseDTO.isCheckOnlyStatusCodeInResponse()) {
-			JSONObject requestJson = new JSONObject(inputJson);
-			if (requestJson.has("responseCodeValidationRequired")) {
-				InjiVerifyUtil.validateAuthorizationDetailsResponseCodeValidationRequired(
-						response.asString(), requestJson.getBoolean("responseCodeValidationRequired"));
-			}
-		}
+		InjiVerifyUtil.validateAuthorizationDetailsResponseCodeValidationRequiredFromInput(
+				testCaseDTO.getOutputTemplate(), testCaseDTO.isCheckOnlyStatusCodeInResponse(), inputJson,
+				response != null ? response.asString() : null);
 
 		Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil
 				.doJsonOutputValidation(response.asString(), outputJson, testCaseDTO, response.getStatusCode());
