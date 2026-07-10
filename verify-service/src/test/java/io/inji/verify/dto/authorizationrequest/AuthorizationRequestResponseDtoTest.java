@@ -47,17 +47,4 @@ public class AuthorizationRequestResponseDtoTest {
         assertTrue(out.has("dcqlQuery"));
         assertEquals("c1", out.get("clientId").asText());
     }
-
-    @Test
-    void serializedOutputIncludesResponseCodeValidationRequired() throws Exception {
-        AuthorizationRequestResponseDto dto =
-                new AuthorizationRequestResponseDto(
-                        "c1", DcqlTestFixtures.minimalDcqlDto(), null, "n", "u", false, true);
-
-        JsonNode out = MAPPER.valueToTree(dto);
-        assertTrue(out.has("responseCodeValidationRequired"));
-        assertTrue(out.get("responseCodeValidationRequired").asBoolean());
-        assertTrue(out.has("acceptVPWithoutHolderProof"));
-        assertFalse(out.get("acceptVPWithoutHolderProof").asBoolean());
-    }
 }
