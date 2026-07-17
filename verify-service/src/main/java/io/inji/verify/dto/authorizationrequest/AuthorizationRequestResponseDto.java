@@ -1,7 +1,7 @@
 package io.inji.verify.dto.authorizationrequest;
 
 import com.fasterxml.jackson.annotation.JsonCreator;
-import com.fasterxml.jackson.annotation.JsonIgnore;
+
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.inji.verify.dto.dcql.DCQLQueryDto;
 import io.inji.verify.dto.presentation.VPDefinitionResponseDto;
@@ -31,7 +31,7 @@ public class AuthorizationRequestResponseDto {
     private final String nonce;
     private final String responseUri;
     // This is deprecated and for backward compatibility to support older VP submissions without holder proof.
-    @Getter(onMethod_ = @JsonIgnore)
+
     private final boolean acceptVPWithoutHolderProof;
     private final boolean responseCodeValidationRequired;
 }
