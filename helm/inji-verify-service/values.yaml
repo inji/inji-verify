@@ -277,6 +277,8 @@ extraEnvVars:
       secretKeyRef:
         name: db-common-secrets
         key: db-dbuser-password
+  - name: INJI_KB_JWT_MAX_AGE_SECONDS
+    value: "600"
 
 ## ConfigMap with extra environment variables that used
 ##

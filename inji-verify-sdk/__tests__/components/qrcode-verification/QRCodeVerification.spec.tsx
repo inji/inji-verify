@@ -1,6 +1,18 @@
 import React from "react";
 import { render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
+
+jest.mock("@ant-design/icons", () => ({
+  MinusOutlined: () => <span data-testid="minus-icon" />,
+  PlusOutlined: () => <span data-testid="plus-icon" />,
+}));
+
+jest.mock("@mui/material", () => ({
+  Slider: (props: Record<string, unknown>) => (
+    <input type="range" data-testid="mui-slider" {...props} />
+  ),
+}));
+
 import QRCodeVerification from "../../../src/components/qrcode-verification/QRCodeVerification";
 
 jest.mock("../../../src/utils/uploadQRCodeUtils", () => ({

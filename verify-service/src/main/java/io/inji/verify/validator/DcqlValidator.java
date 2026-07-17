@@ -459,14 +459,14 @@ public class DcqlValidator {
 
     /** D: if multiple=false (default), each credential array must contain exactly one element. */
     private static void validateMultipleConstraint(CredentialQueryDto matchingQuery, JsonNode submittedCredentials) {
-        if (!matchingQuery.isMultiple() && submittedCredentials.size() > 1) {
+        if (!Boolean.TRUE.equals(matchingQuery.getMultiple()) && submittedCredentials.size() > 1) {
             throw new VPRequestValidationException(ErrorCode.VP_TOKEN_MULTIPLE_CREDENTIALS_NOT_ALLOWED);
         }
     }
 
     /** Returns true if require_cryptographic_holder_binding is true (defaults to true per spec). */
     private static boolean isHolderBindingRequired(CredentialQueryDto matchingQuery) {
-        return matchingQuery.isRequire_cryptographic_holder_binding();
+        return !Boolean.FALSE.equals(matchingQuery.getRequire_cryptographic_holder_binding());
     }
 
     /**

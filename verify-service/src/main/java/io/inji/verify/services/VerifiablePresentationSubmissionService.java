@@ -33,6 +33,8 @@ public interface VerifiablePresentationSubmissionService {
     ErrorCode processLdpVpClientIdAndNonce(AuthorizationRequestResponseDto authRequest, Map<String, List<JSONObject>> ldpVpTokens);
 
     ErrorCode processSdJwtClientIdAndNonce(AuthorizationRequestResponseDto authRequest, Map<String, List<String>> sdJwtTokens);
+
+    ErrorCode processSdJwtKbJwtIat(AuthorizationRequestResponseDto authRequest, Map<String, List<String>> sdJwtTokens);
     
     String generateResponseCode(AuthorizationRequestResponseDto authRequest);
     

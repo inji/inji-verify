@@ -80,6 +80,9 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Value("${inji.verify.redirect-uri}")
     String redirectUri;
 
+    @Value("${inji.verify.kb-jwt-max-age-seconds:#{600}}")
+    long kbJwtMaxAgeSeconds;
+
     final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
     final VPSubmissionRepository vpSubmissionRepository;
     final CredentialsVerifier credentialsVerifier;
@@ -215,7 +218,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 .stream()
                 .filter(cq -> cq.getId().equals(queryId))
                 .findFirst()
-                .map(cq -> cq.isRequire_cryptographic_holder_binding())
+                .map(cq -> !Boolean.FALSE.equals(cq.getRequire_cryptographic_holder_binding()))
                 .orElseGet(() -> {
                     log.warn("No DCQL credential entry found for queryId '{}' in stored VP token; defaulting require_cryptographic_holder_binding to true", queryId);
                     return true;
@@ -307,6 +310,54 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 if (!Objects.equals(nonce, kbNonce)) {
                     log.error("KB-JWT nonce mismatch for query ID: {}, expected: {}, actual: {}", queryId, nonce, kbNonce);
                     return ErrorCode.NONCE_VALIDATION_FAILED;
+                }
+            }
+        }
+        return null;
+    }
+
+    /**
+     * Validates the KB-JWT {@code iat} claim for all SD-JWT tokens in a single pass.
+     * Checks that {@code iat} is:
+     * <ul>
+     *   <li>present and a positive value</li>
+     *   <li>not in the future beyond {@code clockSkewSeconds} (60 s)</li>
+     *   <li>not older than {@code kbJwtMaxAgeSeconds} (default: 600 s / 10 minutes)</li>
+     * </ul>
+     * The {@code nonce} is the primary replay-protection mechanism per SD-JWT RFC 9901;
+     * {@code kbJwtMaxAgeSeconds} guards against very stale KB-JWTs (e.g. replayed presentations).
+     * Configurable via {@code inji.verify.kb-jwt-max-age-seconds} (default: 600 s / 10 minutes).
+     * Only applies to query IDs where {@code require_cryptographic_holder_binding=true}.
+     * Returns the first {@link ErrorCode} encountered, or null if all tokens pass.
+     */
+    @Override
+    public ErrorCode processSdJwtKbJwtIat(AuthorizationRequestResponseDto authRequest, Map<String, List<String>> sdJwtTokens) {
+        final long clockSkewSeconds = 60L;
+        for (Map.Entry<String, List<String>> entry : sdJwtTokens.entrySet()) {
+            String queryId = entry.getKey();
+            if (!isCryptographicHolderBindingRequired(authRequest, queryId)) {
+                log.debug("Skipping KB-JWT iat validation for query ID {} since require_cryptographic_holder_binding is false", queryId);
+                continue;
+            }
+            for (String sdJwt : entry.getValue()) {
+                JSONObject kbPayload = Utils.extractKbJwtPayload(sdJwt);
+                if (kbPayload == null) {
+                    log.error("KB-JWT payload could not be decoded for iat check, query ID: {}", queryId);
+                    return ErrorCode.KB_JWT_IAT_MISSING_OR_INVALID;
+                }
+                long iat = kbPayload.optLong("iat", -1);
+                if (iat <= 0) {
+                    log.error("KB-JWT iat is missing or invalid for query ID: {}", queryId);
+                    return ErrorCode.KB_JWT_IAT_MISSING_OR_INVALID;
+                }
+                long nowSeconds = System.currentTimeMillis() / 1000;
+                if (iat > nowSeconds + clockSkewSeconds) {
+                    log.error("KB-JWT iat is in the future for query ID: {}, iat={}, now={}", queryId, iat, nowSeconds);
+                    return ErrorCode.KB_JWT_IAT_IN_FUTURE;
+                }
+                if (iat < nowSeconds - kbJwtMaxAgeSeconds) {
+                    log.error("KB-JWT iat is too old for query ID: {}, iat={}, now={}, maxAge={}s", queryId, iat, nowSeconds, kbJwtMaxAgeSeconds);
+                    return ErrorCode.KB_JWT_IAT_TOO_OLD;
                 }
             }
         }

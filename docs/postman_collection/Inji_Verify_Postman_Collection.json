@@ -2625,7 +2625,7 @@
           ]
         },
         {
-          "name": "1.8. sd-jwt - valid signature - dcql request",
+          "name": "1.8. sd-jwt - valid signature - dcql request - require_cryptographic_holder_binding false",
           "item": [
             {
               "name": "vp request using dcql",
@@ -2656,7 +2656,7 @@
                 "header": [],
                 "body": {
                   "mode": "raw",
-                  "raw": "{\r\n    \"clientId\": \"decentralized_identifier:did:web:injiverify.dev-int-inji.mosip.net:v1:verify\",\r\n    \"nonce\": \"5wMViKom3siY2zBBQ5trvA\",\r\n    \"responseCodeValidationRequired\": false,\r\n    \"dcqlQuery\": {\r\n        \"credentials\": [\r\n            {\r\n                \"id\": \"student_id_credential_query\",\r\n                \"format\": \"vc+sd-jwt\",\r\n                \"meta\": {\r\n                    \"vct_values\": [\r\n                        \"MockVerifiableCredential_SD_JWT\"\r\n                    ]\r\n                }\r\n            }\r\n        ]\r\n    }\r\n}",
+                  "raw": "{\r\n    \"clientId\": \"decentralized_identifier:did:web:injiverify.dev-int-inji.mosip.net:v1:verify\",\r\n    \"nonce\": \"5wMViKom3siY2zBBQ5trvA\",\r\n    \"responseCodeValidationRequired\": false,\r\n    \"dcqlQuery\": {\r\n        \"credentials\": [\r\n            {\r\n                \"id\": \"student_id_credential_query\",\r\n                \"format\": \"vc+sd-jwt\",\r\n                \"meta\": {\r\n                    \"vct_values\": [\r\n                        \"MockVerifiableCredential_SD_JWT\"\r\n                    ]\r\n                },\r\n                \"require_cryptographic_holder_binding\": false\r\n            }\r\n        ]\r\n    }\r\n}",
                   "options": {
                     "raw": {
                       "language": "json"
@@ -6200,6 +6200,18 @@
     },
     {
       "key": "6_11_reqId",
+      "value": ""
+    },
+    {
+      "key": "vc_sub_jsonLd_txnId",
+      "value": ""
+    },
+    {
+      "key": "vc_sub_sdJwt_txnId",
+      "value": ""
+    },
+    {
+      "key": "vc_sub_cwt_txnId",
       "value": ""
     }
   ]

@@ -8,6 +8,9 @@ module.exports = {
   transform: {
     "^.+\\.(ts|tsx|js|jsx)$": "babel-jest",
   },
+  transformIgnorePatterns: [
+    "/node_modules/(?!(@ant-design|@mui|@emotion)/)",
+  ],
   moduleFileExtensions: [
     "js",
     "mjs",
@@ -18,5 +21,5 @@ module.exports = {
     "json",
     "node",
   ],
-  coverageReporters: ["Html"],
+  coverageReporters: ["html"],
 };

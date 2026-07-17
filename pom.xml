@@ -117,15 +117,31 @@
         <hsqldb.version>2.7.4</hsqldb.version>
         <identity-credential.version>20231002</identity-credential.version>
         <ld-signatures-java.version>1.11.0</ld-signatures-java.version>
-        <jsonld-common-java.version>1.8.0</jsonld-common-java.version>
+        <jsonld-common-java.version>1.19.0</jsonld-common-java.version>
         <vcverifier-jar.version>1.9.0-SNAPSHOT</vcverifier-jar.version>
         <json.version>20240303</json.version>
         <bouncycastle.version>1.78</bouncycastle.version>
-        <java-jwt.version>3.18.1</java-jwt.version>
+        <jandex.version>3.6.0</jandex.version>
+        <titanium-json-ld.version>1.7.0</titanium-json-ld.version>
         <tink.version>1.16.0</tink.version>
         <nimbusds-jiose-jwt.version>9.37.4</nimbusds-jiose-jwt.version>
         <pixelpass-jar.version>0.8.0</pixelpass-jar.version>
     </properties>
+
+    <dependencyManagement>
+        <dependencies>
+            <dependency>
+                <groupId>io.smallrye</groupId>
+                <artifactId>jandex</artifactId>
+                <version>${jandex.version}</version>
+            </dependency>
+            <dependency>
+                <groupId>com.apicatalog</groupId>
+                <artifactId>titanium-json-ld</artifactId>
+                <version>${titanium-json-ld.version}</version>
+            </dependency>
+        </dependencies>
+    </dependencyManagement>
 
     <modules>
         <module>verify-service</module>

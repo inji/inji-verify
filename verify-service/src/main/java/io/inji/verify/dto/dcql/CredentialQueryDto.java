@@ -38,11 +38,11 @@ public class CredentialQueryDto {
     @Schema(description = "Metadata for the credential being queried, used for matching against the credential's metadata.")
     private CredentialMetaDto meta;
 
-    @Schema(description = "Indicates whether cryptographic holder binding is required for the credential, which means that the credential must be cryptographically bound to the holder's proof of possession, such as a signature or proof of key ownership, to ensure that only the rightful holder can present the credential. Defaults to true per the spec.")
-    private boolean require_cryptographic_holder_binding = true;
+    @Schema(description = "Indicates whether cryptographic holder binding is required for the credential, which means that the credential must be cryptographically bound to the holder's proof of possession, such as a signature or proof of key ownership, to ensure that only the rightful holder can present the credential. Omitted when not specified; defaults to true per the spec.")
+    private Boolean require_cryptographic_holder_binding;
 
-    @Schema(description = "Indicates whether the Wallet is allowed to return multiple credentials matching this query. Defaults to false, meaning only one credential per query is expected.")
-    private boolean multiple = false;
+    @Schema(description = "Indicates whether the Wallet is allowed to return multiple credentials matching this query. Omitted when not specified; when present, true allows multiple credentials per query.")
+    private Boolean multiple;
 
     @Valid
     @Schema(description = "List of claims to be matched against the credential.")

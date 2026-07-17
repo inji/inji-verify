@@ -208,6 +208,8 @@ Long-poll for VP request status. Times out after ~55 seconds (Configurable via `
 | `VP_SUBMITTED` | Wallet has submitted the VP token |
 | `EXPIRED` | Request window elapsed |
 
+**Deployment note:** Status notifications rely on an in-memory listener map (`vpRequestStatusListeners` in `VerifiablePresentationRequestServiceImpl`) scoped to a single application instance. If `verify-service` runs with multiple replicas behind a load balancer, a wallet's submission may land on a different instance than the one holding the long-poll connection. The status still resolves correctly (via a DB fallback check), but only after the long-poll timeout elapses instead of immediately. For multi-instance deployments, use sticky sessions or an external pub/sub (e.g. Redis) to restore instant notification.
+
 ---
 
 ### GET /v2/vp-request/{requestId}

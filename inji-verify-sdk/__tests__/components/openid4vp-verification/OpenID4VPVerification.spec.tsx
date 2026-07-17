@@ -266,6 +266,9 @@ describe("OpenID4VPVerification UI Tests", () => {
     it("should throw error if both onVPReceived and onVPProcessed are provided", async () => {
         const errorMessage =
             "Both onVPReceived and onVPProcessed cannot be provided simultaneously";
+        const consoleErrorMock = jest
+            .spyOn(console, "error")
+            .mockImplementation(() => {});
 
         class ErrorBoundary extends React.Component<
             { children: React.ReactNode },
@@ -311,6 +314,8 @@ describe("OpenID4VPVerification UI Tests", () => {
                 errorMessage
             );
         });
+
+        consoleErrorMock.mockRestore();
     });
 
     it("should handle VP result with dcqlQuery and summariseResults=true", async () => {

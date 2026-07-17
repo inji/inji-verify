@@ -217,6 +217,12 @@ public class VPSubmissionController {
                 log.error("SD-JWT KB-JWT clientId/nonce validation failed: {}", error);
                 return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(error));
             }
+            ErrorCode iatError = verifiablePresentationSubmissionService
+                    .processSdJwtKbJwtIat(authRequest.getAuthorizationDetails(), sdJwtTokens);
+            if (iatError != null) {
+                log.error("SD-JWT KB-JWT iat validation failed: {}", iatError);
+                return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(new ErrorDto(iatError));
+            }
         }
         if (ldpVpTokens.isEmpty() && sdJwtTokens.isEmpty()) {
             log.debug("Skipping clientId/nonce validation as no bindable tokens extracted.");
