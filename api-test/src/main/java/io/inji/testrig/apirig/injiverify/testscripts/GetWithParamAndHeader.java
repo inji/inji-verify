@@ -114,15 +114,19 @@ public class GetWithParamAndHeader extends InjiVerifyUtil implements ITest {
 				// Report both header and payload separately if needed
 				DecodedJWT jwt = JWT.decode(response.asString());
 				String headerJson = InjiVerifyUtil.decodeBase64Url(jwt.getHeader());
-				String payloadJson = InjiVerifyUtil.decodeBase64Url(jwt.getPayload());
-				GlobalMethods.reportResponse(headerJson, null, payloadJson, true);
+				String responsePayloadJson = InjiVerifyUtil.decodeBase64Url(jwt.getPayload());
+				GlobalMethods.reportResponse(headerJson, null, responsePayloadJson, true);
 
 				if (testCaseName.contains("CheckClientMetaDataInVPResponse")) {
-					JSONObject payload = new JSONObject(payloadJson);
-					if (payload.has("client_metadata")) {
+					JSONObject responsePayload = new JSONObject(responsePayloadJson);
+					if (responsePayload.has("client_metadata")) {
 						throw new AdminTestException(
 								"client_metadata must not be present in Authorization Request for pre-registered client_id");
 					}
+				}
+
+				if (testCaseName.contains("_GetVpRequestWithDID_")) {
+					InjiVerifyUtil.validateOpenId4VpClientMetadata(responsePayloadJson);
 				}
 
 				ouputValid = OutputValidationUtil.doJsonOutputValidation(finalJsonString, outputJson, testCaseDTO,

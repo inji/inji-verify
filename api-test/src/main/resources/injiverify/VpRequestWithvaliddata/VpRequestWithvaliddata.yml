@@ -28,11 +28,9 @@ VpRequestWithvaliddata:
       "clientId": "injiverify.mosip.net",
       "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
       "acceptVPWithoutHolderProof": true,
-      "responseCodeValidationRequired": true,
-      "id": "$PRESENTATIONDEFINITIONID$"
+      "responseCodeValidationRequired": true
     }'
     output: '{
-      "responseCodeValidationRequired": "true",
       "responseType": "vp_token"
 }'
 

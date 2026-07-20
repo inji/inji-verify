@@ -1,7 +1,7 @@
 CheckClientMetaDataInVPResponseGet:
   Injiverify_CheckClientMetaDataInVPResponse_All_Valid_Smoke:
       endPoint: /v1/verify/v2/vp-request/{requestId}
-      description: Verify pre-registered clientId VP request JWT excludes client_metadata
+      description: Verify pre-registered clientId VP request JWT excludes client_metadata (no vp_formats or vp_formats_supported)
       uniqueIdentifier: TC_InjiVerify_CheckClientMetaDataInVPResponse_01
       role: noauth
       restMethod: get
