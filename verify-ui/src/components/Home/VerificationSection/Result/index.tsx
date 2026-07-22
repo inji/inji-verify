@@ -52,7 +52,7 @@ const Result = () => {
 
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          dispatch(raiseAlert({ message, type: "error" }));
+          dispatch(raiseAlert({ message, severity: "error", open: true }));
 
         }
       } else if (typeof vc === "string") {
@@ -62,7 +62,7 @@ const Result = () => {
           setCredentialType(claims.regularClaims.vct);
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          dispatch(raiseAlert({ message, type: "error" }));
+          dispatch(raiseAlert({ message, severity: "error", open: true }));
         }
       } else {
         setClaims(vc as LdpVc);
