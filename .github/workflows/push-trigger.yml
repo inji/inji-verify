@@ -13,6 +13,7 @@ on:
       - 1.*
       - develop
       - MOSIP*
+      - gpgupdate-test
 
 jobs:
   build-dockers-inji-verify:
@@ -86,8 +87,8 @@ jobs:
       OSSRH_SECRET: ${{ secrets.OSSRH_SECRET }}
       OSSRH_URL: ${{ secrets.OSSRH_CENTRAL_URL }}
       OSSRH_TOKEN: ${{ secrets.OSSRH_TOKEN }}
-      GPG_SECRET: ${{ secrets.GPG_SECRET }}
-      GPG_PRIVATE_KEY: ${{ secrets.GPG_PRIVATE_KEY }}
+      GPG_SECRET_TEMP: ${{ secrets.GPG_SECRET_TEMP }}
+      GPG_PRIVATE_KEY_TEMP: ${{ secrets.GPG_PRIVATE_KEY_TEMP }}
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
   build-dockers:
