@@ -79,7 +79,7 @@ jobs:
   publish_to_nexus:
     if: "${{ !contains(github.ref, 'master') && github.event_name != 'pull_request' }}"
     needs: build-inji-verify-service
-    uses: mosip/kattu/.github/workflows/maven-publish-to-nexus.yml@gpgupdate-masterj21
+    uses: mosip/kattu/.github/workflows/maven-publish-to-nexus.yml@gpgupdate-test
     with:
       SERVICE_LOCATION: ./
     secrets:
