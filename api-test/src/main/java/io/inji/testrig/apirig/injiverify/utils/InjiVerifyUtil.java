@@ -454,10 +454,11 @@ public class InjiVerifyUtil extends AdminTestUtil {
 		assertVpFormatsSupportedKeys(vpFormatsSupported);
 
 		JSONObject ldpVc = vpFormatsSupported.getJSONObject(LDP_VC);
-		if (!ldpVc.has(PROOF_TYPE)) {
+		JSONArray proofTypes = ldpVc.optJSONArray(PROOF_TYPE);
+		if (proofTypes == null) {
 			throw new AdminTestException(LDP_VC + " must include " + PROOF_TYPE);
 		}
-		assertStringArrayEquals(LDP_VC + "." + PROOF_TYPE, toStringList(ldpVc.getJSONArray(PROOF_TYPE)),
+		assertStringArrayEquals(LDP_VC + "." + PROOF_TYPE, toStringList(proofTypes),
 				EXPECTED_LDP_PROOF_TYPES);
 
 		assertSdJwtFormat(vpFormatsSupported, VC_SD_JWT);
@@ -502,6 +503,9 @@ public class InjiVerifyUtil extends AdminTestUtil {
 			throw new AdminTestException("vp_formats_supported must include " + formatKey);
 		}
 		JSONObject sdJwtFormat = vpFormatsSupported.getJSONObject(formatKey);
+		if (!sdJwtFormat.has(SD_JWT_ALG_VALUES) || !sdJwtFormat.has(KB_JWT_ALG_VALUES)) {
+			throw new AdminTestException(formatKey + " must include " + SD_JWT_ALG_VALUES + " and " + KB_JWT_ALG_VALUES);
+		}
 		assertStringArrayEquals(formatKey + "." + SD_JWT_ALG_VALUES,
 				toStringList(sdJwtFormat.getJSONArray(SD_JWT_ALG_VALUES)), EXPECTED_SD_JWT_ALGS);
 		assertStringArrayEquals(formatKey + "." + KB_JWT_ALG_VALUES,
