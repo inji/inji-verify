@@ -454,6 +454,9 @@ public class InjiVerifyUtil extends AdminTestUtil {
 		assertVpFormatsSupportedKeys(vpFormatsSupported);
 
 		JSONObject ldpVc = vpFormatsSupported.getJSONObject(LDP_VC);
+		if (!ldpVc.has(PROOF_TYPE)) {
+			throw new AdminTestException(LDP_VC + " must include " + PROOF_TYPE);
+		}
 		assertStringArrayEquals(LDP_VC + "." + PROOF_TYPE, toStringList(ldpVc.getJSONArray(PROOF_TYPE)),
 				EXPECTED_LDP_PROOF_TYPES);
 
@@ -578,6 +581,7 @@ public class InjiVerifyUtil extends AdminTestUtil {
 		} catch (AdminTestException e) {
 			throw e;
 		} catch (Exception e) {
+			logger.error("Failed to parse input JSON for responseCodeValidationRequired validation", e);
 			throw new AdminTestException(
 					"Failed to parse input JSON for responseCodeValidationRequired validation: " + e.getMessage());
 		}
