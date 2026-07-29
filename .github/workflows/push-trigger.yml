@@ -27,7 +27,7 @@ jobs:
             PLATFORMS: "linux/amd64"
       fail-fast: false
     name: ${{ matrix.SERVICE_NAME }}
-    uses: mosip/kattu/.github/workflows/docker-build.yml@gpgupdate-master
+    uses: mosip/kattu/.github/workflows/docker-build.yml@v0.0.1
     with:
       SERVICE_LOCATION: ${{ matrix.SERVICE_LOCATION }}
       SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
@@ -41,7 +41,7 @@ jobs:
   sonar-analysis-inji-verify:
     if: "${{  github.event_name != 'pull_request' }}"
     needs: build-dockers-inji-verify
-    uses: mosip/kattu/.github/workflows/npm-sonar-analysis.yml@develop
+    uses: mosip/kattu/.github/workflows/npm-sonar-analysis.yml@v0.0.1
     with:
       SERVICE_LOCATION: ./verify-ui
     secrets:
@@ -51,7 +51,7 @@ jobs:
       
   sonar-analysis-inji-verify-service:
     if: "${{  github.event_name != 'pull_request' }}"
-    uses: mosip/kattu/.github/workflows/maven-sonar-analysis-new.yml@develop
+    uses: mosip/kattu/.github/workflows/maven-sonar-analysis.yml@v0.0.1
     with:
       SERVICE_LOCATION: verify-service
     secrets:
@@ -64,7 +64,7 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
 
   build-inji-verify-service:
-    uses: mosip/kattu/.github/workflows/maven-build.yml@gpgupdate-masterj21
+    uses: mosip/kattu/.github/workflows/maven-build.yml@v0.0.1
     with:
       SERVICE_LOCATION: ./
       BUILD_ARTIFACT: inji-verify-service
@@ -81,7 +81,7 @@ jobs:
   publish_to_nexus:
     if: "${{ !contains(github.ref, 'master') && github.event_name != 'pull_request' }}"
     needs: build-inji-verify-service
-    uses: mosip/kattu/.github/workflows/maven-publish-to-nexus.yml@gpgupdate-masterj21
+    uses: mosip/kattu/.github/workflows/maven-publish-to-nexus.yml@v0.0.1
     with:
       SERVICE_LOCATION: ./
     secrets:
@@ -104,7 +104,7 @@ jobs:
               SQUASH_LAYERS: '7'
         fail-fast: false
       name: ${{ matrix.SERVICE_NAME }}
-      uses: mosip/kattu/.github/workflows/docker-build.yml@gpgupdate-masterj21
+      uses: mosip/kattu/.github/workflows/docker-build.yml@v0.0.1
       with:
         SERVICE_LOCATION: ${{ matrix.SERVICE_LOCATION }}
         SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
@@ -117,7 +117,7 @@ jobs:
         SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
         
   build-maven-apitest-inji-verify:
-    uses: mosip/kattu/.github/workflows/maven-build.yml@gpgupdate-masterj21
+    uses: mosip/kattu/.github/workflows/maven-build.yml@v0.0.1
     with:
       SERVICE_LOCATION: ./api-test
       BUILD_ARTIFACT: apitest-inji-verify
@@ -187,7 +187,7 @@ jobs:
             ONLY_DOCKER: true
       fail-fast: false
     name: ${{ matrix.SERVICE_NAME }}
-    uses: mosip/kattu/.github/workflows/docker-build.yml@gpgupdate-masterj21
+    uses: mosip/kattu/.github/workflows/docker-build.yml@v0.0.1
     with:
       SERVICE_LOCATION: ${{ matrix.SERVICE_LOCATION }}
       SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
@@ -200,7 +200,7 @@ jobs:
       SLACK_WEBHOOK_URL: ${{ secrets.SLACK_WEBHOOK }}
       
   build-maven-ui-test:
-    uses: mosip/kattu/.github/workflows/maven-build.yml@gpgupdate-masterj21
+    uses: mosip/kattu/.github/workflows/maven-build.yml@v0.0.1
     with:
       SERVICE_LOCATION: ./ui-test
       BUILD_ARTIFACT: ui-test
@@ -278,7 +278,7 @@ jobs:
             BUILD_ARTIFACT: 'ui-test-local'
       fail-fast: false
     name: ${{ matrix.SERVICE_NAME }}
-    uses: mosip/kattu/.github/workflows/docker-build.yml@gpgupdate-masterj21
+    uses: mosip/kattu/.github/workflows/docker-build.yml@v0.0.1
     with:
       SERVICE_LOCATION: ${{ matrix.SERVICE_LOCATION }}
       SERVICE_NAME: ${{ matrix.SERVICE_NAME }}
