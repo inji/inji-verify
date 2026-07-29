@@ -1,8 +1,4 @@
 {
-    "TC_InjiVerify_InsertDBData_GetVpRequestStatus_01": [
-        "TC_DBDependent_InsertQuery_02",
-        "TC_DBDependent_InsertQuery_03"
-    ],
     "TC_InjiVerify_GetVpTokenForRequestSDJWT_01": [
         "TC_InjiVerify_VpSubmissionSDJWT_01"
     ],
