@@ -30,7 +30,11 @@ export const readQRcodeFromImageFile = async (
 
     if (results.length === 0) {
         if (!isPDF) {
-            throw new Error(`No ${format} found`);
+            const error = new Error(
+                "Unable to detect the QR code. It may be too small or low quality. Please retry with a clear QR"
+            );
+            error.name = "QR_DECODE_FAILED";
+            throw error;
         }
     } else {
         return results[0].text;
@@ -88,7 +92,7 @@ export const scanFilesForQr = async (
     } catch (error) {
         scanResult.error =
             error instanceof Error
-                ? new Error(error.message)
+                ? error
                 : new Error("Unknown error");
     }
 
