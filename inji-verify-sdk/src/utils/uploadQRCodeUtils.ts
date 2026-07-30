@@ -30,7 +30,9 @@ export const readQRcodeFromImageFile = async (
 
     if (results.length === 0) {
         if (!isPDF) {
-            throw new Error(`No ${format} found`);
+            throw new Error(
+                "QR size too small/low quality, please retry with a clear QR"
+            );
         }
     } else {
         return results[0].text;

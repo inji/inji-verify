@@ -55,7 +55,7 @@ return (
             >
                 <QRCodeVerification
                     triggerElement={triggerElement}
-                    verifyServiceUrl={ window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                    verifyServiceUrl={ "http://localhost:8080" + window._env_.VERIFY_SERVICE_API_URL}
                     isEnableScan={false}
                     onVCProcessed={handleOnVCProcessed}
                     uploadButtonId={"upload-qr"}
@@ -71,7 +71,11 @@ return (
                             document.getElementById("trigger-upload")?.click();
                             dispatch(
                                 raiseAlert({
-                                    message: error.message,
+                                    message:
+                                        error.message ===
+                                        "QR size too small/low quality, please retry with a clear QR"
+                                            ? t("AlertMessages:qrLowQuality")
+                                            : error.message,
                                     severity: "error",
                                     open: true,
                                 })
