@@ -235,8 +235,7 @@ VcVerificationV2:
      "allChecksSuccessful": true,
       "schemaAndSignatureCheck": {"valid": true,"error": null},
       "expiryCheck": {"valid": true},
-      "statusCheck": [],
-      "claims": {"phone_number": "491511234567"}
+      "statusCheck": []
 }'
 
   Injiverify_VcVerification_V2_WithOutClaims_attributes_Neg:
