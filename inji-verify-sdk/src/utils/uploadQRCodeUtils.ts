@@ -99,7 +99,7 @@ export const readQRcodeFromImageFile = async (
         return decodedQrCode.text;
     }
 
-    if (!isPDF && results.some((result) => result.format === "QRCode" && !result.isValid)) {
+    if (results.some((result) => result.format === "QRCode" && !result.isValid)) {
         const error = new Error(
             "QR size too small/low quality, please retry with a clear QR",
         );
@@ -125,6 +125,7 @@ export const readQRcodeFromImageFile = async (
 const readQRcodeFromPdf = async (file: File, format: string) => {
     const pdfData = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
+    let decodeFailure: Error | undefined;
 
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -145,13 +146,27 @@ const readQRcodeFromPdf = async (file: File, format: string) => {
             const dataURL = canvas.toDataURL();
             const blob = await (await fetch(dataURL)).blob();
             const fileFromBlob = new File([blob], "tempFileName", {type: blob.type});
-            const qrCode = await readQRcodeFromImageFile(fileFromBlob, format, true);
-            if (qrCode) {
-                return qrCode;
+            try {
+                const qrCode = await readQRcodeFromImageFile(fileFromBlob, format, true);
+                if (qrCode) {
+                    return qrCode;
+                }
+            } catch (error) {
+                if (error instanceof Error && error.name === "QR_DECODE_FAILED") {
+                    decodeFailure ??= error;
+                    continue;
+                }
+                throw error;
             }
         }
     }
-    throw new Error(`No ${format} found`);
+    if (decodeFailure) {
+        throw decodeFailure;
+    }
+
+    const error = new Error(`No ${format} found`);
+    error.name = "QR_NOT_FOUND";
+    throw error;
 
 };
 
