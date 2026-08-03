@@ -13,6 +13,64 @@ const workerBlobUrl = URL.createObjectURL(blob);
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerBlobUrl;
 
+const hasDenseQrLikeGrid = async (file: File): Promise<boolean> => {
+    const imageUrl = URL.createObjectURL(file);
+
+    try {
+        const image = await new Promise<HTMLImageElement>((resolve, reject) => {
+            const loadedImage = new Image();
+            loadedImage.onload = () => resolve(loadedImage);
+            loadedImage.onerror = () => reject(new Error("Unable to inspect the uploaded image"));
+            loadedImage.src = imageUrl;
+        });
+        const maximumDimension = 320;
+        const scale = Math.min(1, maximumDimension / Math.max(image.width, image.height));
+        const width = Math.max(1, Math.round(image.width * scale));
+        const height = Math.max(1, Math.round(image.height * scale));
+        const canvas = document.createElement("canvas");
+        const context = canvas.getContext("2d", {willReadFrequently: true});
+
+        if (!context) return false;
+
+        canvas.width = width;
+        canvas.height = height;
+        context.drawImage(image, 0, 0, width, height);
+        const pixels = context.getImageData(0, 0, width, height).data;
+        const luminance = (x: number, y: number) => {
+            const offset = (y * width + x) * 4;
+            return pixels[offset] * 0.299 + pixels[offset + 1] * 0.587 + pixels[offset + 2] * 0.114;
+        };
+
+        for (let squareSize = 20; squareSize <= Math.min(width, height); squareSize += 8) {
+            const step = Math.max(4, Math.floor(squareSize / 4));
+
+            for (let y = 0; y <= height - squareSize; y += step) {
+                for (let x = 0; x <= width - squareSize; x += step) {
+                    let transitions = 0;
+                    let comparisons = 0;
+
+                    for (let row = y + 1; row < y + squareSize; row++) {
+                        for (let column = x + 1; column < x + squareSize; column++) {
+                            const current = luminance(column, row);
+                            if (Math.abs(current - luminance(column - 1, row)) > 25) transitions++;
+                            if (Math.abs(current - luminance(column, row - 1)) > 25) transitions++;
+                            comparisons += 2;
+                        }
+                    }
+
+                    if (transitions / comparisons >= 0.45) return true;
+                }
+            }
+        }
+
+        return false;
+    } catch {
+        return false;
+    } finally {
+        URL.revokeObjectURL(imageUrl);
+    }
+};
+
 export const extractRedirectUrlFromQrData = (qrData: string) => {
     // qr data format = OVP://payload:text-content
     const regex = new RegExp(`^${OvpQrHeader}(.*)$`);
@@ -26,16 +84,41 @@ export const readQRcodeFromImageFile = async (
     isPDF?: boolean
 ): Promise<string | undefined> => {
     const arrayBuffer = await file.arrayBuffer();
-    const results = await readBarcodes(arrayBuffer);
+    const results = await readBarcodes(arrayBuffer, {
+        formats: [format as "QRCode"],
+        returnErrors: true,
+        tryHarder: true,
+        tryRotate: true,
+        tryInvert: true,
+        tryDownscale: false,
+        tryDenoise: true,
+    });
 
-    if (results.length === 0) {
-        if (!isPDF) {
-            throw new Error(
-                "QR size too small/low quality, please retry with a clear QR"
-            );
-        }
-    } else {
-        return results[0].text;
+    const decodedQrCode = results.find((result) => result.isValid);
+    if (decodedQrCode) {
+        return decodedQrCode.text;
+    }
+
+    if (!isPDF && results.some((result) => result.format === "QRCode" && !result.isValid)) {
+        const error = new Error(
+            "QR size too small/low quality, please retry with a clear QR",
+        );
+        error.name = "QR_DECODE_FAILED";
+        throw error;
+    }
+
+    if (!isPDF && await hasDenseQrLikeGrid(file)) {
+        const error = new Error(
+            "QR size too small/low quality, please retry with a clear QR",
+        );
+        error.name = "QR_DECODE_FAILED";
+        throw error;
+    }
+
+    if (!isPDF) {
+        const error = new Error("No QR code found");
+        error.name = "QR_NOT_FOUND";
+        throw error;
     }
 };
 
@@ -90,7 +173,7 @@ export const scanFilesForQr = async (
     } catch (error) {
         scanResult.error =
             error instanceof Error
-                ? new Error(error.message)
+                ?  error
                 : new Error("Unknown error");
     }
 
