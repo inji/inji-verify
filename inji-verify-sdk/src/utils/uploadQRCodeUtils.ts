@@ -173,7 +173,7 @@ export const scanFilesForQr = async (
     } catch (error) {
         scanResult.error =
             error instanceof Error
-                ?  error
+                ? error
                 : new Error("Unknown error");
     }
 
