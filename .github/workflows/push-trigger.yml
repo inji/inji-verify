@@ -41,7 +41,7 @@ jobs:
   sonar-analysis-inji-verify:
     if: "${{  github.event_name != 'pull_request' }}"
     needs: build-dockers-inji-verify
-    uses: mosip/kattu/.github/workflows/npm-sonar-analysis.yml@gpgupdate-masterj21
+    uses: mosip/kattu/.github/workflows/npm-sonar-analysis.yml@v0.0.1
     with:
       SERVICE_LOCATION: ./verify-ui
     secrets:
