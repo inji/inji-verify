@@ -55,7 +55,7 @@ return (
             >
                 <QRCodeVerification
                     triggerElement={triggerElement}
-                    verifyServiceUrl={ "http://localhost:8080" + window._env_.VERIFY_SERVICE_API_URL}
+                    verifyServiceUrl={ window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
                     isEnableScan={false}
                     onVCProcessed={handleOnVCProcessed}
                     uploadButtonId={"upload-qr"}
