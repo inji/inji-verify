@@ -1,6 +1,6 @@
 {
   "name": "@injistack/react-inji-verify-sdk",
-  "version": "1.0.0-dev.1",
+  "version": "1.0.0-alpha.1",
   "description": "React component library for verifying Verifiable Credentials via QR code scan/upload and OpenID4VP wallet flows",
   "sideEffects": [
     "*.css"
