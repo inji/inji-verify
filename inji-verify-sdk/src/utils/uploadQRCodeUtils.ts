@@ -13,7 +13,21 @@ const workerBlobUrl = URL.createObjectURL(blob);
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerBlobUrl;
 
-const detectUndecodableQrCode = async (file: File): Promise<boolean> => {
+const createDecodeFailedError = () => {
+    const error = new Error(
+        "QR size too small/low quality, please retry with a clear QR",
+    );
+    error.name = "QR_DECODE_FAILED";
+    return error;
+};
+
+const createQrNotFoundError = (message = "No QR code found") => {
+    const error = new Error(message);
+    error.name = "QR_NOT_FOUND";
+    return error;
+};
+
+const containsPotentialQrCode = async (file: File): Promise<boolean> => {
     const imageUrl = URL.createObjectURL(file);
 
     try {
@@ -100,25 +114,15 @@ export const readQRcodeFromImageFile = async (
     }
 
     if (results.some((result) => result.format === "QRCode" && !result.isValid)) {
-        const error = new Error(
-            "QR size too small/low quality, please retry with a clear QR",
-        );
-        error.name = "QR_DECODE_FAILED";
-        throw error;
+        throw createDecodeFailedError();
     }
 
-    if (!isPDF && await detectUndecodableQrCode(file)) {
-        const error = new Error(
-            "QR size too small/low quality, please retry with a clear QR",
-        );
-        error.name = "QR_DECODE_FAILED";
-        throw error;
+    if (!isPDF && await containsPotentialQrCode(file)) {
+        throw createDecodeFailedError();
     }
 
     if (!isPDF) {
-        const error = new Error("No QR code found");
-        error.name = "QR_NOT_FOUND";
-        throw error;
+        throw createQrNotFoundError();
     }
 };
 
@@ -164,9 +168,7 @@ const readQRcodeFromPdf = async (file: File, format: string) => {
         throw decodeFailure;
     }
 
-    const error = new Error(`No ${format} found`);
-    error.name = "QR_NOT_FOUND";
-    throw error;
+    throw createQrNotFoundError(`No ${format} found`);
 
 };
 
