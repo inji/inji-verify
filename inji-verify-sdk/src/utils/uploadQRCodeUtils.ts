@@ -13,7 +13,7 @@ const workerBlobUrl = URL.createObjectURL(blob);
 
 pdfjsLib.GlobalWorkerOptions.workerSrc = workerBlobUrl;
 
-const hasDenseQrLikeGrid = async (file: File): Promise<boolean> => {
+const detectUndecodableQrCode = async (file: File): Promise<boolean> => {
     const imageUrl = URL.createObjectURL(file);
 
     try {
@@ -107,7 +107,7 @@ export const readQRcodeFromImageFile = async (
         throw error;
     }
 
-    if (!isPDF && await hasDenseQrLikeGrid(file)) {
+    if (!isPDF && await detectUndecodableQrCode(file)) {
         const error = new Error(
             "QR size too small/low quality, please retry with a clear QR",
         );
