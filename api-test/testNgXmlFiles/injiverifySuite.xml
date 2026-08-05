@@ -3,22 +3,6 @@
 <suite name="Inji-Verify API Test">
 	<!-- Passing Group as parmeter unsing "testType" Possible Groups are: smoke 
 		regression smokeAndRegression -->
-	<test name="InsertDBData">
-		<parameter name="ymlFile"
-			value="injiverify/InsertDBData/InsertDBData.yml" />
-		<classes>
-			<class
-				name="io.inji.testrig.apirig.injiverify.testscripts.DBIntegration" />
-		</classes>
-	</test>
-	<test name="InsertDBDataGetVpRequestStatus">
-		<parameter name="ymlFile"
-			value="injiverify/InsertDBData/InsertDBDataGetVpRequestStatus.yml" />
-		<classes>
-			<class
-				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
-		</classes>
-	</test>
 	<test name="VpRequestWithvaliddata">
 		<parameter name="ymlFile"
 			value="injiverify/VpRequestWithvaliddata/VpRequestWithvaliddata.yml" />

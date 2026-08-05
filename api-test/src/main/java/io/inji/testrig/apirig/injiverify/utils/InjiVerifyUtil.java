@@ -4,17 +4,13 @@ import static io.restassured.RestAssured.given;
 
 import java.nio.charset.StandardCharsets;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Base64;
-import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
 
 import org.apache.log4j.Logger;
-import org.json.JSONArray;
 import org.json.JSONObject;
 import org.testng.SkipException;
 
@@ -409,25 +405,18 @@ public class InjiVerifyUtil extends AdminTestUtil {
 	}
 
 	/**
-	 * Validates client_metadata in Authorization Request JWT payloads conforms to
-	 * OpenID4VP v1.0: vp_formats_supported (not vp_formats), ldp_vc (not ldp_vp),
-	 * and no client_name. Validated in Java because Mosip output validation cannot
-	 * resolve JSON paths containing '+' (e.g. vc+sd-jwt, dc+sd-jwt).
+	 * Validates client_metadata shape per OpenID4VP v1.0: vp_formats_supported
+	 * (not vp_formats), ldp_vc (not ldp_vp), dc+sd-jwt, and no client_name.
+	 * Does not enforce optional proof_type / sd-jwt_alg_values / kb-jwt_alg_values
+	 * arrays or legacy vc+sd-jwt. Validated in Java because Mosip output validation
+	 * cannot resolve JSON paths containing '+' (e.g. dc+sd-jwt).
 	 */
-	private static final List<String> EXPECTED_LDP_PROOF_TYPES = Arrays.asList(
-			"Ed25519Signature2018", "Ed25519Signature2020", "RsaSignature2018");
-	private static final List<String> EXPECTED_SD_JWT_ALGS = Arrays.asList(
-			"RS256", "ES256", "ES256K", "EdDSA");
 	private static final String CLIENT_METADATA = "client_metadata";
 	private static final String VP_FORMATS = "vp_formats";
 	private static final String VP_FORMATS_SUPPORTED = "vp_formats_supported";
 	private static final String CLIENT_NAME = "client_name";
 	private static final String LDP_VP = "ldp_vp";
 	private static final String LDP_VC = "ldp_vc";
-	private static final String PROOF_TYPE = "proof_type";
-	private static final String SD_JWT_ALG_VALUES = "sd-jwt_alg_values";
-	private static final String KB_JWT_ALG_VALUES = "kb-jwt_alg_values";
-	private static final String VC_SD_JWT = "vc+sd-jwt";
 	private static final String DC_SD_JWT = "dc+sd-jwt";
 	private static final String AUTHORIZATION_DETAILS = "authorizationDetails";
 	private static final String RESPONSE_CODE_VALIDATION_REQUIRED = "responseCodeValidationRequired";
@@ -452,13 +441,7 @@ public class InjiVerifyUtil extends AdminTestUtil {
 
 		JSONObject vpFormatsSupported = clientMetadata.getJSONObject(VP_FORMATS_SUPPORTED);
 		assertVpFormatsSupportedKeys(vpFormatsSupported);
-
-		JSONObject ldpVc = vpFormatsSupported.getJSONObject(LDP_VC);
-		assertStringArrayEquals(LDP_VC + "." + PROOF_TYPE, toStringList(ldpVc.getJSONArray(PROOF_TYPE)),
-				EXPECTED_LDP_PROOF_TYPES);
-
-		assertSdJwtFormat(vpFormatsSupported, VC_SD_JWT);
-		assertSdJwtFormat(vpFormatsSupported, DC_SD_JWT);
+		assertFormatObjectPresent(vpFormatsSupported, DC_SD_JWT);
 	}
 
 	private static void assertForbiddenClientMetadataKeys(JSONObject clientMetadata) throws AdminTestException {
@@ -487,38 +470,13 @@ public class InjiVerifyUtil extends AdminTestUtil {
 					break;
 			}
 		}
-		if (!vpFormatsSupported.has(LDP_VC)) {
-			throw new AdminTestException(
-					"vp_formats_supported must include ldp_vc for Linked Data Proof credentials");
-		}
+		assertFormatObjectPresent(vpFormatsSupported, LDP_VC);
 	}
 
-	private static void assertSdJwtFormat(JSONObject vpFormatsSupported, String formatKey)
+	private static void assertFormatObjectPresent(JSONObject vpFormatsSupported, String formatKey)
 			throws AdminTestException {
-		if (!vpFormatsSupported.has(formatKey)) {
-			throw new AdminTestException("vp_formats_supported must include " + formatKey);
-		}
-		JSONObject sdJwtFormat = vpFormatsSupported.getJSONObject(formatKey);
-		assertStringArrayEquals(formatKey + "." + SD_JWT_ALG_VALUES,
-				toStringList(sdJwtFormat.getJSONArray(SD_JWT_ALG_VALUES)), EXPECTED_SD_JWT_ALGS);
-		assertStringArrayEquals(formatKey + "." + KB_JWT_ALG_VALUES,
-				toStringList(sdJwtFormat.getJSONArray(KB_JWT_ALG_VALUES)), EXPECTED_SD_JWT_ALGS);
-	}
-
-	private static List<String> toStringList(JSONArray array) {
-		List<String> values = new ArrayList<>();
-		for (int i = 0; i < array.length(); i++) {
-			values.add(array.getString(i));
-		}
-		return values;
-	}
-
-	private static void assertStringArrayEquals(String field, List<String> actual, List<String> expected)
-			throws AdminTestException {
-		Set<String> actualSet = new HashSet<>(actual);
-		Set<String> expectedSet = new HashSet<>(expected);
-		if (!actualSet.equals(expectedSet)) {
-			throw new AdminTestException(field + " expected " + expectedSet + " but was " + actualSet);
+		if (!vpFormatsSupported.has(formatKey) || !(vpFormatsSupported.opt(formatKey) instanceof JSONObject)) {
+			throw new AdminTestException("vp_formats_supported must include " + formatKey + " as a JSON object");
 		}
 	}
 
@@ -578,6 +536,7 @@ public class InjiVerifyUtil extends AdminTestUtil {
 		} catch (AdminTestException e) {
 			throw e;
 		} catch (Exception e) {
+			logger.error("Failed to parse input JSON for responseCodeValidationRequired validation", e);
 			throw new AdminTestException(
 					"Failed to parse input JSON for responseCodeValidationRequired validation: " + e.getMessage());
 		}
