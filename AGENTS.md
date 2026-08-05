@@ -30,9 +30,9 @@ npm run test:ci    # jest in CI mode (used by prestart/prebuild)
 npm run build      # runs tests then react-app-rewired build
 ```
 
-To skip the prestart test run during development:
+To skip the prestart test run during development (while still generating `env.config.js`):
 ```bash
-cd verify-ui && react-app-rewired start
+cd verify-ui && ./configure_start_local.sh && react-app-rewired start
 ```
 
 Run a single test file:
@@ -69,7 +69,9 @@ npm run build      # webpack bundle + TypeScript declarations into dist/
 - **Frontend (verify-ui)**: React/TypeScript app supporting three verification methods — file **UPLOAD**, camera **SCAN**, and **VERIFY** (OpenID4VP). Redux-managed state, theme-driven UI.
   - **UPLOAD/SCAN** verify a credential the user already holds as a QR code: the frontend decodes the QR and posts the VC directly to `/v2/vc-verification` for synchronous verification.
   - **VERIFY (OpenID4VP 1.0)** orchestrates a live request-and-present exchange with a wallet on a separate device, rather than checking a credential the user already has — see the OpenID4VP flow below.
-- **Backend API (verify-service)**: Spring Boot service exposing VC verification and OpenID4VP endpoints (session/request creation, wallet submission, result retrieval, DID document). All routes prefixed with `/v1/verify`. Legacy v1 endpoints exist alongside current v2 endpoints.
+- **Backend API (verify-service)**: Spring Boot service exposing VC verification and OpenID4VP endpoints (session/request creation, wallet submission, result retrieval, DID document). Legacy v1 endpoints exist alongside current v2 endpoints.
+
+All paths below are relative to the server's context path, `/v1/verify` by default (`server.servlet.context-path`, set via `verify.context-path` in `application.properties`) — e.g. `POST /v2/vc-verification` is actually `POST /v1/verify/v2/vc-verification`.
 
 | Endpoint | Description |
 |---|---|
