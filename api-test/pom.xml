@@ -12,8 +12,8 @@
 
 	<licenses>
 		<license>
-			<name>MPL 2.0</name>
-			<url>https://www.mozilla.org/en-US/MPL/2.0/</url>
+			<name>Apache 2.0</name>
+			<url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
 		</license>
 	</licenses>
 
@@ -74,10 +74,8 @@
 
 
 	<properties>
-		<!-- kernel versions -->
 		<project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
 
-		<!-- maven -->
 		<maven.compiler.target>21</maven.compiler.target>
 		<maven.compiler.source>21</maven.compiler.source>
 		<maven.compiler.version>3.8.0</maven.compiler.version>
@@ -196,19 +194,14 @@
 						<configuration>
 							<finalName>${fileName}</finalName>
 							<transformers>
-								<!-- need this to merge the services files
-                                properly -->
 								<transformer
 										implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer" />
-								<!-- add Main-Class to manifest file -->
 								<transformer
 										implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
 									<mainClass>
 										io.inji.testrig.apirig.injiverify.testrunner.InjiTestRunner</mainClass>
 								</transformer>
 							</transformers>
-							<!-- add this to prevent some security issues when
-                            merging everything together -->
 							<filters>
 								<filter>
 									<artifact>*:*</artifact>
@@ -295,8 +288,6 @@
 						</goals>
 						<configuration>
 							<target>
-								<!-- Create a shell script to run the JAR file
-                                with executable permission -->
 								<chmod file="${project.build.directory}/*.jar"
 									   perm="ugo+rx" />
 							</target>

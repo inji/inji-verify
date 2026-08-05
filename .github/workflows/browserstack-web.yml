@@ -19,7 +19,7 @@ on:
 jobs:
   inji-verify-test:
     if: false  # This disables the job from running
-    uses: mosip/kattu/.github/workflows/browserstack-web.yml@master-java21
+    uses: mosip/kattu/.github/workflows/browserstack-web.yml@v0.0.1
     with:
       SERVICE_LOCATION: ui-test
       BUILD_ARTIFACT: test-output

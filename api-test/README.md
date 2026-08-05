@@ -172,4 +172,4 @@ To run the tests for both **Smoke** and **Regression**:
 
 ## License
 
-This project is licensed under the terms of the [Mozilla Public License 2.0](https://github.com/inji/inji-verify/blob/master/LICENSE)
+This project is licensed under the terms of the [Apache License 2.0](https://www.apache.org/licenses/LICENSE-2.0.txt).

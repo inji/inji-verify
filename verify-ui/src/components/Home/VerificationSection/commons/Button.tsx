@@ -45,7 +45,8 @@ export const Button = ({
     .join(" ");
 
   const buttonBaseClass = [
-    "h-[40px]",
+    "min-h-[40px]",
+    "py-2",
     "w-full",
     "rounded-[5px]",
     "flex",

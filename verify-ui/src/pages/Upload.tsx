@@ -71,7 +71,12 @@ return (
                             document.getElementById("trigger-upload")?.click();
                             dispatch(
                                 raiseAlert({
-                                    message: error.message,
+                                        message:
+                                            error.name === "QR_DECODE_FAILED"
+                                                ? t("AlertMessages:qrDecodeFailed")
+                                                : error.name === "QR_NOT_FOUND"
+                                                    ? t("AlertMessages:qrNotDetected")
+                                                : error.message,
                                     severity: "error",
                                     open: true,
                                 })

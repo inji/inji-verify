@@ -12,8 +12,8 @@
 
     <licenses>
         <license>
-            <name>MPL 2.0</name>
-            <url>https://www.mozilla.org/en-US/MPL/2.0/</url>
+            <name>Apache 2.0</name>
+            <url>https://www.apache.org/licenses/LICENSE-2.0.txt</url>
         </license>
     </licenses>
 
@@ -64,7 +64,6 @@
     </dependencyManagement>
 
     <dependencies>
-        <!-- Selenium -->
         <dependency>
             <groupId>org.seleniumhq.selenium</groupId>
             <artifactId>selenium-java</artifactId>
@@ -87,7 +86,6 @@
             <version>${slf4j.version}</version>
         </dependency>
 
-        <!-- Cucumber -->
         <dependency>
             <groupId>io.cucumber</groupId>
             <artifactId>gherkin</artifactId>
@@ -133,21 +131,16 @@
             <artifactId>jackson-databind</artifactId>
             <version>${jackson.version}</version>
         </dependency>
-        <!-- JSON & REST API Testing -->
-
-        <!-- PDFBox for PDF Handling -->
         <dependency>
             <groupId>org.apache.pdfbox</groupId>
             <artifactId>pdfbox</artifactId>
             <version>${pdfbox.version}</version>
         </dependency>
-        <!-- https://mvnrepository.com/artifact/com.browserstack/browserstack-local-java -->
         <dependency>
             <groupId>com.browserstack</groupId>
             <artifactId>browserstack-local-java</artifactId>
             <version>${browserstack.local.version}</version>
         </dependency>
-        <!-- BrowserStack SDK -->
         <dependency>
             <groupId>com.browserstack</groupId>
             <artifactId>browserstack-java-sdk</artifactId>
@@ -203,7 +196,6 @@
             </testResource>
         </testResources>
         <plugins>
-            <!-- Compiler Plugin -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
@@ -244,7 +236,6 @@
                     </execution>
                 </executions>
             </plugin>
-            <!-- Surefire Plugin for Running Tests -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-surefire-plugin</artifactId>
@@ -255,7 +246,6 @@
             </plugin>
 
 
-            <!-- Maven Shade Plugin for Creating an Executable JAR -->
             <plugin>
                 <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-shade-plugin</artifactId>
@@ -268,18 +258,13 @@
                         <configuration>
                             <finalName>${fileName}</finalName>
                             <transformers>
-                                <!-- need this to merge the services files
-                                properly -->
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ServicesResourceTransformer"/>
-                                <!-- add Main-Class to manifest file -->
                                 <transformer
                                         implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
                                     <mainClass>runnerfiles.Runner</mainClass>
                                 </transformer>
                             </transformers>
-                            <!-- add this to prevent some security issues when
-                            merging everything together -->
                             <filters>
                                 <filter>
                                     <artifact>*:*</artifact>
