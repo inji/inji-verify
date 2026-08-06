@@ -38,6 +38,12 @@ import {clearUrl, summariseVPResult, summariseVCResult, normalizeVp} from "../..
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
 
+const createPartialQrScanError = () => {
+  const error = new Error();
+  error.name = "PARTIAL_QR_SCAN";
+  return error;
+};
+
 const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   scannerActive = true,
   triggerElement,
@@ -75,6 +81,11 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const hasFetchedVPResultRef = useRef(false);
   const fileInputRef = useRef<HTMLInputElement>(null);
   const fileDialogOpenRef = useRef(false);
+  const onErrorRef = useRef(onError);
+
+  useEffect(() => {
+    onErrorRef.current = onError;
+  }, [onError]);
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -107,7 +118,11 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         stopVideoStream();
         setScanning(true);
         const text = results[0].text;
-        processScanResult(text);
+        try {
+          await processScanResult(text);
+        } catch (error) {
+          handleError(error);
+        }
       }
     } catch (error) {
       handleError(error);
@@ -192,12 +207,11 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     clearTimer: () => void,
     timerRef: React.MutableRefObject<any>,
     stopVideoStream: () => void,
-    onError?: (err: Error) => void
   ) => {
     clearTimer();
     timerRef.current = setTimeout(() => {
       stopVideoStream();
-      onError?.(new Error("Session expired. Please Scan again."));
+      onErrorRef.current(createPartialQrScanError());
     }, ScanSessionExpiryTime);
   };
 
@@ -240,7 +254,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         .then(() => {
           streamingRef.current = true;
           startingRef.current = false;
-          startSessionTimer(clearTimer, timerRef, stopVideoStream, onError);
+          startSessionTimer(clearTimer, timerRef, stopVideoStream);
           startFrameProcessing(frameProcessingRef, processFrame);
         })
         .catch((error) => {
@@ -293,7 +307,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
           if (video) video.srcObject = existing;
           streamingRef.current = true;
           startingRef.current = false;
-          startSessionTimer(clearTimer, timerRef, stopVideoStream, onError);
+          startSessionTimer(clearTimer, timerRef, stopVideoStream);
           startFrameProcessing(frameProcessingRef, processFrame);
           return;
         }
@@ -480,7 +494,12 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       }
 
       if (typeof data === "string") {
-        const decoded = await decodeQrData(new TextEncoder().encode(data));
+        let decoded: string;
+        try {
+          decoded = await decodeQrData(new TextEncoder().encode(data));
+        } catch {
+          throw createPartialQrScanError();
+        }
         if (isCWT(decoded)) {
           return decoded;
         }
@@ -569,7 +588,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     const handleError = (error: unknown) => {
         frameProcessingRef.current = false;
         stopVideoStream();
-        onError(
+        onErrorRef.current(
             error instanceof Error ? error : new Error("An unexpected error occurred while processing VC")
         );
     };

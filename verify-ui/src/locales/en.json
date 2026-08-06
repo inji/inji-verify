@@ -139,6 +139,7 @@
     "failToGenerateQrCode": "Oops! We’re having trouble generating the verification request. Please try again later.",
     "unexpectedError": "An unexpected error occurred. Please try again later or contact support if the issue persists.",
     "scanSessionExpired": "The scan session has expired due to inactivity. Please initiate a new scan.",
+    "partialQrScan": "Couldn't read the QR code. Make sure the entire QR code is inside the frame and try again.",
     "partialCredentialShared": "Verification completed with partial credentials. Please note that some requested credentials are missing.",
     "validationFailure": "We couldn’t validate the verification response. Please ensure the response is correct and try again.",
     "incorrectCredential":"The credentials shared do not match the requested ones. Please provide the correct credentials and try again."
