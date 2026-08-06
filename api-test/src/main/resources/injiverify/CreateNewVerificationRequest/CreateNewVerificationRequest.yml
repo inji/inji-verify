@@ -241,3 +241,21 @@ CreateNewVerificationRequest:
       output: '{
     "responseCode": "404"
 }'
+
+  Injiverify_CreateNewVerificationRequest_ForVpTokenStructureNeg_Valid_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a VP request dedicated for vp_token structure negative tests (TC_24-31)
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_14
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
+      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseType": "vp_token"
+}'

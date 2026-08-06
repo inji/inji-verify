@@ -317,3 +317,226 @@ VpSubmission:
       output: '{
       "responseCode": "200"
 }'
+
+  Injiverify_VpSubmission_Unsupported_Param_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with unsupported presentation_submission parameter and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_19
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionRequestValidationNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
+      "vp_token": "{\"cred1\":[{\"type\":\"VP\"}]}",
+      "presentation_submission": "not-allowed"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Invalid parameter: presentation_submission"
+}'
+
+  Injiverify_VpSubmission_Neither_VpToken_Nor_Error_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with only state and neither vp_token nor error and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_20
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionRequestValidationNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Either vp_token or error must be provided."
+}'
+
+  Injiverify_VpSubmission_Both_VpToken_And_Error_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with both vp_token and error and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_21
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionRequestValidationNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
+      "vp_token": "{\"cred1\":[{\"type\":\"VP\"}]}",
+      "error": "access_denied"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Both vp_token and error cannot be provided together."
+}'
+
+  Injiverify_VpSubmission_ErrorDescription_With_VpToken_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with error_description together with vp_token and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_22
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionRequestValidationNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
+      "vp_token": "{\"cred1\":[{\"type\":\"VP\"}]}",
+      "error_description": "user cancelled"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "If error_description is provided, vp_token must be null."
+}'
+
+  Injiverify_VpSubmission_ErrorDescription_Without_Error_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with error_description but without error and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_23
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionRequestValidationNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForNeg_Valid_Sid_requestId$",
+      "error_description": "user cancelled"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "If error_description is provided, error must also be provided."
+}'
+
+  Injiverify_VpSubmission_VpToken_Literal_Null_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with vp_token literal null string and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_24
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionVpTokenLiteralNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpTokenStructureNeg_Valid_Sid_requestId$",
+      "vp_token": "null"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "invalid_vp_token: vp_token is required and cannot be empty or ''null''"
+}'
+
+  Injiverify_VpSubmission_VpToken_Json_Array_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with vp_token as JSON array and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_25
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionVpTokenStructureNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpTokenStructureNeg_Valid_Sid_requestId$",
+      "vp_token": "[{\"type\":\"VP\"}]"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "invalid_vp_token, not a valid JSON object"
+}'
+
+  Injiverify_VpSubmission_VpToken_Empty_Object_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with empty vp_token object and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_26
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionVpTokenStructureNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpTokenStructureNeg_Valid_Sid_requestId$",
+      "vp_token": "{}"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "invalid_vp_token: must contain at least one key-value pair"
+}'
+
+  Injiverify_VpSubmission_VpToken_Value_Not_Array_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with vp_token value that is not an array and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_27
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionVpTokenStructureNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpTokenStructureNeg_Valid_Sid_requestId$",
+      "vp_token": "{\"cred1\":{\"type\":\"VP\"}}"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "invalid_vp_token: all values must be arrays"
+}'
+
+  Injiverify_VpSubmission_VpToken_Empty_Array_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with empty array in vp_token and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_28
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionVpTokenStructureNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpTokenStructureNeg_Valid_Sid_requestId$",
+      "vp_token": "{\"cred1\":[]}"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "invalid_vp_token: all arrays must have at least one element"
+}'
+
+  Injiverify_VpSubmission_VpToken_Invalid_First_Element_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with empty object as first vp_token array element and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_29
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionVpTokenStructureNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpTokenStructureNeg_Valid_Sid_requestId$",
+      "vp_token": "{\"cred1\":[{}]}"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "invalid_vp_token: array elements must be non-empty JSON objects or non-empty SD-JWT strings"
+}'
+
+  Injiverify_VpSubmission_VpToken_Mixed_Object_Then_String_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with mixed LDP object then SD-JWT string in same array and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_30
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionVpTokenStructureNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpTokenStructureNeg_Valid_Sid_requestId$",
+      "vp_token": "{\"cred1\":[{\"type\":\"VP\"},\"sd-jwt-string\"]}"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "invalid_vp_token: all elements must be non-empty JSON objects"
+}'
+
+  Injiverify_VpSubmission_VpToken_Mixed_SdJwt_Then_Object_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting with mixed SD-JWT string then LDP object in same array and expect invalid_request
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_31
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionVpTokenStructureNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpTokenStructureNeg_Valid_Sid_requestId$",
+      "vp_token": "{\"cred1\":[\"header.payload.sig~kb\",{\"type\":\"VP\"}]}"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "invalid_vp_token: all elements must be non-empty SD-JWT strings"
+}'
