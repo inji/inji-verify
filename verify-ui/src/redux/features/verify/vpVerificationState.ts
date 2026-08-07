@@ -8,9 +8,15 @@ export const OVP_SESSION_SELECTED_CREDENTIALS_KEY = "ovp_selectedCredentials";
 const DEFAULT_CREDENTIALS = (): claim[] =>
   getVerifiableClaims()?.filter((c) => c.essential) ?? [];
 
-const mergeDcqlFromCredentials = (credentials: claim[]): DcqlQuery => ({
-  credentials: credentials.flatMap((c) => c.dcqlQuery?.credentials ?? []),
-});
+const mergeDcqlFromCredentials = (credentials: claim[]): DcqlQuery => {
+  const credentialSets = credentials.flatMap(
+    (c) => c.dcqlQuery?.credential_sets ?? []
+  );
+  return {
+    credentials: credentials.flatMap((c) => c.dcqlQuery?.credentials ?? []),
+    ...(credentialSets.length > 0 ? { credential_sets: credentialSets } : {}),
+  };
+};
 
 const hasValidCredentialStructure = (item: unknown): item is claim => {
   if (!item || typeof item !== "object") return false;
