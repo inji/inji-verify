@@ -57,9 +57,14 @@ describe("vpVerification slice", () => {
     });
 
     test("should merge credential_sets from selected credentials into dcqlQuery", () => {
-        const credentialSets = [
+        const firstCredentialSets = [
             {
                 options: [["mosip_verifiable_credential_id"], ["life_insurance_credential_id"]],
+            },
+        ];
+        const secondCredentialSets = [
+            {
+                options: [["health_insurance_credential_id"]],
             },
         ];
 
@@ -70,7 +75,7 @@ describe("vpVerification slice", () => {
                 essential: true,
                 dcqlQuery: {
                     credentials: [{ id: "mosip_verifiable_credential_id", format: "ldp_vc", meta: {} }],
-                    credential_sets: credentialSets,
+                    credential_sets: firstCredentialSets,
                 },
             },
             {
@@ -79,6 +84,7 @@ describe("vpVerification slice", () => {
                 essential: false,
                 dcqlQuery: {
                     credentials: [{ id: "life_insurance_credential_id", format: "ldp_vc", meta: {} }],
+                    credential_sets: secondCredentialSets,
                 },
             },
         ] as any;
@@ -97,7 +103,10 @@ describe("vpVerification slice", () => {
         );
 
         expect(state.dcqlQuery.credentials).toHaveLength(2);
-        expect(state.dcqlQuery.credential_sets).toEqual(credentialSets);
+        expect(state.dcqlQuery.credential_sets).toEqual([
+            ...firstCredentialSets,
+            ...secondCredentialSets,
+        ]);
     });
 
     test("should omit credential_sets from dcqlQuery when none of the selected credentials define it", () => {
@@ -125,7 +134,7 @@ describe("vpVerification slice", () => {
             setSelectedCredentials({ selectedCredentials })
         );
 
-        expect(state.dcqlQuery.credential_sets).toBeUndefined();
+        expect(state.dcqlQuery).not.toHaveProperty("credential_sets");
     });
 
     test("should handle setSelectCredential with SelectWalletPanel open", () => {
