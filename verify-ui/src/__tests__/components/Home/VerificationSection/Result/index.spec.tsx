@@ -106,5 +106,7 @@ describe("Vc Result", () => {
     const message = container.querySelector("#vc-result-display-message");
     expect(message).toBeInTheDocument();
     expect(message?.textContent).toBeTruthy();
+    expect(container.querySelector('[data-testid="vc-detail-view-mock"]')).not.toBeInTheDocument();
+    expect(container.querySelector('[data-testid="vc-detail-modal-mock"]')).not.toBeInTheDocument();
   });
 });

@@ -39,6 +39,13 @@ const Result = () => {
 
   useEffect(() => {
     const fetchDecodedClaims = async () => {
+      if (vcStatus !== "SUCCESS") {
+        setClaims(null);
+        setCredentialType("");
+        setModalOpen(false);
+        return;
+      }
+
       if (isCWT(vc)) {
         try {
           const cwtHex =
@@ -75,7 +82,9 @@ const Result = () => {
       }
     };
     fetchDecodedClaims();
-  }, [dispatch, vc]);
+  }, [dispatch, vc, vcStatus]);
+
+  const shouldShowCredentialDetails = vcStatus === "SUCCESS" && claims !== null;
 
   const clearTimer = () => {
     if (timerRef.current) {
@@ -100,7 +109,7 @@ const Result = () => {
       </div>
       <div>
         <div className={`h-[3px] border-b-2 border-b-transparent`} />
-        {claims && (
+        {shouldShowCredentialDetails && (
           <DisplayVcDetailView
             vc={claims}
             onExpand={() => setModalOpen(true)}
@@ -115,7 +124,7 @@ const Result = () => {
           />
         </div>
       </div>
-      {claims && (
+      {shouldShowCredentialDetails && (
         <DisplayVcDetailsModal
           isOpen={isModalOpen}
           onClose={() => setModalOpen(false)}
