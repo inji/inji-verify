@@ -38,11 +38,14 @@ const Result = () => {
   };
 
   useEffect(() => {
+    let active = true;
+
     const fetchDecodedClaims = async () => {
+      setClaims(null);
+      setCredentialType("");
+      setModalOpen(false);
+
       if (vcStatus !== "SUCCESS") {
-        setClaims(null);
-        setCredentialType("");
-        setModalOpen(false);
         return;
       }
 
@@ -55,23 +58,35 @@ const Result = () => {
                 ? uint8ArrayToHex(new Uint8Array(vc))
                 : (vc as string);
           const claims = extractMappedClaim(cwtHex, 169);
-          setClaims(claims as LdpVc);
+          if (active) {
+            setClaims(claims as LdpVc);
+          }
 
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          dispatch(raiseAlert({ message, severity: "error", open: true }));
+          if (active) {
+            dispatch(raiseAlert({ message, severity: "error", open: true }));
+          }
 
         }
       } else if (typeof vc === "string") {
         try {
           const claims = await decodeSdJwtToken(vc);
-          setClaims(claims as SdJwtVc);
-          setCredentialType(claims.regularClaims.vct);
+          if (active) {
+            setClaims(claims as SdJwtVc);
+            setCredentialType(claims.regularClaims.vct);
+          }
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
-          dispatch(raiseAlert({ message, severity: "error", open: true }));
+          if (active) {
+            dispatch(raiseAlert({ message, severity: "error", open: true }));
+          }
         }
       } else {
+        if (!active || !vc) {
+          return;
+        }
+
         setClaims(vc as LdpVc);
         const typeEntry = vc.type[1];
         if (typeof typeEntry === "string") {
@@ -81,7 +96,12 @@ const Result = () => {
         }
       }
     };
-    fetchDecodedClaims();
+
+    void fetchDecodedClaims();
+
+    return () => {
+      active = false;
+    };
   }, [dispatch, vc, vcStatus]);
 
   const shouldShowCredentialDetails = vcStatus === "SUCCESS" && claims !== null;
