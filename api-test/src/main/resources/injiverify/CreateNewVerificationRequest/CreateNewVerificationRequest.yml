@@ -259,3 +259,20 @@ CreateNewVerificationRequest:
       output: '{
     "responseType": "vp_token"
 }'
+
+  Injiverify_CreateNewVerificationRequest_ForSdJwtKbJwtNeg_Valid_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a VP request with require_cryptographic_holder_binding=true for SD-JWT KB-JWT nonce/aud negative tests (TC_32-36)
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_15
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestSdJwtKbJwt
+      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseType": "vp_token"
+}'

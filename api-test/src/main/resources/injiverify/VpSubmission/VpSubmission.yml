@@ -540,3 +540,88 @@ VpSubmission:
       "errorCode": "invalid_request",
       "errorMessage": "invalid_vp_token: all elements must be non-empty SD-JWT strings"
 }'
+
+  Injiverify_VpSubmission_SdJwt_KbJwt_Wrong_Nonce_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting SD-JWT with KB-JWT nonce mismatch and expect invalid_request (issue #2059)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_32
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionSdJwtKbJwtNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_Valid_Sid_requestId$",
+      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.fakesig~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFUzI1NiJ9.eyJub25jZSI6Indyb25nLW5vbmNlIiwiYXVkIjoiY2xpZW50MTIzIiwiaWF0IjoxNzAwMDAwMDAwfQ.fakesig"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Nonce validation failed due to invalid nonce/challenge."
+}'
+
+  Injiverify_VpSubmission_SdJwt_KbJwt_Wrong_Aud_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting SD-JWT with KB-JWT aud mismatch and expect invalid_request (issue #2059)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_33
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionSdJwtKbJwtNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_Valid_Sid_requestId$",
+      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.fakesig~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFUzI1NiJ9.eyJub25jZSI6Ik5rZEhKa0JJYmRPZFFhQWpXbThncEEiLCJhdWQiOiJodHRwczovL3dyb25nLmV4YW1wbGUuY29tIiwiaWF0IjoxNzAwMDAwMDAwfQ.fakesig"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Client id validation failed due to invalid client_id/domain."
+}'
+
+  Injiverify_VpSubmission_SdJwt_KbJwt_Missing_Nonce_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting SD-JWT with KB-JWT missing nonce claim and expect invalid_request (issue #2059)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_34
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionSdJwtKbJwtNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_Valid_Sid_requestId$",
+      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.fakesig~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJjbGllbnQxMjMiLCJpYXQiOjE3MDAwMDAwMDB9.fakesig"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Nonce validation failed due to invalid nonce/challenge."
+}'
+
+  Injiverify_VpSubmission_SdJwt_KbJwt_Missing_Aud_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting SD-JWT with KB-JWT missing aud claim and expect invalid_request (issue #2059)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_35
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionSdJwtKbJwtNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_Valid_Sid_requestId$",
+      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.fakesig~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFUzI1NiJ9.eyJub25jZSI6Ik5rZEhKa0JJYmRPZFFhQWpXbThncEEiLCJpYXQiOjE3MDAwMDAwMDB9.fakesig"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Client id validation failed due to invalid client_id/domain."
+}'
+
+  Injiverify_VpSubmission_SdJwt_Missing_Key_Binding_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting SD-JWT without Key Binding JWT when holder binding is required and expect invalid_vp_token (issue #2059)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_36
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionSdJwtKbJwtNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_Valid_Sid_requestId$",
+      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.fakesig~"
+      }'
+      output: '{
+      "errorCode": "invalid_vp_token",
+      "errorMessage": "The vp_token structure is invalid: SD-JWT token is missing required Key Binding JWT for query ID id_credential_query"
+}'

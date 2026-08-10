@@ -95,6 +95,21 @@
     "TC_InjiVerify_VpSubmission_31": [
         "TC_InjiVerify_CreateNewVerificationRequest_14"
     ],
+    "TC_InjiVerify_VpSubmission_32": [
+        "TC_InjiVerify_CreateNewVerificationRequest_15"
+    ],
+    "TC_InjiVerify_VpSubmission_33": [
+        "TC_InjiVerify_CreateNewVerificationRequest_15"
+    ],
+    "TC_InjiVerify_VpSubmission_34": [
+        "TC_InjiVerify_CreateNewVerificationRequest_15"
+    ],
+    "TC_InjiVerify_VpSubmission_35": [
+        "TC_InjiVerify_CreateNewVerificationRequest_15"
+    ],
+    "TC_InjiVerify_VpSubmission_36": [
+        "TC_InjiVerify_CreateNewVerificationRequest_15"
+    ],
     "TC_InjiVerify_VpSubmissionECR1_01": [
         "TC_InjiVerify_CreateNewVerificationRequest_10"
     ],
