@@ -56,6 +56,87 @@ describe("vpVerification slice", () => {
         expect(state.sharingType).toBe(VCShareType.SINGLE);
     });
 
+    test("should merge credential_sets from selected credentials into dcqlQuery", () => {
+        const firstCredentialSets = [
+            {
+                options: [["mosip_verifiable_credential_id"], ["life_insurance_credential_id"]],
+            },
+        ];
+        const secondCredentialSets = [
+            {
+                options: [["health_insurance_credential_id"]],
+            },
+        ];
+
+        const selectedCredentials = [
+            {
+                id: "1",
+                type: "Type1",
+                essential: true,
+                dcqlQuery: {
+                    credentials: [{ id: "mosip_verifiable_credential_id", format: "ldp_vc", meta: {} }],
+                    credential_sets: firstCredentialSets,
+                },
+            },
+            {
+                id: "2",
+                type: "Type2",
+                essential: false,
+                dcqlQuery: {
+                    credentials: [{ id: "life_insurance_credential_id", format: "ldp_vc", meta: {} }],
+                    credential_sets: secondCredentialSets,
+                },
+            },
+        ] as any;
+
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            selectedCredentials: [],
+            originalSelectedCredentials: [],
+            unVerifiedCredentials: [],
+            dcqlQuery: mockDcqlQuery,
+        } as any;
+
+        const state = vpVerificationReducer(
+            initialState,
+            setSelectedCredentials({ selectedCredentials })
+        );
+
+        expect(state.dcqlQuery.credentials).toHaveLength(2);
+        expect(state.dcqlQuery.credential_sets).toEqual([
+            ...firstCredentialSets,
+            ...secondCredentialSets,
+        ]);
+    });
+
+    test("should omit credential_sets from dcqlQuery when none of the selected credentials define it", () => {
+        const selectedCredentials = [
+            {
+                id: "2",
+                type: "Type2",
+                essential: false,
+                dcqlQuery: {
+                    credentials: [{ id: "desc2", format: "dc+sd-jwt", meta: {} }],
+                },
+            },
+        ] as any;
+
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            selectedCredentials: [],
+            originalSelectedCredentials: [],
+            unVerifiedCredentials: [],
+            dcqlQuery: mockDcqlQuery,
+        } as any;
+
+        const state = vpVerificationReducer(
+            initialState,
+            setSelectedCredentials({ selectedCredentials })
+        );
+
+        expect(state.dcqlQuery).not.toHaveProperty("credential_sets");
+    });
+
     test("should handle setSelectCredential with SelectWalletPanel open", () => {
         (getVerifiableClaims as jest.Mock).mockReturnValue([
             {
