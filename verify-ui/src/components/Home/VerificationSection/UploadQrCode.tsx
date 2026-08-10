@@ -24,8 +24,7 @@ export const UploadQrCode = ({
       <div
         className={`bg-${window._env_.DEFAULT_THEME}-gradient hover:text-white p-px bg-no-repeat rounded-[5px] w-[180px] mt-10`}
       >
-        <label
-          htmlFor={"upload-qr"}
+        <div
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
           onTouchStart={() => setHover(true)}
@@ -40,7 +39,7 @@ export const UploadQrCode = ({
           >
             {displayMessage}
           </span>
-        </label>
+        </div>
       </div>
     );
   };

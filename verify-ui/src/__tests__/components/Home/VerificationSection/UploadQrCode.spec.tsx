@@ -16,9 +16,10 @@ jest.mock("@injistack/pixelpass", () => ({
 }))
 
 describe("Stepper Content Header", () => {
-    test("Test rendering", () => {
-        render(<UploadQrCode displayMessage="Upload Qr Code" />)
+    test("renders a display surface without a native file-input label", () => {
+        const { container } = render(<UploadQrCode displayMessage="Upload Qr Code" />)
         expect(screen.getByText("Upload Qr Code")).toBeInTheDocument()
+        expect(container.querySelector("label")).not.toBeInTheDocument()
     })
 })
 
