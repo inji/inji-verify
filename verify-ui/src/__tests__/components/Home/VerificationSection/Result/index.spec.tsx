@@ -109,4 +109,12 @@ describe("Vc Result", () => {
     expect(container.querySelector('[data-testid="vc-detail-view-mock"]')).not.toBeInTheDocument();
     expect(container.querySelector('[data-testid="vc-detail-modal-mock"]')).not.toBeInTheDocument();
   });
+
+  test("shows credential details for an expired VC", () => {
+    mockVerificationSelector({ vc: workingVc, vcStatus: "EXPIRED" });
+
+    const { container } = render(<Result />);
+
+    expect(container.querySelector('[data-testid="vc-detail-view-mock"]')).toBeInTheDocument();
+  });
 });

@@ -25,6 +25,7 @@ const Result = () => {
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
+  const shouldDecodeCredential = vcStatus === "SUCCESS" || vcStatus === "EXPIRED";
   
   const handleVerifyAnotherQrCode = () => {
     if (method === "SCAN") {
@@ -45,7 +46,7 @@ const Result = () => {
       setCredentialType("");
       setModalOpen(false);
 
-      if (vcStatus !== "SUCCESS") {
+      if (!shouldDecodeCredential) {
         return;
       }
 
@@ -102,9 +103,9 @@ const Result = () => {
     return () => {
       active = false;
     };
-  }, [dispatch, vc, vcStatus]);
+  }, [dispatch, shouldDecodeCredential, vc]);
 
-  const shouldShowCredentialDetails = vcStatus === "SUCCESS" && claims !== null;
+  const shouldShowCredentialDetails = shouldDecodeCredential && claims !== null;
 
   const clearTimer = () => {
     if (timerRef.current) {
