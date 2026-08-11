@@ -1,5 +1,5 @@
 import React from 'react';
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import { UploadQrCode } from "../../../../components/Home/VerificationSection/UploadQrCode";
 
 jest.mock("iso-639-3", () => ({
@@ -16,35 +16,10 @@ jest.mock("@injistack/pixelpass", () => ({
 }))
 
 describe("UploadQrCode", () => {
-    const renderUploadButton = () => {
-        const fileInput = document.createElement("input");
-        fileInput.id = "upload-qr";
-        document.body.appendChild(fileInput);
-        const clickSpy = jest.spyOn(fileInput, "click");
-
-        render(<UploadQrCode displayMessage="Upload Qr Code" />);
-
-        return { fileInput, clickSpy };
-    };
-
-    afterEach(() => {
-        document.getElementById("upload-qr")?.remove();
-    });
-
-    test("opens the file picker when the upload button is clicked", () => {
-        const { clickSpy } = renderUploadButton();
-
-        fireEvent.click(screen.getByRole("button", { name: "Upload Qr Code" }));
-
-        expect(clickSpy).toHaveBeenCalledTimes(1);
-    });
-
-    test("opens the file picker when the upload button is activated with the keyboard", () => {
-        const { clickSpy } = renderUploadButton();
-
-        fireEvent.keyDown(screen.getByRole("button", { name: "Upload Qr Code" }), { key: "Enter" });
-
-        expect(clickSpy).toHaveBeenCalledTimes(1);
-    });
+    test("renders without a native file-input label", () => {
+        const { container } = render(<UploadQrCode displayMessage="Upload Qr Code" />)
+        expect(screen.getByText("Upload Qr Code")).toBeInTheDocument()
+        expect(container.querySelector("label")).not.toBeInTheDocument()
+    })
 })
 

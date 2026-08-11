@@ -13,10 +13,6 @@ export const UploadQrCode = ({
 }) => {
   const [isHover, setHover] = useState(false);
 
-  const openFilePicker = () => {
-    document.getElementById("upload-qr")?.click();
-  };
-
   const UploadButton = ({ displayMessage }: { displayMessage: string }) => {
     const UploadIcon = isHover ? WhiteUploadIcon : GradientUploadIcon;
     const language = useAppSelector(
@@ -29,15 +25,6 @@ export const UploadQrCode = ({
         className={`bg-${window._env_.DEFAULT_THEME}-gradient hover:text-white p-px bg-no-repeat rounded-[5px] w-[180px] mt-10`}
       >
         <div
-          role="button"
-          tabIndex={0}
-          onClick={openFilePicker}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") {
-              event.preventDefault();
-              openFilePicker();
-            }
-          }}
           onMouseEnter={() => setHover(true)}
           onMouseLeave={() => setHover(false)}
           onTouchStart={() => setHover(true)}
