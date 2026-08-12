@@ -5,4 +5,8 @@ public class DidGenerationException extends RuntimeException {
     public DidGenerationException() {
         super(message);
     }
+
+    public DidGenerationException(Throwable cause) {
+        super(message, cause);
+    }
 }

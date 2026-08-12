@@ -36,8 +36,8 @@ public class DidServiceImpl implements DidService {
         } catch (DidGenerationException e) {
             throw e;
         } catch (Exception e) {
-            log.error("Error extracting KeyPair: {}", e.getMessage());
-            throw new DidGenerationException();
+            log.error("Failed to generate DID document", e);
+            throw new DidGenerationException(e);
         }
     }
 }

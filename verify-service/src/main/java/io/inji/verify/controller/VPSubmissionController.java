@@ -86,7 +86,7 @@ public class VPSubmissionController {
         try {
             for (String key : request.getParameterMap().keySet()) {
                 if (!ALLOWED_PARAMS.contains(key)) {
-                    throw new VPRequestValidationException(ErrorCode.UNKNOWN_PARAMETER, "Invalid parameter: " + key);
+                    throw new VPRequestValidationException(ErrorCode.UNKNOWN_PARAMETER, "Invalid parameter: " + sanitizeParamName(key));
                 }
             }
 
@@ -111,5 +111,18 @@ public class VPSubmissionController {
             return ResponseEntity.status(HttpStatus.BAD_REQUEST)
                     .body(new ErrorDto("invalid_vp_token", "The vp_token structure is invalid: " + e.getMessage()));
         }
+    }
+
+    /**
+     * Sanitizes an untrusted request parameter name before it is echoed back in an error
+     * message: characters outside {@code A-Z}, {@code a-z}, {@code 0-9}, underscore, hyphen,
+     * and period are replaced with underscores, and the result is truncated to 64 characters.
+     */
+    private static String sanitizeParamName(String key) {
+        if (key == null) {
+            return "";
+        }
+        String sanitized = key.replaceAll("[^A-Za-z0-9_.-]", "_");
+        return sanitized.length() > 64 ? sanitized.substring(0, 64) : sanitized;
     }
 }

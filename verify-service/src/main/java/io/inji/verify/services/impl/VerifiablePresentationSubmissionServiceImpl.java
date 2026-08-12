@@ -159,7 +159,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         if (authRequestCreateResponse == null) {
             throw new VPRequestValidationException(ErrorCode.NO_MATCHING_VP_REQUEST);
         }
-        log.debug("authRequestCreateResponse is {}", authRequestCreateResponse);
+        log.debug("Authorization request resolved for state: {}", state);
 
         // ---- 5. Validate against the DCQL if vp_token is present
         if (StringUtils.hasText(vpToken)) {
@@ -182,10 +182,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         String responseCode = generateResponseCode(authRequestCreateResponse.getAuthorizationDetails());
         Timestamp responseCodeExpiryAt = null;
         if (responseCode != null) {
-            log.debug("Generated response code {} for state {}", responseCode, state);
+            log.debug("Generated response code for state {}", state);
             responseCodeExpiryAt = generateResponseCodeExpiry();
             String redirectUriWithResponseCode = resolveRedirectUri(responseCode);
-            log.debug("Built redirect URI with response code for state {}: {}", state, redirectUriWithResponseCode);
+            log.debug("Built redirect URI with response code for state {}", state);
             response.put("redirect_uri", redirectUriWithResponseCode);
         }
 
@@ -287,7 +287,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
             }
             boolean isValid = validateDuplicateQueryIds(vpToken);
             if (!isValid) {
-                log.debug("Duplicate query ids found in vp_token: {}", vpToken);
+                log.debug("Duplicate query ids found in vp_token");
                 throw new VPRequestValidationException(ErrorCode.DUPLICATE_QUERY_IDS_NOT_ALLOWED);
             }
         } catch (IllegalArgumentException | IOException e) {
@@ -1003,7 +1003,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     private boolean isAuthRequestWithPresentationExchange(AuthorizationRequestCreateResponse authRequest) {
         boolean isAuthRequestWithPresentationExchange = false;
         log.info("Checking if authorization request is for presentation exchange");
-        log.info("authRequest: {}", authRequest);
         if (authRequest != null && authRequest.getAuthorizationDetails() != null && authRequest.getAuthorizationDetails().getPresentationDefinition() !=null
                 && authRequest.getAuthorizationDetails().getDcqlQuery() == null) {
             isAuthRequestWithPresentationExchange = true;
