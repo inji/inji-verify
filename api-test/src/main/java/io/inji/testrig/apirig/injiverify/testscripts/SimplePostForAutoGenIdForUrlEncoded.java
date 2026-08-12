@@ -3,6 +3,7 @@ package io.inji.testrig.apirig.injiverify.testscripts;
 import java.security.NoSuchAlgorithmException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 import org.apache.log4j.Level;
 import org.apache.log4j.Logger;
@@ -17,6 +18,7 @@ import org.testng.annotations.DataProvider;
 import org.testng.annotations.Test;
 
 import io.inji.testrig.apirig.injiverify.utils.InjiVerifyConfigManager;
+import io.inji.testrig.apirig.injiverify.utils.InjiVerifyConstants;
 import io.inji.testrig.apirig.injiverify.utils.InjiVerifyUtil;
 import io.mosip.testrig.apirig.dto.OutputValidationDto;
 import io.mosip.testrig.apirig.dto.TestCaseDTO;
@@ -82,6 +84,17 @@ public class SimplePostForAutoGenIdForUrlEncoded extends InjiVerifyUtil implemen
 		if (HealthChecker.signalTerminateExecution) {
 			throw new SkipException(
 					GlobalConstants.TARGET_ENV_HEALTH_CHECK_FAILED + HealthChecker.healthCheckFailureMapS);
+		}
+
+		if (testCaseName.contains("_Expiry")) {
+			final int expirationSeconds = Integer
+					.parseInt(InjiVerifyConfigManager.getproperty(InjiVerifyConstants.EXPIRATION_TIME));
+			try {
+				TimeUnit.SECONDS.sleep(expirationSeconds);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				e.printStackTrace();
+			}
 		}
 
 		String inputJson = getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate());

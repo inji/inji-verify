@@ -245,17 +245,18 @@ VpSubmission:
 }'
   Injiverify_VpSubmissionForSessionRequest_duplicateRequestID_All_Valid_Smoke:
       endPoint: /v1/verify/v2/vp-submission/direct-post
-      description: Submitting VC to VP Session Request with valid and already used requestID
+      description: Submitting VC to VP Session Request with already used requestID and expect duplicate submission error (issue #2058 / #1973)
       uniqueIdentifier: TC_InjiVerify_VpSubmission_14
       role: noauth
       restMethod: post
       inputTemplate: injiverify/VpSubmission/VpSubmission
-      outputTemplate: injiverify/error2
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "state":"$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$"
       }'
       output: '{
-      "errorCode": "invalid_request"
+      "errorCode": "invalid_request",
+      "errorMessage": "VP response has already been submitted."
 }'
   Injiverify_VpSubmissionForSessionRequest_whenResponseCodeValidationIsFalse_All_Valid_Smoke:
       endPoint: /v1/verify/v2/vp-submission/direct-post
@@ -624,4 +625,86 @@ VpSubmission:
       output: '{
       "errorCode": "invalid_request",
       "errorMessage": "[credential_id: id_credential_query] vp_token SD-JWT credential must include a Key Binding JWT when require_cryptographic_holder_binding is true."
+}'
+  Injiverify_VpSubmission_Duplicate_Different_VpToken_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Resubmitting a different vp_token for an already submitted state and expect duplicate submission error (issue #2058 / #1973)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_37
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionDuplicateNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$",
+      "vp_token": "{\"student_id_credential_query\":[{\"type\":\"VerifiablePresentation\",\"holder\":\"did:example:different\"}]}"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "VP response has already been submitted."
+}'
+
+  Injiverify_VpSubmission_Expiry_RequestExpired_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting after VP request expiry and expect expired request error (issue #2058 / #1973)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_38
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForExpirySubmission_Valid_Sid_requestId$"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Invalid state parameter: VP request has expired."
+}'
+
+  Injiverify_VpSubmission_WalletErrorAfterExpired_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting wallet error/error_description after VP request expiry and expect expired request error (issue #2058 / #1973)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_39
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionRequestValidationNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForExpirySubmission_Valid_Sid_requestId$",
+      "error": "access_denied",
+      "error_description": "user cancelled"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Invalid state parameter: VP request has expired."
+}'
+
+  Injiverify_VpSubmission_AfterStatusExpired_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting vp_token after GET status EXPIRED and expect expired request error (issue #2058 / #1973)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_40
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForExpiry_All_Valid_Smoke_Sid_requestId$"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Invalid state parameter: VP request has expired."
+}'
+
+  Injiverify_VpSubmission_ThirdDuplicate_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Third submit for an already submitted session request and expect duplicate submission error (issue #2058 / #1973)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_41
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForVpSessionRequest_All_Valid_Smoke_Sid_requestId$"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "VP response has already been submitted."
 }'

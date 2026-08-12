@@ -1,0 +1,18 @@
+CreateDuplicateVpRequest:
+  Injiverify_CreateNewVerificationRequest_ForDuplicateVpRequest_Valid_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a VP request immediately before duplicate submission coverage on /v2/vp-request (issue #2058 / #1973)
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_17
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
+      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseType": "vp_token"
+}'

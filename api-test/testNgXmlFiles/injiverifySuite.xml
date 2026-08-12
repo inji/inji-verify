@@ -73,6 +73,26 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParamAndHeader" />
 		</classes>
 	</test>
+	<test name="CreateDuplicateVpRequest">
+		<parameter name="ymlFile"
+			value="injiverify/CreateDuplicateVpRequest/CreateDuplicateVpRequest.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId,id,nonce" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpSubmissionDuplicateVpRequest">
+		<parameter name="ymlFile"
+			value="injiverify/VpSubmissionDuplicateVpRequest/VpSubmissionDuplicateVpRequest.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
 	<test name="VpSubmission">
 		<parameter name="ymlFile"
 			value="injiverify/VpSubmission/VpSubmission.yml" />

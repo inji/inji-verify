@@ -110,6 +110,31 @@
     "TC_InjiVerify_VpSubmission_36": [
         "TC_InjiVerify_CreateNewVerificationRequest_15"
     ],
+    "TC_InjiVerify_VpSubmission_37": [
+        "TC_InjiVerify_VpSubmission_13"
+    ],
+    "TC_InjiVerify_VpSubmission_38": [
+        "TC_InjiVerify_CreateNewVerificationRequest_16"
+    ],
+    "TC_InjiVerify_VpSubmission_39": [
+        "TC_InjiVerify_VpSubmission_38"
+    ],
+    "TC_InjiVerify_VpSubmission_40": [
+        "TC_InjiVerify_GetVpRequestStatus_02"
+    ],
+    "TC_InjiVerify_VpSubmission_41": [
+        "TC_InjiVerify_VpSubmission_14"
+    ],
+    "TC_InjiVerify_VpSubmission_42": [
+        "TC_InjiVerify_CreateNewVerificationRequest_17"
+    ],
+    "TC_InjiVerify_VpSubmission_43": [
+        "TC_InjiVerify_VpSubmission_42"
+    ],
+    "TC_InjiVerify_VpSubmission_14": [
+        "TC_InjiVerify_VpSubmission_13"
+    ],
+
     "TC_InjiVerify_VpSubmissionECR1_01": [
         "TC_InjiVerify_CreateNewVerificationRequest_10"
     ],
