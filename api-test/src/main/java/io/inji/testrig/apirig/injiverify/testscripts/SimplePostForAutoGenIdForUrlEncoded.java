@@ -93,7 +93,8 @@ public class SimplePostForAutoGenIdForUrlEncoded extends InjiVerifyUtil implemen
 				TimeUnit.SECONDS.sleep(expirationSeconds);
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
-				e.printStackTrace();
+				logger.error("Interrupted while waiting for VP request expiry.", e);
+				throw new SkipException("Interrupted while waiting for VP request expiry.");
 			}
 		}
 
