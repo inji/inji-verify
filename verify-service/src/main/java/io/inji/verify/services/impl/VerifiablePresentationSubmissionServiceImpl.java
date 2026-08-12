@@ -35,6 +35,7 @@ import com.nimbusds.jose.shaded.gson.Gson;
 import io.inji.verify.dto.VerificationSessionRequestDto;
 import io.inji.verify.dto.authorizationrequest.AuthorizationRequestResponseDto;
 import io.inji.verify.dto.core.ErrorDto;
+import io.inji.verify.dto.submission.VCSubmissionVerificationStatusDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
 import io.inji.verify.dto.verification.SchemaAndSignatureCheckDto;
@@ -47,9 +48,18 @@ import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.models.VPSubmission;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
 import io.inji.verify.repository.VPSubmissionRepository;
+import io.inji.verify.services.VCSubmissionService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
 import io.inji.verify.shared.Constants;
 import io.inji.verify.utils.Utils;
+import io.inji.verify.validator.DcqlValidator;
+import io.inji.verify.dto.dcql.DCQLQueryDto;
+import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
+import io.inji.verify.enums.VPRequestStatus;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.JsonToken;
+import java.io.IOException;
 import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.CredentialsVerifier;
 import io.mosip.vercred.vcverifier.PresentationVerifier;
@@ -93,8 +103,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     final Gson gson;
     final Validator validator;
     final ObjectMapper objectMapper;
+    final DcqlValidator dcqlValidator;
+    final VCSubmissionService vcSubmissionService;
 
-    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService, PixelPass pixelPass, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository, Gson gson, Validator validator, ObjectMapper objectMapper) {
+    public VerifiablePresentationSubmissionServiceImpl(VPSubmissionRepository vpSubmissionRepository, CredentialsVerifier credentialsVerifier, PresentationVerifier presentationVerifier, VerifiablePresentationRequestServiceImpl verifiablePresentationRequestService, VCVerificationServiceImpl vcVerificationService, PixelPass pixelPass, AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository, Gson gson, Validator validator, ObjectMapper objectMapper, DcqlValidator dcqlValidator, VCSubmissionService vcSubmissionService) {
         this.vpSubmissionRepository = vpSubmissionRepository;
         this.credentialsVerifier = credentialsVerifier;
         this.presentationVerifier = presentationVerifier;
@@ -105,6 +117,8 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         this.gson = gson;
         this.validator = validator;
         this.objectMapper = objectMapper;
+        this.dcqlValidator = dcqlValidator;
+        this.vcSubmissionService = vcSubmissionService;
     }
 
     /**
@@ -112,9 +126,239 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * @param state
      * @return
      */
-    public AuthorizationRequestCreateResponse getAuthRequest(String state) {
+    AuthorizationRequestCreateResponse getAuthRequest(String state) {
 		return authorizationRequestCreateResponseRepository.findById(state).orElse(null);
 	}
+
+    /**
+     * Runs the full VP submission flow. This is the single entry point the controller (or a
+     * consumer embedding this service directly) needs to call.
+     * Not annotated {@code @Transactional}: the only write in this flow is the single
+     * {@code vpSubmissionRepository.save(...)} in submitVpToken, which is already transactional
+     * on its own via Spring Data JPA's default repository behavior. Wrapping the whole method
+     * would also delay that save's commit until this method returns, which would make step 10's
+     * listener notification fire before the DB record is actually committed.
+     */
+    @Override
+    public Map<String, Object> submitVerifiablePresentation(String vpToken, String state, String error, String errorDescription)
+            throws VPRequestValidationException, RedirectUriGenerationException, VPAlreadySubmittedException, InvalidVpTokenException {
+        // --- 1. Validate request parameters ---
+        validateSubmissionRequest(vpToken, error, errorDescription);
+
+        // --- 2. Validate state parameter and retrieve current VP request status ---
+        validateState(state);
+
+        // --- 3. Validate vp_token structure if present ---
+        if (StringUtils.hasText(vpToken)) {
+            validateVpTokenStructure(vpToken);
+        }
+        log.debug("Request parameters validated successfully for state: {}", state);
+
+        // ---- 4. Validate against the Authorization Request
+        AuthorizationRequestCreateResponse authRequestCreateResponse = getAuthRequest(state);
+        if (authRequestCreateResponse == null) {
+            throw new VPRequestValidationException(ErrorCode.NO_MATCHING_VP_REQUEST);
+        }
+        log.debug("authRequestCreateResponse is {}", authRequestCreateResponse);
+
+        // ---- 5. Validate against the DCQL if vp_token is present
+        if (StringUtils.hasText(vpToken)) {
+            validateVpTokenAgainstDcql(vpToken, authRequestCreateResponse);
+        }
+
+        // ---- 6. Extract DCQL VP tokens from the vp_token string
+        DcqlTokensDto dcqlTokensDto = null;
+        if (StringUtils.hasText(vpToken)) {
+            dcqlTokensDto = extractDcqlTokens(vpToken, authRequestCreateResponse.getAuthorizationDetails());
+        }
+
+        // ---- 7. Validate client_id and nonce for all token types.
+        if (dcqlTokensDto != null) {
+            validateClientIdAndNonce(dcqlTokensDto, authRequestCreateResponse);
+        }
+
+        // ---- 8. generate response_code and build redirect_uri as required
+        Map<String, Object> response = new HashMap<>();
+        String responseCode = generateResponseCode(authRequestCreateResponse.getAuthorizationDetails());
+        Timestamp responseCodeExpiryAt = null;
+        if (responseCode != null) {
+            log.debug("Generated response code {} for state {}", responseCode, state);
+            responseCodeExpiryAt = generateResponseCodeExpiry();
+            String redirectUriWithResponseCode = resolveRedirectUri(responseCode);
+            log.debug("Built redirect URI with response code for state {}: {}", state, redirectUriWithResponseCode);
+            response.put("redirect_uri", redirectUriWithResponseCode);
+        }
+
+        // ---- 9. If all validations pass, proceed with VP submission processing
+        submitVpToken(authRequestCreateResponse.getAuthorizationDetails(), vpToken, state, error, errorDescription, responseCode, responseCodeExpiryAt);
+
+        // ---- 10. Notify status listeners after transaction commits so the DB record is visible
+        verifiablePresentationRequestService.invokeVpRequestStatusListener(state);
+
+        // --- 11. Return success response with redirect URI if generated
+        return response;
+    }
+
+    /**
+     * Validates that vp_token/error/error_description are mutually consistent, per the
+     * OpenID4VP direct_post response rules.
+     */
+    private void validateSubmissionRequest(String vpToken, String error, String errorDescription) {
+        if (!StringUtils.hasText(vpToken) && !StringUtils.hasText(error) && !StringUtils.hasText(errorDescription)) {
+            throw new VPRequestValidationException(ErrorCode.EITHER_VP_TOKEN_OR_ERROR_REQUIRED);
+        }
+        if (StringUtils.hasText(vpToken) && StringUtils.hasText(error)) {
+            throw new VPRequestValidationException(ErrorCode.BOTH_VP_TOKEN_AND_ERROR_NOT_ALLOWED);
+        }
+        if (StringUtils.hasText(errorDescription) && StringUtils.hasText(vpToken)) {
+            throw new VPRequestValidationException(ErrorCode.ERROR_DESCRIPTION_VP_TOKEN_CONFLICT);
+        }
+        if (StringUtils.hasText(errorDescription) && !StringUtils.hasText(error)) {
+            throw new VPRequestValidationException(ErrorCode.ERROR_DESCRIPTION_ERROR_REQUIRED);
+        }
+    }
+
+    /**
+     * Validates that the given state refers to an active, non-expired VP request that has not
+     * already received a submission.
+     */
+    private void validateState(String state) {
+        if (!StringUtils.hasText(state)) {
+            throw new VPRequestValidationException(ErrorCode.INVALID_STATE_MISSING);
+        }
+        VPRequestStatusDto currentVPRequestStatusDto = verifiablePresentationRequestService.getCurrentRequestStatus(state);
+        if (currentVPRequestStatusDto == null) {
+            throw new VPRequestValidationException(ErrorCode.NO_MATCHING_VP_REQUEST);
+        }
+        log.debug("Current VP request status for state {}: {}", state, currentVPRequestStatusDto.getStatus());
+        if (currentVPRequestStatusDto.getStatus().equals(VPRequestStatus.EXPIRED)) {
+            throw new VPRequestValidationException(ErrorCode.VP_REQUEST_EXPIRED);
+        }
+        if (currentVPRequestStatusDto.getStatus().equals(VPRequestStatus.VP_SUBMITTED)) {
+            throw new VPRequestValidationException(ErrorCode.VP_ALREADY_SUBMITTED);
+        }
+    }
+
+    /**
+     * Validates the structural shape of a vp_token JSON object: must not be the literal string
+     * "null", must be a non-empty JSON object whose values are non-empty arrays of a single
+     * consistent element type (JSON object or SD-JWT string), and must not contain duplicate
+     * query ids.
+     */
+    private void validateVpTokenStructure(String vpToken) {
+        if (vpToken.trim().equalsIgnoreCase("null")) {
+            throw new VPRequestValidationException(ErrorCode.VP_TOKEN_REQUIRED);
+        }
+        try {
+            JsonNode node = objectMapper.readTree(vpToken);
+
+            if (!node.isObject()) {
+                throw new VPRequestValidationException(ErrorCode.VP_TOKEN_NOT_VALID_JSON_OBJECT);
+            }
+            if (node.size() < 1) {
+                throw new VPRequestValidationException(ErrorCode.VP_TOKEN_MUST_HAVE_KEY_VALUE_PAIR);
+            }
+            for (JsonNode value : node) {
+                if (!value.isArray()) {
+                    throw new VPRequestValidationException(ErrorCode.VP_TOKEN_VALUES_MUST_BE_ARRAYS);
+                }
+            }
+            for (JsonNode value : node) {
+                if (!value.isArray() || value.size() < 1) {
+                    throw new VPRequestValidationException(ErrorCode.VP_TOKEN_ARRAYS_MUST_HAVE_ELEMENTS);
+                }
+                JsonNode firstElement = value.get(0);
+                boolean isFirstJson = firstElement.isObject() && firstElement.size() > 0;
+                boolean isFirstSdJwt = firstElement.isTextual() && !firstElement.asText().isEmpty();
+                if (!isFirstJson && !isFirstSdJwt) {
+                    throw new VPRequestValidationException(ErrorCode.VP_TOKEN_ARRAY_ELEMENTS_INVALID);
+                }
+                for (JsonNode element : value) {
+                    if (isFirstJson) {
+                        if (!element.isObject() || element.size() == 0) {
+                            throw new VPRequestValidationException(ErrorCode.VP_TOKEN_ALL_ELEMENTS_MUST_BE_OBJECTS);
+                        }
+                    } else {
+                        if (!element.isTextual() || element.asText().isEmpty()) {
+                            throw new VPRequestValidationException(ErrorCode.VP_TOKEN_ALL_ELEMENTS_MUST_BE_SD_JWT);
+                        }
+                    }
+                }
+            }
+            boolean isValid = validateDuplicateQueryIds(vpToken);
+            if (!isValid) {
+                log.debug("Duplicate query ids found in vp_token: {}", vpToken);
+                throw new VPRequestValidationException(ErrorCode.DUPLICATE_QUERY_IDS_NOT_ALLOWED);
+            }
+        } catch (IllegalArgumentException | IOException e) {
+            throw new VPRequestValidationException(ErrorCode.VP_TOKEN_NOT_VALID_JSON_OBJECT);
+        }
+    }
+
+    private boolean validateDuplicateQueryIds(String vpToken) throws IOException {
+        JsonFactory factory = new JsonFactory();
+        JsonParser parser = factory.createParser(vpToken);
+        try {
+            if (parser.nextToken() != JsonToken.START_OBJECT) {
+                return false;
+            }
+            Set<String> seenKeys = new HashSet<>();
+            while (parser.nextToken() == JsonToken.FIELD_NAME) {
+                String fieldName = parser.currentName();
+                if (!seenKeys.add(fieldName.trim())) {
+                    return false;
+                }
+                parser.nextToken();
+                parser.skipChildren();
+            }
+            return true;
+        } finally {
+            parser.close();
+        }
+    }
+
+    /**
+     * Validates a vp_token against the DCQL query on the authorization request, if one is present.
+     */
+    private void validateVpTokenAgainstDcql(String vpToken, AuthorizationRequestCreateResponse authRequestCreateResponse) {
+        DCQLQueryDto dcqlQuery = authRequestCreateResponse.getAuthorizationDetails().getDcqlQuery();
+        if (dcqlQuery == null) {
+            return;
+        }
+        try {
+            dcqlValidator.validateVpTokenAgainstDcql(dcqlQuery, objectMapper.readTree(vpToken));
+        } catch (IOException e) {
+            throw new VPRequestValidationException(ErrorCode.VP_TOKEN_NOT_VALID_JSON_OBJECT);
+        }
+    }
+
+    /**
+     * Validates client_id/nonce (and, for SD-JWT, KB-JWT iat) binding for all bindable tokens
+     * extracted from a vp_token.
+     */
+    private void validateClientIdAndNonce(DcqlTokensDto dcqlTokensDto, AuthorizationRequestCreateResponse authRequest) {
+        Map<String, List<JSONObject>> ldpVpTokens = dcqlTokensDto.getLdpVpTokens() != null ? dcqlTokensDto.getLdpVpTokens() : Collections.emptyMap();
+        Map<String, List<String>> sdJwtTokens = dcqlTokensDto.getSdJwtTokens() != null ? dcqlTokensDto.getSdJwtTokens() : Collections.emptyMap();
+        if (!ldpVpTokens.isEmpty()) {
+            ErrorCode error = processLdpVpClientIdAndNonce(authRequest.getAuthorizationDetails(), ldpVpTokens);
+            if (error != null) {
+                throw new VPRequestValidationException(error);
+            }
+        }
+        if (!sdJwtTokens.isEmpty()) {
+            ErrorCode error = processSdJwtClientIdAndNonce(authRequest.getAuthorizationDetails(), sdJwtTokens);
+            if (error != null) {
+                throw new VPRequestValidationException(error);
+            }
+            ErrorCode iatError = processSdJwtKbJwtIat(authRequest.getAuthorizationDetails(), sdJwtTokens);
+            if (iatError != null) {
+                throw new VPRequestValidationException(iatError);
+            }
+        }
+        if (ldpVpTokens.isEmpty() && sdJwtTokens.isEmpty()) {
+            log.debug("Skipping clientId/nonce validation as no bindable tokens extracted.");
+        }
+    }
 
     /**
      * This method extracts the VP tokens from the input VP token string.
@@ -122,7 +366,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * @param vpTokenString
      * @return
      */
-    public DcqlTokensDto extractDcqlTokens(String vpTokenString, AuthorizationRequestResponseDto authRequest) throws InvalidVpTokenException {
+    DcqlTokensDto extractDcqlTokens(String vpTokenString, AuthorizationRequestResponseDto authRequest) throws InvalidVpTokenException {
         Map<String, List<JSONObject>> ldpVpTokens = new HashMap<String, List<JSONObject>>();
         Map<String, List<JSONObject>> ldpVcTokens = new HashMap<String, List<JSONObject>>();
         Map<String, List<String>> sdJwtTokens = new HashMap<String, List<String>>();
@@ -237,8 +481,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * {@code proof.challenge} against the auth request nonce.
      * Returns the first {@link ErrorCode} encountered, or null if all tokens pass.
      */
-    @Override
-    public ErrorCode processLdpVpClientIdAndNonce(AuthorizationRequestResponseDto authRequest, Map<String, List<JSONObject>> ldpVpTokens) {
+    ErrorCode processLdpVpClientIdAndNonce(AuthorizationRequestResponseDto authRequest, Map<String, List<JSONObject>> ldpVpTokens) {
         String clientId = authRequest.getClientId();
         String nonce = authRequest.getNonce();
         if (!StringUtils.hasText(clientId)) {
@@ -277,8 +520,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * (OpenID4VP Appendix B.3.6).
      * Returns the first {@link ErrorCode} encountered, or null if all tokens pass.
      */
-    @Override
-    public ErrorCode processSdJwtClientIdAndNonce(AuthorizationRequestResponseDto authRequest, Map<String, List<String>> sdJwtTokens) {
+    ErrorCode processSdJwtClientIdAndNonce(AuthorizationRequestResponseDto authRequest, Map<String, List<String>> sdJwtTokens) {
         String clientId = authRequest.getClientId();
         String nonce = authRequest.getNonce();
         if (!StringUtils.hasText(clientId)) {
@@ -330,8 +572,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * Only applies to query IDs where {@code require_cryptographic_holder_binding=true}.
      * Returns the first {@link ErrorCode} encountered, or null if all tokens pass.
      */
-    @Override
-    public ErrorCode processSdJwtKbJwtIat(AuthorizationRequestResponseDto authRequest, Map<String, List<String>> sdJwtTokens) {
+    ErrorCode processSdJwtKbJwtIat(AuthorizationRequestResponseDto authRequest, Map<String, List<String>> sdJwtTokens) {
         final long clockSkewSeconds = 60L;
         for (Map.Entry<String, List<String>> entry : sdJwtTokens.entrySet()) {
             String queryId = entry.getKey();
@@ -369,7 +610,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * @param authRequest
      * @return
      */
-    public String generateResponseCode(AuthorizationRequestResponseDto authRequest) {
+    String generateResponseCode(AuthorizationRequestResponseDto authRequest) {
     	String responseCode = null;
     	boolean responseCodeValidationRequired = false;
         responseCodeValidationRequired = authRequest.isResponseCodeValidationRequired();
@@ -384,7 +625,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * This method generates the response code expiry time by adding the configured expiry duration (in minutes) to the current time.
      * @return
      */
-	public Timestamp generateResponseCodeExpiry() {
+	Timestamp generateResponseCodeExpiry() {
 		log.debug("Generating response code expiry time since response code validation is required");
 		Timestamp responseCodeExpiryAt = Timestamp.from(Instant.now().plus(responseCodeExpiryTimeInMins, ChronoUnit.MINUTES));
 		return responseCodeExpiryAt;
@@ -395,7 +636,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
      * @param responseCode
      * @return
      */
-    public  String buildRedirectUri(String responseCode) {
+    String buildRedirectUri(String responseCode) {
         if (redirectUri == null || redirectUri.isBlank() || responseCode == null) return null;
         String redirectUriWithResponseCode = UriComponentsBuilder
                     .fromUriString(redirectUri)
@@ -404,13 +645,24 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                     .toUriString();
         return redirectUriWithResponseCode;
     }
-  
+
+    /**
+     * Same as {@link #buildRedirectUri}, but throws {@link RedirectUriGenerationException}
+     * instead of returning null when the redirect URI cannot be built.
+     */
+    String resolveRedirectUri(String responseCode) {
+        String redirectUriWithResponseCode = buildRedirectUri(responseCode);
+        if (redirectUriWithResponseCode == null) {
+            throw new RedirectUriGenerationException();
+        }
+        return redirectUriWithResponseCode;
+    }
+
     /**
      * This method is used to persist the VP submission details along with the response code and
      * its expiry time.
      */
-	@Transactional
-	public void submitVpToken(AuthorizationRequestResponseDto authRequest, String vpToken, String state, String error,
+	void submitVpToken(AuthorizationRequestResponseDto authRequest, String vpToken, String state, String error,
 			String errorDescription, String responseCode, Timestamp responseCodeExpiryAt)
 			throws VPAlreadySubmittedException {
 
@@ -760,24 +1012,54 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         return isAuthRequestWithPresentationExchange;
     }
 
+    /**
+     * Resolves a transactionId to its VP submission result, falling back to a VC submission
+     * result if no VP request matches. This is the single entry point for the v1 result-lookup
+     * endpoint — any caller (this service's own controller, or a consumer embedding this service
+     * directly) gets identical guarantees.
+     */
     @Override
-    public VPTokenResultDto getVPResult(List<String> requestIds, String transactionId) throws VPSubmissionWalletError,  InvalidVpTokenException, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
+    public Object getVPResult(String transactionId) throws InvalidTransactionIdException, VPSubmissionWalletError, CredentialStatusCheckException, VPWithoutProofException, VPSubmissionNotFoundException, ResponseCodeException {
+        List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
+        if (requestIds.isEmpty()) {
+            VCSubmissionVerificationStatusDto vcResult = vcSubmissionService.getVcWithVerification(transactionId);
+            if (vcResult != null) {
+                return vcResult;
+            }
+            throw new InvalidTransactionIdException();
+        }
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
-            VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
+        VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
         return processSubmission(vpSubmission, transactionId, authRequest);
     }
 
+    /**
+     * Resolves a transactionId to its VP submission result. Single entry point for the v2
+     * result-lookup endpoint.
+     */
     @Override
-    public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, List<String> requestIds, String transactionId) {
+    public VPVerificationResultDto getVPResultV2(VerificationRequestDto request, String transactionId) throws InvalidTransactionIdException, VPSubmissionNotFoundException, ResponseCodeException, VPSubmissionWalletError, TokenMatchingFailedException, InvalidVpTokenException, VPWithoutProofException, VPVerificationException {
+        List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
+        if (requestIds.isEmpty()) {
+            throw new InvalidTransactionIdException();
+        }
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
         VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, null, authRequest, false);
         log.debug("Processing VP submission, token length: {}", vpSubmission.getVpToken() != null ? vpSubmission.getVpToken().toString().length() : 0);
         return processSubmissionV2(request, transactionId, vpSubmission, authRequest);
     }
 
+    /**
+     * Resolves a transactionId (from the session cookie) to its VP submission result. Single
+     * entry point for the session result-lookup endpoint.
+     */
     @Override
     @Transactional
-    public VPVerificationResultDto getVPSessionResults(VerificationSessionRequestDto request, List<String> requestIds, String transactionId) {
+    public VPVerificationResultDto getVPSessionResults(VerificationSessionRequestDto request, String transactionId) throws InvalidTransactionIdException, VPSubmissionNotFoundException, ResponseCodeException, VPSubmissionWalletError, TokenMatchingFailedException, InvalidVpTokenException, VPWithoutProofException, VPVerificationException {
+        List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
+        if (requestIds.isEmpty()) {
+            throw new InvalidTransactionIdException();
+        }
         AuthorizationRequestCreateResponse authRequest = verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId);
         VPSubmission vpSubmission = fetchVpSubmissionIfValid(requestIds, request.getResponseCode(), authRequest, true);
         return processSubmissionV2(request, transactionId, vpSubmission, authRequest);

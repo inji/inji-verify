@@ -7,8 +7,6 @@ import io.inji.verify.dto.result.VerificationRequestDto;
 import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.exception.*;
-import io.inji.verify.services.VCSubmissionService;
-import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.services.VerifiablePresentationSubmissionService;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
@@ -29,8 +27,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.nio.charset.StandardCharsets;
 import java.util.Base64;
-import java.util.List;
-import java.util.Optional;
 
 import static io.inji.verify.shared.Constants.COOKIE_NAME;
 
@@ -38,17 +34,13 @@ import static io.inji.verify.shared.Constants.COOKIE_NAME;
 @Slf4j
 public class VPResultController {
 
-    final VerifiablePresentationRequestService verifiablePresentationRequestService;
-    final VCSubmissionService vcSubmissionService;
     final VerifiablePresentationSubmissionService verifiablePresentationSubmissionService;
     @Value("${inji.verify.cookie-secure-value:#{true}}")
     boolean cookieIsSecure;
     @Value("${inji.verify.cookie-path}")
     String cookiePath;
 
-    public VPResultController(VerifiablePresentationRequestService verifiablePresentationRequestService, VCSubmissionService vcSubmissionService, VerifiablePresentationSubmissionService verifiablePresentationSubmissionService) {
-        this.verifiablePresentationRequestService = verifiablePresentationRequestService;
-        this.vcSubmissionService = vcSubmissionService;
+    public VPResultController(VerifiablePresentationSubmissionService verifiablePresentationSubmissionService) {
         this.verifiablePresentationSubmissionService = verifiablePresentationSubmissionService;
     }
 
@@ -68,14 +60,7 @@ public class VPResultController {
             @Parameter(description = "Unique identifier for the VP transaction, which is generated when the VP request is created. It is used to correlate the VP request and VP submission.", required = true)
             @PathVariable String transactionId) {
         log.info("Received request to fetch VP result for transactionId: {}", transactionId);
-        List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
-        if (requestIds.isEmpty()) {
-            log.info("No requestId found for transactionId: {}. Checking for VC submission.", transactionId);
-            return Optional.ofNullable(vcSubmissionService.getVcWithVerification(transactionId))
-                    .map(vc -> ResponseEntity.status(HttpStatus.OK).body((Object) vc))
-                    .orElseGet(() -> ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID)));
-        }
-        VPTokenResultDto result = verifiablePresentationSubmissionService.getVPResult(requestIds, transactionId);
+        Object result = verifiablePresentationSubmissionService.getVPResult(transactionId);
         return ResponseEntity.ok(result);
     }
 
@@ -97,14 +82,7 @@ public class VPResultController {
             @Parameter(description = "Request body for fetching VP result, which may contain additional parameters for the verification process.", required = true)
             @Valid @RequestBody VerificationRequestDto request) {
         log.info("Received request to fetch VP result V2 for transactionId: {}", transactionId);
-
-        List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
-        // In case there is no requestId found for the transactionId, we will return 404 Not Found.
-        if (requestIds.isEmpty()) {
-            log.info("No requestId found for transactionId: {}. Returning 404 Not Found.", transactionId);
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
-        }
-        VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, requestIds, transactionId);
+        VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPResultV2(request, transactionId);
         return ResponseEntity.ok(result);
     }
 
@@ -130,13 +108,7 @@ public class VPResultController {
             if (requestCookie == null || requestCookie.isEmpty())
                 return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(new ErrorDto(ErrorCode.VP_SESSION_INVALID));
             String transactionId = getTransactionId(requestCookie);
-            List<String> requestIds = verifiablePresentationRequestService.getLatestRequestIdFor(transactionId);
-            // In case there is no requestId found for the transactionId, we will return 404 Not Found.
-            if (requestIds.isEmpty()) {
-                log.info("No requestId found for transactionId: {}. Returning 404 Not Found.", transactionId);
-                return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
-            }
-            VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPSessionResults(request, requestIds, transactionId);
+            VPVerificationResultDto result = verifiablePresentationSubmissionService.getVPSessionResults(request, transactionId);
             return ResponseEntity.status(HttpStatus.OK).body(result);
         } finally {
             log.info("Cleaning up VP session cookie");
@@ -157,6 +129,12 @@ public class VPResultController {
             log.error("Failed to decode cookie value: {}", e.getMessage());
             throw new MalformedCookieException(e);
         }
+    }
+
+    @ExceptionHandler(InvalidTransactionIdException.class)
+    public ResponseEntity<ErrorDto> handleInvalidTransactionId(InvalidTransactionIdException e) {
+        log.info(e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.INVALID_TRANSACTION_ID));
     }
 
     @ExceptionHandler(VPSubmissionNotFoundException.class)

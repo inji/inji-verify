@@ -20,11 +20,10 @@ import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
 import io.inji.verify.repository.VPSubmissionRepository;
 import io.inji.verify.services.KeyManagementService;
 import io.inji.verify.shared.Constants;
+import io.inji.verify.validator.DcqlValidator;
 import org.junit.jupiter.api.BeforeAll;
 import org.junit.jupiter.api.DisplayName;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseEntity;
 import org.springframework.web.context.request.async.DeferredResult;
 
 import java.text.ParseException;
@@ -44,6 +43,7 @@ class VerifiablePresentationRequestServiceImplTest {
     static AuthorizationRequestCreateResponseRepository mockAuthorizationRequestCreateResponseRepository;
     static VPSubmissionRepository mockVPSubmissionRepository;
     static KeyManagementService<OctetKeyPair> mockKeyManagementService;
+    static DcqlValidator mockDcqlValidator;
 
     private static DCQLQueryDto minimalDcqlQuery() throws Exception {
         return OBJECT_MAPPER.readValue(
@@ -56,11 +56,13 @@ class VerifiablePresentationRequestServiceImplTest {
         mockAuthorizationRequestCreateResponseRepository = mock(AuthorizationRequestCreateResponseRepository.class);
         mockVPSubmissionRepository = mock(VPSubmissionRepository.class);
         mockKeyManagementService = mock(KeyManagementService.class);
+        mockDcqlValidator = mock(DcqlValidator.class);
         service = new VerifiablePresentationRequestServiceImpl(
                 mockAuthorizationRequestCreateResponseRepository,
                 mockVPSubmissionRepository,
                 mockKeyManagementService,
-                OBJECT_MAPPER);
+                OBJECT_MAPPER,
+                mockDcqlValidator);
     }
 
     @Test
@@ -134,9 +136,9 @@ class VerifiablePresentationRequestServiceImplTest {
 
         DeferredResult<VPRequestStatusDto> result = service.getStatus("req_id");
 
-        assertEquals(
-                HttpStatus.NOT_FOUND,
-                ((ResponseEntity<?>) Objects.requireNonNull(result.getResult())).getStatusCode());
+        // Error result is a plain exception (not an HTTP-specific type) so embedding consumers
+        // aren't coupled to Spring MVC; the controller's @ExceptionHandler maps this to 404.
+        assertInstanceOf(VPRequestNotFoundException.class, Objects.requireNonNull(result.getResult()));
     }
 
     @Test()

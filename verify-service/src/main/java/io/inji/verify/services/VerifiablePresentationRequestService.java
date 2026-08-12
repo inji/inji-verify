@@ -21,6 +21,12 @@ public interface VerifiablePresentationRequestService {
 
     void invokeVpRequestStatusListener(@NotNull String state);
 
+    /**
+     * @return a DeferredResult that resolves with the current/eventual {@link VPRequestStatusDto},
+     * or resolves as an error with {@link VPRequestNotFoundException} if no request exists for the
+     * given requestId. The error is set as an exception (not an HTTP response) so callers embedding
+     * this service directly get a plain exception rather than a web-layer type.
+     */
     DeferredResult<VPRequestStatusDto> getStatus(@NotNull String requestId);
 
     String getVPRequestJwt(String requestId) throws VPRequestNotFoundException;
