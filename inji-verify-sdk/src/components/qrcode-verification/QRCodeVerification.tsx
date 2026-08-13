@@ -38,11 +38,10 @@ import {clearUrl, summariseVPResult, summariseVCResult, normalizeVp} from "../..
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
 
-const createPartialQrScanError = () => {
-  const error = new Error();
-  error.name = "PARTIAL_QR_SCAN";
-  return error;
-};
+const qrCodeUnreadableError = () =>
+  new Error(
+    "Couldn't read the QR code. Make sure the entire QR code is inside the frame and try again."
+  );
 
 const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   scannerActive = true,
@@ -211,7 +210,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     clearTimer();
     timerRef.current = setTimeout(() => {
       stopVideoStream();
-      onErrorRef.current(new Error("Couldn't read the QR code. Make sure the entire QR code is inside the frame and try again."));
+      onErrorRef.current(qrCodeUnreadableError());
     }, ScanSessionExpiryTime);
   };
 
@@ -498,7 +497,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         try {
           decoded = await decodeQrData(new TextEncoder().encode(data));
         } catch {
-          throw createPartialQrScanError();
+          throw qrCodeUnreadableError();
         }
         if (isCWT(decoded)) {
           return decoded;
