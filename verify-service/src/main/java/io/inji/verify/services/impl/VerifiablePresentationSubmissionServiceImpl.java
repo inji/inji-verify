@@ -291,6 +291,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
                 throw new VPRequestValidationException(ErrorCode.DUPLICATE_QUERY_IDS_NOT_ALLOWED);
             }
         } catch (IllegalArgumentException | IOException e) {
+            log.debug("Failed to parse vp_token as JSON: {}", e.getMessage());
             throw new VPRequestValidationException(ErrorCode.VP_TOKEN_NOT_VALID_JSON_OBJECT);
         }
     }
@@ -328,6 +329,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         try {
             dcqlValidator.validateVpTokenAgainstDcql(dcqlQuery, objectMapper.readTree(vpToken));
         } catch (IOException e) {
+            log.debug("Failed to parse vp_token as JSON while validating against DCQL: {}", e.getMessage());
             throw new VPRequestValidationException(ErrorCode.VP_TOKEN_NOT_VALID_JSON_OBJECT);
         }
     }
