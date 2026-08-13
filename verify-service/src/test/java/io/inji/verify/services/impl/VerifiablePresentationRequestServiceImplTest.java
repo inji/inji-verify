@@ -105,6 +105,46 @@ class VerifiablePresentationRequestServiceImplTest {
     }
 
     @Test
+    public void shouldInvokeDcqlValidatorForValidQuery() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+
+        DCQLQueryDto dcqlQuery = minimalDcqlQuery();
+        VPRequestCreateDto vpRequestCreateDto = new VPRequestCreateDto(
+                "test_client_id",
+                "test_transaction_id_dcql_validate",
+                null,
+                dcqlQuery,
+                false);
+
+        service.createAuthorizationRequest(vpRequestCreateDto);
+
+        verify(mockDcqlValidator, times(1)).validate(dcqlQuery);
+    }
+
+    @Test
+    public void shouldPropagateExceptionWhenDcqlValidationFails() throws Exception {
+        DCQLQueryDto dcqlQuery = minimalDcqlQuery();
+        VPRequestCreateDto vpRequestCreateDto = new VPRequestCreateDto(
+                "test_client_id",
+                "test_transaction_id_dcql_invalid",
+                null,
+                dcqlQuery,
+                false);
+
+        doThrow(new VPRequestValidationException(ErrorCode.DCQL_CREDENTIAL_ID_REQUIRED))
+                .when(mockDcqlValidator).validate(any(DCQLQueryDto.class));
+        try {
+            assertThrows(VPRequestValidationException.class,
+                    () -> service.createAuthorizationRequest(vpRequestCreateDto));
+        } finally {
+            // mockDcqlValidator is a shared static mock (initialized once in @BeforeAll); reset it
+            // so this failure stub doesn't leak into other tests in this class.
+            reset(mockDcqlValidator);
+        }
+    }
+
+    @Test
     public void shouldGetCurrentAuthorizationRequestStateForExistingRequest() {
         AuthorizationRequestCreateResponse mockResponse =
                 new AuthorizationRequestCreateResponse("req_id", "tx_id", null, Instant.now().toEpochMilli() + 10000);
