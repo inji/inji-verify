@@ -18,24 +18,6 @@ CreateNewVerificationRequest:
     "responseCode": "201"
 }'
 
-  Injiverify_CreateNewVerificationRequest_ForExpiry_All_Valid_Smoke_Sid:
-      endPoint: /v1/verify/v2/vp-request
-      description: Creating a new verification request for expiry with a valid DCQL query
-      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_02
-      role: noauth
-      restMethod: post
-      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
-      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
-      input: '{
-      "clientId": "client123",
-      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
-      "acceptVPWithoutHolderProof": false,
-      "responseCodeValidationRequired": false
-      }'
-      output: '{
-    "responseType": "vp_token"
-}'
-
   Injiverify_CreateNewVerificationRequest_Random_ClientId_Neg:
       endPoint: /v1/verify/v2/vp-request
       description: Creating a new verification request with random value for client id
@@ -271,24 +253,6 @@ CreateNewVerificationRequest:
       input: '{
       "clientId": "client123",
       "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
-      "responseCodeValidationRequired": false
-      }'
-      output: '{
-    "responseType": "vp_token"
-}'
-
-  Injiverify_CreateNewVerificationRequest_ForExpirySubmission_Valid_Sid:
-      endPoint: /v1/verify/v2/vp-request
-      description: Creating a VP request dedicated for VP request expiry submission negative test (issue #2058 / #1973)
-      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_16
-      role: noauth
-      restMethod: post
-      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
-      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
-      input: '{
-      "clientId": "client123",
-      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
-      "acceptVPWithoutHolderProof": false,
       "responseCodeValidationRequired": false
       }'
       output: '{

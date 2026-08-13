@@ -1,0 +1,16 @@
+VpSubmissionAfterStatusExpired:
+  Injiverify_VpSubmission_AfterStatusExpired_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting vp_token after GET status EXPIRED and expect expired request error (issue #2058 / #1973)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_40
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForExpiry_All_Valid_Smoke_Sid_requestId$"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Invalid state parameter: VP request has expired."
+}'

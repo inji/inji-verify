@@ -39,7 +39,8 @@
         "TC_InjiVerify_CreateNewVerificationRequest_09"
     ],
     "TC_InjiVerify_GetVpRequestStatus_02": [
-        "TC_InjiVerify_CreateNewVerificationRequest_02"
+        "TC_InjiVerify_CreateNewVerificationRequest_02",
+        "TC_InjiVerify_GetVpRequestStatus_04"
     ],
     "TC_InjiVerify_VpSubmission_08": [
         "TC_InjiVerify_CreateNewVerificationRequest_09"

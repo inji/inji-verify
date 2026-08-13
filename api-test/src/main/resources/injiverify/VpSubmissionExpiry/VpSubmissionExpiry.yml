@@ -1,0 +1,34 @@
+VpSubmissionExpiry:
+  Injiverify_VpSubmission_Expiry_RequestExpired_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting after VP request expiry and expect expired request error (issue #2058 / #1973)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_38
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForExpirySubmission_Valid_Sid_requestId$"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Invalid state parameter: VP request has expired."
+}'
+
+  Injiverify_VpSubmission_WalletErrorAfterExpired_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submitting wallet error/error_description after VP request expiry and expect expired request error (issue #2058 / #1973)
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_39
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmission/VpSubmissionRequestValidationNeg
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateNewVerificationRequest_ForExpirySubmission_Valid_Sid_requestId$",
+      "error": "access_denied",
+      "error_description": "user cancelled"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Invalid state parameter: VP request has expired."
+}'
