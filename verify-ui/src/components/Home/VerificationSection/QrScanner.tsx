@@ -61,10 +61,7 @@ const handleOnVCProcessed = (data: any[]) => {
             } else {
               dispatch(goToHomeScreen({}));
               dispatch(
-                raiseAlert({
-                  message: error.message,
-                  severity: "error",
-                })
+                raiseAlert({ message: error.message, severity: "error" })
               );
             }
           }}
