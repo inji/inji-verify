@@ -211,7 +211,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     clearTimer();
     timerRef.current = setTimeout(() => {
       stopVideoStream();
-      onErrorRef.current(createPartialQrScanError());
+      onErrorRef.current(new Error("Couldn't read the QR code. Make sure the entire QR code is inside the frame and try again."));
     }, ScanSessionExpiryTime);
   };
 

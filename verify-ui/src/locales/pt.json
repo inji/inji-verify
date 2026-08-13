@@ -139,7 +139,6 @@
     "failToGenerateQrCode": "Opa! Estamos com problemas para gerar a solicitação de verificação. Tente novamente mais tarde.",
     "unexpectedError": "Ocorreu um erro inesperado. Tente novamente mais tarde ou entre em contato com o suporte se o problema persistir.",
     "scanSessionExpired": "A sessão de verificação expirou devido à inatividade. Por favor, inicie uma nova verificação.",
-    "partialQrScan": "Não foi possível ler o código QR. Certifique-se de que todo o código QR esteja dentro do quadro e tente novamente.",
     "partialCredentialShared": "Verificação concluída com credenciais parciais. Observe que algumas credenciais solicitadas estão faltando.",
     "validationFailure": "Não foi possível validar a resposta de verificação. Certifique-se de que a resposta está correta e tente novamente.",
     "incorrectCredential": "As credenciais compartilhadas não correspondem às solicitadas. Forneça as credenciais corretas e tente novamente."

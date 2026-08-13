@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import CameraAccessDenied from "./CameraAccessDenied";
 import { useAppDispatch } from "../../../redux/hooks";
 import {
@@ -15,7 +14,6 @@ function QrScanner({ onClose, scannerActive }: {
   scannerActive: boolean;
 }) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation();
   const [isCameraBlocked, setIsCameraBlocked] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
 
@@ -64,10 +62,7 @@ const handleOnVCProcessed = (data: any[]) => {
               dispatch(goToHomeScreen({}));
               dispatch(
                 raiseAlert({
-                  message:
-                    error.name === "PARTIAL_QR_SCAN"
-                      ? t("AlertMessages:partialQrScan")
-                      : error.message,
+                  message: error.message,
                   severity: "error",
                 })
               );
