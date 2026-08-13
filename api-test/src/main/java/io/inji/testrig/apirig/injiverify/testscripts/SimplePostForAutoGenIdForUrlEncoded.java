@@ -94,7 +94,7 @@ public class SimplePostForAutoGenIdForUrlEncoded extends InjiVerifyUtil implemen
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 				logger.error("Interrupted while waiting for VP request expiry.", e);
-				throw new SkipException("Interrupted while waiting for VP request expiry.");
+				throw new SkipException("Interrupted while waiting for VP request expiry.", e);
 			}
 		}
 
