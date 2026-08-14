@@ -319,7 +319,6 @@ jobs:
 
       - name: Build verify-service jar
         run: |
-          cd verify-service
           mvn clean package -DskipTests
 
       - name: Build apitest jar
