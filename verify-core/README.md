@@ -79,3 +79,13 @@ entities to be picked up.
 > `WebAsyncManager` inside an active HTTP request. Outside that context — a non-web app, a
 > scheduled job, or a plain `ApplicationContext` — `DeferredResult#onTimeout()` never fires.
 > `DeferredResult` has no timer of its own, so the call will simply hang instead of timing out.
+
+> **⚠️ Security: override the default keystore before deploying anything.** `verify-core` ships
+> with a sample Ed25519 keystore (`src/main/resources/sample-keystore/test.p12`, alias `test`,
+> password `mosip`) that `inji.keystore.file.path`/`inji.keystore.file.pass` point at by default.
+> Its private key is bundled in the published jar, so it is **public to anyone who depends on
+> `verify-core`**. It exists purely so the module builds/tests/runs out of the box for local
+> development — it is deliberately named/labelled as an obvious placeholder, not branded as
+> anything official. Any real deployment (via `verify-service` or your own embedding app) **must**
+> override both properties with its own privately-held keystore; leaving the default in place lets
+> anyone forge validly-signed `did:web` VP requests appearing to come from your deployment.

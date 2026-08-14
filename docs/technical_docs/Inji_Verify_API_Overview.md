@@ -366,6 +366,14 @@ Returns the verifier's DID Web document. The full URL is `{baseUrl}/v1/verify/di
 }
 ```
 
+> **⚠️ Keystore:** The Ed25519 signing key behind this document comes from
+> `inji.keystore.file.path` (`INJI_KEYSTORE_FILE_PATH`) / `inji.keystore.file.pass`
+> (`INJI_KEYSTORE_FILE_PASS`). By default this points at the sample keystore bundled inside
+> `verify-core` (`classpath:sample-keystore/test.p12`) — a throwaway dev/test key whose private
+> key is public (it ships in the published jar). **Any real deployment must override both
+> properties with its own privately-held keystore.** Leaving the default in place means anyone can
+> forge validly-signed `did:web` VP requests appearing to come from your deployment.
+
 ---
 
 ## Session Cookie
