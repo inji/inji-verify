@@ -65,7 +65,6 @@ jobs:
     with:
       SERVICE_LOCATION: ./
       BUILD_ARTIFACT: inji-verify-service
-      MAVEN_NON_EXEC_ARTIFACTS : "verify-service*.jar"
       LICENSE_NAME: 'Apache 2.0'
     secrets:
       OSSRH_USER: ${{ secrets.OSSRH_INJI_USER }}

@@ -245,8 +245,6 @@ updateStrategy:
 ##     value: "bar"
 ##
 extraEnvVars:
-  - name: VERIFY_CONTEXT_PATH
-    value: "{{ .Values.contextPath }}"
   - name: DATABASE_HOST
     valueFrom:
       configMapKeyRef:

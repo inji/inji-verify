@@ -3,6 +3,7 @@ package io.inji.verify.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upokecenter.cbor.CBORObject;
+import io.inji.verify.dto.core.CredentialStatusErrorDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.HolderProofCheckDto;
 import io.inji.verify.dto.verification.ExpiryCheckDto;
@@ -20,7 +21,6 @@ import io.mosip.vercred.vcverifier.exception.StatusCheckErrorCode;
 import io.mosip.vercred.vcverifier.exception.StatusCheckException;
 import org.json.JSONObject;
 import org.junit.jupiter.api.Test;
-import org.springframework.http.ResponseEntity;
 import java.lang.reflect.Constructor;
 import java.lang.reflect.Method;
 import org.junit.jupiter.api.function.Executable;
@@ -553,15 +553,15 @@ public class UtilsTest {
                 Utils.applyRevocationStatus(VerificationStatus.SUCCESS, Map.of()));
     }
 
-    // ── getResponseEntityForCredentialStatusException ─────────────────────────
+    // ── buildCredentialStatusErrorDto ──────────────────────────────────────────
 
     @Test
-    void getResponseEntityForCredentialStatusException_shouldReturn500() {
+    void buildCredentialStatusErrorDto_shouldReturn500() {
         CredentialStatusCheckException ex = mock(CredentialStatusCheckException.class);
         when(ex.getErrorCode()).thenReturn(StatusCheckErrorCode.UNKNOWN_ERROR);
         when(ex.getErrorDescription()).thenReturn("some error");
-        ResponseEntity<Object> response = Utils.getResponseEntityForCredentialStatusException(ex);
-        assertEquals(500, response.getStatusCode().value());
+        CredentialStatusErrorDto errorDto = Utils.buildCredentialStatusErrorDto(ex);
+        assertEquals(500, errorDto.getStatus());
     }
 
     // ── populateSchemaAndSignature ────────────────────────────────────────────

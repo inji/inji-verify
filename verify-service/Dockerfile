@@ -49,7 +49,7 @@ WORKDIR /home/${container_user}
 
 ENV work_dir=/home/${container_user}
 
-ADD ./target/verify-service-*-exec.jar ./verify-service.jar
+ADD ./target/verify-service-*.jar ./verify-service.jar
 
 # change permissions of file inside working dir
 RUN chown -R ${container_user}:${container_user} /home/${container_user}

@@ -215,7 +215,25 @@ verify-ui:
 
 ---
 
-## 2. Clear Cache and Start Docker Compose
+## 2. Build verify-service locally first
+
+`verify-service`'s Dockerfile does **not** run Maven — it only packages a jar that must already
+exist in `verify-service/target/`. Unlike `verify-ui` (whose Dockerfile builds the React app from
+source), `docker compose build` will silently reuse whatever's already in `target/` if you skip
+this step, including a stale jar from before your latest changes.
+
+> **Never `cd verify-service` and build it standalone.** It depends on the sibling `verify-core`
+> module; building it alone resolves `verify-core` from your `~/.m2` cache instead of current
+> source, which silently uses a **stale** `verify-core` jar if it's changed since your last
+> install — producing confusing `NoClassDefFoundError`s at container startup that don't reproduce
+> locally. Always build from the repo root.
+
+```bash
+cd inji-verify   # repo root
+mvn clean install -Dgpg.skip   # builds + installs verify-core and verify-service together
+```
+
+## 3. Clear Cache and Start Docker Compose
 
 ```bash
 cd docker-compose

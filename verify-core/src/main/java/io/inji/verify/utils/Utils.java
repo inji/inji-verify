@@ -30,9 +30,6 @@ import io.mosip.vercred.vcverifier.utils.Util;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
-import org.springframework.http.HttpStatus;
-import org.springframework.http.ResponseCookie;
-import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Component;
 
 import java.time.Duration;
@@ -301,11 +298,14 @@ public final class Utils {
         return isRevoked ? VerificationStatus.REVOKED : originalStatus;
     }
 
-    public static ResponseEntity<Object> getResponseEntityForCredentialStatusException(CredentialStatusCheckException ex) {
+    /**
+     * Builds the error body for a {@link CredentialStatusCheckException}. Building the HTTP
+     * response itself (status code, ResponseEntity) is left to the caller, since that's an
+     * HTTP-transport concern and this is a plain utility class.
+     */
+    public static CredentialStatusErrorDto buildCredentialStatusErrorDto(CredentialStatusCheckException ex) {
         String errorMessage = ex.getErrorCode() + " - " + ex.getErrorDescription();
-        CredentialStatusErrorDto credentialStatusErrorDto =
-                new CredentialStatusErrorDto(Instant.now().toString(), 500, errorMessage);
-        return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR).body(credentialStatusErrorDto);
+        return new CredentialStatusErrorDto(Instant.now().toString(), 500, errorMessage);
     }
 
     public static List<StatusCheckDto> populateStatusCheckDtoList(Map<String, CredentialStatusResult> credentialStatusResult) {
