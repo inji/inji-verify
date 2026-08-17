@@ -1,7 +1,7 @@
 CreateExpirySubmission:
   Injiverify_CreateNewVerificationRequest_ForExpirySubmission_Valid_Sid:
       endPoint: /v1/verify/v2/vp-request
-      description: Creating a VP request immediately before expiry submission negative tests (issue #2058 / #1973)
+      description: Creating a VP request immediately before expiry submission negative tests
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_16
       role: noauth
       restMethod: post

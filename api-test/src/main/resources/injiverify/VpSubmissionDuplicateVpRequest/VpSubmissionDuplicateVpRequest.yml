@@ -1,7 +1,7 @@
 VpSubmissionDuplicateVpRequest:
   Injiverify_VpSubmission_ForVpRequest_All_Valid_Smoke_Sid:
       endPoint: /v1/verify/v2/vp-submission/direct-post
-      description: First successful submit on /v2/vp-request flow for duplicate coverage (issue #2058 / #1973)
+      description: First successful submit on /v2/vp-request flow for duplicate coverage
       uniqueIdentifier: TC_InjiVerify_VpSubmission_42
       role: noauth
       restMethod: post
@@ -17,7 +17,7 @@ VpSubmissionDuplicateVpRequest:
 
   Injiverify_VpSubmission_Duplicate_VpRequest_Neg:
       endPoint: /v1/verify/v2/vp-submission/direct-post
-      description: Resubmitting on /v2/vp-request flow and expect duplicate submission error (issue #2058 / #1973)
+      description: Resubmitting on /v2/vp-request flow and expect duplicate submission error
       uniqueIdentifier: TC_InjiVerify_VpSubmission_43
       role: noauth
       restMethod: post

@@ -1,7 +1,7 @@
 VpSubmissionAfterStatusExpired:
   Injiverify_VpSubmission_AfterStatusExpired_Neg:
       endPoint: /v1/verify/v2/vp-submission/direct-post
-      description: Submitting vp_token after GET status EXPIRED and expect expired request error (issue #2058 / #1973)
+      description: Submitting vp_token after GET status EXPIRED and expect expired request error
       uniqueIdentifier: TC_InjiVerify_VpSubmission_40
       role: noauth
       restMethod: post

@@ -245,7 +245,7 @@ VpSubmission:
 }'
   Injiverify_VpSubmissionForSessionRequest_duplicateRequestID_All_Valid_Smoke:
       endPoint: /v1/verify/v2/vp-submission/direct-post
-      description: Submitting VC to VP Session Request with already used requestID and expect duplicate submission error (issue #2058 / #1973)
+      description: Submitting VC to VP Session Request with already used requestID and expect duplicate submission error
       uniqueIdentifier: TC_InjiVerify_VpSubmission_14
       role: noauth
       restMethod: post
@@ -628,7 +628,7 @@ VpSubmission:
 }'
   Injiverify_VpSubmission_Duplicate_Different_VpToken_Neg:
       endPoint: /v1/verify/v2/vp-submission/direct-post
-      description: Resubmitting a different vp_token for an already submitted state and expect duplicate submission error (issue #2058 / #1973)
+      description: Resubmitting a different vp_token for an already submitted state and expect duplicate submission error
       uniqueIdentifier: TC_InjiVerify_VpSubmission_37
       role: noauth
       restMethod: post
@@ -645,7 +645,7 @@ VpSubmission:
 
   Injiverify_VpSubmission_ThirdDuplicate_Neg:
       endPoint: /v1/verify/v2/vp-submission/direct-post
-      description: Third submit for an already submitted session request and expect duplicate submission error (issue #2058 / #1973)
+      description: Third submit for an already submitted session request and expect duplicate submission error
       uniqueIdentifier: TC_InjiVerify_VpSubmission_41
       role: noauth
       restMethod: post

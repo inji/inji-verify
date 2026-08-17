@@ -1,7 +1,7 @@
 CreateForExpiryStatus:
   Injiverify_CreateNewVerificationRequest_ForExpiry_All_Valid_Smoke_Sid:
       endPoint: /v1/verify/v2/vp-request
-      description: Creating a VP request immediately before Active/Expired status checks (issue #2058 / #1973)
+      description: Creating a VP request immediately before Active/Expired status checks
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_02
       role: noauth
       restMethod: post
