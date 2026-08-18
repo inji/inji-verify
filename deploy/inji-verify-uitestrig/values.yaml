@@ -56,6 +56,12 @@ uitestrig:
       eSignetbaseurl: 'https://esignet-mosipid.sandbox.xyz.net'
       injiverify: 'https://injiverify.sandbox.xyz.net/'
       injiweb: 'https://injiweb.sandbox.xyz.net/issuers'
+      issuerSearchText: National Identity Department (Released)
+      issuerSearchTextforSunbird: StayProtected Insurance
+      GOOGLE_CLIENT_ID: 'value has to be provided during deployment'
+      GOOGLE_CLIENT_SECRET: 'value has to be provided during deployment'
+      GOOGLE_REFRESH_TOKEN: 'value has to be provided during deployment'
+      INJIWEB_PASSCODE: 111111
       loginlang: sin
       mosip_components_base_urls: 'auditmanager=api-internal.sandbox.xyz.net;idrepository=api-internal.sandbox.xyz.net;partnermanager=api-internal.sandbox.xyz.net;idauthentication=api-internal.sandbox.xyz.net;policymanager=api-internal.sandbox.xyz.net;authmanager=api-internal.sandbox.xyz.net;resident=api-internal.sandbox.xyz.net;preregistration=api-internal.sandbox.xyz.net;masterdata=api-internal.sandbox.xyz.net;idgenerator=api-internal.sandbox.xyz.net;'
       verifyPortalPath: 'https://injiverify.sandbox.xyz.net'
