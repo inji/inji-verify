@@ -28,6 +28,12 @@ public final class Constants {
 
     public static final String TRANSACTION_ID_PREFIX = "txn";
     public static final String REQUEST_ID_PREFIX = "req";
+
+    // client_id scheme prefixes (OpenID4VP). A clientId starting with one of these triggers the
+    // by-reference (request_uri) signed-JWT flow; the prefix also dictates which JWT header the
+    // signed request must use.
+    public static final String CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER = "decentralized_identifier";
+    public static final String CLIENT_ID_PREFIX_X509_SAN_DNS = "x509_san_dns";
     public static final String RSA_SIGNATURE_2018 = "RsaSignature2018";
     public static final String ED25519_SIGNATURE_2018 = "Ed25519Signature2018";
     public static final String ED25519_SIGNATURE_2020 = "Ed25519Signature2020";

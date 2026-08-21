@@ -14,6 +14,7 @@ import io.inji.verify.exception.VPRequestNotFoundException;
 import io.inji.verify.exception.VPRequestValidationException;
 import com.nimbusds.jwt.SignedJWT;
 import io.inji.verify.testsupport.DcqlTestFixtures;
+import io.inji.verify.testsupport.TestCertUtil;
 import io.inji.verify.enums.VPRequestStatus;
 import io.inji.verify.models.AuthorizationRequestCreateResponse;
 import io.inji.verify.repository.AuthorizationRequestCreateResponseRepository;
@@ -331,6 +332,298 @@ class VerifiablePresentationRequestServiceImplTest {
         when(mockAuthorizationRequestCreateResponseRepository.findById("missingId")).thenReturn(Optional.empty());
 
         assertThrows(VPRequestNotFoundException.class, () -> service.getVPRequestJwt("missingId"));
+    }
+
+    @Test
+    @DisplayName("Should embed x5c (not kid) in JWT header for x509_san_dns client_id")
+    void getVPRequestJwt_WithX509SanDnsClientId_EmbedsCertChain() throws Exception {
+        String requestId = "req_x5c";
+        String dnsName = "test.example.com";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "x509_san_dns:" + dnsName, DcqlTestFixtures.minimalDcqlDto(), null, "nonce",
+                        "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        java.security.cert.X509Certificate cert = TestCertUtil.generateSelfSignedCert(edKeyPair, dnsName);
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{cert});
+
+        String jwt = service.getVPRequestJwt(requestId);
+
+        assertNotNull(jwt);
+        var header = SignedJWT.parse(jwt).getHeader();
+        assertNull(header.getKeyID(), "kid must not be set for x509_san_dns client_id");
+        assertNotNull(header.getX509CertChain(), "x5c must be set for x509_san_dns client_id");
+        assertEquals(1, header.getX509CertChain().size());
+        assertEquals(dnsName, SignedJWT.parse(jwt).getJWTClaimsSet().getIssuer());
+    }
+
+    @Test
+    @DisplayName("Should throw JWTCreationException when x509_san_dns client_id's DNS name isn't in the cert's SAN")
+    void getVPRequestJwt_WithX509SanDnsMismatch_ThrowsJWTCreationException() throws Exception {
+        String requestId = "req_x5c_mismatch";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "x509_san_dns:mismatched.example.com", DcqlTestFixtures.minimalDcqlDto(), null, "nonce",
+                        "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        // cert's SAN is "test.example.com", clientId claims "mismatched.example.com" — must not match
+        java.security.cert.X509Certificate cert = TestCertUtil.generateSelfSignedCert(edKeyPair, "test.example.com");
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{cert});
+
+        assertThrows(io.inji.verify.exception.JWTCreationException.class, () -> service.getVPRequestJwt(requestId));
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should use the by-reference (request_uri) flow for x509_san_dns client_id")
+    void createAuthorizationRequest_X509ClientId_UsesRequestUriFlow() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+        // service.x509SanDnsHost defaults to "test.example.com" (matching the bundled sample keystore)
+        VPRequestCreateDto dto = new VPRequestCreateDto(
+                "x509_san_dns:test.example.com", "tx_x509", null, minimalDcqlQuery(), false);
+
+        VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+        assertNotNull(response);
+        assertNotNull(response.getRequestUri(), "x509_san_dns should use the by-reference (request_uri) flow");
+        assertNull(response.getAuthorizationDetails());
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should reject x509_san_dns client_id whose DNS name doesn't match inji.verify.x509-san-dns.host")
+    void createAuthorizationRequest_X509ClientIdHostMismatch_ThrowsValidationException() throws Exception {
+        VPRequestCreateDto dto = new VPRequestCreateDto(
+                "x509_san_dns:other-host.example.com", "tx_x509_mismatch", null, minimalDcqlQuery(), false);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> service.createAuthorizationRequest(dto));
+        assertEquals(ErrorCode.CLIENT_ID_HOST_MISMATCH, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should honor an overridden inji.verify.x509-san-dns.host")
+    void createAuthorizationRequest_X509ClientIdMatchingOverriddenHost_Succeeds() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+        String originalHost = service.x509SanDnsHost;
+        service.x509SanDnsHost = "verify.acmecorp.example";
+        try {
+            VPRequestCreateDto dto = new VPRequestCreateDto(
+                    "x509_san_dns:verify.acmecorp.example", "tx_x509_override", null, minimalDcqlQuery(), false);
+
+            VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+            assertNotNull(response);
+            assertNotNull(response.getRequestUri());
+        } finally {
+            service.x509SanDnsHost = originalHost;
+        }
+    }
+
+    @Test
+    @DisplayName("Should throw JWTCreationException with a clear log (not a raw RuntimeException) when no cert chain is configured")
+    void getVPRequestJwt_WithX509SanDns_NoCertChainConfigured_ThrowsJWTCreationException() throws Exception {
+        String requestId = "req_x5c_no_cert";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "x509_san_dns:test.example.com", DcqlTestFixtures.minimalDcqlDto(), null, "nonce",
+                        "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+        // Simulates a deployment that never configured a certificate chain for this scheme.
+        when(mockKeyManagementService.getCertificateChain())
+                .thenThrow(new RuntimeException("No certificate chain found in keystore"));
+
+        try {
+            assertThrows(io.inji.verify.exception.JWTCreationException.class, () -> service.getVPRequestJwt(requestId));
+        } finally {
+            // mockKeyManagementService is a shared static mock (initialized once in @BeforeAll).
+            // A thenThrow() stub on getCertificateChain() persists for the whole class otherwise —
+            // any later test's when(...).thenReturn(...) on the same method would trigger this
+            // leftover throw while Mockito evaluates the call inside when(), before .thenReturn
+            // ever gets a chance to override it. Reset so this failure stub doesn't leak.
+            reset(mockKeyManagementService);
+        }
+    }
+
+    @Test
+    @DisplayName("Should throw JWTCreationException when the signing certificate has expired")
+    void getVPRequestJwt_WithExpiredCert_ThrowsJWTCreationException() throws Exception {
+        String requestId = "req_x5c_expired_cert";
+        String dnsName = "test.example.com";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "x509_san_dns:" + dnsName, DcqlTestFixtures.minimalDcqlDto(), null, "nonce",
+                        "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        // validity window entirely in the past — cert expired an hour ago
+        long now = Instant.now().toEpochMilli();
+        java.security.cert.X509Certificate expiredCert = TestCertUtil.generateSelfSignedCert(
+                edKeyPair, dnsName,
+                new java.util.Date(now - 1000L * 60 * 120),
+                new java.util.Date(now - 1000L * 60 * 60));
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{expiredCert});
+
+        assertThrows(io.inji.verify.exception.JWTCreationException.class, () -> service.getVPRequestJwt(requestId));
+    }
+
+    @Test
+    @DisplayName("Should throw JWTCreationException when the signing certificate is not yet valid")
+    void getVPRequestJwt_WithNotYetValidCert_ThrowsJWTCreationException() throws Exception {
+        String requestId = "req_x5c_not_yet_valid_cert";
+        String dnsName = "test.example.com";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "x509_san_dns:" + dnsName, DcqlTestFixtures.minimalDcqlDto(), null, "nonce",
+                        "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        // validity window entirely in the future — cert doesn't start for another hour
+        long now = Instant.now().toEpochMilli();
+        java.security.cert.X509Certificate futureCert = TestCertUtil.generateSelfSignedCert(
+                edKeyPair, dnsName,
+                new java.util.Date(now + 1000L * 60 * 60),
+                new java.util.Date(now + 1000L * 60 * 120));
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{futureCert});
+
+        assertThrows(io.inji.verify.exception.JWTCreationException.class, () -> service.getVPRequestJwt(requestId));
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should reject a non-HTTPS base URL for x509_san_dns outside local/dev")
+    void createAuthorizationRequest_X509ClientId_NonHttpsNonLocalBaseUrl_ThrowsValidationException() throws Exception {
+        String originalBaseUrl = service.verifyServiceBaseUrl;
+        service.verifyServiceBaseUrl = "http://verify.acmecorp.example";
+        try {
+            VPRequestCreateDto dto = new VPRequestCreateDto(
+                    "x509_san_dns:test.example.com", "tx_x509_insecure", null, minimalDcqlQuery(), false);
+
+            VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                    () -> service.createAuthorizationRequest(dto));
+            assertEquals(ErrorCode.REQUEST_URI_INSECURE, ex.getErrorCode());
+        } finally {
+            service.verifyServiceBaseUrl = originalBaseUrl;
+        }
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should allow a non-HTTPS base URL for x509_san_dns on localhost (dev)")
+    void createAuthorizationRequest_X509ClientId_NonHttpsLocalhostBaseUrl_Succeeds() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+        String originalBaseUrl = service.verifyServiceBaseUrl;
+        service.verifyServiceBaseUrl = "http://localhost:8090";
+        try {
+            VPRequestCreateDto dto = new VPRequestCreateDto(
+                    "x509_san_dns:test.example.com", "tx_x509_local", null, minimalDcqlQuery(), false);
+
+            VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+            assertNotNull(response);
+            assertNotNull(response.getRequestUri());
+        } finally {
+            service.verifyServiceBaseUrl = originalBaseUrl;
+        }
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should allow an HTTPS base URL for x509_san_dns")
+    void createAuthorizationRequest_X509ClientId_HttpsBaseUrl_Succeeds() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+        String originalBaseUrl = service.verifyServiceBaseUrl;
+        service.verifyServiceBaseUrl = "https://verify.acmecorp.example";
+        try {
+            VPRequestCreateDto dto = new VPRequestCreateDto(
+                    "x509_san_dns:test.example.com", "tx_x509_https", null, minimalDcqlQuery(), false);
+
+            VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+            assertNotNull(response);
+            assertNotNull(response.getRequestUri());
+        } finally {
+            service.verifyServiceBaseUrl = originalBaseUrl;
+        }
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should NOT enforce HTTPS for decentralized_identifier client_id, even with an insecure non-local base URL")
+    void createAuthorizationRequest_DecentralizedIdentifierClientId_NonHttpsNonLocalBaseUrl_Succeeds() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+        String originalBaseUrl = service.verifyServiceBaseUrl;
+        // Deliberately insecure + non-local — would fail validateHttpsForX509SanDns if it applied
+        // here, but that check is scoped to x509_san_dns only so this must succeed unchanged.
+        service.verifyServiceBaseUrl = "http://verify.acmecorp.example";
+        try {
+            VPRequestCreateDto dto = new VPRequestCreateDto(
+                    "decentralized_identifier:did:example:verifier", "tx_dec_id_http", null, minimalDcqlQuery(), false);
+
+            VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+            assertNotNull(response);
+            assertNotNull(response.getRequestUri());
+        } finally {
+            service.verifyServiceBaseUrl = originalBaseUrl;
+        }
+    }
+
+    @Test
+    @DisplayName("Should throw JWTCreationException when the keystore returns a non-null but empty certificate chain")
+    void getVPRequestJwt_WithX509SanDns_EmptyCertChainArray_ThrowsJWTCreationException() throws Exception {
+        String requestId = "req_x5c_empty_cert_array";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "x509_san_dns:test.example.com", DcqlTestFixtures.minimalDcqlDto(), null, "nonce",
+                        "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+        // Distinct from the "no cert chain configured" test: here the call succeeds but returns a
+        // zero-length array, exercising the explicit certChain.length == 0 guard directly rather
+        // than the catch(RuntimeException) branch.
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[0]);
+
+        assertThrows(io.inji.verify.exception.JWTCreationException.class, () -> service.getVPRequestJwt(requestId));
     }
 
     @Test

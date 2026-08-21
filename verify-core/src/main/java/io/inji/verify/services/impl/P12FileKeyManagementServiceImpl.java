@@ -13,6 +13,7 @@ import jakarta.annotation.PostConstruct;
 
 import java.security.KeyFactory;
 import java.security.KeyPair;
+import java.security.cert.X509Certificate;
 import java.security.interfaces.EdECPrivateKey;
 import java.security.spec.X509EncodedKeySpec;
 
@@ -58,5 +59,10 @@ public class P12FileKeyManagementServiceImpl implements KeyManagementService<Oct
             log.error("Error generating KeyPair: {}", e.getMessage());
             return null;
         }
+    }
+
+    @Override
+    public X509Certificate[] getCertificateChain() {
+        return extractor.extractCertificateChain();
     }
 }

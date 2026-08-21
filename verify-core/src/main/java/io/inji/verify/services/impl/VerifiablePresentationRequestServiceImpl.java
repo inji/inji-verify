@@ -9,6 +9,7 @@ import com.nimbusds.jose.JWSSigner;
 import com.nimbusds.jose.JOSEException;
 import com.nimbusds.jose.crypto.Ed25519Signer;
 import com.nimbusds.jose.jwk.OctetKeyPair;
+import com.nimbusds.jose.util.Base64;
 import com.nimbusds.jose.util.JSONObjectUtils;
 import com.nimbusds.jwt.JWTClaimsSet;
 import com.nimbusds.jwt.SignedJWT;
@@ -36,13 +37,22 @@ import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.util.StringUtils;
 import org.springframework.web.context.request.async.DeferredResult;
+import java.net.URI;
+import java.security.cert.CertificateEncodingException;
+import java.security.cert.CertificateExpiredException;
+import java.security.cert.CertificateNotYetValidException;
+import java.security.cert.CertificateParsingException;
+import java.security.cert.X509Certificate;
 import java.text.ParseException;
 import java.util.regex.Pattern;
 import java.time.Instant;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Optional;
 import java.util.NoSuchElementException;
 import java.util.Date;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.ConcurrentHashMap;
 import org.springframework.beans.factory.annotation.Value;
@@ -67,9 +77,20 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
     @Value("${inji.did.verify.public.key.uri}")
     String verifyPublicKeyURI;
 
+    /**
+     * The DNS name a x509_san_dns client_id is expected to claim for this deployment. Declared
+     * independently of inji.vp-submission.base-url (which can churn in dev, e.g. behind a tunnel)
+     * — every deployment sets this once to match its own certificate's SAN, the same way
+     * inji.did.verify.uri is independently declared for kid mode. Default matches the SAN baked
+     * into the bundled sample keystore (test.p12).
+     */
+    @Value("${inji.verify.x509-san-dns.host:test.example.com}")
+    String x509SanDnsHost = "test.example.com";
+
     ConcurrentHashMap<String, DeferredResult<VPRequestStatusDto>> vpRequestStatusListeners = new ConcurrentHashMap<>();
 
     private static final Pattern NONCE_PATTERN = Pattern.compile("^[A-Za-z0-9\\-._~]{16,}$");
+    private static final Set<String> LOCAL_HOSTS = Set.of("localhost", "127.0.0.1", "::1", "0.0.0.0");
 
     public VerifiablePresentationRequestServiceImpl(
             AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository,
@@ -88,6 +109,8 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
     public VPRequestResponseDto createAuthorizationRequest(VPRequestCreateDto vpRequestCreate) {
         log.info("Creating authorization request");
         dcqlValidator.validate(vpRequestCreate.getDcqlQuery());
+        validateX509SanDnsHost(vpRequestCreate.getClientId());
+        validateHttpsForX509SanDns(vpRequestCreate.getClientId());
         String transactionId = vpRequestCreate.getTransactionId() != null ? vpRequestCreate.getTransactionId() : Utils.generateID(Constants.TRANSACTION_ID_PREFIX);
         String requestId = Utils.generateID(Constants.REQUEST_ID_PREFIX);
         long expiresAt = Instant.now().plusSeconds(Constants.DEFAULT_EXPIRY).toEpochMilli();
@@ -116,11 +139,63 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         AuthorizationRequestCreateResponse authorizationRequestCreateResponse = new AuthorizationRequestCreateResponse(requestId, transactionId, authorizationRequestResponseDto, expiresAt);
         authorizationRequestCreateResponseRepository.save(authorizationRequestCreateResponse);
         log.info("Authorization request created");
-        if (vpRequestCreate.getClientId().startsWith("decentralized_identifier")) {
+        if (isSignedRequestScheme(vpRequestCreate.getClientId())) {
             String requestUri = verifyServiceBaseUrl + Constants.VP_REQUEST_URI;
             return new VPRequestResponseDto(authorizationRequestCreateResponse.getTransactionId(), authorizationRequestCreateResponse.getRequestId(), null, authorizationRequestCreateResponse.getExpiresAt(), "%s/%s".formatted(requestUri, authorizationRequestCreateResponse.getRequestId()));
         }
         return new VPRequestResponseDto(authorizationRequestCreateResponse.getTransactionId(), authorizationRequestCreateResponse.getRequestId(), authorizationRequestCreateResponse.getAuthorizationDetails(), authorizationRequestCreateResponse.getExpiresAt(), null);
+    }
+
+    private static boolean isSignedRequestScheme(String clientId) {
+        return clientId.startsWith(Constants.CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER)
+                || clientId.startsWith(Constants.CLIENT_ID_PREFIX_X509_SAN_DNS);
+    }
+
+    /**
+     * Per OpenID4VP 1.0 5.9.3: unless the wallet already trusts this client_id via some
+     * allowlist, the DNS name in an x509_san_dns client_id must match this deployment's declared
+     * identity. Compared against the independently-configured inji.verify.x509-san-dns.host
+     * (not derived from inji.vp-submission.base-url, which can churn in dev — e.g. behind a
+     * tunnel — independently of what identity this deployment's certificate actually asserts).
+     * Checked at request-creation time (cheap, string-only) rather than at JWT-sign time.
+     */
+    private void validateX509SanDnsHost(String clientId) {
+        String prefix = Constants.CLIENT_ID_PREFIX_X509_SAN_DNS + ":";
+        if (clientId == null || !clientId.startsWith(prefix)) {
+            return;
+        }
+        String claimedDns = clientId.substring(prefix.length());
+        if (x509SanDnsHost == null || !x509SanDnsHost.equalsIgnoreCase(claimedDns)) {
+            throw new VPRequestValidationException(ErrorCode.CLIENT_ID_HOST_MISMATCH,
+                    "client_id DNS name '" + claimedDns + "' does not match this deployment's configured "
+                            + "inji.verify.x509-san-dns.host ('" + x509SanDnsHost + "').");
+        }
+    }
+
+    /**
+     * request_uri delivers a signed JWT the wallet trusts implicitly (its own certificate chain
+     * is embedded right there in the response) — plaintext HTTP would let a network attacker
+     * substitute or tamper with it in transit. Enforced for x509_san_dns specifically (not
+     * decentralized_identifier, to avoid changing behavior for existing deployments of that
+     * scheme); skipped for loopback hosts so local dev keeps working over plain HTTP.
+     */
+    private void validateHttpsForX509SanDns(String clientId) {
+        String prefix = Constants.CLIENT_ID_PREFIX_X509_SAN_DNS + ":";
+        if (clientId == null || !clientId.startsWith(prefix) || verifyServiceBaseUrl == null) {
+            return;
+        }
+        URI baseUri;
+        try {
+            baseUri = URI.create(verifyServiceBaseUrl);
+        } catch (IllegalArgumentException e) {
+            return; // malformed base-url is a separate, pre-existing config problem, not this check's job
+        }
+        boolean isLocal = baseUri.getHost() != null && LOCAL_HOSTS.contains(baseUri.getHost().toLowerCase());
+        if (!isLocal && !"https".equalsIgnoreCase(baseUri.getScheme())) {
+            throw new VPRequestValidationException(ErrorCode.REQUEST_URI_INSECURE,
+                    "inji.vp-submission.base-url ('" + verifyServiceBaseUrl + "') must use https for the "
+                            + "x509_san_dns client_id scheme outside local/dev environments.");
+        }
     }
 
     @Override
@@ -227,7 +302,10 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
 
         try {
 
-            String issuer = verifierDid != null ? verifierDid.replaceFirst("^decentralized_identifier:", "") : verifierDid;
+            String issuer = verifierDid != null
+                    ? verifierDid.replaceFirst("^(" + Constants.CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER
+                            + "|" + Constants.CLIENT_ID_PREFIX_X509_SAN_DNS + "):", "")
+                    : verifierDid;
             JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder()
                     .issuer(issuer)
                     .issueTime(Date.from(Instant.now()))
@@ -239,7 +317,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                     .claim("state", state)
                     .claim("response_uri", authorizationRequest.getResponseUri());
 
-            if (verifierDid != null && verifierDid.startsWith("decentralized_identifier")) {
+            if (verifierDid != null && isSignedRequestScheme(verifierDid)) {
                 claimsBuilder.claim(
                         "client_metadata",
                         new ClientMetadataDto(VP_FORMATS_SUPPORTED)
@@ -256,17 +334,89 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                         .build();
             }
 
-            JWSHeader jwsHeader = new JWSHeader.Builder(JWSAlgorithm.EdDSA)
-                    .type(new JOSEObjectType("oauth-authz-req+jwt"))
-                    .keyID(verifyPublicKeyURI)
-                    .build();
+            JWSHeader.Builder jwsHeaderBuilder = new JWSHeader.Builder(JWSAlgorithm.EdDSA)
+                    .type(new JOSEObjectType("oauth-authz-req+jwt"));
+
+            // Which header this JWT gets is derived entirely from the client_id scheme itself,
+            // so the header always matches what's actually claimed. A deployment can serve both
+            // schemes side by side — decentralized_identifier:... requests get kid, x509_san_dns:...
+            // requests get x5c — since both simply need the same underlying Ed25519 key dressed
+            // differently in the header.
+            if (verifierDid != null && verifierDid.startsWith(Constants.CLIENT_ID_PREFIX_X509_SAN_DNS)) {
+                X509Certificate[] certChain;
+                try {
+                    certChain = keyManagementService.getCertificateChain();
+                } catch (RuntimeException e) {
+                    // e.g. no cert configured in the keystore for this deployment — fail clearly
+                    // rather than letting a raw exception escape or serving a broken JWT.
+                    log.error("Could not read a signing certificate chain for x509_san_dns client_id: {}", e.getMessage());
+                    throw new JWTCreationException();
+                }
+                if (certChain == null || certChain.length == 0) {
+                    log.error("Keystore returned an empty certificate chain for x509_san_dns client_id");
+                    throw new JWTCreationException();
+                }
+                validateCertNotExpired(certChain[0]);
+                validateSanMatchesIssuer(issuer, certChain[0]);
+                jwsHeaderBuilder.x509CertChain(toBase64CertChain(certChain));
+            } else {
+                jwsHeaderBuilder.keyID(verifyPublicKeyURI);
+            }
+
+            JWSHeader jwsHeader = jwsHeaderBuilder.build();
             SignedJWT signedJWT = new SignedJWT(jwsHeader, claimsSet);
             JWSSigner signer = new Ed25519Signer(keyManagementService.getKeyPair());
 
             signedJWT.sign(signer);
             return signedJWT.serialize();
-        } catch (ParseException | JOSEException | JsonProcessingException e) {
+        } catch (ParseException | JOSEException | JsonProcessingException | CertificateEncodingException
+                 | CertificateParsingException e) {
             log.error("Error generating JWT: {}", e.getMessage());
+            throw new JWTCreationException();
+        }
+    }
+
+    /**
+     * Base64-DER-encodes a leaf-first cert chain for the {@code x5c} header, used instead of
+     * {@code kid} when the client_id uses the {@code x509_san_dns} scheme.
+     */
+    private List<Base64> toBase64CertChain(X509Certificate[] certChain) throws CertificateEncodingException {
+        List<Base64> x5c = new ArrayList<>(certChain.length);
+        for (X509Certificate cert : certChain) {
+            x5c.add(Base64.encode(cert.getEncoded()));
+        }
+        return x5c;
+    }
+
+    /**
+     * A signing cert past its notAfter (or not yet at its notBefore) must never be embedded in an
+     * x5c header — any spec-compliant wallet validates the cert chain itself and would reject the
+     * request anyway, so failing fast here surfaces the real cause (an unrotated/misconfigured
+     * keystore) instead of a downstream wallet-side rejection that's hard to diagnose.
+     */
+    private void validateCertNotExpired(X509Certificate leafCert) {
+        try {
+            leafCert.checkValidity();
+        } catch (CertificateExpiredException | CertificateNotYetValidException e) {
+            log.error("Signing certificate is not currently valid: {}", e.getMessage());
+            throw new JWTCreationException();
+        }
+    }
+
+    /**
+     * The {@code x509_san_dns} scheme requires the client_id's DNS name (the {@code iss}/issuer
+     * value here, prefix already stripped) to actually be present in the signing certificate's
+     * Subject Alternative Names — otherwise a wallet validating the cert against the claimed
+     * identity would reject it anyway. Catches keystore/client_id drift at sign time rather than
+     * producing a JWT no compliant wallet would trust.
+     */
+    private void validateSanMatchesIssuer(String issuer, X509Certificate leafCert) throws CertificateParsingException {
+        Collection<List<?>> sanEntries = leafCert.getSubjectAlternativeNames();
+        boolean matches = sanEntries != null && sanEntries.stream()
+                .filter(entry -> entry.size() >= 2 && Integer.valueOf(2).equals(entry.get(0))) // type 2 = dNSName
+                .anyMatch(entry -> issuer.equals(entry.get(1)));
+        if (!matches) {
+            log.error("client_id DNS name '{}' not found in signing certificate's Subject Alternative Names", issuer);
             throw new JWTCreationException();
         }
     }
