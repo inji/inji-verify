@@ -633,6 +633,23 @@ class VerifiablePresentationRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("createAuthorizationRequest should reject a hostless base URL for x509_san_dns, even with an https scheme")
+    void createAuthorizationRequest_X509ClientId_HostlessBaseUrl_ThrowsValidationException() throws Exception {
+        String originalBaseUrl = service.verifyServiceBaseUrl;
+        service.verifyServiceBaseUrl = "https:///path"; // scheme present, no host — must not slip through
+        try {
+            VPRequestCreateDto dto = new VPRequestCreateDto(
+                    "x509_san_dns:test.example.com", "tx_x509_hostless", null, minimalDcqlQuery(), false);
+
+            VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                    () -> service.createAuthorizationRequest(dto));
+            assertEquals(ErrorCode.REQUEST_URI_INSECURE, ex.getErrorCode());
+        } finally {
+            service.verifyServiceBaseUrl = originalBaseUrl;
+        }
+    }
+
+    @Test
     @DisplayName("createAuthorizationRequest should allow a non-HTTPS base URL for x509_san_dns on localhost (dev)")
     void createAuthorizationRequest_X509ClientId_NonHttpsLocalhostBaseUrl_Succeeds() throws Exception {
         when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))

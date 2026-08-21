@@ -193,7 +193,13 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
             throw new VPRequestValidationException(ErrorCode.REQUEST_URI_INSECURE,
                     "inji.vp-submission.base-url ('" + verifyServiceBaseUrl + "') is not a valid URI.");
         }
-        boolean isLocal = baseUri.getHost() != null && LOCAL_HOSTS.contains(baseUri.getHost().toLowerCase());
+        String host = baseUri.getHost();
+        if (host == null || host.isEmpty()) {
+            throw new VPRequestValidationException(ErrorCode.REQUEST_URI_INSECURE,
+                    "inji.vp-submission.base-url ('" + verifyServiceBaseUrl + "') must be an absolute URL "
+                            + "with a host for the x509_san_dns client_id scheme.");
+        }
+        boolean isLocal = LOCAL_HOSTS.contains(host.toLowerCase());
         if (!isLocal && !"https".equalsIgnoreCase(baseUri.getScheme())) {
             throw new VPRequestValidationException(ErrorCode.REQUEST_URI_INSECURE,
                     "inji.vp-submission.base-url ('" + verifyServiceBaseUrl + "') must use https for the "
