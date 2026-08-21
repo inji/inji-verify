@@ -24,6 +24,7 @@ public class P12FileKeyManagementServiceImpl implements KeyManagementService<Oct
     P12KeyExtractor extractor;
 
     private KeyPair ed25519KeyPair;
+    private volatile X509Certificate[] certificateChain;
 
     public P12FileKeyManagementServiceImpl(P12KeyExtractor extractor) {
         this.extractor = extractor;
@@ -63,6 +64,19 @@ public class P12FileKeyManagementServiceImpl implements KeyManagementService<Oct
 
     @Override
     public X509Certificate[] getCertificateChain() {
-        return extractor.extractCertificateChain();
+        X509Certificate[] chain = certificateChain;
+        if (chain == null) {
+            // Not eagerly loaded in @PostConstruct like the key pair: not every deployment
+            // configures a cert-bearing keystore entry (kid/DID-only deployments shouldn't fail
+            // startup over it). Cache lazily instead, on first successful x509_san_dns request.
+            synchronized (this) {
+                chain = certificateChain;
+                if (chain == null) {
+                    chain = extractor.extractCertificateChain();
+                    certificateChain = chain;
+                }
+            }
+        }
+        return chain.clone();
     }
 }

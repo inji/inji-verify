@@ -188,7 +188,10 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         try {
             baseUri = URI.create(verifyServiceBaseUrl);
         } catch (IllegalArgumentException e) {
-            return; // malformed base-url is a separate, pre-existing config problem, not this check's job
+            // Fail closed, not open: this check exists specifically to keep an insecure/broken
+            // request_uri endpoint from being handed to a wallet for x509_san_dns requests.
+            throw new VPRequestValidationException(ErrorCode.REQUEST_URI_INSECURE,
+                    "inji.vp-submission.base-url ('" + verifyServiceBaseUrl + "') is not a valid URI.");
         }
         boolean isLocal = baseUri.getHost() != null && LOCAL_HOSTS.contains(baseUri.getHost().toLowerCase());
         if (!isLocal && !"https".equalsIgnoreCase(baseUri.getScheme())) {
@@ -356,7 +359,9 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                     log.error("Keystore returned an empty certificate chain for x509_san_dns client_id");
                     throw new JWTCreationException();
                 }
-                validateCertNotExpired(certChain[0]);
+                for (X509Certificate cert : certChain) {
+                    validateCertNotExpired(cert);
+                }
                 validateSanMatchesIssuer(issuer, certChain[0]);
                 jwsHeaderBuilder.x509CertChain(toBase64CertChain(certChain));
             } else {
@@ -414,7 +419,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         Collection<List<?>> sanEntries = leafCert.getSubjectAlternativeNames();
         boolean matches = sanEntries != null && sanEntries.stream()
                 .filter(entry -> entry.size() >= 2 && Integer.valueOf(2).equals(entry.get(0))) // type 2 = dNSName
-                .anyMatch(entry -> issuer.equals(entry.get(1)));
+                .anyMatch(entry -> issuer.equalsIgnoreCase(String.valueOf(entry.get(1))));
         if (!matches) {
             log.error("client_id DNS name '{}' not found in signing certificate's Subject Alternative Names", issuer);
             throw new JWTCreationException();

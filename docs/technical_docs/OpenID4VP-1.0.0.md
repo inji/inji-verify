@@ -226,7 +226,7 @@ openid4vp://authorize
 
 When `clientId` starts with `x509_san_dns:`, the request JWT is signed the same way but the header carries the signing certificate chain (`x5c`) instead of a `kid`. The wallet verifies the JWT using the embedded certificate directly, and checks that the DNS name in `clientId` is one of the certificate's Subject Alternative Names — no DID resolution involved.
 
-```
+```text
 openid4vp://authorize
   ?client_id=x509_san_dns:verify.example.com
   &request_uri={backendUrl}/v2/vp-request/{requestId}

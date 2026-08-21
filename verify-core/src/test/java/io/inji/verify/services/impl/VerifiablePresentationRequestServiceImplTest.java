@@ -366,6 +366,36 @@ class VerifiablePresentationRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Should embed x5c when client_id's DNS name and the cert's SAN differ only by letter case")
+    void getVPRequestJwt_WithX509SanDnsClientIdDifferingCase_EmbedsCertChain() throws Exception {
+        String requestId = "req_x5c_case_insensitive";
+        String clientIdDnsName = "TEST.EXAMPLE.COM"; // differs in case from x509SanDnsHost default and cert SAN below
+        String certSanDnsName = "test.example.com";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "x509_san_dns:" + clientIdDnsName, DcqlTestFixtures.minimalDcqlDto(), null, "nonce",
+                        "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        java.security.cert.X509Certificate cert = TestCertUtil.generateSelfSignedCert(edKeyPair, certSanDnsName);
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{cert});
+
+        String jwt = service.getVPRequestJwt(requestId);
+
+        assertNotNull(jwt);
+        var header = SignedJWT.parse(jwt).getHeader();
+        assertNotNull(header.getX509CertChain(), "x5c must be set — SAN match must be case-insensitive");
+        assertEquals(clientIdDnsName, SignedJWT.parse(jwt).getJWTClaimsSet().getIssuer());
+    }
+
+    @Test
     @DisplayName("Should throw JWTCreationException when x509_san_dns client_id's DNS name isn't in the cert's SAN")
     void getVPRequestJwt_WithX509SanDnsMismatch_ThrowsJWTCreationException() throws Exception {
         String requestId = "req_x5c_mismatch";
@@ -491,6 +521,41 @@ class VerifiablePresentationRequestServiceImplTest {
                 new java.util.Date(now - 1000L * 60 * 60));
         when(mockKeyManagementService.getCertificateChain())
                 .thenReturn(new java.security.cert.X509Certificate[]{expiredCert});
+
+        assertThrows(io.inji.verify.exception.JWTCreationException.class, () -> service.getVPRequestJwt(requestId));
+    }
+
+    @Test
+    @DisplayName("Should throw JWTCreationException when an intermediate certificate in the chain has expired, even though the leaf is valid")
+    void getVPRequestJwt_WithExpiredIntermediateCert_ThrowsJWTCreationException() throws Exception {
+        String requestId = "req_x5c_expired_intermediate_cert";
+        String dnsName = "test.example.com";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "x509_san_dns:" + dnsName, DcqlTestFixtures.minimalDcqlDto(), null, "nonce",
+                        "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        long now = Instant.now().toEpochMilli();
+
+        // Leaf: valid window, correct SAN — would pass on its own.
+        java.security.KeyPair leafKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        java.security.cert.X509Certificate leafCert = TestCertUtil.generateSelfSignedCert(leafKeyPair, dnsName);
+
+        // Intermediate: expired an hour ago. No SAN needed — only the leaf's SAN is checked.
+        java.security.KeyPair intermediateKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        java.security.cert.X509Certificate expiredIntermediateCert = TestCertUtil.generateSelfSignedCert(
+                intermediateKeyPair, null,
+                new java.util.Date(now - 1000L * 60 * 120),
+                new java.util.Date(now - 1000L * 60 * 60));
+
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{leafCert, expiredIntermediateCert});
 
         assertThrows(io.inji.verify.exception.JWTCreationException.class, () -> service.getVPRequestJwt(requestId));
     }

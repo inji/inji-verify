@@ -173,11 +173,11 @@ Create a VP request and establish a browser session. Used by the Inji Verify SDK
 }
 ```
 
-For DID-based `clientId` (prefix `decentralized_identifier:`) or certificate-based `clientId` (prefix `x509_san_dns:`): `authorizationDetails` is `null` and `requestUri` is populated with the URL the wallet fetches to get the signed JWT. Both prefixes use this same by-reference flow; which one is valid depends on the DNS name after the prefix matching this deployment's configured identity — see `GET /v2/vp-request/{requestId}` below for how the two prefixes differ in the JWT that's ultimately served.
+For DID-based `clientId` (prefix `decentralized_identifier:`) or certificate-based `clientId` (prefix `x509_san_dns:`): `authorizationDetails` is `null` and `requestUri` is populated with the URL the wallet fetches to get the signed JWT. Both prefixes use this same by-reference flow. `decentralized_identifier:` clientIds are accepted as-is (validity is established later, when the wallet resolves the DID document). `x509_san_dns:` clientIds additionally require the DNS name after the prefix to match this deployment's configured identity (`inji.verify.x509-san-dns.host`) — see below for the specific error responses. See `GET /v2/vp-request/{requestId}` below for how the two prefixes differ in the JWT that's ultimately served.
 
-**`x509_san_dns` clientId — request creation errors** (`400 Bad Request`, `{ "errorCode": "invalid_request", "errorMessage": "..." }`):
+**`x509_san_dns` clientId — request creation errors** (`400 Bad Request`, `{ "errorCode": "invalid_request", "errorMessage": "..." }`). The wire-level `errorCode` is `invalid_request` for both causes below — distinguish them by `errorMessage` text, or by the internal enum constant name if you're grepping server code/logs:
 
-| Cause | `errorCode` value in response |
+| Cause | Internal enum constant (not the wire `errorCode`) |
 |---|---|
 | DNS name in `clientId` doesn't match this deployment's configured `inji.verify.x509-san-dns.host` | `CLIENT_ID_HOST_MISMATCH` |
 | `inji.vp-submission.base-url` isn't `https` (and isn't a loopback host) | `REQUEST_URI_INSECURE` |
