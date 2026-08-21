@@ -420,6 +420,32 @@ class VerifiablePresentationRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("Should throw JWTCreationException when the signing certificate has no SAN extension at all")
+    void getVPRequestJwt_WithX509SanDnsNoSanExtension_ThrowsJWTCreationException() throws Exception {
+        String requestId = "req_x5c_no_san";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "x509_san_dns:test.example.com", DcqlTestFixtures.minimalDcqlDto(), null, "nonce",
+                        "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        // no sanDnsName passed — cert has no Subject Alternative Name extension at all, distinct
+        // from the "SAN present but doesn't match" case covered above (getSubjectAlternativeNames()
+        // returns null here rather than a non-matching list).
+        java.security.cert.X509Certificate certWithNoSan = TestCertUtil.generateSelfSignedCert(edKeyPair);
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{certWithNoSan});
+
+        assertThrows(io.inji.verify.exception.JWTCreationException.class, () -> service.getVPRequestJwt(requestId));
+    }
+
+    @Test
     @DisplayName("createAuthorizationRequest should use the by-reference (request_uri) flow for x509_san_dns client_id")
     void createAuthorizationRequest_X509ClientId_UsesRequestUriFlow() throws Exception {
         when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
