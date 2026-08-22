@@ -34,6 +34,13 @@ public final class Constants {
     // signed request must use.
     public static final String CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER = "decentralized_identifier";
     public static final String CLIENT_ID_PREFIX_X509_SAN_DNS = "x509_san_dns";
+
+    // Fixed symbolic `aud` value for Self-Issued OpenID Provider v2 (Static Discovery), per
+    // OpenID4VP 1.0 5.8: mandatory on every signed Request Object we produce, since we have no
+    // way to negotiate Dynamic Discovery with a wallet (that requires the POST-based Request URI
+    // Method's wallet_metadata, which we don't implement). Not configurable — this is a spec-fixed
+    // constant, not deployment-specific data.
+    public static final String AUD_SELF_ISSUED = "https://self-issued.me/v2";
     public static final String RSA_SIGNATURE_2018 = "RsaSignature2018";
     public static final String ED25519_SIGNATURE_2018 = "Ed25519Signature2018";
     public static final String ED25519_SIGNATURE_2020 = "Ed25519Signature2020";

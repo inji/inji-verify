@@ -38,6 +38,7 @@ public enum ErrorCode {
     DCQL_ALL_CREDENTIAL_SETS_OPTIONAL("dcql_query.credential_sets","credential_sets must contain at least one required entry."),
     CLIENT_ID_REQUIRED("invalid_request","client_id is required"),
     CLIENT_ID_HOST_MISMATCH("invalid_request", "For the x509_san_dns client_id scheme, the DNS name in client_id must match this deployment's configured inji.verify.x509-san-dns.host."),
+    CLIENT_ID_DNS_NAME_INVALID("invalid_request", "For the x509_san_dns client_id scheme, the value after the prefix must be a syntactically valid DNS name."),
     REQUEST_URI_INSECURE("invalid_request", "request_uri must be served over HTTPS outside local/dev environments for the x509_san_dns client_id scheme."),
     NONCE_INVALID("invalid_request", "Nonce must contain only ASCII URL-safe characters (A-Z, a-z, 0-9, -, ., _, ~) and be at least 16 characters."),
     DID_CREATION_FAILED("DID_CREATION_FAILED","Error while creating DID document."),

@@ -91,6 +91,12 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
 
     private static final Pattern NONCE_PATTERN = Pattern.compile("^[A-Za-z0-9\\-._~]{16,}$");
     private static final Set<String> LOCAL_HOSTS = Set.of("localhost", "127.0.0.1", "::1", "0.0.0.0");
+    // RFC 1123 hostname syntax: dot-separated labels, each 1-63 chars, alphanumeric plus internal
+    // hyphens only (no leading/trailing hyphen, no empty labels — so "example..com" and a trailing
+    // ":port" both fail), overall length capped at 253. OpenID4VP 5.9.3 requires the x509_san_dns
+    // client_id value to actually be a DNS name, not just any string that happens to match config.
+    private static final Pattern DNS_NAME_PATTERN = Pattern.compile(
+            "^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$");
 
     public VerifiablePresentationRequestServiceImpl(
             AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository,
@@ -147,8 +153,8 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
     }
 
     private static boolean isSignedRequestScheme(String clientId) {
-        return clientId.startsWith(Constants.CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER)
-                || clientId.startsWith(Constants.CLIENT_ID_PREFIX_X509_SAN_DNS);
+        return clientId.startsWith(Constants.CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER + ":")
+                || clientId.startsWith(Constants.CLIENT_ID_PREFIX_X509_SAN_DNS + ":");
     }
 
     /**
@@ -165,6 +171,11 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
             return;
         }
         String claimedDns = clientId.substring(prefix.length());
+        if (!DNS_NAME_PATTERN.matcher(claimedDns).matches()) {
+            throw new VPRequestValidationException(ErrorCode.CLIENT_ID_DNS_NAME_INVALID,
+                    "client_id value '" + claimedDns + "' after the x509_san_dns: prefix is not a "
+                            + "syntactically valid DNS name.");
+        }
         if (x509SanDnsHost == null || !x509SanDnsHost.equalsIgnoreCase(claimedDns)) {
             throw new VPRequestValidationException(ErrorCode.CLIENT_ID_HOST_MISMATCH,
                     "client_id DNS name '" + claimedDns + "' does not match this deployment's configured "
@@ -317,6 +328,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
                     : verifierDid;
             JWTClaimsSet.Builder claimsBuilder = new JWTClaimsSet.Builder()
                     .issuer(issuer)
+                    .audience(Constants.AUD_SELF_ISSUED)
                     .issueTime(Date.from(Instant.now()))
                     .claim("client_id", verifierDid)
                     .jwtID(UUID.randomUUID().toString())
@@ -351,7 +363,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
             // schemes side by side — decentralized_identifier:... requests get kid, x509_san_dns:...
             // requests get x5c — since both simply need the same underlying Ed25519 key dressed
             // differently in the header.
-            if (verifierDid != null && verifierDid.startsWith(Constants.CLIENT_ID_PREFIX_X509_SAN_DNS)) {
+            if (verifierDid != null && verifierDid.startsWith(Constants.CLIENT_ID_PREFIX_X509_SAN_DNS + ":")) {
                 X509Certificate[] certChain;
                 try {
                     certChain = keyManagementService.getCertificateChain();

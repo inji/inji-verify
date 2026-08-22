@@ -278,6 +278,26 @@ class VerifiablePresentationRequestServiceImplTest {
         verify(mockAuthorizationRequestCreateResponseRepository, times(1)).findById(requestId);
     }
 
+    @Test
+    @DisplayName("Signed request object JWT should carry the fixed self-issued aud claim per OpenID4VP 5.8")
+    void getVPRequestJwt_ProducesAudClaim_SelfIssued() throws Exception {
+        String requestId = "req_aud_check";
+        AuthorizationRequestResponseDto authzDto =
+                new AuthorizationRequestResponseDto(
+                        "decentralized_identifier:did:example:verifier", DcqlTestFixtures.minimalDcqlDto(),
+                        null, "nonce", "https://resp.example/post", false, false);
+        AuthorizationRequestCreateResponse authzResponse =
+                new AuthorizationRequestCreateResponse(requestId, "tx", authzDto, Instant.now().toEpochMilli() + 5000);
+        when(mockAuthorizationRequestCreateResponseRepository.findById(requestId)).thenReturn(Optional.of(authzResponse));
+        OctetKeyPair mockOKP = new OctetKeyPairGenerator(Curve.Ed25519).generate();
+        when(mockKeyManagementService.getKeyPair()).thenReturn(mockOKP);
+
+        String jwt = service.getVPRequestJwt(requestId);
+
+        var claims = SignedJWT.parse(jwt).getJWTClaimsSet();
+        assertEquals(java.util.List.of("https://self-issued.me/v2"), claims.getAudience());
+    }
+
     private static void assertJwtContainsDcqlWithoutPresentationDefinition(String jwt) throws ParseException {
         var claims = SignedJWT.parse(jwt).getJWTClaimsSet();
         assertNotNull(claims.getClaim("dcql_query"));
@@ -470,6 +490,27 @@ class VerifiablePresentationRequestServiceImplTest {
         VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
                 () -> service.createAuthorizationRequest(dto));
         assertEquals(ErrorCode.CLIENT_ID_HOST_MISMATCH, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should reject an x509_san_dns client_id whose value isn't a syntactically valid DNS name")
+    void createAuthorizationRequest_X509ClientIdSyntacticallyInvalidDnsName_ThrowsValidationException() throws Exception {
+        for (String invalidDns : new String[]{"foo_bar", "example.com:443", "example..com"}) {
+            String originalHost = service.x509SanDnsHost;
+            service.x509SanDnsHost = invalidDns; // even if config "matches", syntax must still fail
+            try {
+                VPRequestCreateDto dto = new VPRequestCreateDto(
+                        "x509_san_dns:" + invalidDns, "tx_x509_invalid_dns_" + invalidDns.hashCode(), null,
+                        minimalDcqlQuery(), false);
+
+                VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                        () -> service.createAuthorizationRequest(dto),
+                        "expected rejection for invalid DNS name: " + invalidDns);
+                assertEquals(ErrorCode.CLIENT_ID_DNS_NAME_INVALID, ex.getErrorCode());
+            } finally {
+                service.x509SanDnsHost = originalHost;
+            }
+        }
     }
 
     @Test
@@ -867,6 +908,27 @@ class VerifiablePresentationRequestServiceImplTest {
         // requestId must follow the expected prefix convention
         assertTrue(requestId.startsWith(Constants.REQUEST_ID_PREFIX),
                 "requestId should start with '" + Constants.REQUEST_ID_PREFIX + "' but was: " + requestId);
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should treat a client_id merely starting with the x509_san_dns "
+            + "prefix (no colon) as a plain pre-registered client, not the by-reference x509_san_dns scheme")
+    void createAuthorizationRequest_ClientIdWithX509SanDnsPrefixButNoColon_UsesEmbeddedFlow() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+
+        // "x509_san_dnsfoo" starts with the raw prefix constant but isn't "x509_san_dns:<dns-name>" —
+        // must not be misdetected as the x509_san_dns scheme (which would previously skip the
+        // request-time host/HTTPS checks, then crash later at sign time with a confusing 500).
+        VPRequestCreateDto dto = new VPRequestCreateDto(
+                "x509_san_dnsfoo", "tx_x509_prefix_no_colon", null, minimalDcqlQuery(), false);
+
+        VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+
+        assertNotNull(response);
+        // Falls back to the plain/embedded flow: authorizationDetails populated, no requestUri.
+        assertNotNull(response.getAuthorizationDetails());
+        assertNull(response.getRequestUri());
     }
 
     @Test

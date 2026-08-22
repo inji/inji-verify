@@ -237,6 +237,13 @@ openid4vp://authorize
 - At JWT-signing time, the signing certificate must currently be valid (not expired, not before its `notBefore` date) and its Subject Alternative Name must actually contain the claimed DNS name.
 
 See [Inji_Verify_API_Overview.md](./Inji_Verify_API_Overview.md#openid4vp--vp-request-creation) for the exact error responses these produce, and [`verify-core/README.md`](../../verify-core/README.md) for keystore/config requirements.
+**Not checked:** Whether `response_uri`'s host matches the `x509_san_dns` `client_id`.
+
+`response_uri` is configured separately through `inji.vp-submission.base-url`, so its host may differ from `inji.verify.x509-san-dns.host`.
+
+If the wallet does not already trust the certificate, the two hosts should match for the request to be accepted.
+
+See [`verify-core/README.md`](../../verify-core/README.md) for details.
 
 A deployment can serve both by-reference schemes side by side — which header a request JWT gets (`kid` or `x5c`) is decided per-request from its own `client_id` prefix, not a global setting.
 
