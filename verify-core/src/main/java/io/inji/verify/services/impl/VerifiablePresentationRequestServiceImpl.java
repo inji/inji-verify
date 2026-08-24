@@ -91,12 +91,8 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
 
     private static final Pattern NONCE_PATTERN = Pattern.compile("^[A-Za-z0-9\\-._~]{16,}$");
     private static final Set<String> LOCAL_HOSTS = Set.of("localhost", "127.0.0.1", "::1", "0.0.0.0");
-    // RFC 1123 hostname syntax: dot-separated labels, each 1-63 chars, alphanumeric plus internal
-    // hyphens only (no leading/trailing hyphen, no empty labels — so "example..com" and a trailing
-    // ":port" both fail), overall length capped at 253. OpenID4VP 5.9.3 requires the x509_san_dns
-    // client_id value to actually be a DNS name, not just any string that happens to match config.
-    private static final Pattern DNS_NAME_PATTERN = Pattern.compile(
-            "^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-))*$");
+   private static final Pattern DNS_NAME_PATTERN = Pattern.compile(
+            "^(?=.{1,253}$)(?!-)[A-Za-z0-9-]{1,63}(?<!-)(\\.(?!-)[A-Za-z0-9-]{1,63}(?<!-)){0,126}$");
 
     public VerifiablePresentationRequestServiceImpl(
             AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository,
