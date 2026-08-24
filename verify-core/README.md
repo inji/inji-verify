@@ -96,5 +96,6 @@ If using `x509_san_dns`:
 - The certificate must be valid (not expired or not-yet-valid).
 - `inji.vp-submission.base-url` must use **HTTPS** in non-local environments.
 - If the wallet does not already trust your certificate, use the same host for `inji.vp-submission.base-url` and `inji.verify.x509-san-dns.host`.
+- If the keystore has no certificate chain configured (or an empty one), request creation fails immediately with `CLIENT_ID_CERTIFICATE_CHAIN_MISSING` — you won't get a `requestUri` a wallet could later fail to fetch.
 
 Certificates are **not rotated automatically**, so renew the certificate and update the configured keystore before it expires.

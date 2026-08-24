@@ -470,15 +470,23 @@ class VerifiablePresentationRequestServiceImplTest {
     void createAuthorizationRequest_X509ClientId_UsesRequestUriFlow() throws Exception {
         when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
                 .thenReturn(null);
-        // service.x509SanDnsHost defaults to "test.example.com" (matching the bundled sample keystore)
-        VPRequestCreateDto dto = new VPRequestCreateDto(
-                "x509_san_dns:test.example.com", "tx_x509", null, minimalDcqlQuery(), false);
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{
+                        TestCertUtil.generateSelfSignedCert(edKeyPair, "test.example.com")});
+        try {
+            // service.x509SanDnsHost defaults to "test.example.com" (matching the bundled sample keystore)
+            VPRequestCreateDto dto = new VPRequestCreateDto(
+                    "x509_san_dns:test.example.com", "tx_x509", null, minimalDcqlQuery(), false);
 
-        VPRequestResponseDto response = service.createAuthorizationRequest(dto);
+            VPRequestResponseDto response = service.createAuthorizationRequest(dto);
 
-        assertNotNull(response);
-        assertNotNull(response.getRequestUri(), "x509_san_dns should use the by-reference (request_uri) flow");
-        assertNull(response.getAuthorizationDetails());
+            assertNotNull(response);
+            assertNotNull(response.getRequestUri(), "x509_san_dns should use the by-reference (request_uri) flow");
+            assertNull(response.getAuthorizationDetails());
+        } finally {
+            reset(mockKeyManagementService);
+        }
     }
 
     @Test
@@ -518,6 +526,10 @@ class VerifiablePresentationRequestServiceImplTest {
     void createAuthorizationRequest_X509ClientIdMatchingOverriddenHost_Succeeds() throws Exception {
         when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
                 .thenReturn(null);
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{
+                        TestCertUtil.generateSelfSignedCert(edKeyPair, "verify.acmecorp.example")});
         String originalHost = service.x509SanDnsHost;
         service.x509SanDnsHost = "verify.acmecorp.example";
         try {
@@ -530,6 +542,44 @@ class VerifiablePresentationRequestServiceImplTest {
             assertNotNull(response.getRequestUri());
         } finally {
             service.x509SanDnsHost = originalHost;
+            reset(mockKeyManagementService);
+        }
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should fail fast when no certificate chain is configured for x509_san_dns, before ever reaching request_uri issuance")
+    void createAuthorizationRequest_X509ClientIdNoCertChainConfigured_ThrowsValidationException() throws Exception {
+        // Simulates a deployment that never configured a certificate chain for this scheme.
+        when(mockKeyManagementService.getCertificateChain())
+                .thenThrow(new RuntimeException("No certificate chain found in keystore"));
+        try {
+            VPRequestCreateDto dto = new VPRequestCreateDto(
+                    "x509_san_dns:test.example.com", "tx_x509_no_cert", null, minimalDcqlQuery(), false);
+
+            VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                    () -> service.createAuthorizationRequest(dto));
+            assertEquals(ErrorCode.CLIENT_ID_CERTIFICATE_CHAIN_MISSING, ex.getErrorCode());
+        } finally {
+            // mockKeyManagementService is a shared static mock (initialized once in @BeforeAll); reset
+            // so this thenThrow() stub doesn't leak into later tests calling getCertificateChain().
+            reset(mockKeyManagementService);
+        }
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should fail fast when the keystore returns an empty certificate chain for x509_san_dns")
+    void createAuthorizationRequest_X509ClientIdEmptyCertChain_ThrowsValidationException() throws Exception {
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[0]);
+        try {
+            VPRequestCreateDto dto = new VPRequestCreateDto(
+                    "x509_san_dns:test.example.com", "tx_x509_empty_cert", null, minimalDcqlQuery(), false);
+
+            VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                    () -> service.createAuthorizationRequest(dto));
+            assertEquals(ErrorCode.CLIENT_ID_CERTIFICATE_CHAIN_MISSING, ex.getErrorCode());
+        } finally {
+            reset(mockKeyManagementService);
         }
     }
 
@@ -695,6 +745,10 @@ class VerifiablePresentationRequestServiceImplTest {
     void createAuthorizationRequest_X509ClientId_NonHttpsLocalhostBaseUrl_Succeeds() throws Exception {
         when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
                 .thenReturn(null);
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{
+                        TestCertUtil.generateSelfSignedCert(edKeyPair, "test.example.com")});
         String originalBaseUrl = service.verifyServiceBaseUrl;
         service.verifyServiceBaseUrl = "http://localhost:8090";
         try {
@@ -707,6 +761,7 @@ class VerifiablePresentationRequestServiceImplTest {
             assertNotNull(response.getRequestUri());
         } finally {
             service.verifyServiceBaseUrl = originalBaseUrl;
+            reset(mockKeyManagementService);
         }
     }
 
@@ -715,6 +770,10 @@ class VerifiablePresentationRequestServiceImplTest {
     void createAuthorizationRequest_X509ClientId_HttpsBaseUrl_Succeeds() throws Exception {
         when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
                 .thenReturn(null);
+        java.security.KeyPair edKeyPair = java.security.KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        when(mockKeyManagementService.getCertificateChain())
+                .thenReturn(new java.security.cert.X509Certificate[]{
+                        TestCertUtil.generateSelfSignedCert(edKeyPair, "test.example.com")});
         String originalBaseUrl = service.verifyServiceBaseUrl;
         service.verifyServiceBaseUrl = "https://verify.acmecorp.example";
         try {
@@ -727,6 +786,7 @@ class VerifiablePresentationRequestServiceImplTest {
             assertNotNull(response.getRequestUri());
         } finally {
             service.verifyServiceBaseUrl = originalBaseUrl;
+            reset(mockKeyManagementService);
         }
     }
 

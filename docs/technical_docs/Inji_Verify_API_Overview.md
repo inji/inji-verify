@@ -181,8 +181,9 @@ For DID-based `clientId` (prefix `decentralized_identifier:`) or certificate-bas
 |---|---|
 | DNS name in `clientId` doesn't match this deployment's configured `inji.verify.x509-san-dns.host` | `CLIENT_ID_HOST_MISMATCH` |
 | `inji.vp-submission.base-url` isn't `https` (and isn't a loopback host) | `REQUEST_URI_INSECURE` |
+| Keystore has no certificate chain configured (or an empty one) for the signing key | `CLIENT_ID_CERTIFICATE_CHAIN_MISSING` |
 
-Both checks run at request-creation time (`POST /v2/vp-session-request` / `POST /v2/vp-request`), before a `requestUri` is ever issued — they don't apply to `decentralized_identifier` clientIds.
+All three checks run at request-creation time (`POST /v2/vp-session-request` / `POST /v2/vp-request`), before a `requestUri` is ever issued — they don't apply to `decentralized_identifier` clientIds.
 
 **Response** — `201 Created`
 ```json
@@ -240,11 +241,12 @@ A deployment can serve both prefixes side by side — which header a given JWT g
 
 | Cause |
 |---|
-| Keystore has no certificate chain configured for the signing key |
 | Signing certificate has expired or is not yet valid (`notBefore`/`notAfter`) |
 | Signing certificate's Subject Alternative Name doesn't include the DNS name from `clientId` |
 
-These are distinct from the `400`-level `CLIENT_ID_HOST_MISMATCH`/`REQUEST_URI_INSECURE` checks above — those validate the *request*, these validate the deployment's *keystore* against what the request already claimed.
+A missing/empty certificate chain is *not* in this table — it's now caught earlier, at request-creation time, as `CLIENT_ID_CERTIFICATE_CHAIN_MISSING` (see the `400`-level table above). It's still possible in theory for the keystore to lose its certificate chain between request creation and the wallet's fetch, so `getVPRequestJwt` re-checks for a missing/empty chain too and fails the same way as the two causes above (`500`, no structured body) if that happens.
+
+These fetch-time failures are distinct from the `400`-level checks above — those validate the *request* before any `requestUri` is issued, these validate the deployment's *keystore* against what the request already claimed, at the moment the wallet actually asks for the JWT.
 
 ---
 

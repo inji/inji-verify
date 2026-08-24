@@ -117,6 +117,7 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
         dcqlValidator.validate(vpRequestCreate.getDcqlQuery());
         validateX509SanDnsHost(vpRequestCreate.getClientId());
         validateHttpsForX509SanDns(vpRequestCreate.getClientId());
+        validateCertificateChainConfigured(vpRequestCreate.getClientId());
         String transactionId = vpRequestCreate.getTransactionId() != null ? vpRequestCreate.getTransactionId() : Utils.generateID(Constants.TRANSACTION_ID_PREFIX);
         String requestId = Utils.generateID(Constants.REQUEST_ID_PREFIX);
         long expiresAt = Instant.now().plusSeconds(Constants.DEFAULT_EXPIRY).toEpochMilli();
@@ -215,6 +216,31 @@ public class VerifiablePresentationRequestServiceImpl implements VerifiablePrese
             throw new VPRequestValidationException(ErrorCode.REQUEST_URI_INSECURE,
                     "inji.vp-submission.base-url ('" + verifyServiceBaseUrl + "') must use https for the "
                             + "x509_san_dns client_id scheme outside local/dev environments.");
+        }
+    }
+
+    /**
+     * Fails fast at request-creation time if this deployment's keystore has no certificate chain
+     * configured for x509_san_dns, rather than only surfacing that at JWT-signing time (when the
+     * wallet fetches request_uri). The signing-time check in createAndSignAuthorizationRequestJwt
+     * stays in place too, since the keystore could theoretically change between request creation
+     * and the wallet's fetch.
+     */
+    private void validateCertificateChainConfigured(String clientId) {
+        String prefix = Constants.CLIENT_ID_PREFIX_X509_SAN_DNS + ":";
+        if (clientId == null || !clientId.startsWith(prefix)) {
+            return;
+        }
+        X509Certificate[] certChain;
+        try {
+            certChain = keyManagementService.getCertificateChain();
+        } catch (RuntimeException e) {
+            log.error("Could not read a signing certificate chain for x509_san_dns client_id: {}", e.getMessage());
+            throw new VPRequestValidationException(ErrorCode.CLIENT_ID_CERTIFICATE_CHAIN_MISSING);
+        }
+        if (certChain == null || certChain.length == 0) {
+            log.error("Keystore returned an empty certificate chain for x509_san_dns client_id");
+            throw new VPRequestValidationException(ErrorCode.CLIENT_ID_CERTIFICATE_CHAIN_MISSING);
         }
     }
 
