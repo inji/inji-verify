@@ -111,7 +111,7 @@ const Result = () => {
           <Button
             title={t("Common:Button.verifyAnotherQrCode")}
             onClick={handleVerifyAnotherQrCode}
-            className="mx-auto mt-6 mb-20 lg:mb-6 lg:w-[339px]"
+            className="mx-auto mt-6 mb-20 w-[339px] lg:mb-6"
           />
         </div>
       </div>
