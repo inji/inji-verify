@@ -159,6 +159,9 @@ public class SimplePostForAutoGenId extends InjiVerifyUtil implements ITest {
 				testCaseDTO.getOutputTemplate(), testCaseDTO.isCheckOnlyStatusCodeInResponse(), inputJson,
 				response != null ? response.asString() : null);
 
+		InjiVerifyUtil.validateRedirectUriClientIdCreateResponse(testCaseName, inputJson,
+				response != null ? response.asString() : null);
+
 		Map<String, List<OutputValidationDto>> ouputValid = OutputValidationUtil
 				.doJsonOutputValidation(response.asString(), outputJson, testCaseDTO, response.getStatusCode());
 		Reporter.log(ReportUtil.getOutputValidationReport(ouputValid));

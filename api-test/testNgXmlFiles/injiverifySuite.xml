@@ -83,6 +83,26 @@
 				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
 		</classes>
 	</test>
+	<test name="CreateRedirectUriClientId">
+		<parameter name="ymlFile"
+			value="injiverify/CreateRedirectUriClientId/CreateRedirectUriClientId.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId,id,nonce" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="VpSubmissionRedirectUriClientId">
+		<parameter name="ymlFile"
+			value="injiverify/VpSubmissionRedirectUriClientId/VpSubmissionRedirectUriClientId.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
 	<test name="VpSubmissionDuplicateVpRequest">
 		<parameter name="ymlFile"
 			value="injiverify/VpSubmissionDuplicateVpRequest/VpSubmissionDuplicateVpRequest.yml" />

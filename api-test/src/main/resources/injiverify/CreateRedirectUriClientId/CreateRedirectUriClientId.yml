@@ -1,0 +1,71 @@
+CreateRedirectUriClientId:
+  Injiverify_CreateRedirectUriClientId_UriMismatch_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: "Reject redirect_uri clientId when URI part does not equal service response_uri"
+      uniqueIdentifier: TC_InjiVerify_CreateRedirectUriClientId_04
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/CreateRedirectUriClientId/CreateRedirectUriClientId
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "redirect_uri:https://evil.example/cb",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  Injiverify_CreateRedirectUriClientId_EmptyUri_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: "Reject redirect_uri clientId with empty URI part"
+      uniqueIdentifier: TC_InjiVerify_CreateRedirectUriClientId_05
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/CreateRedirectUriClientId/CreateRedirectUriClientId
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "redirect_uri:",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  Injiverify_CreateRedirectUriClientId_MalformedUri_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: "Reject redirect_uri clientId with malformed URI part"
+      uniqueIdentifier: TC_InjiVerify_CreateRedirectUriClientId_06
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/CreateRedirectUriClientId/CreateRedirectUriClientId
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "redirect_uri:not-a-url",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  Injiverify_CreateRedirectUriClientId_ForDomainMismatch_Valid_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: "Create matching redirect_uri LDP VP request used by domain mismatch submission"
+      uniqueIdentifier: TC_InjiVerify_CreateRedirectUriClientId_07
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateRedirectUriClientId/CreateRedirectUriClientIdLdp
+      outputTemplate: injiverify/CreateRedirectUriClientId/CreateRedirectUriClientIdResult
+      input: '{
+      "clientId": "$REDIRECT_URI_CLIENT_ID$",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseType": "vp_token"
+}'

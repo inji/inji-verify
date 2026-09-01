@@ -98,12 +98,32 @@ public class InjiVerifyUtil extends AdminTestUtil {
 					InjiVerifyConfigManager.getproperty(InjiVerifyConstants.PRESENTATION_DEFINITION_ID));
 		}
 
-		if (jsonString.contains("$INJIVERIFYBASEURL$")) {
-			jsonString = replaceKeywordWithValue(jsonString, "$INJIVERIFYBASEURL$",
-					InjiVerifyConfigManager.getproperty(InjiVerifyConstants.INJI_VERIFY_BASE_URL));
+		String injiVerifyBaseUrlValue = InjiVerifyConfigManager
+				.getproperty(InjiVerifyConstants.INJI_VERIFY_BASE_URL);
+		if (injiVerifyBaseUrlValue != null) {
+			injiVerifyBaseUrlValue = injiVerifyBaseUrlValue.trim();
+		}
+
+		if (jsonString.contains(InjiVerifyConstants.INJI_VERIFY_BASE_URL_PLACEHOLDER)) {
+			jsonString = replaceKeywordWithValue(jsonString, InjiVerifyConstants.INJI_VERIFY_BASE_URL_PLACEHOLDER,
+					injiVerifyBaseUrlValue);
+		}
+
+		if (jsonString.contains(InjiVerifyConstants.REDIRECT_URI_CLIENT_ID_PLACEHOLDER)) {
+			jsonString = replaceKeywordWithValue(jsonString, InjiVerifyConstants.REDIRECT_URI_CLIENT_ID_PLACEHOLDER,
+					buildRedirectUriClientId(injiVerifyBaseUrlValue));
 		}
 
 		return jsonString;
+	}
+
+	public static String buildRedirectUriClientId(String injiVerifyBaseUrlValue) {
+		String base = injiVerifyBaseUrlValue == null ? "" : injiVerifyBaseUrlValue.trim();
+		while (base.endsWith("/")) {
+			base = base.substring(0, base.length() - 1);
+		}
+		return InjiVerifyConstants.REDIRECT_URI_CLIENT_ID_PREFIX + base
+				+ InjiVerifyConstants.VP_SUBMISSION_DIRECT_POST_PATH;
 	}
 
 	public static String getResponseCode() {
@@ -237,24 +257,15 @@ public class InjiVerifyUtil extends AdminTestUtil {
 		}
 		String value = setCookieHeader.split(";", 2)[0];
 
-		if (testCaseName != null) {
-			if (testCaseName.contains(TC_VP_SESSION_REQUEST_RESPONSE_CODE_VALIDATION_FALSE_SID)) {
-				setTransactionCookieByFlag(value, false);
-				return;
-			}
-			if (testCaseName.contains(TC_VP_SESSION_REQUEST_ALL_VALID_SMOKE_SID)) {
-				setTransactionCookieByFlag(value, true);
-				return;
-			}
+		if (testCaseName == null) {
+			return;
 		}
-		try {
-			JSONObject requestJson = new JSONObject(requestBodyJson);
-			if (requestJson.has("responseCodeValidationRequired")) {
-				boolean flag = requestJson.getBoolean("responseCodeValidationRequired");
-				setTransactionCookieByFlag(value, flag);
-			}
-		} catch (Exception e) {
-			logger.error("Failed saving transaction cookie by responseCodeValidationRequired", e);
+		if (testCaseName.contains(TC_VP_SESSION_REQUEST_RESPONSE_CODE_VALIDATION_FALSE_SID)) {
+			setTransactionCookieByFlag(value, false);
+			return;
+		}
+		if (testCaseName.contains(TC_VP_SESSION_REQUEST_ALL_VALID_SMOKE_SID)) {
+			setTransactionCookieByFlag(value, true);
 		}
 	}
 
@@ -439,6 +450,68 @@ public class InjiVerifyUtil extends AdminTestUtil {
 					"client_metadata must include vp_formats_supported per OpenID4VP v1.0");
 		}
 
+		JSONObject vpFormatsSupported = clientMetadata.getJSONObject(VP_FORMATS_SUPPORTED);
+		assertVpFormatsSupportedKeys(vpFormatsSupported);
+		assertFormatObjectPresent(vpFormatsSupported, DC_SD_JWT);
+	}
+
+	/**
+	 * Validates OpenID4VP redirect_uri: client identifier create responses:
+	 * by-value Authorization Request, URI part equals response_uri, and in-band
+	 * client_metadata (issue #2229 / #1720).
+	 */
+	public static void validateRedirectUriClientIdCreateResponse(String testCaseName, String requestJson,
+			String responseJson) throws AdminTestException {
+		if (testCaseName == null || !testCaseName.contains("CreateRedirectUriClientId")
+				|| !testCaseName.contains("_Valid_") || testCaseName.contains("_Neg")) {
+			return;
+		}
+		if (responseJson == null || responseJson.isBlank()) {
+			throw new AdminTestException("Empty response for redirect_uri: clientId create");
+		}
+
+		JSONObject request = new JSONObject(requestJson);
+		JSONObject response = new JSONObject(responseJson);
+		String expectedClientId = request.optString("clientId", "");
+		if (!expectedClientId.startsWith(InjiVerifyConstants.REDIRECT_URI_CLIENT_ID_PREFIX)) {
+			throw new AdminTestException("Request clientId must use redirect_uri: prefix");
+		}
+		String expectedResponseUri = expectedClientId
+				.substring(InjiVerifyConstants.REDIRECT_URI_CLIENT_ID_PREFIX.length());
+
+		if (response.has("requestUri") && !response.isNull("requestUri")
+				&& !response.optString("requestUri").isBlank()) {
+			throw new AdminTestException(
+					"redirect_uri: clientId must return Authorization Request by value (requestUri must be absent)");
+		}
+		if (!response.has(AUTHORIZATION_DETAILS) || response.isNull(AUTHORIZATION_DETAILS)) {
+			throw new AdminTestException(
+					"redirect_uri: clientId must return authorizationDetails (by-value / unsigned request)");
+		}
+
+		JSONObject authorizationDetails = response.getJSONObject(AUTHORIZATION_DETAILS);
+		String actualClientId = authorizationDetails.optString("clientId", null);
+		if (!expectedClientId.equals(actualClientId)) {
+			throw new AdminTestException(
+					"authorizationDetails.clientId mismatch. expected=" + expectedClientId + " actual=" + actualClientId);
+		}
+		String actualResponseUri = authorizationDetails.optString("responseUri", null);
+		if (!expectedResponseUri.equals(actualResponseUri)) {
+			throw new AdminTestException(
+					"authorizationDetails.responseUri must equal URI part of redirect_uri: clientId. expected="
+							+ expectedResponseUri + " actual=" + actualResponseUri);
+		}
+
+		if (!authorizationDetails.has(CLIENT_METADATA) || authorizationDetails.isNull(CLIENT_METADATA)) {
+			throw new AdminTestException(
+					"client_metadata must be present in-band for redirect_uri: clientId (OpenID4VP 1.0)");
+		}
+		JSONObject clientMetadata = authorizationDetails.getJSONObject(CLIENT_METADATA);
+		assertForbiddenClientMetadataKeys(clientMetadata);
+		if (!clientMetadata.has(VP_FORMATS_SUPPORTED)) {
+			throw new AdminTestException(
+					"client_metadata must include vp_formats_supported for redirect_uri: clientId");
+		}
 		JSONObject vpFormatsSupported = clientMetadata.getJSONObject(VP_FORMATS_SUPPORTED);
 		assertVpFormatsSupportedKeys(vpFormatsSupported);
 		assertFormatObjectPresent(vpFormatsSupported, DC_SD_JWT);

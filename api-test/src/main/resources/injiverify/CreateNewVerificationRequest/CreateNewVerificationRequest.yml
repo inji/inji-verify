@@ -242,10 +242,78 @@ CreateNewVerificationRequest:
     "responseType": "vp_token"
 }'
 
-  Injiverify_CreateNewVerificationRequest_ForSdJwtKbJwtNeg_Valid_Sid:
+  Injiverify_CreateNewVerificationRequest_ForSdJwtKbJwtNeg_WrongNonce_Valid_Sid:
       endPoint: /v1/verify/v2/vp-request
-      description: Creating a VP request with require_cryptographic_holder_binding=true for SD-JWT KB-JWT nonce/aud negative tests (TC_32-36)
+      description: Creating a VP request for SD-JWT KB-JWT wrong nonce submission negative test (TC_32)
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_15
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestSdJwtKbJwt
+      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseType": "vp_token"
+}'
+
+  Injiverify_CreateNewVerificationRequest_ForSdJwtKbJwtNeg_WrongAud_Valid_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a VP request for SD-JWT KB-JWT wrong aud submission negative test (TC_33)
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_18
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestSdJwtKbJwt
+      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseType": "vp_token"
+}'
+
+  Injiverify_CreateNewVerificationRequest_ForSdJwtKbJwtNeg_MissingNonce_Valid_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a VP request for SD-JWT KB-JWT missing nonce submission negative test (TC_34)
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_19
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestSdJwtKbJwt
+      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseType": "vp_token"
+}'
+
+  Injiverify_CreateNewVerificationRequest_ForSdJwtKbJwtNeg_MissingAud_Valid_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a VP request for SD-JWT KB-JWT missing aud submission negative test (TC_35)
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_20
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestSdJwtKbJwt
+      outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+    "responseType": "vp_token"
+}'
+
+  Injiverify_CreateNewVerificationRequest_ForSdJwtKbJwtNeg_MissingKeyBinding_Valid_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a VP request for SD-JWT missing Key Binding JWT submission negative test (TC_36)
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_21
       role: noauth
       restMethod: post
       inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestSdJwtKbJwt

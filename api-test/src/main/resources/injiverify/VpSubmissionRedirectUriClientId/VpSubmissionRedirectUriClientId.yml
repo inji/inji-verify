@@ -1,0 +1,18 @@
+VpSubmissionRedirectUriClientId:
+  Injiverify_VpSubmissionRedirectUriClientId_DomainMismatch_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: "Reject LDP VP when proof.domain does not match redirect_uri clientId (issue #2229 / #1720)"
+      uniqueIdentifier: TC_InjiVerify_VpSubmissionRedirectUriClientId_02
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VpSubmissionRedirectUriClientId/VpSubmissionRedirectUriLdp
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "state": "$ID:CreateRedirectUriClientId_ForDomainMismatch_Valid_Sid_requestId$",
+      "domain": "redirect_uri:https://evil.example/cb",
+      "challenge": "NkdHJkBIbdOdQaAjWm8gpA"
+      }'
+      output: '{
+      "errorCode": "invalid_request",
+      "errorMessage": "Client id validation failed due to invalid client_id/domain."
+}'
