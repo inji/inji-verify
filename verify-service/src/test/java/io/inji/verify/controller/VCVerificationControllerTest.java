@@ -2,7 +2,6 @@ package io.inji.verify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.verification.VCVerificationStatusDto;
-import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -10,6 +9,8 @@ import io.inji.verify.services.VCVerificationService;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
+
+import java.lang.reflect.Constructor;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.Mockito.*;
@@ -36,7 +37,7 @@ public class VCVerificationControllerTest {
         String validVC = "validVC";
         String contentType = "application/ldp+json";
 
-        VCVerificationStatusDto expectedStatus = new VCVerificationStatusDto(VerificationStatus.SUCCESS);
+        VCVerificationStatusDto expectedStatus = createStatus("SUCCESS");
 
         when(VCVerificationService.verify(validVC, contentType)).thenReturn(expectedStatus);
 
@@ -55,7 +56,7 @@ public class VCVerificationControllerTest {
     public void testVerifyInvalidVC() throws Exception {
         String invalidVC = "invalidVC";
         String contentType = "application/ldp+json";
-        VCVerificationStatusDto expectedStatus = new VCVerificationStatusDto(VerificationStatus.INVALID);
+        VCVerificationStatusDto expectedStatus = createStatus("INVALID");
 
         when(VCVerificationService.verify(invalidVC, contentType)).thenReturn(expectedStatus);
 
@@ -74,5 +75,15 @@ public class VCVerificationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
                 .andExpect(status().isBadRequest());
+    }
+
+    @SuppressWarnings({"rawtypes", "unchecked"})
+    private VCVerificationStatusDto createStatus(String name) throws Exception {
+        Class enumClass = Class.forName("io.mosip.vercred.vcverifier.data.VerificationStatus");
+        Object status = Enum.valueOf(enumClass.asSubclass(Enum.class), name);
+        Constructor<VCVerificationStatusDto> constructor =
+                VCVerificationStatusDto.class.getDeclaredConstructor(enumClass);
+        constructor.setAccessible(true);
+        return constructor.newInstance(status);
     }
 }

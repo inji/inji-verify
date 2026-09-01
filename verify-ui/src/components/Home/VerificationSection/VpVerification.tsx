@@ -13,7 +13,7 @@ import {
 } from "../../../redux/features/verify/vpVerificationState";
 import { VCShareType, VpSubmissionResultInt, VpSummarisedVerificationResponse } from "../../../types/data-types";
 import { closeAlert, raiseAlert } from "../../../redux/features/alerts/alerts.slice";
-import { AlertMessages } from "../../../utils/config";
+import { AlertMessages, getWalletErrorAlert } from "../../../utils/config";
 import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 import { Button } from "./commons/Button";
 import { useTranslation } from "react-i18next";
@@ -99,14 +99,36 @@ const DisplayActiveStep = () => {
   const handleOnError = (error: any) => {
     dispatch(closeAlert({}));
     dispatch(resetVpRequest());
-    if (error.errorCode) {
-      error.message = "We’re unable to complete your request. Please contact support for assistance.";
-    }
-    dispatch(raiseAlert({ title: "Request Failed", errorCode:error.errorCode, errorReason: error.errorMessage, message: error.message, referenceId: error.transactionId, severity: "error", open: true, autoHideDuration: 120000 }));
+    const walletAlert = getWalletErrorAlert(error.errorCode);
+    const message =
+      walletAlert?.message ??
+      (error.errorCode
+        ? AlertMessages().requestFailedGeneric.message
+        : error.message);
+    dispatch(raiseAlert({
+      title: "Request Failed",
+      errorCode: error.errorCode,
+      errorReason: error.errorMessage,
+      message,
+      referenceId: error.transactionId,
+      severity: "error",
+      open: true,
+      autoHideDuration: 120000,
+    }));
   };
 
   const getClientId = () => {
-    return (isSingleVc && selectedCredentials[0]?.clientIdPrefix === "pre_registered") ? window._env_.CLIENT_ID : window._env_.CLIENT_ID_DID;
+    if (!isSingleVc) {
+      return window._env_.CLIENT_ID_DID;
+    }
+    const prefix = selectedCredentials[0]?.clientIdPrefix;
+    if (prefix === "pre_registered") {
+      return window._env_.CLIENT_ID;
+    }
+    if (prefix === "x509_san_dns") {
+      return window._env_.CLIENT_ID_X509;
+    }
+    return window._env_.CLIENT_ID_DID;
   }
 
   useEffect(() => {
@@ -220,6 +242,7 @@ const DisplayActiveStep = () => {
                   key={`${flowType}-${sdkInstanceKey}`}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={(dcqlQuery?.credentials?.length ?? 0) === 0 } /> }
                   verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                  enableDcApi={window._env_.ENABLE_DC_API === "true" && !selectedWalletBaseUrl}
                   dcqlQuery={dcqlQuery}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}

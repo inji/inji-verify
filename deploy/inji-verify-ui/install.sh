@@ -78,6 +78,19 @@ function installing_inji-verify-ui() {
     fi
   done
 
+  while true; do
+    read -p "Enable ENABLE_DC_API? (true/false) [default: true]: " ENABLE_DC_API
+    ENABLE_DC_API=${ENABLE_DC_API:-true}
+    if [[ "$ENABLE_DC_API" == "true" || "$ENABLE_DC_API" == "false" ]]; then
+      break
+    else
+      echo "Invalid input. Please enter 'true' or 'false'."
+    fi
+  done
+
+  read -p "CLIENT_ID_X509 [default: x509_san_dns:test.example.com]: " CLIENT_ID_X509
+  CLIENT_ID_X509=${CLIENT_ID_X509:-x509_san_dns:test.example.com}
+
   INJIVERIFY_HOST=$(kubectl get cm inji-stack-config -o jsonpath={.data.injiverify-host})
   echo Installing INJIVERIFY
   helm -n $NS install inji-verify-ui inji/inji-verify-ui \
@@ -85,6 +98,10 @@ function installing_inji-verify-ui() {
   --set inji_verify_service.host="inji-verify-service.$NS" \
   --set extraEnvVars[0].name=VP_SUBMISSION_SUPPORTED \
   --set-string extraEnvVars[0].value="${VP_SUBMISSION_SUPPORTED}" \
+  --set extraEnvVars[1].name=ENABLE_DC_API \
+  --set-string extraEnvVars[1].value="${ENABLE_DC_API}" \
+  --set extraEnvVars[2].name=CLIENT_ID_X509 \
+  --set-string extraEnvVars[2].value="${CLIENT_ID_X509}" \
   --set-string walletBaseUrl="$WALLET_BASE_URL" \
   --version $CHART_VERSION
 

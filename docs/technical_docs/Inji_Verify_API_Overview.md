@@ -173,7 +173,17 @@ Create a VP request and establish a browser session. Used by the Inji Verify SDK
 }
 ```
 
-For DID-based `clientId` (prefix `decentralized_identifier:`): `authorizationDetails` is `null` and `requestUri` is populated with the URL the wallet fetches to get the signed JWT.
+For DID-based `clientId` (prefix `decentralized_identifier:`) or certificate-based `clientId` (prefix `x509_san_dns:`): `authorizationDetails` is `null` and `requestUri` is populated with the URL the wallet fetches to get the signed JWT. Both prefixes use this same by-reference flow. `decentralized_identifier:` clientIds are accepted as-is (validity is established later, when the wallet resolves the DID document). `x509_san_dns:` clientIds additionally require the DNS name after the prefix to match this deployment's configured identity (`inji.verify.x509-san-dns.host`) — see below for the specific error responses. See `GET /v2/vp-request/{requestId}` below for how the two prefixes differ in the JWT that's ultimately served.
+
+**`x509_san_dns` clientId — request creation errors** (`400 Bad Request`, `{ "errorCode": "invalid_request", "errorMessage": "..." }`). The wire-level `errorCode` is `invalid_request` for both causes below — distinguish them by `errorMessage` text, or by the internal enum constant name if you're grepping server code/logs:
+
+| Cause | Internal enum constant (not the wire `errorCode`) |
+|---|---|
+| DNS name in `clientId` doesn't match this deployment's configured `inji.verify.x509-san-dns.host` | `CLIENT_ID_HOST_MISMATCH` |
+| `inji.vp-submission.base-url` isn't `https` (and isn't a loopback host) | `REQUEST_URI_INSECURE` |
+| Keystore has no certificate chain configured (or an empty one) for the signing key | `CLIENT_ID_CERTIFICATE_CHAIN_MISSING` |
+
+All three checks run at request-creation time (`POST /v2/vp-session-request` / `POST /v2/vp-request`), before a `requestUri` is ever issued — they don't apply to `decentralized_identifier` clientIds.
 
 **Response** — `201 Created`
 ```json
@@ -214,11 +224,29 @@ Long-poll for VP request status. Times out after ~55 seconds (Configurable via `
 
 ### GET /v2/vp-request/{requestId}
 
-Fetch the signed Authorization Request JWT for DID-based (by-reference) flows. Called by the wallet, not the verifier UI.
+Fetch the signed Authorization Request JWT for by-reference flows (`decentralized_identifier` or `x509_san_dns` client IDs). Called by the wallet, not the verifier UI.
 
 **Response** — `Content-Type: application/oauth-authz-req+jwt`
 
-A signed Ed25519 JWT containing all authorization request parameters. The wallet verifies the signature against the verifier's DID document before proceeding.
+A signed Ed25519 JWT containing all authorization request parameters. Which header the wallet uses to establish trust depends on the `clientId` prefix used when the request was created:
+
+| `clientId` prefix | JWT header | Wallet trust mechanism |
+|---|---|---|
+| `decentralized_identifier:` | `kid` — a DID URL fragment | Wallet resolves the DID document (`GET /did.json`) and matches `kid` to a `verificationMethod.id` |
+| `x509_san_dns:` | `x5c` — the full leaf-first certificate chain (base64-DER), no `kid` | Wallet validates the embedded certificate chain directly (trust chain + signature) and checks the DNS name in `clientId` against the leaf certificate's Subject Alternative Name |
+
+A deployment can serve both prefixes side by side — which header a given JWT gets is decided per-request from that request's own `clientId`, not a deployment-wide toggle. See [`OpenID4VP-1.0.0.md`](./OpenID4VP-1.0.0.md#authorization-request-embedded-vs-by-reference) for the full request/response shapes, and [`verify-core/README.md`](../../verify-core/README.md) for keystore/config requirements (`inji.keystore.file.path`, `inji.verify.x509-san-dns.host`).
+
+**`x509_san_dns` clientId — JWT signing failures.** These are checked at fetch time (when the wallet calls this endpoint), not at request-creation time, and currently return a generic `500 Internal Server Error` (no structured error body — there's no dedicated exception handler for this failure class yet):
+
+| Cause |
+|---|
+| Signing certificate has expired or is not yet valid (`notBefore`/`notAfter`) |
+| Signing certificate's Subject Alternative Name doesn't include the DNS name from `clientId` |
+
+A missing/empty certificate chain is *not* in this table — it's now caught earlier, at request-creation time, as `CLIENT_ID_CERTIFICATE_CHAIN_MISSING` (see the `400`-level table above). It's still possible in theory for the keystore to lose its certificate chain between request creation and the wallet's fetch, so `getVPRequestJwt` re-checks for a missing/empty chain too and fails the same way as the two causes above (`500`, no structured body) if that happens.
+
+These fetch-time failures are distinct from the `400`-level checks above — those validate the *request* before any `requestUri` is issued, these validate the deployment's *keystore* against what the request already claimed, at the moment the wallet actually asks for the JWT.
 
 ---
 
@@ -365,6 +393,19 @@ Returns the verifier's DID Web document. The full URL is `{baseUrl}/v1/verify/di
   ]
 }
 ```
+
+> **⚠️ Keystore:** The Ed25519 signing key behind this document comes from
+> `inji.keystore.file.path` (`INJI_KEYSTORE_FILE_PATH`) / `inji.keystore.file.pass`
+> (`INJI_KEYSTORE_FILE_PASS`). By default this points at the sample keystore bundled inside
+> `verify-core` (`classpath:sample-keystore/test.p12`) — a throwaway dev/test key whose private
+> key is public (it ships in the published jar). **Any real deployment must override both
+> properties with its own privately-held keystore.** Leaving the default in place means anyone can
+> forge validly-signed `did:web` VP requests appearing to come from your deployment.
+
+> The keystore must hold an **Ed25519** key — RSA and EC keys aren't supported today. This only
+> applies to the key used to *sign* these requests; it's unrelated to the algorithm table above,
+> which is about *verifying* incoming VCs/VPs. See
+> [`verify-core/README.md`](../../verify-core/README.md) for more.
 
 ---
 

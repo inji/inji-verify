@@ -18,6 +18,9 @@ beforeEach(() => {
     OVP_QR_HEADER: "ovp-qr-header",
     DEFAULT_THEME: "orange",
     VERIFY_SERVICE_API_URL: "/verify",
+    CLIENT_ID: "pre_registered:test",
+    CLIENT_ID_DID: "decentralized_identifier:did:web:test.example.com",
+    CLIENT_ID_X509: "x509_san_dns:test.example.com",
 };
 
 

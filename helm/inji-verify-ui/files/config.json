@@ -105,6 +105,38 @@
           }
         ]
       }
+    },
+    {
+      "logo": "/assets/cert.png",
+      "name": "EU Personal ID (SD-JWT)",
+      "clientIdPrefix": "x509_san_dns",
+      "purpose": "Request EU Personal ID (PID) via OpenID4VP / Digital Credentials API. Asks for given name, family name, and age 18 or over (Multipaz EUPersonalID, vct urn:eudi:pid:1).",
+      "dcqlQuery": {
+        "credentials": [
+          {
+            "id": "eu_pid_sd_jwt",
+            "format": "dc+sd-jwt",
+            "meta": {
+              "vct_values": ["urn:eudi:pid:1"]
+            },
+            "claims": [
+              {
+                "id": "given_name",
+                "path": ["given_name"]
+              },
+              {
+                "id": "family_name",
+                "path": ["family_name"]
+              },
+              {
+                "id": "age_over_18",
+                "path": ["age_equal_or_over", "18"],
+                "values": [true]
+              }
+            ]
+          }
+        ]
+      }
     }
   ],
   "VCRenderOrders": {

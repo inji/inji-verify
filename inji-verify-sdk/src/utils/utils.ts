@@ -1,5 +1,77 @@
-import {VALID_SD_JWT_TYPES} from "./constants";
+import {VALID_SD_JWT_TYPES, DC_API_PROTOCOL, DEFAULT_DC_API_TIMEOUT_MS, CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER, CLIENT_ID_PREFIX_X509_SAN_DNS, CLIENT_ID_PREFIX_REDIRECT_URI, MIN_CHROME_DC_API_VERSION} from "./constants";
 import {CredentialResult, VCVerificationV2Response} from "../components/qrcode-verification/QRCodeVerification.types";
+
+/** Max delay accepted by `window.setTimeout` (signed 32-bit int). */
+const MAX_SET_TIMEOUT_MS = 2_147_483_647;
+
+/** Finite positive ms, floored, at least 1ms, and capped; otherwise the 5-minute default. */
+export const normalizeDcApiTimeoutMs = (value: number | undefined): number => {
+  if (typeof value !== "number" || !Number.isFinite(value) || value <= 0) {
+    return DEFAULT_DC_API_TIMEOUT_MS;
+  }
+  return Math.min(Math.max(Math.floor(value), 1), MAX_SET_TIMEOUT_MS);
+};
+
+export const isMobileDevice = (): boolean => {
+  const userAgent = navigator.userAgent;
+
+  const isMobileUA = /Android.*Mobile|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
+    userAgent
+  );
+
+  const isTabletUA =
+    /iPad/i.test(userAgent) ||
+    (/Macintosh/i.test(userAgent) && "ontouchend" in document) || // iPad iOS13+ (real)
+    (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent)); // Android tablet
+
+  return isMobileUA || isTabletUA;
+};
+
+export const isSignedRequestScheme = (clientId?: string): boolean =>
+  typeof clientId === "string" &&
+  (clientId.startsWith(`${CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER}:`) ||
+    clientId.startsWith(`${CLIENT_ID_PREFIX_X509_SAN_DNS}:`));
+
+export const isRedirectUriClientId = (clientId?: string): boolean =>
+  typeof clientId === "string" &&
+  clientId.startsWith(`${CLIENT_ID_PREFIX_REDIRECT_URI}:`);
+
+/** Parse Chrome/CriOS version; null when the UA is not Chromium-based. */
+const parseChromiumVersion = (userAgent: string): number[] | null => {
+  const match = userAgent.match(/(?:Chrome|CriOS)\/(\d+)(?:\.(\d+)\.(\d+)\.(\d+))?/);
+  if (!match) return null;
+  return [
+    Number(match[1]),
+    Number(match[2] || 0),
+    Number(match[3] || 0),
+    Number(match[4] || 0),
+  ];
+};
+
+/**
+ * Chrome versions before 144.0.7559.59 are affected by CVE-2026-0904
+ * (Digital Credentials UI domain spoofing). Non-Chromium UAs skip this gate.
+ */
+export const isChromeDcApiSecurityVersionMet = (
+  userAgent: string = navigator.userAgent,
+): boolean => {
+  const version = parseChromiumVersion(userAgent);
+  if (version === null) return true;
+  for (let i = 0; i < MIN_CHROME_DC_API_VERSION.length; i++) {
+    if (version[i] > MIN_CHROME_DC_API_VERSION[i]) return true;
+    if (version[i] < MIN_CHROME_DC_API_VERSION[i]) return false;
+  }
+  return true;
+};
+
+export const isDcApiSupported = (clientId: string): boolean => {
+  if (!isSignedRequestScheme(clientId)) return false;
+  if (!isChromeDcApiSecurityVersionMet()) return false;
+  if (typeof window.DigitalCredential === "undefined") return false;
+  const allows = window.DigitalCredential.userAgentAllowsProtocol;
+  if (typeof allows !== "function") return false;
+  return allows.call(window.DigitalCredential, DC_API_PROTOCOL) === true;
+};
 
 export const isSdJwt = (vpToken: string): boolean => {
     try {

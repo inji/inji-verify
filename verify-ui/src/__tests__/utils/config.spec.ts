@@ -1,6 +1,7 @@
 import {
     getVerificationStepsContent,
     AlertMessages,
+    getWalletErrorAlert,
     initializeClaims,
     isMobileDevice,
     getStepConfig,
@@ -41,6 +42,32 @@ describe("config utilities", () => {
         const alerts = AlertMessages();
         expect(alerts.qrUploadSuccess.severity).toBe("success");
         expect(alerts.sessionExpired.severity).toBe("error");
+    });
+
+    describe("getWalletErrorAlert", () => {
+        test("maps known OpenID4VP wallet error codes to localized alerts", () => {
+            const alert = getWalletErrorAlert("access_denied");
+            expect(alert?.severity).toBe("error");
+            expect(alert?.message).toBe("OvpErrors:accessDenied");
+            expect(i18next.t).toHaveBeenCalledWith("OvpErrors:accessDenied");
+        });
+
+        test.each([
+            ["invalid_scope", "OvpErrors:invalidScope"],
+            ["invalid_request", "OvpErrors:invalidRequest"],
+            ["invalid_client", "OvpErrors:invalidClient"],
+            ["vp_formats_not_supported", "OvpErrors:vpFormatsNotSupported"],
+            ["invalid_presentation_definition_uri", "OvpErrors:invalidPresentationDefinitionUri"],
+            ["invalid_presentation_definition_reference", "OvpErrors:invalidPresentationDefinitionReference"],
+            ["invalid_transaction_data", "OvpErrors:invalidTransactionData"],
+        ])("maps %s", (code, i18nKey) => {
+            expect(getWalletErrorAlert(code)?.message).toBe(i18nKey);
+        });
+
+        test("returns undefined for unknown or missing codes", () => {
+            expect(getWalletErrorAlert("DC_API_TIMEOUT")).toBeUndefined();
+            expect(getWalletErrorAlert(undefined)).toBeUndefined();
+        });
     });
 
     describe("resolveWalletBaseUrl", () => {

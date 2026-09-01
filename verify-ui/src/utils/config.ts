@@ -118,7 +118,35 @@ export const AlertMessages =()=> {
         partialCredentialShared:{message: i18next.t("AlertMessages:partialCredentialShared"), severity: "error"} as AlertInfo,
         validationFailure:{message: i18next.t("AlertMessages:validationFailure"), severity: "error"} as AlertInfo,
         incorrectCredential:{message: i18next.t("AlertMessages:incorrectCredential"), severity: "error"} as AlertInfo,
+        requestFailedGeneric: {message: i18next.t("AlertMessages:requestFailedGeneric"), severity: "error"} as AlertInfo,
     }
+};
+
+/**
+ * OpenID4VP wallet `error` codes (forwarded as-is by the backend) → user-facing alerts.
+ * Keyed off the wallet's `error` value returned via session results / DC API submission.
+ */
+const WALLET_ERROR_I18N_KEYS: Record<string, string> = {
+    invalid_scope: "OvpErrors:invalidScope",
+    invalid_request: "OvpErrors:invalidRequest",
+    invalid_client: "OvpErrors:invalidClient",
+    access_denied: "OvpErrors:accessDenied",
+    vp_formats_not_supported: "OvpErrors:vpFormatsNotSupported",
+    invalid_presentation_definition_uri: "OvpErrors:invalidPresentationDefinitionUri",
+    invalid_presentation_definition_reference: "OvpErrors:invalidPresentationDefinitionReference",
+    invalid_transaction_data: "OvpErrors:invalidTransactionData",
+};
+
+/** Returns a localized alert for a known wallet error code, or undefined if unmapped. */
+export const getWalletErrorAlert = (errorCode?: string): AlertInfo | undefined => {
+    if (!errorCode) {
+        return undefined;
+    }
+    const i18nKey = WALLET_ERROR_I18N_KEYS[errorCode];
+    if (!i18nKey) {
+        return undefined;
+    }
+    return { message: i18next.t(i18nKey), severity: "error" } as AlertInfo;
 };
 
 export const UploadFileSizeLimits = {

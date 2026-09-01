@@ -197,7 +197,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     clearTimer();
     timerRef.current = setTimeout(() => {
       stopVideoStream();
-      onError?.(new Error("Session expired. Please Scan again."));
+      onError?.(new Error("Couldn't read the QR code. Make sure the entire QR code is inside the frame and try again."));
     }, ScanSessionExpiryTime);
   };
 
@@ -886,15 +886,13 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
                   />
                   <div className="slider-container">
                     <Slider
-                      key={`${Math.round(zoomLevel)}`}
                       aria-label="Zoom Level"
                       min={0}
                       max={10}
-                      step={1}
-                      value={Math.round(zoomLevel)}
+                      step={0.01}
+                      value={zoomLevel}
                       onChange={handleSliderChange}
                       onChangeCommitted={handleSliderChange}
-                      marks
                       valueLabelDisplay="on"
                     />
                   </div>

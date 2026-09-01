@@ -14,7 +14,7 @@ function Deleting_All() {
                      "inji-verify-ui"
                      )
 
-  echo Installing inji-verify services
+  echo Deleting inji-verify services
 
   for i in "${module[@]}"
   do

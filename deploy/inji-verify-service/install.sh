@@ -59,6 +59,12 @@ function installing_inji-verify-service() {
 
   INJIVERIFY_HOST=$(kubectl get cm inji-stack-config -o jsonpath={.data.injiverify-host})
 
+  read -p "INJI_KB_JWT_MAX_AGE_SECONDS [default: 600]: " INJI_KB_JWT_MAX_AGE_SECONDS
+  INJI_KB_JWT_MAX_AGE_SECONDS=${INJI_KB_JWT_MAX_AGE_SECONDS:-600}
+
+  read -p "INJI_X509_SAN_DNS_HOST [default: test.example.com]: " INJI_X509_SAN_DNS_HOST
+  INJI_X509_SAN_DNS_HOST=${INJI_X509_SAN_DNS_HOST:-test.example.com}
+
   echo Installing inji-verify-service
   helm -n $NS install inji-verify-service inji/inji-verify-service \
     --version $CHART_VERSION  \
@@ -75,7 +81,9 @@ function installing_inji-verify-service() {
     --set extraEnv[5].name=INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS \
     --set-string extraEnv[5].value="5" \
     --set extraEnv[6].name=INJI_KB_JWT_MAX_AGE_SECONDS \
-    --set-string extraEnv[6].value="600"
+    --set-string extraEnv[6].value="${INJI_KB_JWT_MAX_AGE_SECONDS}" \
+    --set extraEnv[7].name=INJI_X509_SAN_DNS_HOST \
+    --set-string extraEnv[7].value="${INJI_X509_SAN_DNS_HOST}"
 
   kubectl -n $NS  get deploy -o name |  xargs -n1 -t  kubectl -n $NS rollout status
 

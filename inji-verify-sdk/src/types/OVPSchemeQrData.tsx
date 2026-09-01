@@ -12,4 +12,6 @@ export interface QrData {
   };
   expiresAt: number;
   requestUri?: string;
+  /** Present for DC API sessions — SDK posts credential data here. */
+  responseUri?: string;
 }

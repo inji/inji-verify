@@ -4,6 +4,7 @@ declare global {
     interface Window {
         encodeData: (data: string) => void;
         _env_: {
+            ENABLE_DC_API: string;
             DEFAULT_LANG: string;
             DEFAULT_TITLE: string;
             DEFAULT_THEME: string;
@@ -17,6 +18,7 @@ declare global {
             VP_SUBMISSION_SUPPORTED: string,
             CLIENT_ID: string;
             CLIENT_ID_DID: string;
+            CLIENT_ID_X509: string;
             DISPLAY_TIMEOUT: string;
         }
     }

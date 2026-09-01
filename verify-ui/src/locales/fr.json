@@ -142,7 +142,8 @@
     "scanSessionExpired": "La session d'analyse a expiré pour cause d'inactivité. Veuillez lancer une nouvelle analyse.",
     "partialCredentialShared": "Vérification terminée avec des identifiants partiels. Veuillez noter que certains identifiants demandés sont manquants.",
     "validationFailure": "Nous n'avons pas pu valider la réponse de vérification. Veuillez vous assurer que la réponse est correcte et réessayer.",
-    "incorrectCredential": "Les informations d'identification partagées ne correspondent pas à celles demandées. Veuillez fournir les informations d'identification correctes et réessayer."
+    "incorrectCredential": "Les informations d'identification partagées ne correspondent pas à celles demandées. Veuillez fournir les informations d'identification correctes et réessayer.",
+    "requestFailedGeneric": "Nous ne pouvons pas finaliser votre demande. Veuillez contacter le support pour obtenir de l’aide."
   },
   "OvpErrors": {
     "invalidScope": "Portée invalide",
@@ -159,7 +160,9 @@
     "invalidVpToken": "Les informations d'identification ne répondent pas aux exigences. ",
     "unsupportedFormat": "Formats VP non pris en charge",
     "invalidResources": "La ressource demandée n'est pas valide.",
-    "invalidParams": "Paramètres invalides !!"
+    "invalidParams": "Paramètres invalides !!",
+    "accessDenied": "Le portefeuille a refusé la demande ou ne dispose pas des identifiants demandés. Veuillez réessayer.",
+    "invalidTransactionData": "Les données de transaction de la demande de vérification sont invalides ou non prises en charge par le portefeuille."
   },
   "CopyRight": {
     "content": "2024 © MOSIP - Tous droits réservés."

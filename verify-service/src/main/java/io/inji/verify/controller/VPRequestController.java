@@ -9,21 +9,20 @@ import io.inji.verify.dto.authorizationrequest.VPRequestCreateDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestResponseDto;
 import io.inji.verify.dto.authorizationrequest.VPRequestStatusDto;
 import io.inji.verify.dto.core.ErrorDto;
-import io.inji.verify.dto.submission.VPTokenResultDto;
 import io.inji.verify.enums.ErrorCode;
 import io.inji.verify.exception.VPRequestNotFoundException;
 import io.inji.verify.exception.VPRequestValidationException;
 import io.inji.verify.services.VerifiablePresentationRequestService;
-import io.inji.verify.validator.DcqlValidator;
+import io.inji.verify.utils.SubmissionOriginExtractor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
 import io.swagger.v3.oas.annotations.responses.ApiResponses;
+import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
-import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.*;
 import org.springframework.http.converter.HttpMessageNotReadableException;
@@ -45,7 +44,6 @@ import static io.inji.verify.shared.Constants.VP_REQUEST_URI;
 public class VPRequestController {
 
     final VerifiablePresentationRequestService verifiablePresentationRequestService;
-    final DcqlValidator dcqlValidator;
     @Value("${inji.verify.cookie-duration-in-minute:#{5}}")
     int cookieDurationInMinute;
     @Value("${inji.verify.cookie-secure-value:#{true}}")
@@ -55,9 +53,8 @@ public class VPRequestController {
     @Value("${inji.verify.cookie-same-site}")
     String cookieSameSite;
 
-    public VPRequestController(VerifiablePresentationRequestService verifiablePresentationRequestService, DcqlValidator dcqlValidator) {
+    public VPRequestController(VerifiablePresentationRequestService verifiablePresentationRequestService) {
         this.verifiablePresentationRequestService = verifiablePresentationRequestService;
-        this.dcqlValidator = dcqlValidator;
     }
 
     @Operation(summary = "Create a new VP request based on the provided parameters. Validates the DCQL query and returns the created request details.")
@@ -74,9 +71,9 @@ public class VPRequestController {
     })
     public ResponseEntity<Object> createVPRequest(
             @Parameter(description = "The parameters for creating a VP request, including the DCQL query and other relevant details.")
-            @Valid @RequestBody VPRequestCreateDto vpRequestCreate) {
-        dcqlValidator.validate(vpRequestCreate.getDcqlQuery());
-        return processCreateVPRequest(vpRequestCreate, false);
+            @Valid @RequestBody VPRequestCreateDto vpRequestCreate,
+            HttpServletRequest httpRequest) {
+        return processCreateVPRequest(vpRequestCreate, httpRequest, false);
     }
 
     @Operation(summary = "Create a new VP session request with cookie management. Validates the DCQL query, creates the request, and sets a cookie for session tracking.")
@@ -93,9 +90,9 @@ public class VPRequestController {
     })
     public ResponseEntity<Object> createVPSessionRequest(
             @Parameter(description = "The parameters for creating a VP session request, including the DCQL query and other relevant details. A cookie will be set for session tracking.")
-            @Valid @RequestBody VPRequestCreateDto vpRequestCreate) {
-        dcqlValidator.validate(vpRequestCreate.getDcqlQuery());
-        return processCreateVPRequest(vpRequestCreate, true);
+            @Valid @RequestBody VPRequestCreateDto vpRequestCreate,
+            HttpServletRequest httpRequest) {
+        return processCreateVPRequest(vpRequestCreate, httpRequest, true);
     }
 
     @Operation(summary = "Get the status of a VP request by its ID. Returns the current status of the request, including any relevant details.")
@@ -130,12 +127,8 @@ public class VPRequestController {
     })
     public ResponseEntity<Object> getVPRequest(
             @Parameter(description = "The unique identifier of the VP request to retrieve.")
-            @PathVariable String requestId) {
-        try {
-            return ResponseEntity.status(HttpStatus.OK).body(verifiablePresentationRequestService.getVPRequestJwt(requestId));
-        } catch (VPRequestNotFoundException e) {
-            return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_AUTH_REQUEST));
-        }
+            @PathVariable String requestId) throws VPRequestNotFoundException {
+        return ResponseEntity.status(HttpStatus.OK).body(verifiablePresentationRequestService.getVPRequestJwt(requestId));
     }
 
     @ExceptionHandler(VPRequestValidationException.class)
@@ -146,9 +139,17 @@ public class VPRequestController {
                 .body(new ErrorDto(errorCode.getErrorCode(), e.getMessage()));
     }
 
-    @NotNull
-    private ResponseEntity<Object> processCreateVPRequest(VPRequestCreateDto vpRequestCreate, boolean createCookie) {
-        VPRequestResponseDto authorizationRequestResponse = verifiablePresentationRequestService.createAuthorizationRequest(vpRequestCreate);
+    @ExceptionHandler(VPRequestNotFoundException.class)
+    public ResponseEntity<ErrorDto> handleVPRequestNotFoundException(VPRequestNotFoundException e) {
+        log.error("VP request not found: {}", e.getMessage());
+        return ResponseEntity.status(HttpStatus.NOT_FOUND).body(new ErrorDto(ErrorCode.NO_AUTH_REQUEST));
+    }
+
+    private ResponseEntity<Object> processCreateVPRequest(
+            VPRequestCreateDto vpRequestCreate, HttpServletRequest httpRequest, boolean createCookie) {
+        VPRequestResponseDto authorizationRequestResponse =
+                verifiablePresentationRequestService.createAuthorizationRequest(
+                        vpRequestCreate, SubmissionOriginExtractor.from(httpRequest));
 
         if (createCookie) {
             String transactionId = authorizationRequestResponse.getTransactionId();

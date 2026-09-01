@@ -7,4 +7,5 @@ export type {
   DcqlClaimQuery,
   DcqlCredentialMeta,
   DcqlTrustedAuthority,
+  DcApiSubmissionData,
 } from './components/openid4vp-verification/OpenID4VPVerification.types';

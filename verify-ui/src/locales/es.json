@@ -142,7 +142,8 @@
     "scanSessionExpired": "La sesión de escaneo ha caducado debido a inactividad. Inicie un nuevo análisis.",
     "partialCredentialShared": "Verificación completada con credenciales parciales. Tenga en cuenta que faltan algunas credenciales solicitadas.",
     "validationFailure": "No pudimos validar la respuesta de verificación. Asegúrese de que la respuesta sea correcta y vuelva a intentarlo.",
-    "incorrectCredential": "Las credenciales compartidas no coinciden con las solicitadas. Proporcione las credenciales correctas e inténtelo de nuevo."
+    "incorrectCredential": "Las credenciales compartidas no coinciden con las solicitadas. Proporcione las credenciales correctas e inténtelo de nuevo.",
+    "requestFailedGeneric": "No podemos completar su solicitud. Comuníquese con soporte para obtener ayuda."
   },
   "OvpErrors": {
     "invalidScope": "Alcance no válido",
@@ -159,7 +160,9 @@
     "invalidVpToken": "Las credenciales no cumplen con los requisitos. Verifique e inténtelo nuevamente",
     "unsupportedFormat": "Formatos VP no admitidos",
     "invalidResources": "El recurso solicitado no es válido.",
-    "invalidParams": "¡¡Parámetros no válidos!!"
+    "invalidParams": "¡¡Parámetros no válidos!!",
+    "accessDenied": "La billetera rechazó la solicitud o no tiene las credenciales solicitadas. Inténtelo de nuevo.",
+    "invalidTransactionData": "Los datos de la transacción en la solicitud de verificación no son válidos o no son compatibles con la billetera."
   },
   "CopyRight": {
     "content": "2024 © MOSIP - Todos los derechos reservados."

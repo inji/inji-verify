@@ -239,8 +239,15 @@ updateStrategy:
 ## extraEnvVars:
 ##   - name: FOO
 ##     value: "bar"
+## VP_SUBMISSION_SUPPORTED, ENABLE_DC_API, and CLIENT_ID_X509 are typically set at
+## install time (see deploy/inji-verify-ui/install.sh). Same pattern: Helm extraEnvVars
+## on the UI deployment (not inji-stack-config / Rancher ConfigMap keys).
 ##
-extraEnvVars: []
+extraEnvVars:
+  - name: ENABLE_DC_API
+    value: "true"
+  - name: CLIENT_ID_X509
+    value: "x509_san_dns:test.example.com"
 
 ## ConfigMap with extra environment variables
 ##

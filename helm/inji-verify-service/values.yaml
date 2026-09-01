@@ -245,8 +245,6 @@ updateStrategy:
 ##     value: "bar"
 ##
 extraEnvVars:
-  - name: VERIFY_CONTEXT_PATH
-    value: "{{ .Values.contextPath }}"
   - name: DATABASE_HOST
     valueFrom:
       configMapKeyRef:
@@ -277,8 +275,15 @@ extraEnvVars:
       secretKeyRef:
         name: db-common-secrets
         key: db-dbuser-password
+
+## Install-time / overridable INJI_* settings for inji-verify-service.
+## Typically set by deploy/inji-verify-service/install.sh via --set extraEnv[...].
+##
+extraEnv:
   - name: INJI_KB_JWT_MAX_AGE_SECONDS
     value: "600"
+  - name: INJI_X509_SAN_DNS_HOST
+    value: "test.example.com"
 
 ## ConfigMap with extra environment variables that used
 ##

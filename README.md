@@ -6,7 +6,7 @@ Inji Verify is a web application for verifying Verifiable Credentials (VCs) via 
 The repository contains three independently deployable components:
 
 - **`verify-ui/`** — React/TypeScript frontend (Node 18)
-- **`verify-service/`** — Spring Boot backend (Java 21, Maven)
+- **`verify-service/`** — Spring Boot backend (Java 21, Maven), built on the domain logic in `verify-core/`
 - **`inji-verify-sdk/`** — React component library (`@injistack/react-inji-verify-sdk`)
 
 # Contents:
@@ -68,6 +68,9 @@ Once the repository is cloned, following folders can be found under the inji-ver
   - [Readme.md](./inji-verify-sdk/README.md)
 - **ui-test:** contains the ui automation tests
 - **utilities:** folder contains sample QR code variation generation utility for testing
+- **verify-core:** framework-agnostic domain layer (DTOs, validation, DCQL/VP business logic, persistence) consumed by verify-service, and embeddable directly by other Spring apps
+  - src (source code)
+  - [Readme.md](./verify-core/README.md)
 - **verify-service:** contains source code for the verify backend service
   - src (source code)
   - Dockerfile

@@ -222,12 +222,37 @@ openid4vp://authorize
   &request_uri={backendUrl}/v2/vp-request/{requestId}
 ```
 
-| | Embedded | By Reference |
-|---|---|---|
-| QR carries | Full auth params | `request_uri` pointer only |
-| Wallet extra network call | None | `GET /v2/vp-request/{requestId}` |
-| Verifier identity proof | None | Ed25519 JWT signed with DID key |
-| `clientId` format | Plain string | `decentralized_identifier:did:...` |
+**By Reference (certificate-based client ID)**
+
+When `clientId` starts with `x509_san_dns:`, the request JWT is signed the same way but the header carries the signing certificate chain (`x5c`) instead of a `kid`. The wallet verifies the JWT using the embedded certificate directly, and checks that the DNS name in `clientId` is one of the certificate's Subject Alternative Names — no DID resolution involved.
+
+```text
+openid4vp://authorize
+  ?client_id=x509_san_dns:verify.example.com
+  &request_uri={backendUrl}/v2/vp-request/{requestId}
+```
+
+`x509_san_dns` requests go through additional checks on top of the DID flow's:
+- At request-creation time, the DNS name in `clientId` must match this deployment's configured `inji.verify.x509-san-dns.host`, and (outside local/dev) the response endpoint must be served over `https`.
+- At JWT-signing time, the signing certificate must currently be valid (not expired, not before its `notBefore` date) and its Subject Alternative Name must actually contain the claimed DNS name.
+
+See [Inji_Verify_API_Overview.md](./Inji_Verify_API_Overview.md#openid4vp--vp-request-creation) for the exact error responses these produce, and [`verify-core/README.md`](../../verify-core/README.md) for keystore/config requirements.
+**Not checked:** Whether `response_uri`'s host matches the `x509_san_dns` `client_id`.
+
+`response_uri` is configured separately through `inji.vp-submission.base-url`, so its host may differ from `inji.verify.x509-san-dns.host`.
+
+If the wallet does not already trust the certificate, the two hosts should match for the request to be accepted.
+
+See [`verify-core/README.md`](../../verify-core/README.md) for details.
+
+A deployment can serve both by-reference schemes side by side — which header a request JWT gets (`kid` or `x5c`) is decided per-request from its own `client_id` prefix, not a global setting.
+
+| | Embedded | By Reference (DID) | By Reference (certificate) |
+|---|---|---|---|
+| QR carries | Full auth params | `request_uri` pointer only | `request_uri` pointer only |
+| Wallet extra network call | None | `GET /v2/vp-request/{requestId}` | `GET /v2/vp-request/{requestId}` |
+| Verifier identity proof | None | Ed25519 JWT, `kid` resolved via DID document | Ed25519 JWT, `x5c` cert chain in the header |
+| `clientId` format | Plain string | `decentralized_identifier:did:...` | `x509_san_dns:<dns-name>` |
 
 ---
 
@@ -376,7 +401,7 @@ There are two endpoints with the same request body. The only difference is wheth
 | `POST` | `/v2/vp-session-request` | Verify UI | Create VP request + set session cookie |
 | `POST` | `/v2/vp-request` | Verifier backend (S2S) | Create VP request without cookie |
 | `GET` | `/vp-request/{requestId}/status` | Verifier UI (long-poll) | Poll for `ACTIVE` / `VP_SUBMITTED` / `EXPIRED` |
-| `GET` | `/v2/vp-request/{requestId}` | Wallet | Fetch signed Authorization Request JWT (DID flows only) |
+| `GET` | `/v2/vp-request/{requestId}` | Wallet | Fetch signed Authorization Request JWT (`decentralized_identifier` and `x509_san_dns` flows) |
 | `POST` | `/v2/vp-submission/direct-post` | Wallet | Submit `vp_token` |
 | `POST` | `/vp-session-results` | Verifier UI | Fetch result using session cookie |
 | `POST` | `/v2/vp-results/{transactionId}` | Verifier backend (S2S) | Fetch result by transaction ID with options |

@@ -1,35 +1,24 @@
-import React, { useCallback, useEffect, useMemo, useRef, useState } from "react";
+import "./OpenID4VPVerification.css";
+import React, { useCallback, useEffect, useRef, useState } from "react";
 import { QRCodeSVG } from "qrcode.react";
 import {
   AppError,
-  SessionState,
   OpenID4VPVerificationProps,
   VerificationResults,
-  CredentialResult
+  CredentialResult,
+  DcApiSubmissionData
 } from "./OpenID4VPVerification.types";
 import {
   vpRequestStatus,
   vpSessionRequest,
   vpSessionResults,
+  getVpRequestJwt,
+  vpResultSubmission,
+  isAppError,
 } from "../../utils/api";
-import "./OpenID4VPVerification.css";
-import {clearUrl, summariseVPResult, normalizeVp} from "../../utils/utils";
+import {clearUrl, summariseVPResult, normalizeVp, isMobileDevice, normalizeDcApiTimeoutMs, isDcApiSupported, isSignedRequestScheme, isRedirectUriClientId} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
-
-export const isMobileDevice = (): boolean => {
-  const userAgent = navigator.userAgent;
-
-  const isMobileUA = /Android.*Mobile|iPhone|iPod|BlackBerry|IEMobile|Opera Mini/i.test(
-    userAgent
-  );
-
-  const isTabletUA =
-    /iPad/i.test(userAgent) ||
-    (/Macintosh/i.test(userAgent) && "ontouchend" in document) || // iPad iOS13+ (real)
-    (/Android/i.test(userAgent) && !/Mobile/i.test(userAgent)); // Android tablet
-
-  return isMobileUA || isTabletUA;
-};
+import { DC_API_PROTOCOL, DEFAULT_DC_API_TIMEOUT_MS, DEFAULT_PROTOCOL, VP_FORMATS_SUPPORTED } from "../../utils/constants";
 
 const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   triggerElement,
@@ -44,6 +33,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   onError,
   clientId,
   isSameDeviceFlowEnabled = true,
+  enableDcApi = false,
+  dcApiTimeoutMs = DEFAULT_DC_API_TIMEOUT_MS,
   webWalletBaseUrl,
   vpVerificationRequest,
   summariseResults = true
@@ -51,54 +42,18 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   const [qrCodeData, setQrCodeData] = useState<string | null>(null);
   const [loading, setLoading] = useState<boolean>(false);
   const isActiveRef = useRef(false);
-  const redirectTimeoutRef = useRef<ReturnType<typeof setTimeout> | null>(null);
-  const hasFetchedVPResultRef = useRef(false);
-  const sessionStateRef = useRef<SessionState>({requestId: ""});
+  const requestIdRef = useRef("");
 
   const shouldShowQRCode = !loading && qrCodeData;
 
-  const DEFAULT_PROTOCOL = "openid4vp://";
-
-  const VPFormatsSupported = useMemo(
-    () => ({
-      ldp_vp: {
-        proof_type: [
-          "Ed25519Signature2018",
-          "Ed25519Signature2020",
-          "RsaSignature2018",
-        ],
-      },
-      "dc+sd-jwt": {
-        "sd-jwt_alg_values": ["RS256", "ES256", "ES256K", "EdDSA"],
-        "kb-jwt_alg_values": ["RS256", "ES256", "ES256K", "EdDSA"],
-      },
-      "vc+sd-jwt": {
-        "sd-jwt_alg_values": ["RS256", "ES256", "ES256K", "EdDSA"],
-        "kb-jwt_alg_values": ["RS256", "ES256", "ES256K", "EdDSA"],
-      },
-    }),
-    []
-  );
-
-  const clearSessionData = useCallback(() => {
-    sessionStateRef.current = {
-      requestId: "",
-    };
-  }, []);
-
   const resetState = useCallback(() => {
-    if (redirectTimeoutRef.current) {
-      clearTimeout(redirectTimeoutRef.current);
-      redirectTimeoutRef.current = null;
-    }
     setQrCodeData(null);
     setLoading(false);
     isActiveRef.current = false;
-    hasFetchedVPResultRef.current = false;
-    clearSessionData();
+    requestIdRef.current = "";
   }, []);
 
-  const getPresentationDefinitionParams = useCallback(
+  const getAuthorizationRequestParams = useCallback(
     (data: QrData) => {
       const params = new URLSearchParams();
       params.set("client_id", clientId);
@@ -113,11 +68,11 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         if (data.authorizationDetails.dcqlQuery) {
           params.set("dcql_query", JSON.stringify(data.authorizationDetails.dcqlQuery));
         }
-        if(clientId.startsWith("decentralized_identifier:") || clientId.startsWith("redirect_uri:")) {
+        if (isSignedRequestScheme(clientId) || isRedirectUriClientId(clientId)) {
           params.set(
             "client_metadata",
             JSON.stringify({
-              vp_formats_supported: VPFormatsSupported,
+              vp_formats_supported: VP_FORMATS_SUPPORTED,
             })
           );
         }
@@ -169,8 +124,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         },
         [onVPProcessed, onVPReceived, summariseResults]
     );
-  const fetchVPResult = useCallback(
-    async (responseCode?: string | null) => {
+  const fetchVPResult = useCallback(async (responseCode?: string | null) => {
       if (!isActiveRef.current) return;
       setLoading(true);
 
@@ -208,6 +162,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       try {
         const response = await vpRequestStatus(verifyServiceUrl, reqId);
 
+        if (!isActiveRef.current) return;
+
         if (response.status === "ACTIVE") {
             fetchVPStatus(reqId);
         } else if (response.status === "VP_SUBMITTED") {
@@ -228,15 +184,17 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
       verifyServiceUrl,
       onQrCodeExpired,
       fetchVPResult,
+      resetState,
+      onError,
     ]
   );
 
-  const createVPRequest = useCallback(async (isCrossDeviceFlow: boolean) => {
+  const createVPRequest = useCallback(async (isCrossDeviceFlow: boolean, responseMode: "direct_post" | "dc_api") => {
     if (isActiveRef.current) return;
     isActiveRef.current = true;
     setLoading(true);
     try {
-      const responseCodeValidationRequired = webWalletBaseUrl != null;
+      const responseCodeValidationRequired = responseMode === "dc_api" ? false : webWalletBaseUrl != null;
 
       const data = await vpSessionRequest(
         verifyServiceUrl,
@@ -244,17 +202,16 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         clientId,
         transactionId ?? undefined,
         responseCodeValidationRequired,
+        responseMode,
       );
 
-      if (webWalletBaseUrl == null && !isCrossDeviceFlow) {
-        sessionStateRef.current = {
-          requestId: data.requestId,
-        };
+      if (responseMode !== "dc_api" && (isCrossDeviceFlow || webWalletBaseUrl == null)) {
+        requestIdRef.current = data.requestId;
       }
-      if (isCrossDeviceFlow) {
+      if (responseMode !== "dc_api" && isCrossDeviceFlow) {
         fetchVPStatus(data.requestId);
       }
-      return getPresentationDefinitionParams(data);
+      return data;
     } catch (error) {
       onError(error as AppError);
       resetState();
@@ -263,53 +220,194 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     verifyServiceUrl,
     transactionId,
     dcqlQuery,
-    getPresentationDefinitionParams,
     onError,
-    clientId
+    clientId,
+    webWalletBaseUrl,
+    fetchVPStatus,
+    resetState,
   ]);
 
-  const handleTriggerClick = () => {
-    if (isSameDeviceFlowEnabled) {
-      startVerification();
-    } else {
-      handleGenerateQRCode();
-    }
-  };
-
-  const handleGenerateQRCode = async () => {
-    const pdParams = await createVPRequest(true);
-    if (pdParams) {
-      const qrData = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
+  const processQRCodeGenerationFlow = async () => {
+    const data = await createVPRequest(true, "direct_post");
+    if (data) {
+      const authParams = getAuthorizationRequestParams(data);
+      const qrData = `${protocol || DEFAULT_PROTOCOL}authorize?${authParams}`;
       setQrCodeData(qrData);
       setLoading(false);
     }
   };
 
-  const startVerification = async () => {
-    const pdParams = await createVPRequest(false);
-    if (!pdParams) return;
+  const processDeepLinkFlow = async () => {
+    // Web wallet redirect works on desktop and mobile when webWalletBaseUrl is set.
+    // Desktop cannot launch a native wallet protocol, so same-device without a web
+    // wallet URL (and without DC API) is invalid.
+    if (!webWalletBaseUrl && !isMobileDevice()) {
+      onError({
+        errorMessage:"On desktop, same-device flow requires a web wallet URL (webWalletBaseUrl.",
+        errorCode: "MISSING_WEB_WALLET_BASE_URL"
+      });
+      return;
+    }
+
+    const data = await createVPRequest(false, "direct_post");
+    if (!data) return;
+    const authParams = getAuthorizationRequestParams(data);
 
     if (webWalletBaseUrl) {
       let end = webWalletBaseUrl.length;
       while (end > 0 && webWalletBaseUrl[end - 1] === "/") end--;
       const baseUrl = webWalletBaseUrl.slice(0, end);
-      window.location.href = `${baseUrl}/authorize?${pdParams}`;
-    } else if (isMobileDevice()) {
-      window.location.href = `${protocol || DEFAULT_PROTOCOL}authorize?${pdParams}`;
-    } else {
+      window.location.href = `${baseUrl}/authorize?${authParams}`;
+      return;
+    }
+
+    window.location.href = `${protocol || DEFAULT_PROTOCOL}authorize?${authParams}`;
+  };
+
+  const processDcAPIFlow = async () => {
+    const controller = new AbortController();
+    const timeoutMs = normalizeDcApiTimeoutMs(dcApiTimeoutMs);
+    const timeoutId = window.setTimeout(() => controller.abort("DC_API_TIMEOUT"), timeoutMs);
+
+    try {
+      const data = await createVPRequest(false, "dc_api");
+      if (!data) return;
+
+      if (!data.requestUri) {
+        onError({
+          errorCode: "NO_AUTH_REQUEST",
+          errorMessage: "VP session response missing requestUri",
+        });
+        resetState();
+        return;
+      }
+
+      if (!data.responseUri) {
+        onError({
+          errorCode: "DC_API_MISSING_RESPONSE_URI",
+          errorMessage: "VP session response missing responseUri for DC API submission",
+        });
+        resetState();
+        return;
+      }
+
+      const signedJwt = await getVpRequestJwt(data.requestUri, controller.signal);
+      const credential = await navigator.credentials.get({
+        signal: controller.signal,
+        digital: {
+          requests: [
+            {
+              protocol: DC_API_PROTOCOL,
+              data: { request: signedJwt },
+            },
+          ],
+        },
+      });
+
+      if (!credential) {
+        onError({
+          errorCode: "DC_API_NO_CREDENTIAL",
+          errorMessage: "No digital credential was returned",
+        });
+        resetState();
+        return;
+      }
+
+      let submissionPayloadData: DcApiSubmissionData;
+      try {
+        const raw = credential.data;
+        submissionPayloadData = (typeof raw === "string" ? JSON.parse(raw) : raw) as DcApiSubmissionData;
+      } catch (error) {
+        onError({
+          errorCode: "DC_API_INVALID_CREDENTIAL_DATA",
+          errorMessage:
+            error instanceof Error
+              ? error.message
+              : "Digital credential data is malformed",
+        });
+        resetState();
+        return;
+      }
+
+      try {
+        await vpResultSubmission(data.responseUri, data.requestId, submissionPayloadData);
+        await fetchVPResult();
+      } catch (error) {
+        onError(
+          isAppError(error)
+            ? error
+            : {
+                errorCode: "DC_API_SUBMIT_FAILED",
+                errorMessage:
+                  error instanceof Error ? error.message : "Failed to submit DC API presentation",
+              },
+        );
+        resetState();
+        return;
+      }
+      
+    } catch (err) {
+      const name = err instanceof DOMException ? err.name : "";
+      const abortedForTimeout =
+        controller.signal.aborted && controller.signal.reason === "DC_API_TIMEOUT";
+
+      if (abortedForTimeout || name === "TimeoutError") {
+        onError({
+          errorCode: "DC_API_TIMEOUT",
+          errorMessage: "Credential request timed out",
+        });
+        resetState();
+        return;
+      }
+      if (name === "AbortError" || name === "NotAllowedError") {
+        onError({
+          errorCode: "DC_API_CANCELLED",
+          errorMessage: err instanceof Error ? err.message : "Credential request cancelled",
+        });
+        resetState();
+        return;
+      }
+      if (isAppError(err)) {
+        onError(err);
+        resetState();
+        return;
+      }
       onError({
-        errorMessage: "Same device flow can be enabled in desktop mode for only Web Wallets. Provide a valid webWalletBaseUrl",
-        errorCode: "MISSING_WEB_WALLET_BASE_URL"
+        errorCode: "DC_API_ERROR",
+        errorMessage: err instanceof Error ? err.message : "Digital Credentials API failed",
       });
       resetState();
+    } finally {
+      window.clearTimeout(timeoutId);
     }
+  };
+
+  const startVerificationFlow = () => {
+    if (!isSameDeviceFlowEnabled) {
+      processQRCodeGenerationFlow();
+      return;
+    }
+    // Prefer DC API when enabled and supported; otherwise fall back to deep-link
+    // silently (unsupported browser / client_id must not surface DC_API_NOT_SUPPORTED).
+    if (enableDcApi && !webWalletBaseUrl && isDcApiSupported(clientId)) {
+      processDcAPIFlow();
+      return;
+    }
+    processDeepLinkFlow();
+  };
+
+  const handleTriggerClick = () => {
+    startVerificationFlow();
   };
 
   useEffect(() => {
     const handleVisibilityChange = () => {
-      const requestId = sessionStateRef.current.requestId;
+      const requestId = requestIdRef.current;
       if (
-        document.visibilityState === "visible" && isActiveRef.current && requestId) {
+        document.visibilityState === "visible" &&
+        isActiveRef.current &&
+        requestId
+      ) {
         fetchVPStatus(requestId);
       }
     };
@@ -330,7 +428,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
         isActiveRef.current = true;
         fetchVPResult(responseCode);
       } else {
-        const savedRequestId = sessionStateRef.current.requestId;
+        const savedRequestId = requestIdRef.current;
 
         if (savedRequestId) {
           isActiveRef.current = true;
@@ -365,6 +463,11 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     if (!onError) {
       throw new Error("onError callback is required");
     }
+    if (enableDcApi && webWalletBaseUrl) {
+      throw new Error(
+        "enableDcApi and webWalletBaseUrl cannot be used together. Choose either Digital Credentials API or a web wallet redirect."
+      );
+    }
   }, [
     createVPRequest,
     onError,
@@ -373,15 +476,13 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     onVPReceived,
     dcqlQuery,
     triggerElement,
+    enableDcApi,
+    webWalletBaseUrl,
   ]);
 
   useEffect(() => {
     if (!triggerElement) {
-      if (isSameDeviceFlowEnabled) {
-        startVerification();
-      } else {
-        handleGenerateQRCode();
-      }
+      startVerificationFlow();
     }
   }, [triggerElement, isSameDeviceFlowEnabled]);
 

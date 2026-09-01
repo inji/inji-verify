@@ -1,0 +1,201 @@
+package io.inji.verify.key;
+
+import io.inji.verify.key.impl.P12KeyExtractor;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.ResourceLoader;
+import java.io.ByteArrayInputStream;
+import java.io.ByteArrayOutputStream;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.KeyStore;
+import java.security.cert.X509Certificate;
+import java.util.Date;
+import static org.junit.jupiter.api.Assertions.*;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.*;
+import org.bouncycastle.asn1.x500.X500Name;
+import org.bouncycastle.cert.X509v3CertificateBuilder;
+import org.bouncycastle.cert.jcajce.JcaX509CertificateConverter;
+import org.bouncycastle.cert.jcajce.JcaX509v3CertificateBuilder;
+import org.bouncycastle.operator.ContentSigner;
+import org.bouncycastle.operator.jcajce.JcaContentSignerBuilder;
+
+class P12KeyExtractorTest {
+
+    ResourceLoader resourceLoader;
+    P12KeyExtractor extractor;
+
+    @BeforeEach
+    void setup() {
+        resourceLoader = mock(ResourceLoader.class);
+        extractor = new P12KeyExtractor("classpath:dummy.p12", "password", resourceLoader);
+    }
+
+    @Test
+    void extractKeyPair_ShouldReturnKeyPair() throws Exception {
+        KeyPair keyPair = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+
+        X509Certificate cert = io.inji.verify.testsupport.TestCertUtil.generateSelfSignedCert(keyPair);
+
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, "password".toCharArray());
+        ks.setKeyEntry("alias", keyPair.getPrivate(), "password".toCharArray(), new X509Certificate[]{cert});
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ks.store(baos, "password".toCharArray());
+        byte[] keystoreBytes = baos.toByteArray();
+
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream()).thenReturn(new ByteArrayInputStream(keystoreBytes));
+        when(resourceLoader.getResource(anyString())).thenReturn(resource);
+
+        KeyPair result = extractor.extractKeyPair();
+
+        assertNotNull(result);
+        assertTrue(
+                result.getPrivate().getAlgorithm().equals("Ed25519")
+                || result.getPrivate().getAlgorithm().equals("EdDSA")
+        );
+        assertTrue(
+                result.getPublic().getAlgorithm().equals("Ed25519")
+                || result.getPublic().getAlgorithm().equals("EdDSA")
+        );
+
+    }
+
+    @Test
+    void extractKeyPair_ShouldThrow_WhenNoEdDSAKeyEntryFound() throws Exception {
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, "password".toCharArray());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ks.store(baos, "password".toCharArray());
+        byte[] keystoreBytes = baos.toByteArray();
+
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream()).thenReturn(new ByteArrayInputStream(keystoreBytes));
+        when(resourceLoader.getResource(anyString())).thenReturn(resource);
+
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> extractor.extractKeyPair());
+
+        assertTrue(exception.getCause().getMessage().contains("No EdDSA key entry"));
+    }
+
+    @Test
+    void extractKeyPair_ShouldThrow_WhenPrivateKeyMissing() throws Exception {
+        KeyPair keyPair = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        X509Certificate cert = io.inji.verify.testsupport.TestCertUtil.generateSelfSignedCert(keyPair);
+
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, "password".toCharArray());
+
+        ks.setCertificateEntry("alias", cert);
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ks.store(baos, "password".toCharArray());
+
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream())
+                .thenReturn(new ByteArrayInputStream(baos.toByteArray()));
+        when(resourceLoader.getResource(anyString()))
+                .thenReturn(resource);
+
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> extractor.extractKeyPair());
+
+        assertTrue(exception.getCause().getMessage()
+                .contains("No EdDSA key entry"));
+    }
+
+    @Test
+    void extractKeyPair_ShouldThrow_WhenKeyAlgorithmIsNotEdDSA() throws Exception {
+        // Use an RSA key — algorithm will be "RSA", which is neither Ed25519 nor EdDSA.
+        // This exercises the false branch of the algorithm check inside extractKeyPair.
+        KeyPair rsaKeyPair = KeyPairGenerator.getInstance("RSA").generateKeyPair();
+
+        long now = System.currentTimeMillis();
+        X500Name name = new X500Name("CN=TestRSA");
+        X509v3CertificateBuilder certBuilder = new JcaX509v3CertificateBuilder(
+                name,
+                java.math.BigInteger.valueOf(now),
+                new Date(now - 60_000L),
+                new Date(now + 3_600_000L),
+                name,
+                rsaKeyPair.getPublic()
+        );
+        ContentSigner rsaSigner = new JcaContentSignerBuilder("SHA256withRSA").build(rsaKeyPair.getPrivate());
+        X509Certificate rsaCert = new JcaX509CertificateConverter().getCertificate(certBuilder.build(rsaSigner));
+
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, "password".toCharArray());
+        ks.setKeyEntry("rsa-alias", rsaKeyPair.getPrivate(), "password".toCharArray(), new X509Certificate[]{rsaCert});
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ks.store(baos, "password".toCharArray());
+
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream()).thenReturn(new ByteArrayInputStream(baos.toByteArray()));
+        when(resourceLoader.getResource(anyString())).thenReturn(resource);
+
+        RuntimeException exception = assertThrows(RuntimeException.class, () -> extractor.extractKeyPair());
+        assertTrue(exception.getCause().getMessage().contains("No EdDSA key entry"));
+    }
+
+    @Test
+    void extractCertificateChain_ShouldReturnChain() throws Exception {
+        KeyPair keyPair = KeyPairGenerator.getInstance("Ed25519").generateKeyPair();
+        X509Certificate cert = io.inji.verify.testsupport.TestCertUtil.generateSelfSignedCert(keyPair);
+
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, "password".toCharArray());
+        ks.setKeyEntry("alias", keyPair.getPrivate(), "password".toCharArray(), new X509Certificate[]{cert});
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ks.store(baos, "password".toCharArray());
+        byte[] keystoreBytes = baos.toByteArray();
+
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream()).thenReturn(new ByteArrayInputStream(keystoreBytes));
+        when(resourceLoader.getResource(anyString())).thenReturn(resource);
+
+        X509Certificate[] chain = extractor.extractCertificateChain();
+
+        assertNotNull(chain);
+        assertEquals(1, chain.length);
+        assertEquals(cert, chain[0]);
+    }
+
+    @Test
+    void extractCertificateChain_ShouldThrow_WhenNoEdDSAKeyEntryFound() throws Exception {
+        KeyStore ks = KeyStore.getInstance("PKCS12");
+        ks.load(null, "password".toCharArray());
+
+        ByteArrayOutputStream baos = new ByteArrayOutputStream();
+        ks.store(baos, "password".toCharArray());
+        byte[] keystoreBytes = baos.toByteArray();
+
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream()).thenReturn(new ByteArrayInputStream(keystoreBytes));
+        when(resourceLoader.getResource(anyString())).thenReturn(resource);
+
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> extractor.extractCertificateChain());
+
+        assertTrue(exception.getCause().getMessage().contains("No EdDSA key entry"));
+    }
+
+    @Test
+    void extractKeyPair_ShouldWrapException_WhenInputStreamFails() throws Exception {
+        Resource resource = mock(Resource.class);
+        when(resource.getInputStream()).thenThrow(new RuntimeException("Stream failure"));
+        when(resourceLoader.getResource(anyString())).thenReturn(resource);
+
+        RuntimeException exception =
+                assertThrows(RuntimeException.class, () -> extractor.extractKeyPair());
+
+        assertEquals("Stream failure", exception.getCause().getMessage());
+    }
+}

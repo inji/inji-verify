@@ -128,8 +128,8 @@
   },
   "AlertMessages": {
     "qrUploadSuccess": "QR code uploaded successfully!",
-    "qrScanSuccess":"QR code scanned successfully!",
-    "sessionExpired":"Session expired. Please re-initiate the request.",
+    "qrScanSuccess": "QR code scanned successfully!",
+    "sessionExpired": "Session expired. Please re-initiate the request.",
     "qrNotDetected": "No QR found",
     "qrDecodeFailed": "QR size too small/low quality, please retry with a clear QR",
     "qrNotSupported": "QR code format is not supported.",
@@ -142,7 +142,8 @@
     "scanSessionExpired": "The scan session has expired due to inactivity. Please initiate a new scan.",
     "partialCredentialShared": "Verification completed with partial credentials. Please note that some requested credentials are missing.",
     "validationFailure": "We couldn’t validate the verification response. Please ensure the response is correct and try again.",
-    "incorrectCredential":"The credentials shared do not match the requested ones. Please provide the correct credentials and try again."
+    "incorrectCredential": "The credentials shared do not match the requested ones. Please provide the correct credentials and try again.",
+    "requestFailedGeneric": "We’re unable to complete your request. Please contact support for assistance."
   },
   "OvpErrors": {
     "invalidScope": "Invalid Scope",
@@ -159,7 +160,9 @@
     "invalidVpToken": "The credentials don't meet the requirements. Please check and try again.",
     "unsupportedFormat": "VP Formats Not Supported",
     "invalidResources": "The requested resource is invalid.",
-    "invalidParams": "Invalid Parameters!!"
+    "invalidParams": "Invalid Parameters!!",
+    "accessDenied": "The wallet declined the request or does not have the requested credentials. Please try again.",
+    "invalidTransactionData": "The transaction data in the verification request is invalid or not supported by the wallet."
   },
   "CopyRight": {
     "content": "2024 © MOSIP - All rights reserved."
@@ -180,7 +183,7 @@
       "scan": "Scan",
       "back": "Back",
       "verifyAnotherQrCode": "Verify Another QR code",
-      "openWallet":"Open Wallet",
+      "openWallet": "Open Wallet",
       "proceed": "Proceed",
       "cancel": "Cancel"
     }

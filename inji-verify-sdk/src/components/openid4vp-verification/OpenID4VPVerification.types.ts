@@ -120,6 +120,8 @@ export interface VPRequestBody {
    * Must be omitted/false for cross-device and same-device mobile-wallet (deeplink) flows.
    */
   responseCodeValidationRequired?: boolean;
+  /** OpenID4VP response_mode; use `dc_api` for Digital Credentials API. */
+  responseMode?: "direct_post" | "dc_api";
 }
 
 type ExclusiveCallbacks =
@@ -177,6 +179,25 @@ export type OpenID4VPVerificationProps = ExclusiveCallbacks & {
   isSameDeviceFlowEnabled?: boolean;
 
   /**
+   * Same-device only: use the W3C Digital Credentials API (`response_mode=dc_api`).
+   * Defaults to false. Mutually exclusive with `webWalletBaseUrl` — passing both
+   * throws on mount/update so integrators fail fast.
+   * At runtime the SDK checks `isDcApiSupported(clientId)` (signed-request
+   * client_id, Chrome 144.0.7559.59+ security version, and protocol support).
+   * If unsupported, it falls back to the deep-link / native-wallet path without
+   * surfacing an error. When only `webWalletBaseUrl` is set, same-device redirects
+   * to that wallet. Cross-device always uses the Verify SDK OpenID4VP QR (`direct_post`).
+   */
+  enableDcApi?: boolean;
+
+  /**
+   * Application timeout (ms) for DC API JWT fetch and `navigator.credentials.get`.
+   * Only finite positive values are used; they are floored and capped at 2147483647.
+   * Invalid values fall back to the default of 5 minutes (300000).
+   */
+  dcApiTimeoutMs?: number;
+
+  /**
    Styling options for the QR code.
    */
   qrCodeStyles?: {
@@ -200,7 +221,9 @@ export type OpenID4VPVerificationProps = ExclusiveCallbacks & {
   onError: (error: AppError) => void;
 
     /**
-     The base URL of the wallet.
+     * Same-device web wallet authorize URL (desktop and mobile). Mutually exclusive
+     * with `enableDcApi`. When omitted on mobile, the SDK falls back to a native
+     * wallet deep link; on desktop a web wallet URL or DC API is required.
      */
     webWalletBaseUrl?: string;
 
@@ -219,15 +242,16 @@ export type OpenID4VPVerificationProps = ExclusiveCallbacks & {
     summariseResults?: boolean;
 };
 
-export interface SessionState {
-  requestId: string;
-}
-
 export type AppError = {
   errorMessage: string;
   errorCode?: string;
   transactionId?: string | null;
 };
+
+export type DcApiSubmissionData =
+  | { vp_token: unknown }
+  | { error: string; error_description?: string };
+
 export interface VPVerificationRequest {
     skipStatusChecks?: boolean;
     statusCheckFilters?: string[];

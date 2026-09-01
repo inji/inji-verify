@@ -27,7 +27,6 @@ services:
       - INJI_VERIFY_REDIRECT_URI=https://VERIFY_SERVICE_PROXY_FOR_LOCALHOST
       - INJI_VERIFY_RESPONSE_CODE_EXPIRY_TIME_IN_MINS=5
       - INJI_VERIFY_CLAIMS_WITH_META_DATA=_sd,_sd_alg,iss,cnf,sub,aud,exp,nbf,iat,cti
-      - VERIFY_CONTEXT_PATH=/v1/verify
     depends_on:
       - postgres
 
@@ -50,7 +49,9 @@ services:
       - VP_SUBMISSION_SUPPORTED=false
       - CLIENT_ID=inji-verify-ui
       - CLIENT_ID_DID=decentralized_identifier:did:web:VERIFY_SERVICE_PROXY_FOR_LOCALHOST:v1:verify
+      - CLIENT_ID_X509=${CLIENT_ID_X509:-x509_san_dns:test.example.com}
       - DISPLAY_TIMEOUT=120000
+      - ENABLE_DC_API=true
     volumes:
       - ./config/config.json:/usr/share/nginx/html/assets/config.json
     depends_on:
