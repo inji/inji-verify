@@ -2113,20 +2113,6 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 
-	@When("User click on Health Insurance check box")
-	public void userClickOnHealthInsuranceCheckBox() {
-	    try {
-	        vpverification.clickOnHealthInsurance();
-	        test.log(Status.PASS, "Successfully clicked on Health Insurance check box.");
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while clicking Health Insurance check box", e);
-	        throw e;
-	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error while clicking Health Insurance check box", e);
-	        throw e;
-	    }
-	}
-
 	@When("User click on Generate QR Code button")
 	public void userClickOnGenerateQrCodeButton() {
 	    try {
@@ -2137,20 +2123,6 @@ public class StepDef extends BaseSteps {
 	        throw e;
 	    } catch (Exception e) {
 	        logFailure(test, driver, "Unexpected error while clicking Generate QR Code button", e);
-	        throw e;
-	    }
-	}
-
-	@When("User click on Life Insurance VC check box")
-	public void userClickOnLifeInsuranceCheckBox() {
-	    try {
-	        vpverification.clickOnLifeInsurance();
-	        test.log(Status.PASS, "Successfully clicked on Life Insurance VC check box.");
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while clicking Life Insurance VC check box", e);
-	        throw e;
-	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error while clicking Life Insurance VC check box", e);
 	        throw e;
 	    }
 	}
@@ -2812,45 +2784,64 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	}
 
 
-	@Then("Uncheck MOSIP ID")
-	public void uncheckMosipId() {
+	@Then("Uncheck credential {string}")
+	public void uncheckCredential(String credentialKeyOrName) {
 	    try {
-	        vpverification.clickOnMosipIdChecklist();
-	        test.log(Status.PASS, "Successfully unchecked the MOSIP ID option.");
+	        String credentialName = api.VerifiableClaimsConfigManager.resolveCredentialName(credentialKeyOrName);
+	        vpverification.clickOnCredentialChecklist(credentialName);
+	        test.log(Status.PASS, "Successfully unchecked credential: " + credentialName);
 	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while unchecking the MOSIP ID option", e);
+	        logFailure(test, driver, "Element not found while unchecking credential: " + credentialKeyOrName, e);
 	        throw e;
 	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error occurred while unchecking the MOSIP ID option", e);
+	        logFailure(test, driver, "Unexpected error while unchecking credential: " + credentialKeyOrName, e);
 	        throw e;
 	    }
 	}
 
-
-	@Then("Select Health Insurance")
-	public void selectHealthInsurance() {
+	@Then("Select credential {string}")
+	public void selectCredential(String credentialKeyOrName) {
 	    try {
-	        vpverification.clickOnHealthInsuranceChecklist();
-	        test.log(Status.PASS, "Successfully selected the Health Insurance option.");
+	        String credentialName = api.VerifiableClaimsConfigManager.resolveCredentialName(credentialKeyOrName);
+	        vpverification.clickOnCredentialChecklist(credentialName);
+	        test.log(Status.PASS, "Successfully selected credential: " + credentialName);
 	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while selecting the Health Insurance option", e);
+	        logFailure(test, driver, "Element not found while selecting credential: " + credentialKeyOrName, e);
 	        throw e;
 	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error occurred while selecting the Health Insurance option", e);
+	        logFailure(test, driver, "Unexpected error while selecting credential: " + credentialKeyOrName, e);
 	        throw e;
 	    }
 	}
 
-    @Then("Select SD JWT VC")
-	public void selectSdJwtVc() {
+	@Then("Credential {string} is selected")
+	public void credentialIsSelected(String credentialKeyOrName) {
 	    try {
-	        vpverification.clickOnSDJwtVCChecklist();
-	        test.log(Status.PASS, "Successfully selected the SD JWT VC option.");
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while selecting the SD JWT VC option", e);
+	        String credentialName = api.VerifiableClaimsConfigManager.resolveCredentialName(credentialKeyOrName);
+	        Assert.assertTrue(vpverification.isCredentialSelected(credentialName),
+	                "Credential '" + credentialName + "' should be selected");
+	        test.log(Status.PASS, "Verified credential is selected: " + credentialName);
+	    } catch (AssertionError e) {
+	        logFailure(test, driver, "Credential was not selected: " + credentialKeyOrName, e);
 	        throw e;
 	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error occurred while selecting the SD JWT VC option", e);
+	        logFailure(test, driver, "Unexpected error verifying credential selected: " + credentialKeyOrName, e);
+	        throw e;
+	    }
+	}
+
+	@Then("Credential {string} is not selected")
+	public void credentialIsNotSelected(String credentialKeyOrName) {
+	    try {
+	        String credentialName = api.VerifiableClaimsConfigManager.resolveCredentialName(credentialKeyOrName);
+	        Assert.assertFalse(vpverification.isCredentialSelected(credentialName),
+	                "Credential '" + credentialName + "' should not be selected");
+	        test.log(Status.PASS, "Verified credential is not selected: " + credentialName);
+	    } catch (AssertionError e) {
+	        logFailure(test, driver, "Credential was unexpectedly selected: " + credentialKeyOrName, e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error verifying credential not selected: " + credentialKeyOrName, e);
 	        throw e;
 	    }
 	}
@@ -2883,17 +2874,35 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	    }
 	}
 
-
-	@Then("Select Land Registry")
-	public void uncheckLandRegistry() {
+	@Then("Essential credential from config is auto selected")
+	public void essentialCredentialFromConfigIsAutoSelected() {
 	    try {
-	        vpverification.clickOnLandRegistryChecklist();
-	        test.log(Status.PASS, "Successfully selected the Land Registry option.");
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while selecting the Land Registry option", e);
+	        String essentialName = api.VerifiableClaimsConfigManager.getEssentialCredentialName();
+	        Assert.assertTrue(vpverification.isCredentialSelected(essentialName),
+	                "Essential credential '" + essentialName + "' from config.json should be auto-selected");
+	        test.log(Status.PASS, "Essential credential from config.json is auto-selected: " + essentialName);
+	    } catch (AssertionError e) {
+	        logFailure(test, driver, "Essential credential from config.json was not auto-selected", e);
 	        throw e;
 	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error occurred while selecting the Land Registry option", e);
+	        logFailure(test, driver, "Unexpected error while verifying essential credential auto-selection", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Non essential credentials from config are not auto selected")
+	public void nonEssentialCredentialsFromConfigAreNotAutoSelected() {
+	    try {
+	        for (String credentialName : api.VerifiableClaimsConfigManager.getNonEssentialCredentialNames()) {
+	            Assert.assertFalse(vpverification.isCredentialSelected(credentialName),
+	                    "Non-essential credential '" + credentialName + "' should not be auto-selected");
+	        }
+	        test.log(Status.PASS, "Non-essential credentials from config.json are not auto-selected");
+	    } catch (AssertionError e) {
+	        logFailure(test, driver, "Unexpected auto-selection of non-essential credentials", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while verifying non-essential credential selection", e);
 	        throw e;
 	    }
 	}

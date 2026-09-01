@@ -1,0 +1,195 @@
+{
+  "verifiableClaims": [
+    {
+      "logo": "/assets/cert.png",
+      "name": "MOSIP ID",
+      "essential": true,
+      "clientIdPrefix": "decentralized_identifier",
+      "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+      "dcqlQuery": {
+        "credentials": [
+          {
+            "id": "mosip_verifiable_credential_id",
+            "format": "ldp_vc",
+            "meta": {
+              "type_values": [
+                [
+                  "https://inji.github.io/inji-config/contexts/mosip-identity-context.json#MOSIPVerifiableCredential"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "logo": "/assets/cert.png",
+      "name": "Life Insurance",
+      "clientIdPrefix": "decentralized_identifier",
+      "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+      "dcqlQuery": {
+        "credentials": [
+          {
+            "id": "life_insurance_credential_id",
+            "format": "ldp_vc",
+            "meta": {
+              "type_values": [
+                [
+                  "https://inji.github.io/inji-config/contexts/insurance-context.json#InsuranceCredential"
+                ]
+              ]
+            },
+            "multiple": true
+          }
+        ]
+      }
+    },
+    {
+      "logo": "/assets/cert.png",
+      "name": "Health Insurance",
+      "clientIdPrefix": "pre_registered",
+      "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+      "dcqlQuery": {
+        "credentials": [
+          {
+            "id": "health_insurance_credential_id",
+            "format": "ldp_vc",
+            "meta": {
+              "type_values": [
+                [
+                  "https://inji.github.io/inji-config/contexts/insurance-context.json#InsuranceCredential"
+                ]
+              ]
+            },
+            "multiple": true
+          }
+        ]
+      }
+    },
+    {
+      "logo": "/assets/cert.png",
+      "name": "Mock Identity (SD JWT)",
+      "clientIdPrefix": "decentralized_identifier",
+      "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+      "dcqlQuery": {
+        "credentials": [
+          {
+            "id": "mock_identity_sd_jwt_credential_id",
+            "format": "vc+sd-jwt",
+            "meta": {
+              "vct_values": [
+                "MockVerifiableCredential_SD_JWT"
+              ]
+            }
+          }
+        ]
+      }
+    },
+    {
+      "logo": "/assets/cert.png",
+      "name": "Land Registry",
+      "clientIdPrefix": "decentralized_identifier",
+      "purpose": "Relying party is requesting your digital ID for the purpose of Self-Authentication",
+      "dcqlQuery": {
+        "credentials": [
+          {
+            "id": "land_statement_credential_id",
+            "format": "ldp_vc",
+            "meta": {
+              "type_values": [
+                [
+                  "https://inji.github.io/inji-config/contexts/landregistry-registration-receipt-context.json#RegistrationReceiptCredential"
+                ]
+              ]
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "VCRenderOrders": {
+    "InsuranceCredentialRenderOrder": [
+      "fullName",
+      "policyNumber",
+      "policyName",
+      "policyIssuedOn",
+      "policyExpiresOn",
+      "benefits",
+      "mobile",
+      "email",
+      "gender",
+      "dob"
+    ],
+    "farmerLandCredentialRenderOrder": [
+      "id",
+      "farmerId",
+      "dvcType",
+      {
+        "farmerLandDetails": [
+          "farmId",
+          "district",
+          "surveyNumber"
+        ]
+      }
+    ],
+    "farmerCredentialRenderOrder": [
+      "face",
+      "authority",
+      "idType",
+      "fullName",
+      "farmerId",
+      "farmerID",
+      "gender",
+      "phoneNumber",
+      "mobileNumber",
+      "dateOfBirth",
+      "primaryCommodity",
+      "landOwnershipType",
+      "ownershipType",
+      "crops",
+      "address",
+      "villageOrTown",
+      "village",
+      "district",
+      "state",
+      "postalCode",
+      "landArea",
+      "totalLandArea",
+      "primaryCropType",
+      "secondaryCropType",
+      "season"
+    ],
+    "MosipVerifiableCredentialRenderOrder": [
+      "face",
+      "fullName",
+      "phone",
+      "dateOfBirth",
+      "gender",
+      "email",
+      "city",
+      "UIN",
+      "VID",
+      "addressLine1",
+      "province",
+      "region",
+      "postalCode"
+    ],
+    "IncomeTaxAccountCredentialRenderOrder": [
+      "fullName",
+      "tan",
+      "gender",
+      "dateOfBirth",
+      "issuedOn",
+      "expiresOn"
+    ]
+  },
+  "WebWallets": [
+    {
+      "_note": "EXTERNAL DEPENDENCY: walletBaseUrl points to a shared dev/integration host. Replace with your own URL before use. Accepts absolute URLs (https://wallet.example.org) or same-env relative paths (/wallet). Empty string disables the entry. See docker-compose/README.md \u00a7 WebWallets Configuration.",
+      "id": "inji-wallet",
+      "name": "Inji Wallet",
+      "iconUrl": "/assets/inji-web-wallet-icon.svg",
+      "walletBaseUrl": "https://injiweb.dev.mosip.net"
+    }
+  ]
+}

@@ -298,12 +298,16 @@ public class StepDefInjiWebWallet extends BaseSteps {   // <-- extends BaseSteps
         }
     }
 
-    @Then("Health Insurance is selected and MOSIP ID is unselected")
-    public void health_insurance_is_selected_and_mosip_id_is_unselected() {
+    @Then("Credential {string} is selected and credential {string} is not selected")
+    public void credential_is_selected_and_other_is_not(String selectedKeyOrName, String unselectedKeyOrName) {
         try {
-            assertTrue(vpVerification.isHealthInsuranceSelected(), "Health Insurance should be selected.");
-            assertTrue(!vpVerification.isMosipIdSelected(), "MOSIP ID should be unselected.");
-            test.log(Status.PASS, "Verified Health Insurance is selected and MOSIP ID is unselected.");
+            String selectedName = api.VerifiableClaimsConfigManager.resolveCredentialName(selectedKeyOrName);
+            String unselectedName = api.VerifiableClaimsConfigManager.resolveCredentialName(unselectedKeyOrName);
+            assertTrue(vpVerification.isCredentialSelected(selectedName),
+                    "Credential '" + selectedName + "' should be selected.");
+            assertTrue(!vpVerification.isCredentialSelected(unselectedName),
+                    "Credential '" + unselectedName + "' should be unselected.");
+            test.log(Status.PASS, "Verified '" + selectedName + "' is selected and '" + unselectedName + "' is unselected.");
         } catch (Exception e) {
             logFailure(test, driver, "Failed to verify VP credential selection state", e);
             throw e;
