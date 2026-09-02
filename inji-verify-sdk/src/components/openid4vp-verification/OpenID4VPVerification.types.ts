@@ -114,10 +114,9 @@ export interface VPRequestBody {
   transactionId?: string;
   dcqlQuery: DcqlQuery;
   /**
-   * When true, the verifier backend will generate a short-lived single-use `response_code`
-   * and return it via redirect for same-device web-wallet flows.
-   *
-   * Must be omitted/false for cross-device and same-device mobile-wallet (deeplink) flows.
+   * When true, the verifier backend generates a short-lived `response_code` and returns
+   * `redirect_uri` after VP submission. Same-device flows (mobile deep-link and web wallet)
+   * set this so the wallet can send the user back. Must be omitted/false for cross-device QR.
    */
   responseCodeValidationRequired?: boolean;
   /** OpenID4VP response_mode; use `dc_api` for Digital Credentials API. */

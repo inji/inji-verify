@@ -194,7 +194,8 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     isActiveRef.current = true;
     setLoading(true);
     try {
-      const responseCodeValidationRequired = responseMode === "dc_api" ? false : webWalletBaseUrl != null;
+      const responseCodeValidationRequired =
+        responseMode !== "dc_api" && !isCrossDeviceFlow;
 
       const data = await vpSessionRequest(
         verifyServiceUrl,

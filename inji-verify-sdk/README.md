@@ -415,11 +415,13 @@ sequenceDiagram
     participant VerifierBackend as Verifier Backend
     participant MobileWallet as Mobile Wallet App
 
-    UserBrowser->>VerifierBackend: POST /v2/vp-session-request
+    UserBrowser->>VerifierBackend: POST /v2/vp-session-request (responseCodeValidationRequired=true)
     VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (transaction_id) + authorization request
     UserBrowser->>MobileWallet: Open via deep link
     MobileWallet->>VerifierBackend: POST /v2/vp-submission/direct-post (vp_token)
-    Note right of MobileWallet: User switches back to browser
+    VerifierBackend-->>MobileWallet: redirect_uri
+    MobileWallet-->>UserBrowser: Redirect to redirect_uri
+    Note right of MobileWallet: If a different default browser opens, original tab resumes via visibilitychange
     loop Long Polling
         UserBrowser->>VerifierBackend: GET /vp-request/{requestId}/status
         VerifierBackend-->>UserBrowser: ACTIVE
@@ -428,6 +430,12 @@ sequenceDiagram
     UserBrowser->>VerifierBackend: POST /vp-session-results (Cookie auto-sent)
     VerifierBackend-->>UserBrowser: Verification result
 ```
+
+> **NOTE**
+>
+> After VP submission the backend returns `redirect_uri` because the SDK sets `responseCodeValidationRequired=true` for same-device flows (existing implementation). Cross-device QR omits the flag and does not receive `redirect_uri`.
+>
+> If the wallet opens a different default browser than the one that started the flow, the original tab still resumes via a `visibilitychange` listener and the session cookie (without requiring `response_code`).
 
 #### 3. Same Device Flow with Web Wallet 
 Used when verification happens in a web-based wallet on the same device.
@@ -471,16 +479,17 @@ sequenceDiagram
     VerifierBackend-->>UserBrowser: Set HttpOnly Cookie (transaction_id) + authorization request
     UserBrowser->>WebWallet: Open Web Wallet
     WebWallet->>VerifierBackend: POST /v2/vp-submission/direct-post (vp_token)
-    VerifierBackend-->>WebWallet: response_code
-    WebWallet-->>UserBrowser: Redirect with response_code
-    UserBrowser->>VerifierBackend: POST /vp-session-results?response_code=... (Cookie auto-sent)
+    VerifierBackend-->>WebWallet: redirect_uri#response_code=...
+    WebWallet-->>UserBrowser: Redirect to redirect_uri#response_code=...
+    UserBrowser->>VerifierBackend: POST /vp-session-results (Cookie auto-sent, JSON body: {"responseCode":"..."})
     VerifierBackend-->>UserBrowser: Verification result
 ```
 
 > **NOTE**
 >
-> When webWalletBaseUrl is configured, we use web-wallets to support verification flow.
->In the absence of webWalletBaseUrl, the SDK falls back to a deep link mechanism to launch the native wallet application if any supported mobile wallet is installed.
+> When `webWalletBaseUrl` is configured, the SDK uses a web wallet. Without it, the SDK falls back to a deep link to launch a native mobile wallet if one is installed.
+>
+> After VP submission the backend returns `redirect_uri` when the SDK set `responseCodeValidationRequired=true` (same-device mobile and web wallet). Cross-device QR omits the flag and does not receive `redirect_uri`. The URI includes `#response_code=` so a web wallet can resume after a full-page redirect; same-device mobile can also resume from the original tab via the session cookie.
 
 
 #### 4. Server-to-server callback (onVPReceived)
@@ -697,6 +706,7 @@ dcqlQuery={{
 | `onVPReceived`            | function | -              | Get transaction ID only                   |
 | `onQrCodeExpired`         | function | -              | Handle QR code expiration                 |
 | `isSameDeviceFlowEnabled` | boolean  | true           | Enable same-device flow (optional)        |
+| `webWalletBaseUrl`        | string   | -              | Web wallet authorize URL. Same-device (mobile and web) sets `responseCodeValidationRequired` so VP submission returns `redirect_uri`. |
 | `qrCodeStyles`            | object   | -              | Customize QR code appearance              |
 | `vpVerificationRequest`   | object   | -              | contains request body for VP Verification |
 

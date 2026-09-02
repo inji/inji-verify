@@ -175,7 +175,9 @@ Used when the verifier UI and wallet are on the **same mobile device**. The SDK 
 
 ![Same-device mobile wallet flow](images/flow-same-device-mobile.svg)
 
-**Key behaviour:** The SDK registers a `visibilitychange` listener before redirecting. When the user returns to the browser tab after completing consent in the wallet app, polling resumes using the saved `requestId`.
+**Key behaviour:**
+- The SDK sets `responseCodeValidationRequired=true`. After VP submission the backend returns `redirect_uri` with `#response_code=` (existing same-device path) so the mobile wallet can send the user back. Cross-device QR omits the flag and receives `200 OK` with `{}`.
+- The SDK registers a `visibilitychange` listener before redirecting. When the user returns to the original browser tab, polling resumes using the saved `requestId` and the session cookie (without requiring `response_code`).
 
 ---
 

@@ -161,7 +161,7 @@ Create a VP request and establish a browser session. Used by the Inji Verify SDK
 
 `dc_api` requires a signed-request `clientId` (`decentralized_identifier:` or `x509_san_dns:`), `responseCodeValidationRequired=false`, and an `Origin`/`Referer` header so the server can store `expected_origins`. The by-reference response includes both `requestUri` and `responseUri`.
 
-**`responseCodeValidationRequired`** — set to `true` for same-device web wallet flows. When enabled, the backend generates a single-use `responseCode` on VP submission by Wallet and appends it to the `redirectUri` as `#response_code=<uuid>`. The SDK reads it from the URL hash and passes it to `/vp-session-results`. Leave `false` (default) for QR scan, deep-link, and DC API flows. Must be `false` with `responseMode=dc_api`.
+**`responseCodeValidationRequired`** — set to `true` for same-device flows (mobile deep-link and web wallet). When enabled, the backend generates a single-use `responseCode` on VP submission and returns `redirect_uri` as `#response_code=<uuid>`. The wallet uses this to send the user back; the SDK can also read it from the URL hash for `/vp-session-results`. Leave `false` (default) for cross-device QR and DC API flows. Must be `false` with `responseMode=dc_api`.
 
 **Response** — `201 Created`
 ```json
@@ -287,18 +287,20 @@ Wallet submits the Verifiable Presentation. Accepts `application/x-www-form-urle
 | `error` | One of | Wallet error code (mutually exclusive with `vp_token`) |
 | `error_description` | No | Human-readable error detail |
 
-**Response — cross-device / mobile wallet** (`responseCodeValidationRequired=false`)
-```
+**Response — cross-device** (`responseCodeValidationRequired=false`)
+
+```text
 200 OK
 {}
 ```
 
-**Response — web wallet** (`responseCodeValidationRequired=true`)
+**Response — same-device** (`responseCodeValidationRequired=true`, mobile wallet and web wallet)
+
 ```json
 { "redirect_uri": "https://verifier.example.com/#response_code=abc123" }
 ```
 
-The `response_code` is short-lived, single-use, and cryptographically secure.
+The `response_code` is short-lived, single-use, and cryptographically secure. If `inji.verify.redirect-uri` is not configured, same-device submission returns `500` (`REDIRECT_URI_NOT_FOUND`). Same-device mobile can still fetch results from the original tab via the session cookie without `response_code` if the wallet opened a different default browser.
 
 ---
 
@@ -371,7 +373,7 @@ Cookie: transaction_id=<base64>
 }
 ```
 
-`responseCode` required only for web-wallet flows (`responseCodeValidationRequired=true`).
+`responseCode` is required when resuming from `redirect_uri` (web wallet). Same-device mobile can omit it and fetch results via the session cookie if the original tab is still open.
 
 **Response**
 ```json

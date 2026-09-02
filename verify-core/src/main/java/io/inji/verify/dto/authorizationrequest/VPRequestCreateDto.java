@@ -26,7 +26,7 @@ public class VPRequestCreateDto {
     @NotNull(message = "DCQL_QUERY_REQUIRED")
     @Schema(description = "DCQL query defining the criteria for credential matching in the VP request.")
     private DCQLQueryDto dcqlQuery;
-    @Schema(description = "Indicates whether response code validation is required.")
+    @Schema(description = "Indicates whether response code validation is required. Same-device flows set this so the submission response includes redirect_uri. Leave false for cross-device QR.")
     boolean responseCodeValidationRequired;
     @Schema(description = "OpenID4VP response_mode. Omit or use direct_post for wallet HTTP submission; use dc_api for Digital Credentials API.")
     String responseMode;

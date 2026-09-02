@@ -1284,7 +1284,15 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
 		if (authRequest != null && authRequest.getAuthorizationDetails() != null) {
 			responseCodeValidationRequired = authRequest.getAuthorizationDetails().isResponseCodeValidationRequired();
 		}
-        if (responseCodeValidationRequired) validateResponseCode(responseCode, submission, isResponseCodeMandatory);
+        if (responseCodeValidationRequired) {
+            // Same-device mobile: original tab may resume via cookie without response_code
+            // (wallet may have opened a different default browser).
+            if (isResponseCodeMandatory && !StringUtils.hasText(responseCode)) {
+                log.debug("Skipping response_code validation for cookie-authenticated session result");
+            } else {
+                validateResponseCode(responseCode, submission, isResponseCodeMandatory);
+            }
+        }
 
         if (submission.getError() != null && !submission.getError().isEmpty())
             throw new VPSubmissionWalletError(submission.getError(), submission.getErrorDescription());

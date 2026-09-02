@@ -1174,6 +1174,54 @@ public class VerifiablePresentationSubmissionServiceImplTest {
         }
 
         @Test
+        public void testFetchVpSubmissionIfValid_Success_WithoutResponseCode_SameDeviceMobileFallback() throws Exception {
+            List<String> requestIds = List.of("req123");
+            String requestId = "req123";
+            Timestamp expiryAt = Timestamp.from(Instant.now().plus(5, ChronoUnit.MINUTES));
+
+            VPSubmission vpSubmission = vpSubmission(
+                    requestId,
+                    "vpToken",
+                    null,
+                    null,
+                    "code123",
+                    expiryAt,
+                    false
+            );
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                    "clientId",
+                    DcqlTestFixtures.minimalDcqlDto(),
+                    null,
+                    "nonce",
+                    "responseUri",
+                    false,
+                    true,
+                    Constants.RESPONSE_MODE_DIRECT_POST,
+                    null
+            );
+            AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
+                    requestId,
+                    "transactionId",
+                    authDetails,
+                    System.currentTimeMillis() + 100000
+            );
+
+            when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(List.of(vpSubmission));
+
+            Method method = VerifiablePresentationSubmissionServiceImpl.class
+                    .getDeclaredMethod("fetchVpSubmissionIfValid", List.class,
+                            String.class, AuthorizationRequestCreateResponse.class, boolean.class);
+            method.setAccessible(true);
+            VPSubmission result =
+                    (VPSubmission) method.invoke(verifiablePresentationSubmissionService, requestIds, null, authResponse, true);
+
+            assertNotNull(result);
+            assertEquals(requestId, result.getRequestId());
+            verify(vpSubmissionRepository, never()).markResponseCodeAsUsed(any());
+        }
+
+        @Test
         public void testFetchVpSubmissionIfValid_ThrowsVPSubmissionNotFoundException_WhenNoSubmissionFound() throws Exception {
             List<String> requestIds = List.of("req123");
             when(vpSubmissionRepository.findAllById(requestIds)).thenReturn(Collections.emptyList());
@@ -3088,6 +3136,51 @@ public class VerifiablePresentationSubmissionServiceImplTest {
 
             assertNotNull(response);
             assertTrue(response.isEmpty());
+            verify(verifiablePresentationRequestService).invokeVpRequestStatusListener(STATE);
+        }
+
+        @Test
+        void submitVerifiablePresentation_omitsRedirectUri_forCrossDeviceEvenWhenConfigured() {
+            ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "redirectUri", "https://example.com/cb");
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                    CLIENT_ID, null, null, NONCE, "https://resp.example/post", false, false,
+                    Constants.RESPONSE_MODE_DIRECT_POST, null);
+            AuthorizationRequestCreateResponse authResponse =
+                    new AuthorizationRequestCreateResponse(STATE, "tx", authDetails, Instant.now().toEpochMilli() + 10000);
+            when(authorizationRequestCreateResponseRepository.findById(STATE)).thenReturn(Optional.of(authResponse));
+            when(verifiablePresentationRequestService.getCurrentRequestStatus(STATE))
+                    .thenReturn(new io.inji.verify.dto.authorizationrequest.VPRequestStatusDto(io.inji.verify.enums.VPRequestStatus.ACTIVE));
+
+            Map<String, Object> response = verifiablePresentationSubmissionService.submitVerifiablePresentation(
+                    null, STATE, "access_denied", "user cancelled", Optional.empty());
+
+            assertTrue(response.isEmpty());
+            verify(verifiablePresentationRequestService).invokeVpRequestStatusListener(STATE);
+        }
+
+        @Test
+        void submitVerifiablePresentation_returnsRedirectUri_withResponseCodeWhenValidationRequired() {
+            ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "redirectUri", "https://example.com/cb");
+            ReflectionTestUtils.setField(verifiablePresentationSubmissionService, "responseCodeExpiryTimeInMins", 5);
+
+            AuthorizationRequestResponseDto authDetails = new AuthorizationRequestResponseDto(
+                    CLIENT_ID, null, null, NONCE, "https://resp.example/post", false, true,
+                    Constants.RESPONSE_MODE_DIRECT_POST, null);
+            AuthorizationRequestCreateResponse authResponse =
+                    new AuthorizationRequestCreateResponse(STATE, "tx", authDetails, Instant.now().toEpochMilli() + 10000);
+            when(authorizationRequestCreateResponseRepository.findById(STATE)).thenReturn(Optional.of(authResponse));
+            when(verifiablePresentationRequestService.getCurrentRequestStatus(STATE))
+                    .thenReturn(new io.inji.verify.dto.authorizationrequest.VPRequestStatusDto(io.inji.verify.enums.VPRequestStatus.ACTIVE));
+
+            Map<String, Object> response = verifiablePresentationSubmissionService.submitVerifiablePresentation(
+                    null, STATE, "access_denied", "user cancelled", Optional.empty());
+
+            assertNotNull(response);
+            assertTrue(response.containsKey("redirect_uri"));
+            String redirectUri = (String) response.get("redirect_uri");
+            assertTrue(redirectUri.startsWith("https://example.com/cb"));
+            assertTrue(redirectUri.contains("response_code="));
             verify(verifiablePresentationRequestService).invokeVpRequestStatusListener(STATE);
         }
 

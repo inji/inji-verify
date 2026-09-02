@@ -94,7 +94,7 @@ paths:
         |---|---|---|
         | Cross Device Flow | `false` | `/v2/vp-submission/direct-post` returns HTTP 200 only |
         | Same Device – Web Wallet | `true` | `/v2/vp-submission/direct-post` returns `redirect_uri` with `response_code` |
-        | Same Device – Mobile Wallet | `false` | `/v2/vp-submission/direct-post` returns HTTP 200 only |
+        | Same Device – Mobile Wallet | `true` | `/v2/vp-submission/direct-post` returns `redirect_uri` with `response_code`. Original tab can still resume via session cookie if `response_code` is not presented. |
         | Digital Credentials API (`responseMode=dc_api`) | must be `false` | Rejected with `invalid_request` when enabled |
 
         ---
@@ -1056,7 +1056,7 @@ paths:
 
         The session is identified using a **`transaction_id` cookie** (required, base64-encoded). If the cookie is missing or invalid, returns **401 Unauthorized** with `VP_SESSION_INVALID`.
 
-        If the corresponding Authorization Request has `responseCodeValidationRequired=true`, a **`response_code`** must be provided and must be valid, unexpired, and unused.
+        If the corresponding Authorization Request has `responseCodeValidationRequired=true`, `/v2/vp-submission/direct-post` returns `redirect_uri` with `response_code`. For `/vp-session-results`, `response_code` is required when resuming from that redirect (web wallet). Same-device mobile can omit it and still fetch results via the session cookie (original-tab fallback). When provided, `response_code` must be valid, unexpired, and unused.
 
         After processing, the session cookie is cleared to prevent reuse.
 
@@ -1064,7 +1064,7 @@ paths:
 
         ## Request Body (Optional)
 
-        - `responseCode`: required only when `responseCodeValidationRequired=true`
+        - `responseCode`: required when resuming from `redirect_uri` (web wallet). Same-device mobile can omit it if the original tab is still open.
         - `skipStatusChecks`: skip all credential status checks
         - `statusCheckFilters`: run only selected checks (`revocation`, `suspension`)
         - `includeClaims`: include credential claims in the response
@@ -1381,7 +1381,7 @@ components:
           type: boolean
           description: |-
             If `true`, `/v2/vp-submission/direct-post` returns a `redirect_uri` with `response_code`.
-            Use `true` for same-device web wallet flows. Default: `false`.
+            Use `true` for same-device flows (mobile wallet and web wallet). Default: `false` (cross-device QR).
             Must be `false` when `responseMode=dc_api`.
           default: false
           example: false
@@ -1836,7 +1836,7 @@ components:
         responseCode:
           type: string
           nullable: true
-          description: 'The `response_code` from the `redirect_uri`. Required when the corresponding Authorization Request was created with `responseCodeValidationRequired=true`. Must be valid, unexpired, and unused.'
+          description: 'The `response_code` from the `redirect_uri`. When the corresponding Authorization Request was created with `responseCodeValidationRequired=true`, this is required for web-wallet resume. Same-device mobile can omit it and still fetch results via the session cookie (original-tab fallback). Must be valid, unexpired, and unused when provided.'
         skipStatusChecks:
           type: boolean
           default: false

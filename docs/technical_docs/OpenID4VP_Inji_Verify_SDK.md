@@ -225,7 +225,7 @@ import { OpenID4VPVerification } from "@injistack/react-inji-verify-sdk";
 | `isSameDeviceFlowEnabled` | `boolean` | `true` | When `true`, triggers same-device flow on click. When `false`, always shows QR code (cross-device) |
 | `enableDcApi` | `boolean` | `false` | Same-device only: use W3C Digital Credentials API (`response_mode=dc_api`). Mutually exclusive with `webWalletBaseUrl`. Requires signed-request `clientId` (`decentralized_identifier:` or `x509_san_dns:`). If unsupported at runtime, falls back to deep-link without surfacing an error |
 | `dcApiTimeoutMs` | `number` | `300000` | Timeout (ms) for DC API JWT fetch and `navigator.credentials.get`. Invalid values fall back to 5 minutes |
-| `webWalletBaseUrl` | `string` | — | Base URL of a web wallet. When set, redirects to `{webWalletBaseUrl}/authorize?...` and enables `responseCodeValidationRequired` |
+| `webWalletBaseUrl` | `string` | — | Base URL of a web wallet. When set, redirects to `{webWalletBaseUrl}/authorize?...` and enables `responseCodeValidationRequired` so submission returns `redirect_uri`. Mutually exclusive with `enableDcApi`. |
 | `triggerElement` | `ReactNode` | — | UI element that starts the flow on click. If omitted, the flow starts automatically on mount |
 | `transactionId` | `string` | — | Optional. Reuse an existing transaction instead of generating one |
 | `protocol` | `string` | `openid4vp://` | URI scheme prefix for QR code / deep link construction |
@@ -292,7 +292,12 @@ isSameDeviceFlowEnabled = false
 
 isSameDeviceFlowEnabled = true (default)
   → enableDcApi = true AND !webWalletBaseUrl AND isDcApiSupported(clientId)
-      → Open Wallet with DC API (response_mode=dc_api; desktop or mobile)
+      → Same-device Digital Credentials API (response_mode=dc_api; desktop or mobile):
+          POST /v2/vp-session-request (responseMode=dc_api)
+          → GET requestUri JWT
+          → navigator.credentials.get
+          → POST responseUri (/vp-submission/dc-api)
+          → POST /vp-session-results
   → enableDcApi = true but unsupported at runtime
       → Fall back to deep-link / native-wallet path (no DC_API_NOT_SUPPORTED error);
         on desktop without webWalletBaseUrl, report MISSING_WEB_WALLET_BASE_URL
@@ -303,6 +308,19 @@ isSameDeviceFlowEnabled = true (default)
   → Desktop without webWalletBaseUrl / DC API
       → Error: MISSING_WEB_WALLET_BASE_URL
 ```
+
+**`redirect_uri` after VP submission**
+
+Same-device `direct_post` flows set `responseCodeValidationRequired=true`. The backend then generates a `response_code` and returns `redirect_uri` after VP submission. Cross-device QR and DC API omit the flag (DC API must keep it `false`) and do not receive `redirect_uri`.
+
+| Flow | `responseCodeValidationRequired` | After VP submission |
+|---|---|---|
+| Cross-device (QR) | omitted / `false` | `200 OK` with `{}` — no `redirect_uri` |
+| Same-device mobile | `true` | `{ "redirect_uri": "https://.../#response_code=..." }`. Original tab can still resume via `visibilitychange` + session cookie |
+| Same-device web wallet | `true` | `{ "redirect_uri": "https://.../#response_code=..." }` |
+| Open Wallet with DC API | must be `false` | `200 OK` empty body on `/vp-submission/dc-api` — no `redirect_uri` |
+
+`enableDcApi` and `webWalletBaseUrl` are mutually exclusive — passing both throws on mount/update.
 
 For sequence diagrams (cross-device, same-device mobile, web wallet, DC API, server-to-server), see [OpenID4VP-1.0.0.md](./OpenID4VP-1.0.0.md).
 

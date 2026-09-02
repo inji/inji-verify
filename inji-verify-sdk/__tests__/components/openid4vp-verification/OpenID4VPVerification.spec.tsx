@@ -530,6 +530,7 @@ describe("OpenID4VPVerification UI Tests", () => {
       expect(credentialsGet).not.toHaveBeenCalled();
       const sessionBody = JSON.parse(fetchMock.mock.calls[0][1].body);
       expect(sessionBody.responseMode).toBe("direct_post");
+      expect(sessionBody.responseCodeValidationRequired).toBeUndefined();
     });
   });
 
@@ -655,6 +656,10 @@ describe("OpenID4VPVerification UI Tests", () => {
           "https://wallet.example.com/authorize?",
         );
       });
+      const sessionBody = JSON.parse(
+        (global.fetch as jest.Mock).mock.calls[0][1].body,
+      );
+      expect(sessionBody.responseCodeValidationRequired).toBe(true);
     });
 
     it("redirects to webWalletBaseUrl on desktop when enableDcApi is false", async () => {
@@ -796,6 +801,7 @@ describe("OpenID4VPVerification UI Tests", () => {
       expect(onError).not.toHaveBeenCalled();
       const sessionBody = JSON.parse(fetchMock.mock.calls[0][1].body);
       expect(sessionBody.responseMode).toBe("direct_post");
+      expect(sessionBody.responseCodeValidationRequired).toBe(true);
     });
 
     it("does not surface DC_API_NOT_SUPPORTED when falling back on desktop without a web wallet", async () => {
