@@ -1,13 +1,28 @@
 import {
   calculateVerifiedClaims,
   calculateUnverifiedClaims,
+  getClientId,
   getCredentialType,
+  getDetailsOrder,
+  getDcqlCredentialQueryCount,
   getTotalCredentialCount,
+  isVPSubmissionSupported,
 } from "../../utils/commonUtils";
 import { claim, DcqlCredentialQuery, MatchingVc } from "../../types/data-types";
 
 jest.mock("../../utils/i18n", () => ({
   getLanguageCodes: jest.fn(() => ["en"]),
+}));
+
+jest.mock("../../utils/config", () => ({
+  EXCLUDE_KEYS_SD_JWT_VC: ["excluded"],
+  getVCRenderOrders: jest.fn(() => ({
+    InsuranceCredentialRenderOrder: ["name", "active", "nested", "empty"],
+    farmerCredentialRenderOrder: ["name"],
+    MosipVerifiableCredentialRenderOrder: ["name"],
+    IncomeTaxAccountCredentialRenderOrder: ["name"],
+    farmerLandCredentialRenderOrder: ["farmerName", { land: ["district", "acres", "empty"] }],
+  })),
 }));
 
 const buildClaim = (
@@ -573,6 +588,105 @@ describe("commonUtils credential matching", () => {
           [insuranceClaim]
         )
       ).toBe(2);
+    });
+  });
+
+  describe("getDetailsOrder", () => {
+    let consoleErrorSpy: jest.SpyInstance;
+
+    beforeEach(() => {
+      consoleErrorSpy = jest.spyOn(console, "error").mockImplementation(() => undefined);
+    });
+
+    afterEach(() => consoleErrorSpy.mockRestore());
+
+    test("returns an empty list for invalid credential input", () => {
+      expect(getDetailsOrder("not json", "en")).toEqual([]);
+      expect(getDetailsOrder(null, "en")).toEqual([]);
+      expect(getDetailsOrder([], "en")).toEqual([]);
+      expect(getDetailsOrder("text", "en")).toEqual([]);
+    });
+
+    test("orders insurance fields and resolves language, booleans and nested values", () => {
+      const vc = {
+        type: ["VerifiableCredential", "InsuranceCredential"],
+        credentialSubject: {
+          name: [{ "@language": "en", "@value": "Test User" }],
+          active: true,
+          nested: { value: "Nested value" },
+          empty: "",
+        },
+      };
+
+      expect(getDetailsOrder(JSON.stringify(vc), "en")).toEqual([
+        { key: "name", value: "Test User" },
+        { key: "active", value: "true" },
+        { key: "nested", value: "Nested value" },
+      ]);
+    });
+
+    test("orders farmer land fields and ignores empty fields", () => {
+      const vc = {
+        type: ["VerifiableCredential", "farmer"],
+        credentialSubject: {
+          farmerName: "Ravi",
+          land: { district: "Mysuru", acres: 2, empty: "" },
+        },
+      };
+
+      expect(getDetailsOrder(vc, "en")).toEqual([
+        { key: "farmerName", value: "Ravi" },
+        { key: "district", value: "Mysuru" },
+        { key: "acres", value: "2" },
+      ]);
+    });
+
+    test("filters SD-JWT internal fields and keeps visible claims", () => {
+      expect(
+        getDetailsOrder(
+          {
+            regularClaims: { type: "MockVerifiableCredential" },
+            disclosedClaims: { id: "hidden", excluded: "hidden", name: "Ravi", score: 5 },
+          },
+          "en",
+        ),
+      ).toEqual([
+        { key: "type", value: "MockVerifiableCredential" },
+        { key: "name", value: "Ravi" },
+        { key: "score", value: "5" },
+      ]);
+    });
+
+    test("uses default ordering for nested object values", () => {
+      expect(
+        getDetailsOrder(
+          { credentialSubject: { id: "hidden", address: { city: "Bengaluru", state: "Karnataka" } } },
+          "en",
+        ),
+      ).toEqual([{ key: "address", value: ["Bengaluru", "Karnataka"] }]);
+    });
+  });
+
+  describe("small helper functions", () => {
+    test("counts all configured DCQL credentials", () => {
+      expect(
+        getDcqlCredentialQueryCount([
+          buildClaim("One", "OneCredential", [{ id: "one", format: "ldp_vc" }]),
+          buildClaim("Two", "TwoCredential", [
+            { id: "two", format: "ldp_vc" },
+            { id: "three", format: "ldp_vc" },
+          ]),
+        ]),
+      ).toBe(3);
+    });
+
+    test("reads client and VP submission settings from the environment", () => {
+      (window as any)._env_ = { CLIENT_ID: "inji-verify", VP_SUBMISSION_SUPPORTED: "TRUE" };
+      expect(getClientId()).toBe("inji-verify");
+      expect(isVPSubmissionSupported()).toBe(true);
+
+      (window as any)._env_.VP_SUBMISSION_SUPPORTED = "false";
+      expect(isVPSubmissionSupported()).toBe(false);
     });
   });
 });
