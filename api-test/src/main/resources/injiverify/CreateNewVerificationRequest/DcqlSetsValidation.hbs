@@ -1,0 +1,44 @@
+{
+  "clientId": "client123",
+  "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+  "responseCodeValidationRequired": false,
+  "dcqlQuery": {
+    "credentials": [
+      {
+        "id": "credential_id",
+        "format": "vc+sd-jwt",
+        "meta": {
+          "vct_values": ["eu.europa.ec.eudi.pid.1"]
+        }
+        {{#if claimSets}},
+        "claims": [
+          {
+            "id": "known_claim",
+            "path": ["name"]
+          }
+        ],
+        "claim_sets": [
+          {{#if emptyClaimSets}}
+          {{else if missingClaimReference}}
+          ["nonexistent_id"]
+          {{else}}
+          ["unknown_claim"]
+          {{/if}}
+        ]
+        {{/if}}
+      }
+    ]
+    {{#if credentialSets}},
+    "credential_sets": [
+      {
+        {{#if optionalOnly}}
+        "options": [["credential_id"]],
+        "required": false
+        {{else}}
+        "options": [["nonexistent_credential_id"]]
+        {{/if}}
+      }
+    ]
+    {{/if}}
+  }
+}
