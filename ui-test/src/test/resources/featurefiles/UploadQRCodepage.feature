@@ -225,7 +225,7 @@ Feature: Inji Verify upload qr code testing
     And Verify upload QR code step3 label
     And Verify that Upload button visible
     And Upload blur QR code file
-    And Verify MultiFormat alert message
+    And Verify small or blur alert message
 
   @smoke @verifyuploadmultipleqrcodeinoneimage
   Scenario: Verify multiple qr code in one image

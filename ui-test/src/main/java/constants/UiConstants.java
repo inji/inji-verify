@@ -49,8 +49,10 @@ public class UiConstants {
 	public static final String ERROR_MESSAGE_SCAN_TIMEOUT = "The scan session has expired due to inactivity. Please initiate a new scan.";
 	public static final String ERROR_MESSAGE_EXPIRED_QR = "The given credential is valid but expired!";
 	public static final String ERROR_UNSUPPORTED_FORMAT = "Unsupported file format. Allowed file formats are: png, jpeg, jpg, pdf.";
+	public static final String ERROR_SMALL_OR_BLUR_QR_CODE = "QR size too small/low quality, please retry with a clear QR";
 	public static final String ERROR_MULTI_FORMAT = "No QRCode found";
-	public static final String HALF_QRCODE_FAILURE_MESSAGE = "Session expired. Please Scan again.";
+	public static final String HALF_QRCODE_FAILURE_MESSAGE = "Couldn't read the QR code. Make sure the entire QR code is inside the frame and try again.";
+	public static final String ERROR_SESSION_EXPIRED = "Session expired. Please Scan again.";
 
 	public static final String SCAN_QR_CODE_LABEL_FONT_AFTER_STEP = "ml-[10px] text-lgNormalTextSize font-bold text-stepperLabel";
 	public static final String CLASS = "class";
