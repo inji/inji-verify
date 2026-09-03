@@ -326,3 +326,469 @@ CreateNewVerificationRequest:
       output: '{
     "responseType": "vp_token"
 }'
+
+  Injiverify_CreateNewVerificationRequest_Invalid_JSON_Body_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request with invalid JSON body and expect error response
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_018
+      role: noauth
+      restMethod: post
+      checkErrorsOnlyInResponse: true
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestInvalidJson
+      outputTemplate: injiverify/error2
+      input: '{}'
+      output: '{
+      "errorCode": "INVALID_JSON"
+}'
+
+  Injiverify_CreateNewVerificationRequest_Unknown_Field_In_Request_Body_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request with unknown field in request body and expect error response
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_019
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestUnknownField
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+        "errorCode": "UNKNOWN_FIELD",
+        "errorMessage": "Unknown field: presentationDefinition"
+}'
+
+  Injiverify_CreateNewVerificationRequest_Invalid_Field_Value_Type_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request with invalid field value type and expect error response
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_020
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestOptionalDcql
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false,
+      "includeDcqlQuery": true,
+      "invalidDcqlType": true
+      }'
+      output: '{
+      "errorCode": "MALFORMED_REQUEST",
+      "errorMessage": "Cannot construct instance of `io.inji.verify.dto.dcql.DCQLQueryDto` (although at least one Creator exists): no String-argument constructor/factory method to deserialize from String value (\u0027string_instead_of_object\u0027)"
+}'
+
+  Injiverify_CreateNewVerificationRequest_Missing_DcqlQuery_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Creating a new verification request without dcqlQuery
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_021
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestOptionalDcql
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false,
+      "includeDcqlQuery": false
+      }'
+      output: '{
+      "errorCode": "dcql_query_required",
+      "errorMessage": "dcql_query is required"
+}'
+
+  Injiverify_CreateNewVerificationRequest_Empty_Credentials_Array_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Empty DCQL credentials array
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_22
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "nullCredentialEntry": false
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "dcql_query.credentials must be a non-empty array."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Null_Credential_Entry_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Null entry in DCQL credentials array
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_23
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "nullCredentialEntry": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Each DCQL credential entry must not be null."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Missing_Credential_Id_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Missing id in DCQL credential entry
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_24
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "missingId": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Each DCQL credential entry must contain id."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Invalid_Credential_Id_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Invalid characters in credential id
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_25
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "invalidCredentialId": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Credential id must contain only alphanumeric characters, underscores, and hyphens."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Duplicate_Credential_Ids_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Duplicate DCQL credential ids
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_26
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+		"duplicateCredentialIds": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Duplicate credential ids are not allowed."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Missing_Credential_Format_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Missing format in DCQL credential entry
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_27
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "missingFormat": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Each DCQL credential entry must contain format."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Unsupported_Credential_Format_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Unsupported DCQL credential format
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_28
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "unsupportedFormat": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "DCQL credential format must be a valid format."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Missing_Credential_Meta_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Missing meta in DCQL credential entry
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_29
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "missingMeta": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Each DCQL credential entry must contain meta."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Null_Meta_Value_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Null value in DCQL meta
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_30
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "nullValue": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "DCQL meta must not contain null/blank values."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Duplicate_Meta_Value_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Duplicate values in DCQL meta
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_31
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "duplicateValue": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "DCQL meta must not contain duplicate values."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Meta_Format_Mismatch_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: DCQL meta fields do not match credential format
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_32
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "mismatch": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "DCQL meta fields must match the specified credential format."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Invalid_Iri_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Invalid IRI in DCQL type values
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_33
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlCredentialValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{}'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Each value in type_values must be a valid IRI (absolute or relative)."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Claim_Missing_Path_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Claim entry missing path
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_34
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlClaimsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "missingPath": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "DCQL claim path must be a valid path."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Invalid_Claim_Path_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Invalid claim path
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_35
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlClaimsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "invalidPath": true
+      }'
+      output: '{
+      "errorCode": "MALFORMED_REQUEST",
+      "errorMessage": "Cannot deserialize value of type `java.util.ArrayList\u003cjava.lang.Object\u003e` from Integer value (token `JsonToken.VALUE_NUMBER_INT`)"
+}'
+
+  Injiverify_CreateNewVerificationRequest_Duplicate_Claim_Paths_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Duplicate claim paths
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_36
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlClaimsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "duplicatePath": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Duplicate claim paths are not allowed within a single credential query."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Invalid_Claim_Id_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Invalid claim id characters
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_37
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlClaimsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+      "invalidClaimId": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Claim id must contain only alphanumeric characters, underscores, and hyphens."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Duplicate_Claim_Ids_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Duplicate claim ids
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_38
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlClaimsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "duplicateClaimId": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "Duplicate claim ids are not allowed."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Empty_Claim_Values_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Empty claim values array
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_39
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlClaimsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "emptyClaimValues": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "DCQL claim values must be a non-empty array if claim values field is present."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Empty_Claim_Sets_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Empty claim sets array
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_40
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlSetsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "claimSets": true,
+        "emptyClaimSets": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "claim_sets must not be empty if claim_sets field is present."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Missing_Claim_Set_Reference_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Claim sets with missing claim id reference
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_41
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlSetsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "claimSets": true,
+        "missingClaimReference": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "claim_sets contains unknown claim id reference."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Unknown_Claim_Set_Reference_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Claim sets with unknown claim id reference
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_42
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlSetsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "claimSets": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "claim_sets contains unknown claim id reference."
+}'
+
+  Injiverify_CreateNewVerificationRequest_Unknown_Credential_Set_Id_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Credential sets contains an unknown credential id
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_43
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlSetsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "credentialSets": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credentials",
+      "errorMessage": "credential_sets contains unknown credential id reference."
+}'
+
+  Injiverify_CreateNewVerificationRequest_All_Credential_Sets_Optional_Neg:
+      endPoint: /v1/verify/v2/vp-request
+      description: Credential sets contain no required entry
+      uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_44
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: false
+      inputTemplate: injiverify/CreateNewVerificationRequest/DcqlSetsValidation
+      outputTemplate: injiverify/errorCodeAndMessage
+      input: '{
+        "credentialSets": true,
+        "optionalOnly": true
+      }'
+      output: '{
+      "errorCode": "dcql_query.credential_sets",
+      "errorMessage": "credential_sets must contain at least one required entry."
+}'
