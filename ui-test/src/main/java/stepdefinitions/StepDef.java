@@ -2554,6 +2554,24 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	    }
 	}
 
+    @Then("Verify small or blur alert message")
+	public void verifyMessageForBlurQrCode() {
+	    try {
+	        Assert.assertEquals(uploadqrcode.getErrorMessageForBlurQRCode(), UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE);
+	        test.log(Status.PASS, "Successfully verified Small/Blur alert message for blur QR code.");
+	    } catch (AssertionError e) {
+	    	test.log(Status.FAIL, "Verification failed: Small/Blur alert message does not match the expected value.");
+	    	logFailure(test, driver, "Verification failed: Small/Blur alert message does not match the expected value.", e);
+	        throw e;
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying Small/Blur alert message", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error occurred while verifying Small/Blur alert message", e);
+	        throw e;
+	    }
+	}
+
 	@Then("Upload blur QR code file")
 	public void uploadBlurQrCodeFile() {
         try {
@@ -2572,7 +2590,7 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	}
 
 	@Then("Verify MultiFormat alert message")
-	public void verifyMessageForBlurQrCode() {
+	public void verifyMessageForMultiFormatQrCode() {
 	    try {
 	        Assert.assertEquals(uploadqrcode.getErrorMessageForBlurQRCode(), UiConstants.ERROR_MULTI_FORMAT);
 	        test.log(Status.PASS, "Successfully verified MultiFormat alert message for blur QR code.");
