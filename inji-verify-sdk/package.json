@@ -3,7 +3,8 @@
   "version": "1.0.0-dev.5",
   "description": "React component library for verifying Verifiable Credentials via QR code scan/upload and OpenID4VP wallet flows",
   "sideEffects": [
-    "*.css"
+    "*.css",
+    "src/utils/promisePolyfill.ts"
   ],
   "main": "dist/index.js",
   "module": "dist/index.js",
