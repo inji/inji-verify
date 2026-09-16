@@ -1,6 +1,17 @@
 import { claim, LdpVc, MatchingVc, VcStatus} from "../types/data-types";
 import { EXCLUDE_KEYS_SD_JWT_VC, getVCRenderOrders } from "./config";
 import { getLanguageCodes } from "./i18n";
+import { TFunction } from "i18next";
+import en from "../locales/en.json";
+
+export const getQrErrorMessage = (error: Error, t: TFunction): string => {
+  if (error.message.trim() === "The requested resource expired., resource_not_found") {
+    return t("AlertMessages:qrVerificationLimitReached", {
+      defaultValue: en.AlertMessages.qrVerificationLimitReached,
+    });
+  }
+  return error.message;
+};
 
 const isSafeKey = (key: string) =>
   key && key !== "__proto__" && key !== "constructor" && key !== "prototype";
