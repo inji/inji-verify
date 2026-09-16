@@ -425,7 +425,7 @@ CreateNewVerificationRequest:
       }'
       output: '{
       "errorCode": "dcql_query.credentials",
-      "errorMessage": "Each DCQL credential entry must not be null."
+      "errorMessage": "dcql_query.credentials must be a non-empty array."
 }'
 
   Injiverify_CreateNewVerificationRequest_Missing_Credential_Id_Neg:

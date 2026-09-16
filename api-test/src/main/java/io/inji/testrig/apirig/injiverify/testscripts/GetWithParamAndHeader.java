@@ -107,6 +107,7 @@ public class GetWithParamAndHeader extends InjiVerifyUtil implements ITest {
 					COOKIENAME, testCaseDTO.getRole(), testCaseDTO.getTestCaseName(), pathParams, headers);
 
 			if ((testCaseName.contains("_GetVpRequestWithDID_")
+					|| testCaseName.contains("_GetVpRequestWithX509SanDns_")
 					|| testCaseName.contains("CheckClientMetaDataInVPResponse"))
 					&& !testCaseDTO.isCheckOnlyStatusCodeInResponse()) {
 				String finalJsonString = InjiVerifyUtil.decodeAndCombineJwt(response.asString());
@@ -127,6 +128,10 @@ public class GetWithParamAndHeader extends InjiVerifyUtil implements ITest {
 
 				if (testCaseName.contains("_GetVpRequestWithDID_")) {
 					InjiVerifyUtil.validateOpenId4VpClientMetadata(responsePayloadJson);
+				}
+				if (testCaseName.contains("_GetVpRequestWithX509SanDns_")) {
+				    InjiVerifyUtil.validateX509SanDnsAuthorizationRequest(headerJson,responsePayloadJson);
+				            
 				}
 
 				ouputValid = OutputValidationUtil.doJsonOutputValidation(finalJsonString, outputJson, testCaseDTO,
