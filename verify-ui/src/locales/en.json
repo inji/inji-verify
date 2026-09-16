@@ -127,6 +127,7 @@
     "TIMEOUT": "The scan session has expired due to inactivity. Please initiate a new scan."
   },
   "AlertMessages": {
+    "qrVerificationLimitReached": "This QR code has reached its verification limit. Please request a new one.",
     "qrUploadSuccess": "QR code uploaded successfully!",
     "qrScanSuccess": "QR code scanned successfully!",
     "sessionExpired": "Session expired. Please re-initiate the request.",

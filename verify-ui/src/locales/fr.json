@@ -127,6 +127,7 @@
     "TIMEOUT": "La session d'analyse a expiré en raison d'une inactivité. Veuillez lancer une nouvelle analyse."
   },
   "AlertMessages": {
+    "qrVerificationLimitReached": "Ce code QR a atteint sa limite de vérifications. Veuillez en demander un nouveau.",
     "qrUploadSuccess": "Code QR téléchargé avec succès !",
     "qrScanSuccess": "Code QR scanné avec succès !",
     "sessionExpired": "La session a expiré. veuillez réinitialiser la demande.",

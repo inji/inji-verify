@@ -127,6 +127,7 @@
     "TIMEOUT": "A sessão de verificação expirou devido à inatividade. Inicie uma nova verificação."
   },
   "AlertMessages": {
+    "qrVerificationLimitReached": "Este código QR atingiu o limite de verificações. Solicite um novo.",
     "qrUploadSuccess": "Código QR carregado com sucesso!",
     "qrScanSuccess": "Código QR digitalizado com sucesso!",
     "sessionExpired": "A sessão expirou. reinicie a solicitação.",
