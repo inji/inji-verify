@@ -51,6 +51,7 @@
         <browserstack.sdk.version>1.31.1</browserstack.sdk.version>
         <commons.lang3.version>3.18.0</commons.lang3.version>
         <aws.sdk.s3.version>1.12.794</aws.sdk.s3.version>
+        <skipTests>true</skipTests>
     </properties>
 
     <dependencyManagement>
@@ -241,7 +242,7 @@
                 <artifactId>maven-surefire-plugin</artifactId>
                 <version>${surefire.plugin.version}</version>
                 <configuration>
-                    <skipTests>true</skipTests>
+                    <skipTests>${skipTests}</skipTests>
                 </configuration>
             </plugin>
 

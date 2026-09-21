@@ -43,4 +43,29 @@ public class WaitUtil {
         WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(timeout));
         wait.until(ExpectedConditions.presenceOfElementLocated(locator));
     }
+
+    /**
+     * Retries {@code attempt} until it succeeds without throwing a timeout-style failure.
+     * Between attempts, {@code recover} is run (e.g. close and reopen a panel).
+     */
+    public static void retryWithRecovery(Runnable attempt, Runnable recover, int maxAttempts) {
+        RuntimeException lastFailure = null;
+        for (int i = 1; i <= maxAttempts; i++) {
+            try {
+                attempt.run();
+                return;
+            } catch (org.openqa.selenium.TimeoutException e) {
+                lastFailure = e;
+                if (i == maxAttempts) {
+                    throw e;
+                }
+                if (recover != null) {
+                    recover.run();
+                }
+            }
+        }
+        if (lastFailure != null) {
+            throw lastFailure;
+        }
+    }
 }
