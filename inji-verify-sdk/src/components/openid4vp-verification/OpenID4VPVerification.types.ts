@@ -180,7 +180,7 @@ export type OpenID4VPVerificationProps = ExclusiveCallbacks & {
 
   /**
    * Same-device only: use the W3C Digital Credentials API (`response_mode=dc_api`).
-   * Defaults to false. Mutually exclusive with `webWalletBaseUrl` — passing both
+   * Defaults to true. Mutually exclusive with `webWalletBaseUrl` — passing both
    * throws on mount/update so integrators fail fast.
    * At runtime the SDK checks `isDcApiSupported(clientId)` (signed-request
    * client_id, Chrome 144.0.7559.59+ security version, and protocol support).

@@ -33,7 +33,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
   onError,
   clientId,
   isSameDeviceFlowEnabled = true,
-  enableDcApi = false,
+  enableDcApi = true,
   dcApiTimeoutMs = DEFAULT_DC_API_TIMEOUT_MS,
   webWalletBaseUrl,
   vpVerificationRequest,
