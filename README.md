@@ -1,6 +1,8 @@
 [![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=release-1.0.x&project=inji_inji-verify-verify-service&id=inji_inji-verify-verify-service&metric=alert_status)](https://sonarcloud.io/dashboard?branch=release-1.0.x&id=inji_inji-verify-verify-service)
 # Inji Verify
 
+<!-- Trigger a fresh Sonar analysis; no application behavior changed. -->
+
 Inji Verify is a web application for verifying Verifiable Credentials (VCs) via QR code scan/upload and the OpenID4VP protocol.
 
 The repository contains three independently deployable components:
