@@ -133,11 +133,9 @@ public class HomePage extends BasePage {
 	@FindBy(xpath = "//*[@data-testid='ItemBox-Text']")
 	WebElement mosipCrdentials;
 
-	// @FindBy(xpath = "(//label[contains(@class, 'w-full h-full') and contains(text(), 'Once')])[1]")
 	@FindBy(xpath = "(//span[@data-testid='DataShareContent-Selected-Validity-Times'])[1]")
 	WebElement getValidityDropdown;
 
-	// @FindBy(xpath = "(//label[contains(@data-testid, 'DataShareContent-Validity-Times-DropDown-NoLimit') and contains(text(), 'No Limit')])[1]")
 	@FindBy(xpath = "//button[contains(@data-testid, 'DataShareContent-Validity-Times-DropDown-NoLimit') and contains(text(), 'No Limit')]")
 	WebElement getOnNoLimit;
 
