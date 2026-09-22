@@ -422,7 +422,6 @@ public class BaseTestUtil {
 
     private String generateRuntimeScanQrCodeFromInsuranceCredential() {
         refreshRuntimeScanImages();
-        System.out.println("-------------------------------------------------Generating runtime scan QR code from insurance credential." + RUNTIME_SCAN_IMAGE_NAME);
         File runtimeQrImage = new File(getRuntimeMediaDirectory(), RUNTIME_SCAN_IMAGE_NAME);
         return runtimeQrImage.getAbsolutePath();
     }
