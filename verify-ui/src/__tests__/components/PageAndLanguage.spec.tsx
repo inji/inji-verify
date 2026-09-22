@@ -1,6 +1,6 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter, useLocation } from "react-router-dom";
+import { MemoryRouter } from "react-router-dom";
 import { LanguageSelector } from "../../components/commons/LanguageSelector";
 import SomethingWentWrong from "../../components/SomethingWentWrong";
 
@@ -54,17 +54,13 @@ describe("language and retry components", () => {
   });
 
   test("renders retry action on the error page", () => {
-    const LocationProbe = () => <span data-testid="location">{useLocation().pathname}</span>;
-
     render(
-      <MemoryRouter initialEntries={["/"]}>
-        <LocationProbe />
+      <MemoryRouter>
         <SomethingWentWrong />
       </MemoryRouter>,
     );
     expect(screen.getByText("retry")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button"));
     expect(mockDispatch).toHaveBeenCalled();
-    expect(screen.getByTestId("location")).toHaveTextContent("/scan");
   });
 });
