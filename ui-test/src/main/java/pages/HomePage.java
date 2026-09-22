@@ -133,10 +133,12 @@ public class HomePage extends BasePage {
 	@FindBy(xpath = "//*[@data-testid='ItemBox-Text']")
 	WebElement mosipCrdentials;
 
-	@FindBy(xpath = "(//label[contains(@class, 'w-full h-full') and contains(text(), 'Once')])[1]")
+	// @FindBy(xpath = "(//label[contains(@class, 'w-full h-full') and contains(text(), 'Once')])[1]")
+	@FindBy(xpath = "(//span[@data-testid='DataShareContent-Selected-Validity-Times'])[1]")
 	WebElement getValidityDropdown;
 
-	@FindBy(xpath = "(//label[contains(@data-testid, 'DataShareContent-Validity-Times-DropDown-NoLimit') and contains(text(), 'No Limit')])[1]")
+	// @FindBy(xpath = "(//label[contains(@data-testid, 'DataShareContent-Validity-Times-DropDown-NoLimit') and contains(text(), 'No Limit')])[1]")
+	@FindBy(xpath = "//button[contains(@data-testid, 'DataShareContent-Validity-Times-DropDown-NoLimit') and contains(text(), 'No Limit')]")
 	WebElement getOnNoLimit;
 
 	@FindBy(xpath = "//button[contains(@data-testid, 'DataShareFooter-Success-Button')]")
@@ -469,9 +471,14 @@ public String isSuccessMessageDisplayed() {
 	public void selectDateOfBirth(String dob) {
 
      WebElement fullNameField = driver.findElement(By.id("fullName"));
-        WebElement displayDobField = driver.findElement(By.className("date-display-input"));
         WebElement realDobField = driver.findElement(By.className("real-date-input"));
-        String formattedDob = resolveAcceptedDateOfBirthFormat(dob, displayDobField);
+		JavascriptExecutor js = (JavascriptExecutor) driver;
+        js.executeScript(
+                "arguments[0].style.cssText = 'position:fixed;top:0;left:0;width:120px;height:30px;"
+                + "display:block;visibility:visible;opacity:1;z-index:9999;';",
+                realDobField);
+		
+        String formattedDob = resolveAcceptedDateOfBirthFormat(dob, realDobField);
 
         WaitUtil.waitForClickability(driver, fullNameField);
         fullNameField.sendKeys(Keys.TAB);
@@ -480,11 +487,7 @@ public String isSuccessMessageDisplayed() {
         // displayDobField.sendKeys(Keys.TAB);
 
         //to make the element visible on sccreen, as it is hidden by default and cannot be interacted with directly
-        JavascriptExecutor js = (JavascriptExecutor) driver;
-        js.executeScript(
-                "arguments[0].style.cssText = 'position:fixed;top:0;left:0;width:120px;height:30px;"
-                + "display:block;visibility:visible;opacity:1;z-index:9999;';",
-                realDobField);
+        
 
         WaitUtil.waitForClickability(driver, realDobField);
         realDobField.clear();

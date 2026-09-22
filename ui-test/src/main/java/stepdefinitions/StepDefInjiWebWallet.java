@@ -243,6 +243,17 @@ public class StepDefInjiWebWallet extends BaseSteps {   // <-- extends BaseSteps
         }
     }
 
+    @Then("User clicks consent and share card button")
+    public void user_clicks_consent_and_share_card_button() {
+        try {
+            injiWebWalletPage.clickConsentAndShareCardButton();
+            test.log(Status.PASS, "Successfully clicked consent and share card button.");
+        } catch (Exception e) {
+            logFailure(test, driver, "Failed to click consent and share card button", e);
+            throw e;
+        }
+    }
+
     @Then("Verify error message is displayed")
     public void verify_error_message_is_displayed() {
         try {

@@ -52,6 +52,7 @@ public class UiConstants {
 	public static final String ERROR_SMALL_OR_BLUR_QR_CODE = "QR size too small/low quality, please retry with a clear QR";
 	public static final String ERROR_MULTI_FORMAT = "No QRCode found";
 	public static final String HALF_QRCODE_FAILURE_MESSAGE = "Couldn't read the QR code. Make sure the entire QR code is inside the frame and try again.";
+	public static final String ERROR_MULTIPLE_QR_CODES = "Multiple QR codes detected, please retry with an image containing a single QR code.";
 	public static final String ERROR_SESSION_EXPIRED = "Session expired. Please Scan again.";
 
 	public static final String SCAN_QR_CODE_LABEL_FONT_AFTER_STEP = "ml-[10px] text-lgNormalTextSize font-bold text-stepperLabel";

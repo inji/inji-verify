@@ -2607,6 +2607,24 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	    }
 	}
 
+    @Then("Verify Multiple Qr code alert message")
+	public void verifyMessageForMultipleQrCode() {
+	    try {
+	        Assert.assertEquals(uploadqrcode.getErrorMessageForBlurQRCode(), UiConstants.ERROR_MULTIPLE_QR_CODES);
+	        test.log(Status.PASS, "Successfully verified Multiple QR code alert message for blur QR code.");
+	    } catch (AssertionError e) {
+	    	test.log(Status.FAIL, "Verification failed: Multiple QR code alert message does not match the expected value.");
+	    	logFailure(test, driver, "Verification failed: Multiple QR code alert message does not match the expected value.", e);
+	        throw e;
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying Multiple QR code alert message", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error occurred while verifying Multiple QR code alert message", e);
+	        throw e;
+	    }
+	}
+
 
 	@Then("Upload multiple qr code in one image file")
 	public void uploadMultipleQrCodeInOneImageFile() {
