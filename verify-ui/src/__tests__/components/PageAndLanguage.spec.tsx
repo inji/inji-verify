@@ -57,7 +57,7 @@ describe("language and retry components", () => {
     const LocationProbe = () => <span data-testid="location">{useLocation().pathname}</span>;
 
     render(
-      <MemoryRouter>
+      <MemoryRouter initialEntries={["/"]}>
         <LocationProbe />
         <SomethingWentWrong />
       </MemoryRouter>,
