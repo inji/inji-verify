@@ -492,7 +492,6 @@ public class BaseTestUtil {
             }
             File file = new File(candidate);
             if (file.exists()) {
-                logger.info("Insurance credential image ready: {}", file.getAbsolutePath());
                 return file;
             }
         }

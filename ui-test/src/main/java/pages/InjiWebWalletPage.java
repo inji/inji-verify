@@ -32,7 +32,7 @@ public class InjiWebWalletPage extends BasePage {
 	WebElement selectSecondVCButton;
 
 	@FindBy(xpath = "(//button[@data-testid='show-consent-modal-button'])")
-	WebElement consentAndShareButton;
+	WebElement showConsentModalButton;
 
 	@FindBy(xpath = "(//button[@data-testid='CredentialShareCard-ShareButton'])")
 	WebElement consentAndShareCardButton;
@@ -204,8 +204,8 @@ public void enterConfirmPasscode(String string) {
 		clickOnElement(driver, selectSecondVCButton);
 	}
 
-	public void clickConsentAndShareButton() {
- 		clickOnElement(driver, consentAndShareButton);
+	public void clickShowConsentModalButton() {
+ 		clickOnElement(driver, showConsentModalButton);
 	}
 
 	public void clickConsentAndShareCardButton() {
