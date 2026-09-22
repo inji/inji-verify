@@ -1,11 +1,10 @@
 import React from "react";
 import { fireEvent, render, screen } from "@testing-library/react";
-import { MemoryRouter } from "react-router-dom";
+import { MemoryRouter, useLocation } from "react-router-dom";
 import { LanguageSelector } from "../../components/commons/LanguageSelector";
 import SomethingWentWrong from "../../components/SomethingWentWrong";
 
 const mockDispatch = jest.fn();
-const mockNavigate = jest.fn();
 
 jest.mock("../../redux/hooks", () => ({
   useAppDispatch: () => mockDispatch,
@@ -33,9 +32,8 @@ jest.mock("../../utils/builder", () => ({
   renderGradientText: (label: string) => label,
 }));
 
-jest.mock("react-router-dom", () => ({
-  ...jest.requireActual("react-router-dom"),
-  useNavigate: () => mockNavigate,
+jest.mock("../../redux/store", () => ({
+  getState: () => ({ verification: { method: "SCAN" } }),
 }));
 
 jest.mock("react-i18next", () => ({
@@ -47,7 +45,6 @@ jest.mock("react-i18next", () => ({
 describe("language and retry components", () => {
   beforeEach(() => {
     mockDispatch.mockClear();
-    mockNavigate.mockClear();
   });
 
   test("opens the language selector and changes language", () => {
@@ -57,14 +54,17 @@ describe("language and retry components", () => {
   });
 
   test("renders retry action on the error page", () => {
+    const LocationProbe = () => <span data-testid="location">{useLocation().pathname}</span>;
+
     render(
       <MemoryRouter>
+        <LocationProbe />
         <SomethingWentWrong />
       </MemoryRouter>,
     );
     expect(screen.getByText("retry")).toBeInTheDocument();
     fireEvent.click(screen.getByRole("button"));
     expect(mockDispatch).toHaveBeenCalled();
-    expect(mockNavigate).toHaveBeenCalled();
+    expect(screen.getByTestId("location")).toHaveTextContent("/scan");
   });
 });
