@@ -90,10 +90,96 @@ export const isSdJwt = (vpToken: string): boolean => {
 
 
 const decodeBase64Url = (encoded: string): string => {
-    const base64 = encoded.replace(/-/g, '+').replace(/_/g, '/');
+    let base64 = encoded.replace(/-/g, "+").replace(/_/g, "/");
+    const pad = base64.length % 4;
+    if (pad) base64 += "=".repeat(4 - pad);
     const decoded = atob(base64);
-    const decodedBytes = Uint8Array.from(decoded, c => c.charCodeAt(0));
+    const decodedBytes = Uint8Array.from(decoded, (c) => c.charCodeAt(0));
     return new TextDecoder().decode(decodedBytes);
+};
+
+/**
+ * OpenID4VP 1.0 DCQL vp_token: object keyed by credential query id,
+ * each value an array of presentations/credentials.
+ * Token shape alone cannot reject a key collision with legacy PE
+ * (`verifiableCredential`); persist requested query IDs for stricter checks.
+ */
+export const isDcqlVpToken = (vpToken: unknown): vpToken is Record<string, unknown[]> => {
+  if (!vpToken || typeof vpToken !== "object" || Array.isArray(vpToken)) {
+    return false;
+  }
+  const entries = Object.entries(vpToken as Record<string, unknown>);
+  return (
+    entries.length > 0 &&
+    entries.every(([, value]) => Array.isArray(value))
+  );
+};
+
+/**
+ * Read a hash query param without URLSearchParams decoding, so literal
+ * percent sequences in plain JSON vp_token values are preserved.
+ */
+export const getRawHashParam = (hash: string, key: string): string | undefined => { 
+  const prefix = `${key}=`;
+  const params = hash.replace(/^#/, "").split("&"); 
+  for (const param of params) {
+    if (param.startsWith(prefix)) {
+      return param.slice(prefix.length);
+    }
+  }
+  return undefined;
+};
+
+/**
+ * Decode application/x-www-form-urlencoded text (spaces as `+`, then %-escapes).
+ * Matches Java URLEncoder / Spring @RequestParam so redirect vp_tokens verify
+ * the same claim bytes as direct-post submissions.
+ */
+const decodeFormUrlEncoded = (value: string): string =>
+  decodeURIComponent(value.replace(/\+/g, " "));
+
+/**
+ * Parse vp_token from a redirect hash fragment (URL-encoded or plain JSON).
+ * Plain JSON is tried first so literal `%` sequences in claim values are kept;
+ * the fallback applies form-urlencoded decoding (`+` → space, then percent-decode).
+ */
+export const parseVpTokenFromFragment = (vpTokenParam: string): unknown => {
+  try {
+    return JSON.parse(vpTokenParam);
+  } catch {
+    return JSON.parse(decodeFormUrlEncoded(vpTokenParam));
+  }
+};
+
+/**
+ * Extract a single VC from an OpenID4VP 1.0 DCQL vp_token.
+ */
+export const extractVcFromVpToken = (vpToken: unknown): unknown => {
+  if (!isDcqlVpToken(vpToken)) {
+    throw new Error("Unsupported vp_token format in redirect URL");
+  }
+
+  const presentations = Object.values(vpToken)[0];
+  if (!presentations?.length) {
+    throw new Error("Empty credential entry in vp_token");
+  }
+  const presentation = presentations[0];
+  if (presentation == null || presentation === "") {
+    throw new Error("Empty credential entry in vp_token");
+  }
+  if (
+    presentation &&
+    typeof presentation === "object" &&
+    "verifiableCredential" in presentation
+  ) {
+    const nested = (presentation as { verifiableCredential?: unknown[] })
+      .verifiableCredential;
+    if (Array.isArray(nested) && nested.length) {
+      return nested[0];
+    }
+  }
+  // DCQL ldp_vc: credential object is the presentation entry itself
+  return presentation;
 };
 
 export const normalizeVp = (vp: any): Record<string, unknown> => {

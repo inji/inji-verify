@@ -46,6 +46,8 @@ public enum ErrorCode {
     INVALID_REQUEST_ID_MISSING("invalid_request", "requestId is required and cannot be empty."),
     CLIENT_ID_HOST_MISMATCH("invalid_request", "For the x509_san_dns client_id scheme, the DNS name in client_id must match this deployment's configured inji.verify.x509-san-dns.host."),
     CLIENT_ID_DNS_NAME_INVALID("invalid_request", "For the x509_san_dns client_id scheme, the value after the prefix must be a syntactically valid DNS name."),
+    CLIENT_ID_REDIRECT_URI_INVALID("invalid_request", "For the redirect_uri client_id scheme, the value after the prefix must be a non-empty, well-formed absolute https URI."),
+    CLIENT_ID_REDIRECT_URI_MISMATCH("invalid_request", "For the redirect_uri client_id scheme, the URI after the prefix must match this deployment's response_uri."),
     REQUEST_URI_INSECURE("invalid_request", "request_uri must be served over HTTPS outside local/dev environments for the x509_san_dns client_id scheme."),
     CLIENT_ID_CERTIFICATE_CHAIN_MISSING("invalid_request", "For the x509_san_dns client_id scheme, this deployment's keystore has no signing certificate chain configured."),
     NONCE_INVALID("invalid_request", "Nonce must contain only ASCII URL-safe characters (A-Z, a-z, 0-9, -, ., _, ~) and be at least 16 characters."),

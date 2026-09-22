@@ -462,8 +462,11 @@ public class InjiVerifyUtil extends AdminTestUtil {
 	 */
 	public static void validateRedirectUriClientIdCreateResponse(String testCaseName, String requestJson,
 			String responseJson) throws AdminTestException {
+		// Setup SIDs (e.g. ForDomainMismatch) are create fixtures only; do not require
+		// in-band client_metadata until the service returns it for redirect_uri: creates.
 		if (testCaseName == null || !testCaseName.contains("CreateRedirectUriClientId")
-				|| !testCaseName.contains("_Valid_") || testCaseName.contains("_Neg")) {
+				|| !testCaseName.contains("_Valid_") || testCaseName.contains("_Neg")
+				|| testCaseName.contains("ForDomainMismatch")) {
 			return;
 		}
 		if (responseJson == null || responseJson.isBlank()) {

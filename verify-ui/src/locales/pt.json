@@ -127,11 +127,13 @@
     "TIMEOUT": "A sessão de verificação expirou devido à inatividade. Inicie uma nova verificação."
   },
   "AlertMessages": {
+    "qrVerificationLimitReached": "Este código QR atingiu o limite de verificações. Solicite um novo.",
     "qrUploadSuccess": "Código QR carregado com sucesso!",
     "qrScanSuccess": "Código QR digitalizado com sucesso!",
     "sessionExpired": "A sessão expirou. reinicie a solicitação.",
     "qrNotDetected": "Nenhum código QR encontrado.",
     "qrDecodeFailed": "Não foi possível detectar o código QR. Ele pode estar muito pequeno ou com baixa qualidade. Tente novamente com um código QR nítido",
+    "multipleQrFound": "Vários códigos QR foram detectados. Tente novamente com uma imagem que contenha um único código QR.",
     "qrNotSupported": "O formato do código QR não é compatível.",
     "unsupportedFileSize": "Tamanho do arquivo não suportado. O tamanho do arquivo deve estar entre 10 KB e 5 MB.",
     "verificationMethodComingSoon": "Em breve",

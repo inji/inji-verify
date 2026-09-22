@@ -79,8 +79,8 @@ function installing_inji-verify-ui() {
   done
 
   while true; do
-    read -p "Enable ENABLE_DC_API? (true/false) [default: true]: " ENABLE_DC_API
-    ENABLE_DC_API=${ENABLE_DC_API:-true}
+    read -p "Enable ENABLE_DC_API? (true/false) [default: false]: " ENABLE_DC_API
+    ENABLE_DC_API=${ENABLE_DC_API:-false}
     if [[ "$ENABLE_DC_API" == "true" || "$ENABLE_DC_API" == "false" ]]; then
       break
     else

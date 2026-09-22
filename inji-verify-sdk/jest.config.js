@@ -2,6 +2,7 @@ module.exports = {
   rootDir: ".",
   moduleDirectories: ["node_modules", "src"],
   testEnvironment: "jsdom",
+  setupFiles: ["<rootDir>/jest.setup.js"],
   moduleNameMapper: {
     "\\.(css|less|scss|sass)$": "<rootDir>/__mocks__/styleMock.js",
   },

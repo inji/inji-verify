@@ -243,7 +243,7 @@ const OpenID4VPVerification: React.FC<OpenID4VPVerificationProps> = ({
     // wallet URL (and without DC API) is invalid.
     if (!webWalletBaseUrl && !isMobileDevice()) {
       onError({
-        errorMessage:"On desktop, same-device flow requires a web wallet URL (webWalletBaseUrl.",
+        errorMessage:"On desktop, same-device flow requires a web wallet URL (webWalletBaseUrl).",
         errorCode: "MISSING_WEB_WALLET_BASE_URL"
       });
       return;

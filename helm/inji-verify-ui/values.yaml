@@ -245,7 +245,7 @@ updateStrategy:
 ##
 extraEnvVars:
   - name: ENABLE_DC_API
-    value: "true"
+    value: "false"
   - name: CLIENT_ID_X509
     value: "x509_san_dns:test.example.com"
 

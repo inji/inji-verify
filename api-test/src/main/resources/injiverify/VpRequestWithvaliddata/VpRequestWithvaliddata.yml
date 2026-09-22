@@ -61,7 +61,7 @@ VpRequestWithvaliddata:
     inputTemplate: injiverify/VpRequestWithvaliddata/VpRequestWithvaliddataDCQL41
     outputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestResult
     input: '{
-      "clientId": "redirect_uri:https://faceb18cd424.ngrok-free.app/verifier/vp-response",
+      "clientId": "$REDIRECT_URI_CLIENT_ID$",
       "responseCodeValidationRequired": false,
       "nonce": "IvfM76kOqj8Xy5H9pFBGBQ"
       }'

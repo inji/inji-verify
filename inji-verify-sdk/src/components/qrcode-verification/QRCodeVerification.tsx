@@ -23,7 +23,7 @@ import {
     vpSessionRequest,
     vcSubmission,
     vcVerificationV2,
-    vpSessionResults
+    vpSessionResults,
 } from "../../utils/api";
 import type { DcqlQuery } from "../openid4vp-verification/OpenID4VPVerification.types";
 import {
@@ -34,7 +34,16 @@ import { readBarcodes } from "zxing-wasm/full";
 import { MinusOutlined, PlusOutlined } from "@ant-design/icons";
 import { Slider } from "@mui/material";
 import "./QRCodeVerification.css";
-import {clearUrl, summariseVPResult, summariseVCResult, normalizeVp} from "../../utils/utils";
+import {
+  clearUrl,
+  summariseVPResult,
+  summariseVCResult,
+  normalizeVp,
+  parseVpTokenFromFragment,
+  extractVcFromVpToken,
+  isDcqlVpToken,
+  getRawHashParam,
+} from "../../utils/utils";
 import { QrData } from "../../types/OVPSchemeQrData";
 import { isCWT } from "../../utils/cborUtils";
 
@@ -434,7 +443,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
 
   const extractVerifiableCredential = async (data: any) => {
     try {
-      if (data?.vpToken) return data.vpToken.verifiableCredential[0];
+      if (data?.vpToken) return extractVcFromVpToken(data.vpToken);
       //check if QRCode contains OVP_QR in the header, it means this is a
       // data share VC
       if (typeof data === "string" && data.startsWith(OvpQrHeader)) {
@@ -581,14 +590,6 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   const handleSliderChange = (_: any, value: number | number[]) => {
     if (typeof value === "number") handleZoomChange(value);
   };
-
-  function base64UrlDecode(base64url: string): string {
-    // Convert base64url to base64
-    let base64 = base64url.replace(/-/g, "+").replace(/_/g, "/");
-    const pad = base64.length % 4;
-    if (pad) base64 += "=".repeat(4 - pad);
-    return atob(base64);
-  }
 
     const fetchVPResult = async (responseCode: string | null) => {
       if (hasFetchedVPResultRef.current) return;
@@ -760,37 +761,49 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
   }, []);
 
   useEffect(() => {
-    let vpToken, presentationSubmission, error, errorDescripton;
     try {
-      const searchParams = new URLSearchParams(window.location.search); //"?error=abc123&error_description=xyz
-      const hash = window.location.hash; // "#vp_token=abc123&state=xyz"
-      const params = new URLSearchParams(hash.substring(1));
-      const vpTokenParam = params.get("vp_token");
-      const responseCode = params.get("response_code");
-      const decoded = vpTokenParam && base64UrlDecode(vpTokenParam);
-      const parseVpToken = decoded && JSON.parse(decoded);
-      vpToken = vpTokenParam ? parseVpToken : null;
-      presentationSubmission = params.get("presentation_submission")
-        ? decodeURIComponent(params.get("presentation_submission") as string)
-        : undefined;
-      error = params.get("error") || searchParams.get("error");
-      errorDescripton = params.get("error_description") || searchParams.get("error_description") || `We’re unable to complete your request`;
+      const searchParams = new URLSearchParams(window.location.search);
+      const hashParams = new URLSearchParams(window.location.hash.substring(1));
+      const responseCode = hashParams.get("response_code") ?? searchParams.get("response_code");
+      const error = hashParams.get("error") || searchParams.get("error");
+      const errorDescripton = hashParams.get("error_description") || searchParams.get("error_description") || `We’re unable to complete your request`;
 
       if (error) {
         onError(new Error(`${errorDescripton}, ${error}`));
         resetState();
         clearUrl(["error", "error_description"]);
+        return;
       }
 
-      if (!isVPSubmissionSupported && vpToken && presentationSubmission) {
-        processScanResult({ vpToken, presentationSubmission });
-        clearUrl(["vp_token", "presentation_submission"]);
+      if (isVPSubmissionSupported) {
+        if (responseCode) {
+          setLoading(true);
+          fetchVPResult(responseCode);
+        }
+        return;
       }
-      else if (isVPSubmissionSupported && responseCode && !error) {
-        setLoading(true);
-        fetchVPResult(responseCode);
-      }
+
+      // OpenID4VP 1.0: vp_token is DCQL-keyed URL-encoded / plain JSON.
+      // Read raw hash value so URLSearchParams does not decode literal % escapes.
+      const vpTokenParam = getRawHashParam(window.location.hash, "vp_token");
+      if (!vpTokenParam) return;
+
+      const vpToken = parseVpTokenFromFragment(vpTokenParam);
+      void (async () => {
+        try {
+          if (!isDcqlVpToken(vpToken)) {
+            throw new Error("Unsupported vp_token format in redirect URL");
+          }
+          await processScanResult({ vpToken });
+        } catch (error) {
+          onError(error instanceof Error ? error : new Error("An unexpected error occurred while processing the request"));
+          resetState();
+        } finally {
+          clearUrl(["vp_token"]);
+        }
+      })();
     } catch (error) {
+      clearUrl(["vp_token"]);
       console.error(
         "Error occurred while reading params in redirect url, Error: ",
         error

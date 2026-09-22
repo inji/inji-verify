@@ -209,6 +209,7 @@ export const vpResultSubmission = async (responseUri: string, requestId: string,
       headers: {
         "Content-Type": "application/json",
       },
+      credentials: "include",
       referrerPolicy: "origin",
       body: JSON.stringify({ ...data, requestId }),
     });

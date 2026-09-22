@@ -45,7 +45,7 @@ The component detects the format automatically after decoding.
 
 When the QR contains a redirect URL to an Online VC Provider rather than an embedded credential, two modes are available via the `isVPSubmissionSupported` prop:
 
-**`isVPSubmissionSupported=false`:** SDK redirects directly to the Online VC Provider with `client_id` and `redirect_uri`. The provider returns the VC via redirect, which is then submitted to `/v2/vc-verification`.
+**`isVPSubmissionSupported=false`:** SDK redirects directly to the Online VC Provider with `client_id` and `redirect_uri`. The provider returns an OpenID4VP 1.0 DCQL `vp_token` in the redirect hash (URL-encoded or plain JSON keyed by credential query id). The SDK extracts the VC. It submits the VC to `/v2/vc-verification` when `onVCProcessed` is configured, or to the VC-submission flow when `onVCReceived` is configured.
 
 **`isVPSubmissionSupported=true`:** SDK creates a full VP session (`POST /v2/vp-session-request`), redirects to the provider with the full authorization parameters, receives a `response_code` on return, and fetches results via `POST /vp-session-results`. See [OpenID4VP-1.0.0.md](./OpenID4VP-1.0.0.md) for the complete VP flow.
 

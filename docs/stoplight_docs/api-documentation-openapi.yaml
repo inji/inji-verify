@@ -46,6 +46,9 @@ paths:
 
         This replaces the legacy `/vp-request` endpoint and is **not backward compatible**.
 
+        Does **not** set a session cookie. Use this for **server-to-server** integrations and pair with
+        `POST /v2/vp-results/{transactionId}`.
+
         ---
 
         ## Request
@@ -58,18 +61,53 @@ paths:
 
         ---
 
-        ## clientId Schemes
+        ## client_id_prefix
+
+        `clientId` uses an OpenID4VP v1.0 Client Identifier Prefix (Section 5.9.3).
+        Each prefix documents the same three properties: Authorization Request delivery, `client_metadata`, and `response_mode`.
+
+        | Prefix | Authorization Request | `client_metadata` | `response_mode` |
+        |---|---|---|---|
+        | *(none)* Pre-registered | by value (`authorizationDetails`) | not supported | `direct_post` |
+        | `decentralized_identifier:` | by reference (`requestUri`) | supported | `direct_post` and `dc_api` |
+        | `x509_san_dns:` | by reference (`requestUri`) | supported | `direct_post` and `dc_api` |
+        | `redirect_uri:` | by value (`authorizationDetails`) | not supported | `direct_post` |
 
         ### Pre-registered
-        - `clientId` is a simple string (e.g., `client123`)
+        - `clientId` is a simple string with no prefix
+        - Example: `client123`
         - Authorization Request is returned **by value** in `authorizationDetails`
-        - `client_metadata` **MUST NOT** be included — rejected with `invalid_request` per OpenID4VP v1.0 Section 8.5
+        - `client_metadata` is **not supported** — SHOULD NOT be included (OpenID4VP v1.0 Section 8.5)
+        - `response_mode`: `direct_post` only (not valid with `dc_api`)
 
-        ### Decentralized Identifier
+        ### Decentralized Identifier (`decentralized_identifier:`)
         - `clientId` must use the `decentralized_identifier:` prefix per OpenID4VP v1.0 Section 5.9.3
         - Example: `decentralized_identifier:did:example:verifier123`
         - Authorization Request is returned **by reference** (`requestUri`)
+        - `client_metadata` is **supported** — included in the signed request JWT (`vp_formats_supported`)
+        - `response_mode`: `direct_post` and `dc_api`
+        - Request JWT is signed with a `kid` header resolved via the Verifier DID document
         - The legacy `did:` prefix is **rejected** with `INVALID_CLIENT_IDENTIFIER`
+
+        ### Certificate SAN DNS (`x509_san_dns:`)
+        - `clientId` must use the `x509_san_dns:` prefix per OpenID4VP v1.0 Section 5.9.3
+        - Example: `x509_san_dns:verify.example.com`
+        - Authorization Request is returned **by reference** (`requestUri`)
+        - `client_metadata` is **supported** — included in the signed request JWT (`vp_formats_supported`)
+        - `response_mode`: `direct_post` and `dc_api`
+        - Request JWT is signed with an `x5c` header (leaf-first X.509 certificate chain); no `kid`
+        - The DNS name after the prefix must be syntactically valid and must match this deployment's configured `inji.verify.x509-san-dns.host`
+        - A signing certificate chain must be configured; outside local/dev hosts, `request_uri` must be served over HTTPS
+        - The wallet validates the cert chain and checks that the DNS name in `clientId` appears in the leaf certificate SAN
+
+        ### Redirect URI (`redirect_uri:`)
+        - `clientId` must use the `redirect_uri:` prefix per OpenID4VP v1.0 Section 5.9.3
+        - Example: `redirect_uri:https://injiverify.example.com/v1/verify/v2/vp-submission/direct-post`
+        - Authorization Request is returned **by value** in `authorizationDetails` (unsigned / no `requestUri`)
+        - `client_metadata` is **not supported**
+        - `response_mode`: `direct_post` only (not valid with `dc_api`)
+        - The URI part after the prefix **MUST** be an absolute **HTTPS** URI and **MUST** equal `authorizationDetails.responseUri` (the Verifier's `direct_post` endpoint)
+        - Plain `http://` URIs are rejected with `invalid_request`
 
         ---
 
@@ -106,18 +144,45 @@ paths:
         | Value | Submission | Notes |
         |---|---|---|
         | `direct_post` (default) | Wallet POSTs form-urlencoded to `/v2/vp-submission/direct-post` | Cross-device QR / deep-link / web-wallet redirect |
-        | `dc_api` | Browser SDK POSTs JSON to `/vp-submission/dc-api` after `navigator.credentials.get` | Same-device only. Use `POST /v2/vp-session-request` so result retrieval has the required session cookie. |
+        | `dc_api` | Browser SDK POSTs JSON to `/vp-submission/dc-api` after `navigator.credentials.get` | Same-device only. Requires `decentralized_identifier:` or `x509_san_dns:` |
 
-        **`responseMode=dc_api` requirements:**
-        - Use `POST /v2/vp-session-request` (not this cookie-free endpoint) for browser/SDK flows
-        - `clientId` must use a signed-request scheme: `decentralized_identifier:` or `x509_san_dns:`
+        ---
+
+        ## Digital Credentials API (`responseMode=dc_api`)
+
+        Same-device browser mediation via W3C Digital Credentials API (`navigator.credentials.get`).
+        This endpoint accepts `responseMode=dc_api` and does **not** set a `transaction_id` cookie.
+
+        After the wallet/SDK submits via `POST /vp-submission/dc-api`, fetch results with
+        `POST /v2/vp-results/{transactionId}` using the `transactionId` returned by
+        `POST /v2/vp-request`. The submission response does not include `transactionId`;
+        clients must retain it from request creation.
+
+        **Requirements:**
+        - `client_id_prefix` must be `decentralized_identifier:` or `x509_san_dns:`
         - `responseCodeValidationRequired` must be `false`
         - Request must include an `Origin` or `Referer` header so the server can persist `expected_origins`
-        - Response includes `requestUri` (JWT for the wallet mediator) and `responseUri` (SDK submit URL)
+        - Authorization Request is returned **by reference**: `requestUri` (JWT for the wallet mediator) and `responseUri` (`POST /vp-submission/dc-api`)
+        - `client_metadata` is **supported** (included in the signed request JWT)
 
       operationId: createVPRequestV2
       tags:
         - VP Request
+      parameters:
+        - name: Origin
+          in: header
+          required: false
+          description: Required when `responseMode=dc_api`. Canonical verifier origin persisted as `expected_origins`.
+          schema:
+            type: string
+            example: 'https://verify.example.com'
+        - name: Referer
+          in: header
+          required: false
+          description: Fallback when `Origin` is absent. Used only for `responseMode=dc_api`.
+          schema:
+            type: string
+            example: 'https://verify.example.com/'
       requestBody:
         required: true
         content:
@@ -150,12 +215,54 @@ paths:
                           vct_values:
                             - 'https://example.com/AgeCredential'
                         require_cryptographic_holder_binding: true
+              x509_san_dns:
+                summary: Certificate SAN DNS clientId (by reference)
+                value:
+                  clientId: 'x509_san_dns:verify.example.com'
+                  dcqlQuery:
+                    credentials:
+                      - id: age_credential_query
+                        format: ldp_vc
+                        meta:
+                          type_values:
+                            - - VerifiableCredential
+                              - AgeCredential
+                        require_cryptographic_holder_binding: true
+              redirect_uri:
+                summary: Redirect URI clientId (by value)
+                value:
+                  clientId: 'redirect_uri:https://injiverify.collab.mosip.net/v1/verify/v2/vp-submission/direct-post'
+                  dcqlQuery:
+                    credentials:
+                      - id: age_credential_query
+                        format: ldp_vc
+                        meta:
+                          type_values:
+                            - - VerifiableCredential
+                              - AgeCredential
+                        require_cryptographic_holder_binding: true
+              dc_api:
+                summary: Digital Credentials API (responseMode=dc_api)
+                value:
+                  clientId: 'decentralized_identifier:did:web:verify.example.com'
+                  responseMode: dc_api
+                  responseCodeValidationRequired: false
+                  dcqlQuery:
+                    credentials:
+                      - id: age_credential_query
+                        format: ldp_vc
+                        meta:
+                          type_values:
+                            - - VerifiableCredential
+                              - AgeCredential
+                        require_cryptographic_holder_binding: true
       responses:
         '201':
           description: |-
             The VP request was created successfully. The response includes a `transactionId` and `requestId`, along with either:
-            - The full `authorizationDetails` object (pre-registered clientId), or
-            - A `requestUri` pointing to the authorization request JWT (decentralized_identifier clientId).
+            - The full `authorizationDetails` object (**by value** — pre-registered or `redirect_uri:` `client_id_prefix`), or
+            - A `requestUri` pointing to the authorization request JWT (**by reference** — `decentralized_identifier:` or `x509_san_dns:`).
+            For `responseMode=dc_api`, the by-reference body also includes `responseUri` (`POST /vp-submission/dc-api`).
           content:
             application/json:
               schema:
@@ -164,7 +271,7 @@ paths:
                   - $ref: '#/components/schemas/VPRequestResponseByReference'
               examples:
                 by_value:
-                  summary: Authorization by value (pre-registered clientId)
+                  summary: Authorization by value (pre-registered / redirect_uri)
                   value:
                     transactionId: txn_f82f281e-8d96-419b-b413-5a0459739a7b
                     requestId: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
@@ -183,33 +290,22 @@ paths:
                                 - - VerifiableCredential
                                   - AgeCredential
                             require_cryptographic_holder_binding: true
-                      client_metadata:
-                        vp_formats_supported:
-                          ldp_vc:
-                            proof_type:
-                              - Ed25519Signature2020
-                          dc+sd-jwt:
-                            sd-jwt_alg_values:
-                              - ES256
-                              - ES384
-                            kb-jwt_alg_values:
-                              - ES256
-                              - ES384
-                          vc+sd-jwt:
-                            sd-jwt_alg_values:
-                              - ES256
-                              - ES384
-                            kb-jwt_alg_values:
-                              - ES256
-                              - ES384
                       issuedAt: 1752838929000
                     expiresAt: 1752838929
                 by_reference:
-                  summary: Authorization by reference (decentralized_identifier clientId)
+                  summary: Authorization by reference (decentralized_identifier / x509_san_dns)
                   value:
                     transactionId: 'urn:uuid:f82f281e-8d96-419b-b413-5a0459739a7b'
                     requestId: 'urn:uuid:6d538e1b-2615-4927-bfd2-094e9f73f2a1'
                     requestUri: 'https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+                    expiresAt: 1752838929
+                by_reference_dc_api:
+                  summary: DC API by reference (includes responseUri for SDK submit)
+                  value:
+                    transactionId: 'urn:uuid:f82f281e-8d96-419b-b413-5a0459739a7b'
+                    requestId: 'urn:uuid:6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+                    requestUri: 'https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+                    responseUri: 'https://injiverify.collab.mosip.net/v1/verify/vp-submission/dc-api'
                     expiresAt: 1752838929
         '400':
           description: |-
@@ -236,6 +332,7 @@ paths:
             | `invalid_request` | DC API response_mode requires a decentralized_identifier or x509_san_dns client_id. |
             | `invalid_request` | responseCodeValidationRequired is not supported with response_mode=dc_api. |
             | `invalid_request` | Unable to determine verifier origin from Origin or Referer headers. |
+            | `invalid_request` | For the redirect_uri client_id scheme, the value after the prefix must be a non-empty, well-formed absolute https URI. |
 
             **DCQL structure validation errors:**
 
@@ -308,9 +405,9 @@ paths:
 
         This replaces the legacy `/vp-session-request` endpoint and is **not backward compatible**.
 
-        **The request and response body is identical to `/v2/vp-request`**, with the addition that a base64-encoded `transaction_id` is set as an **HttpOnly cookie** upon success.
-
-        This endpoint is intended for **session-based flows** (e.g., when using `@injistack/react-inji-verify-sdk`).
+        Sets a base64-encoded `transaction_id` as an **HttpOnly cookie** upon success. Intended for
+        **session-based flows** (e.g., `@injistack/react-inji-verify-sdk`) that later call
+        `POST /vp-session-results`.
 
         ---
 
@@ -325,18 +422,138 @@ paths:
         | Production | true | true | None | 15 min |
         | Local | true | false | Lax | 15 min |
 
-        > This cookie is **only set** by `/v2/vp-session-request`, not by `/v2/vp-request`.
+        ---
+
+        ## Request
+
+        The request body **must include**:
+        - `clientId`
+        - `dcql_query` — DCQL query specifying the credentials to request (per OpenID4VP v1.0)
+
+        `presentationDefinition` and `presentationDefinitionId` are **not supported** and will be rejected.
+
+        ---
+
+        ## client_id_prefix
+
+        `clientId` uses an OpenID4VP v1.0 Client Identifier Prefix (Section 5.9.3).
+        Each prefix documents the same three properties: Authorization Request delivery, `client_metadata`, and `response_mode`.
+
+        | Prefix | Authorization Request | `client_metadata` | `response_mode` |
+        |---|---|---|---|
+        | *(none)* Pre-registered | by value (`authorizationDetails`) | not supported | `direct_post` |
+        | `decentralized_identifier:` | by reference (`requestUri`) | supported | `direct_post` and `dc_api` |
+        | `x509_san_dns:` | by reference (`requestUri`) | supported | `direct_post` and `dc_api` |
+        | `redirect_uri:` | by value (`authorizationDetails`) | not supported | `direct_post` |
+
+        ### Pre-registered
+        - `clientId` is a simple string with no prefix
+        - Example: `client123`
+        - Authorization Request is returned **by value** in `authorizationDetails`
+        - `client_metadata` is **not supported** — SHOULD NOT be included (OpenID4VP v1.0 Section 8.5)
+        - `response_mode`: `direct_post` only (not valid with `dc_api`)
+
+        ### Decentralized Identifier (`decentralized_identifier:`)
+        - `clientId` must use the `decentralized_identifier:` prefix per OpenID4VP v1.0 Section 5.9.3
+        - Example: `decentralized_identifier:did:example:verifier123`
+        - Authorization Request is returned **by reference** (`requestUri`)
+        - `client_metadata` is **supported** — included in the signed request JWT (`vp_formats_supported`)
+        - `response_mode`: `direct_post` and `dc_api`
+        - Request JWT is signed with a `kid` header resolved via the Verifier DID document
+        - The legacy `did:` prefix is **rejected** with `INVALID_CLIENT_IDENTIFIER`
+
+        ### Certificate SAN DNS (`x509_san_dns:`)
+        - `clientId` must use the `x509_san_dns:` prefix per OpenID4VP v1.0 Section 5.9.3
+        - Example: `x509_san_dns:verify.example.com`
+        - Authorization Request is returned **by reference** (`requestUri`)
+        - `client_metadata` is **supported** — included in the signed request JWT (`vp_formats_supported`)
+        - `response_mode`: `direct_post` and `dc_api`
+        - Request JWT is signed with an `x5c` header (leaf-first X.509 certificate chain); no `kid`
+        - The DNS name after the prefix must be syntactically valid and must match this deployment's configured `inji.verify.x509-san-dns.host`
+        - A signing certificate chain must be configured; outside local/dev hosts, `request_uri` must be served over HTTPS
+        - The wallet validates the cert chain and checks that the DNS name in `clientId` appears in the leaf certificate SAN
+
+        ### Redirect URI (`redirect_uri:`)
+        - `clientId` must use the `redirect_uri:` prefix per OpenID4VP v1.0 Section 5.9.3
+        - Example: `redirect_uri:https://injiverify.example.com/v1/verify/v2/vp-submission/direct-post`
+        - Authorization Request is returned **by value** in `authorizationDetails` (unsigned / no `requestUri`)
+        - `client_metadata` is **not supported**
+        - `response_mode`: `direct_post` only (not valid with `dc_api`)
+        - The URI part after the prefix **MUST** be an absolute **HTTPS** URI and **MUST** equal `authorizationDetails.responseUri` (the Verifier's `direct_post` endpoint)
+        - Plain `http://` URIs are rejected with `invalid_request`
+
+        ---
+
+        ## nonce
+
+        - Optional field
+        - If provided: must be ≥ 16 characters, URL-safe characters only (`[A-Za-z0-9._~-]`); blank or whitespace values are rejected
+        - If not provided: a cryptographically secure nonce is generated (Base64URL without padding, ≥ 128 bits entropy)
+
+        ---
+
+        ## transactionId / requestId
+
+        - `transactionId`: optional, generated as `txn_<uuid>` if absent
+        - `requestId`: auto-generated as `req_<uuid>` per transaction
+
+        ---
+
+        ## responseCodeValidationRequired
+
+        | Flow Type | Value | Behavior |
+        |---|---|---|
+        | Cross Device Flow | `false` | `/v2/vp-submission/direct-post` returns HTTP 200 only |
+        | Same Device – Web Wallet | `true` | `/v2/vp-submission/direct-post` returns `redirect_uri` with `response_code` |
+        | Same Device – Mobile Wallet | `false` | `/v2/vp-submission/direct-post` returns HTTP 200 only |
+        | Digital Credentials API (`responseMode=dc_api`) | must be `false` | Rejected with `invalid_request` when enabled |
+
+        ---
+
+        ## responseMode
+
+        Optional. Defaults to `direct_post`.
+
+        | Value | Submission | Notes |
+        |---|---|---|
+        | `direct_post` (default) | Wallet POSTs form-urlencoded to `/v2/vp-submission/direct-post` | Cross-device QR / deep-link / web-wallet redirect |
+        | `dc_api` | Browser SDK POSTs JSON to `/vp-submission/dc-api` after `navigator.credentials.get` | Same-device only. Requires `decentralized_identifier:` or `x509_san_dns:` |
 
         ---
 
         ## Digital Credentials API (`responseMode=dc_api`)
 
-        Browser/SDK DC API flows **must** use this endpoint so `/vp-session-results` receives the
-        `transaction_id` cookie. See the `dc_api` request example below.
+        Same-device browser mediation via W3C Digital Credentials API (`navigator.credentials.get`).
+        This endpoint accepts `responseMode=dc_api` and sets the `transaction_id` HttpOnly cookie.
+
+        After the wallet/SDK submits via `POST /vp-submission/dc-api`, fetch results with
+        `POST /vp-session-results` using that cookie.
+
+        **Requirements:**
+        - `client_id_prefix` must be `decentralized_identifier:` or `x509_san_dns:`
+        - `responseCodeValidationRequired` must be `false`
+        - Request must include an `Origin` or `Referer` header so the server can persist `expected_origins`
+        - Authorization Request is returned **by reference**: `requestUri` (JWT for the wallet mediator) and `responseUri` (`POST /vp-submission/dc-api`)
+        - `client_metadata` is **supported** (included in the signed request JWT)
 
       operationId: createVPSessionRequestV2
       tags:
         - VP Request
+      parameters:
+        - name: Origin
+          in: header
+          required: false
+          description: Required when `responseMode=dc_api`. Canonical verifier origin persisted as `expected_origins`.
+          schema:
+            type: string
+            example: 'https://verify.example.com'
+        - name: Referer
+          in: header
+          required: false
+          description: Fallback when `Origin` is absent. Used only for `responseMode=dc_api`.
+          schema:
+            type: string
+            example: 'https://verify.example.com/'
       requestBody:
         required: true
         content:
@@ -348,6 +565,44 @@ paths:
                 summary: Pre-registered clientId with DCQL query (by value)
                 value:
                   clientId: client123
+                  dcqlQuery:
+                    credentials:
+                      - id: age_credential_query
+                        format: ldp_vc
+                        meta:
+                          type_values:
+                            - - VerifiableCredential
+                              - AgeCredential
+                        require_cryptographic_holder_binding: true
+              decentralized_identifier:
+                summary: DID-based clientId with DCQL query (by reference)
+                value:
+                  clientId: 'decentralized_identifier:did:example:verifier123'
+                  dcqlQuery:
+                    credentials:
+                      - id: age_credential_query
+                        format: dc+sd-jwt
+                        meta:
+                          vct_values:
+                            - 'https://example.com/AgeCredential'
+                        require_cryptographic_holder_binding: true
+              x509_san_dns:
+                summary: Certificate SAN DNS clientId (by reference)
+                value:
+                  clientId: 'x509_san_dns:verify.example.com'
+                  dcqlQuery:
+                    credentials:
+                      - id: age_credential_query
+                        format: ldp_vc
+                        meta:
+                          type_values:
+                            - - VerifiableCredential
+                              - AgeCredential
+                        require_cryptographic_holder_binding: true
+              redirect_uri:
+                summary: Redirect URI clientId (by value)
+                value:
+                  clientId: 'redirect_uri:https://injiverify.collab.mosip.net/v1/verify/v2/vp-submission/direct-post'
                   dcqlQuery:
                     credentials:
                       - id: age_credential_query
@@ -375,7 +630,10 @@ paths:
       responses:
         '201':
           description: |-
-            The VP session request was created successfully. See `/v2/vp-request` for response body details.
+            The VP session request was created successfully. The response includes a `transactionId` and `requestId`, along with either:
+            - The full `authorizationDetails` object (**by value** — pre-registered or `redirect_uri:` `client_id_prefix`), or
+            - A `requestUri` pointing to the authorization request JWT (**by reference** — `decentralized_identifier:` or `x509_san_dns:`).
+            For `responseMode=dc_api`, the by-reference body also includes `responseUri` (`POST /vp-submission/dc-api`).
             Additionally sets a base64-encoded `transaction_id` as an HttpOnly cookie.
           headers:
             Set-Cookie:
@@ -390,6 +648,35 @@ paths:
                   - $ref: '#/components/schemas/VPRequestResponse'
                   - $ref: '#/components/schemas/VPRequestResponseByReference'
               examples:
+                by_value:
+                  summary: Authorization by value (pre-registered / redirect_uri)
+                  value:
+                    transactionId: txn_f82f281e-8d96-419b-b413-5a0459739a7b
+                    requestId: req_6d538e1b-2615-4927-bfd2-094e9f73f2a1
+                    authorizationDetails:
+                      responseUri: 'https://injiverify.collab.mosip.net/v1/verify/v2/vp-submission/direct-post'
+                      responseType: vp_token
+                      responseMode: direct_post
+                      clientId: client123
+                      nonce: T3yeEqs0zVbveJASNFZ4kA
+                      dcqlQuery:
+                        credentials:
+                          - id: age_credential_query
+                            format: ldp_vc
+                            meta:
+                              type_values:
+                                - - VerifiableCredential
+                                  - AgeCredential
+                            require_cryptographic_holder_binding: true
+                      issuedAt: 1752838929000
+                    expiresAt: 1752838929
+                by_reference:
+                  summary: Authorization by reference (decentralized_identifier / x509_san_dns)
+                  value:
+                    transactionId: 'urn:uuid:f82f281e-8d96-419b-b413-5a0459739a7b'
+                    requestId: 'urn:uuid:6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+                    requestUri: 'https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/6d538e1b-2615-4927-bfd2-094e9f73f2a1'
+                    expiresAt: 1752838929
                 by_reference_dc_api:
                   summary: DC API by reference (includes responseUri for SDK submit)
                   value:
@@ -409,26 +696,33 @@ paths:
       summary: Get VP Request JWT (v2 — OpenID4VP 1.0)
       description: |-
         ## Description
-        Retrieves a Verifiable Presentation (VP) request as a signed JWT. Used in **authorization by reference** flows where the wallet (or Digital Credentials API mediator) fetches the full request from the `requestUri` returned by `/v2/vp-request` or `/v2/vp-session-request`.
+        Retrieves a Verifiable Presentation (VP) request as a signed JWT. Used in **authorization by reference** flows (`client_id_prefix` `decentralized_identifier:` or `x509_san_dns:`, including `responseMode=dc_api`) where the wallet (or Digital Credentials API mediator) fetches the full request from the `requestUri` returned by `/v2/vp-request` or `/v2/vp-session-request`.
 
         This replaces the legacy `/vp-request/{requestId}` endpoint and is **not backward compatible**.
 
-        Supports DCQL-based authorization requests per OpenID4VP v1.0.
+        Supports DCQL-based authorization requests per OpenID4VP v1.0. The JWT includes `client_metadata` (`vp_formats_supported`).
 
         ---
 
         ## JWT header (`kid` vs `x5c`)
 
-        The JWS header is chosen **per request** from the `client_id` prefix used when the VP request was created (same Ed25519 signing key either way):
+        The JWS header is chosen **per request** from the `client_id_prefix` used when the VP request was created (same Ed25519 signing key either way):
 
-        | `client_id` prefix | Header | Contents | Wallet trust |
+        | `client_id_prefix` | Header | Contents | Wallet trust |
         |---|---|---|---|
         | `decentralized_identifier:` | `kid` (no `x5c`) | DID URL of the verifier verification method (e.g. `did:web:…#key-0`) | Resolve DID document (`GET /did.json`), match `kid` to `verificationMethod.id`, verify signature |
         | `x509_san_dns:` | `x5c` (no `kid`) | Leaf-first X.509 certificate chain (base64-DER) | Validate cert chain + signature; DNS name in `client_id` must appear in the leaf cert SAN |
 
         Common header fields for both: `alg=EdDSA`, `typ=oauth-authz-req+jwt`.
 
-        A deployment can serve both schemes side by side — header selection is not a global toggle.
+        A deployment can serve both prefixes side by side — header selection is not a global toggle.
+
+        By-value prefixes (pre-registered, `redirect_uri:`) do not use this endpoint — those Authorization Requests are returned inline in `authorizationDetails`.
+
+        | Prefix | Authorization Request | `client_metadata` | `response_mode` |
+        |---|---|---|---|
+        | `decentralized_identifier:` | by reference (this JWT) | supported | `direct_post` and `dc_api` |
+        | `x509_san_dns:` | by reference (this JWT) | supported | `direct_post` and `dc_api` |
 
         ---
 
@@ -440,8 +734,11 @@ paths:
         | `state` | Present | Omitted |
         | `response_uri` | Present | Omitted |
         | `expected_origins` | Omitted | Present (slash-free canonical origins, e.g. `https://verify.example.com`) |
+        | `client_metadata` | Present (`vp_formats_supported`) | Present (`vp_formats_supported`) |
         | `dcql_query` | Present | Present |
         | `nonce` / `client_id` | Present | Present |
+
+        `client_metadata` is **supported** on this JWT because by-reference prefixes are `decentralized_identifier:` and `x509_san_dns:` only.
       operationId: getVPRequestJwtV2
       tags:
         - VP Request
@@ -513,6 +810,11 @@ paths:
         Used by a wallet to submit a **Verifiable Presentation (VP)** via DCQL-based `vp_token`, per OpenID4VP v1.0.
 
         This replaces the legacy `/vp-submission/direct-post` endpoint and is **not backward compatible**.
+
+        Applies when the Authorization Request used `response_mode=direct_post` (all `client_id_prefix` values).
+        By-value prefixes (pre-registered, `redirect_uri:`) submit from `authorizationDetails`;
+        by-reference prefixes (`decentralized_identifier:`, `x509_san_dns:`) submit after fetching the signed JWT.
+        `client_metadata` is **not supported** for by-value prefixes and **supported** for by-reference prefixes.
 
         `presentation_submission` is **no longer accepted**. The `vp_token` is now a JSON object keyed by DCQL `query_id`.
 
@@ -728,6 +1030,11 @@ paths:
         ## Description
         Used by the verifier SDK (browser) to submit a **Verifiable Presentation** returned from
         `navigator.credentials.get({ digital: … })`, per OpenID4VP `response_mode=dc_api`.
+
+        Applies when the Authorization Request used `response_mode=dc_api`:
+        - `client_id_prefix` must be `decentralized_identifier:` or `x509_san_dns:`
+        - Authorization Request is **by reference** (signed JWT from `requestUri`)
+        - `client_metadata` is **supported** (in that JWT)
 
         Correlates via JSON `requestId` (same role as `state` on `direct-post`). **No cookie is
         required on this endpoint** — the `transaction_id` cookie is only required on
@@ -1313,7 +1620,7 @@ paths:
       description: |-
         ## Description
         Retrieves the DID (Decentralized Identifier) document for the verifier.
-        The DID document contains public keys for authentication and service endpoints. Supports Authorization Requests by reference with DID-based `client_id` (using the `decentralized_identifier:` prefix per OpenID4VP v1.0).
+        The DID document contains public keys for authentication and service endpoints. Supports Authorization Requests **by reference** with DID-based `client_id` (using the `decentralized_identifier:` `client_id_prefix` per OpenID4VP v1.0).
       tags:
         - VP Request
       responses:
@@ -1348,6 +1655,14 @@ components:
     # VP Request schemas
     # -------------------------------------------------------------------------
     VPRequestCreate:
+      description: |-
+        VP request create body. `responseMode=dc_api` requires a signed-request `clientId`
+        (`decentralized_identifier:` or `x509_san_dns:`) and `responseCodeValidationRequired=false`.
+        Omit `responseMode` or use `direct_post` for all `client_id_prefix` values.
+      oneOf:
+        - $ref: '#/components/schemas/VPRequestCreateDirectPost'
+        - $ref: '#/components/schemas/VPRequestCreateDcApi'
+    VPRequestCreateBase:
       type: object
       required:
         - clientId
@@ -1356,13 +1671,20 @@ components:
         clientId:
           type: string
           description: |-
-            Identifier of the verifier. Supported schemes:
+            Identifier of the verifier. OpenID4VP v1.0 `client_id_prefix` (Section 5.9.3).
+            Each prefix documents the same three properties: Authorization Request delivery, `client_metadata`, and `response_mode`.
 
-            - **Pre-registered**: simple string (e.g., `client123`). Authorization Request is returned by value. `client_metadata` MUST NOT be included. Not valid with `responseMode=dc_api`.
-            - **Decentralized Identifier**: `decentralized_identifier:` prefix (e.g., `decentralized_identifier:did:web:verify.example.com`). Authorization Request is returned by reference.
-            - **Certificate SAN DNS**: `x509_san_dns:` prefix (e.g., `x509_san_dns:verify.example.com`). Authorization Request is returned by reference with `x5c` JWT header.
+            | Prefix | Authorization Request | `client_metadata` | `response_mode` |
+            |---|---|---|---|
+            | *(none)* Pre-registered | by value (`authorizationDetails`) | not supported | `direct_post` |
+            | `decentralized_identifier:` | by reference (`requestUri`) | supported | `direct_post` and `dc_api` |
+            | `x509_san_dns:` | by reference (`requestUri`) | supported | `direct_post` and `dc_api` |
+            | `redirect_uri:` | by value (`authorizationDetails`) | not supported | `direct_post` |
 
-            DC API (`responseMode=dc_api`) requires `decentralized_identifier:` or `x509_san_dns:`.
+            - **Pre-registered**: simple string (e.g., `client123`). Authorization Request is returned **by value**. `client_metadata` is **not supported**. `response_mode`: `direct_post` only.
+            - **Decentralized Identifier**: `decentralized_identifier:` prefix (e.g., `decentralized_identifier:did:web:verify.example.com`). Authorization Request is returned **by reference** (`kid` JWT header). `client_metadata` is **supported**. `response_mode`: `direct_post` and `dc_api`.
+            - **Certificate SAN DNS**: `x509_san_dns:` prefix (e.g., `x509_san_dns:verify.example.com`). Authorization Request is returned **by reference** (`x5c` JWT header). `client_metadata` is **supported**. `response_mode`: `direct_post` and `dc_api`. DNS name must match `inji.verify.x509-san-dns.host`.
+            - **Redirect URI**: `redirect_uri:` prefix (e.g., `redirect_uri:https://injiverify.example.com/v1/verify/v2/vp-submission/direct-post`). Authorization Request is returned **by value**. `client_metadata` is **not supported**. `response_mode`: `direct_post` only. URI part MUST be an absolute HTTPS URI and MUST equal `responseUri`. Plain HTTP is rejected.
           example: client123
         dcqlQuery:
           $ref: '#/components/schemas/DcqlQuery'
@@ -1372,10 +1694,9 @@ components:
           description: |-
             OpenID4VP `response_mode`. Omit or use `direct_post` for wallet HTTP submission.
             Use `dc_api` for W3C Digital Credentials API (same-device browser mediation).
-          enum:
-            - direct_post
-            - dc_api
-          default: direct_post
+
+            `dc_api` requires `client_id_prefix` `decentralized_identifier:` or `x509_san_dns:`.
+            Pre-registered and `redirect_uri:` support `direct_post` only.
           example: direct_post
         responseCodeValidationRequired:
           type: boolean
@@ -1399,6 +1720,44 @@ components:
 
             If not provided, a cryptographically secure nonce is generated (Base64URL without padding, ≥ 128 bits entropy).
           example: T3yeEqs0zVbveJASNFZ4kA
+    VPRequestCreateDirectPost:
+      title: direct_post
+      description: Wallet HTTP submission. All `client_id_prefix` values are valid. `responseMode` may be omitted.
+      allOf:
+        - $ref: '#/components/schemas/VPRequestCreateBase'
+        - type: object
+          properties:
+            responseMode:
+              type: string
+              enum:
+                - direct_post
+              default: direct_post
+              example: direct_post
+    VPRequestCreateDcApi:
+      title: dc_api
+      description: Digital Credentials API. Signed-request `clientId` only; `responseCodeValidationRequired` must be false.
+      allOf:
+        - $ref: '#/components/schemas/VPRequestCreateBase'
+        - type: object
+          required:
+            - responseMode
+          properties:
+            clientId:
+              type: string
+              pattern: '^(decentralized_identifier:|x509_san_dns:).+$'
+              description: Must use `decentralized_identifier:` or `x509_san_dns:` when `responseMode` is `dc_api`.
+              example: 'decentralized_identifier:did:web:verify.example.com'
+            responseMode:
+              type: string
+              enum:
+                - dc_api
+              example: dc_api
+            responseCodeValidationRequired:
+              type: boolean
+              enum:
+                - false
+              default: false
+              example: false
     DcqlQuery:
       type: object
       required:
@@ -1550,6 +1909,9 @@ components:
           example: true
     VPRequestResponse:
       type: object
+      description: |-
+        Authorization Request returned **by value** when `client_id_prefix` is pre-registered or `redirect_uri:`.
+        `client_metadata` is **not supported**. `response_mode` is `direct_post` only.
       required:
         - authorizationDetails
       properties:
@@ -1570,6 +1932,10 @@ components:
           example: 1752838929
     VPRequestResponseByReference:
       type: object
+      description: |-
+        Authorization Request returned **by reference** when `client_id_prefix` is `decentralized_identifier:` or `x509_san_dns:`.
+        `client_metadata` is **supported** in the signed JWT at `requestUri`.
+        `response_mode`: `direct_post` and `dc_api`. For `dc_api`, `responseUri` is also present.
       required:
         - requestUri
       properties:
@@ -1584,7 +1950,7 @@ components:
         requestUri:
           type: string
           format: uri
-          description: URI from which the wallet fetches the signed Authorization Request JWT.
+          description: URI from which the wallet (or DC API mediator) fetches the signed Authorization Request JWT (`GET /v2/vp-request/{requestId}`).
           example: 'https://injiverify.collab.mosip.net/v1/verify/v2/vp-request/6d538e1b-2615-4927-bfd2-094e9f73f2a1'
         responseUri:
           type: string
@@ -1601,7 +1967,7 @@ components:
     AuthorizationRequestResponse:
       title: AuthorizationRequestResponse
       type: object
-      description: Full authorization request payload returned when clientId scheme is pre-registered.
+      description: Full authorization request payload returned **by value** when `client_id_prefix` is pre-registered or `redirect_uri:`. `client_metadata` is **not supported**. `response_mode` is `direct_post` only.
       properties:
         responseUri:
           type: string
@@ -1614,16 +1980,17 @@ components:
           example: vp_token
         responseMode:
           type: string
-          description: '`direct_post` (wallet HTTP submit) or `dc_api` (Digital Credentials API).'
+          description: |-
+            Always `direct_post` in by-value `authorizationDetails` (pre-registered / `redirect_uri:`).
+            `dc_api` is used only with by-reference prefixes and appears in the signed JWT, not in this object.
           enum:
             - direct_post
-            - dc_api
           example: direct_post
         expectedOrigins:
           type: array
           description: |-
-            Present only for `response_mode=dc_api`. Slash-free canonical origins
-            (e.g. `https://verify.example.com`) the submission Origin must match.
+            Present only for `response_mode=dc_api` (by-reference JWTs). Omitted from by-value `authorizationDetails`.
+            Slash-free canonical origins (e.g. `https://verify.example.com`) the submission Origin must match.
           items:
             type: string
           example:
@@ -1641,7 +2008,9 @@ components:
           description: DCQL query specifying the credentials requested.
         client_metadata:
           $ref: '#/components/schemas/ClientMetadata'
-          description: Verifier metadata including supported VP formats. Included for pre-registered clients only when applicable.
+          description: |-
+            `client_metadata` is **not supported** in by-value `authorizationDetails` (pre-registered and `redirect_uri:`).
+            `client_metadata` is **supported** in signed by-reference JWTs (`decentralized_identifier:` and `x509_san_dns:`) as `vp_formats_supported`.
         issuedAt:
           type: integer
           format: int64
@@ -1649,7 +2018,11 @@ components:
           example: 1752838929000
     ClientMetadata:
       type: object
-      description: Verifier client metadata per OpenID4VP v1.0 Section 5.
+      description: |-
+        Verifier client metadata per OpenID4VP v1.0 Section 5.
+
+        **Supported** in signed Authorization Request JWTs when `client_id_prefix` is `decentralized_identifier:` or `x509_san_dns:` (by reference, including `responseMode=dc_api`).
+        **Not supported** for pre-registered and `redirect_uri:` (by value).
       properties:
         vp_formats_supported:
           type: object

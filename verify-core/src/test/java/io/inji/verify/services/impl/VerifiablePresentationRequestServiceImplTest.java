@@ -567,6 +567,71 @@ class VerifiablePresentationRequestServiceImplTest {
     }
 
     @Test
+    @DisplayName("createAuthorizationRequest should reject redirect_uri client_id whose URI does not match this deployment's response_uri")
+    void should_throwValidationException_when_redirectUriClientIdDoesNotMatchResponseUri() throws Exception {
+        VPRequestCreateDto dto = new VPRequestCreateDto(
+                "redirect_uri:https://evil.example/cb", "tx_redirect_mismatch", null, minimalDcqlQuery(), false);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> service.createAuthorizationRequest(dto, Optional.empty()));
+        assertEquals(ErrorCode.CLIENT_ID_REDIRECT_URI_MISMATCH, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should reject redirect_uri client_id with an empty URI part")
+    void should_throwValidationException_when_redirectUriClientIdIsEmpty() throws Exception {
+        VPRequestCreateDto dto = new VPRequestCreateDto(
+                "redirect_uri:", "tx_redirect_empty", null, minimalDcqlQuery(), false);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> service.createAuthorizationRequest(dto, Optional.empty()));
+        assertEquals(ErrorCode.CLIENT_ID_REDIRECT_URI_INVALID, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should reject redirect_uri client_id with a malformed URI part")
+    void should_throwValidationException_when_redirectUriClientIdIsMalformed() throws Exception {
+        VPRequestCreateDto dto = new VPRequestCreateDto(
+                "redirect_uri:not-a-url", "tx_redirect_malformed", null, minimalDcqlQuery(), false);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> service.createAuthorizationRequest(dto, Optional.empty()));
+        assertEquals(ErrorCode.CLIENT_ID_REDIRECT_URI_INVALID, ex.getErrorCode());
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should reject redirect_uri client_id with an http URI")
+    void should_throwValidationException_when_redirectUriClientIdUsesHttp() throws Exception {
+        VPRequestCreateDto dto = new VPRequestCreateDto(
+                "redirect_uri:http://verify.example.com/v1/verify/v2/vp-submission/direct-post",
+                "tx_redirect_http", null, minimalDcqlQuery(), false);
+
+        VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
+                () -> service.createAuthorizationRequest(dto, Optional.empty()));
+        assertEquals(ErrorCode.CLIENT_ID_REDIRECT_URI_INVALID, ex.getErrorCode());
+        assertTrue(ex.getMessage().contains("well-formed absolute https URI"));
+    }
+
+    @Test
+    @DisplayName("createAuthorizationRequest should use the URI from a matching redirect_uri client_id as response_uri (by-value)")
+    void should_useClaimedResponseUri_when_redirectUriClientIdMatchesDeploymentResponseUri() throws Exception {
+        when(mockAuthorizationRequestCreateResponseRepository.save(any(AuthorizationRequestCreateResponse.class)))
+                .thenReturn(null);
+        String expectedResponseUri = service.verifyServiceBaseUrl + Constants.VP_DIRECT_POST_SUBMISSION_URI;
+        String clientId = Constants.CLIENT_ID_PREFIX_REDIRECT_URI + ":" + expectedResponseUri;
+        VPRequestCreateDto dto = new VPRequestCreateDto(
+                clientId, "tx_redirect_match", null, minimalDcqlQuery(), false);
+
+        VPRequestResponseDto response = service.createAuthorizationRequest(dto, Optional.empty());
+
+        assertNotNull(response);
+        assertNull(response.getRequestUri(), "redirect_uri client_id must return the Authorization Request by value");
+        assertNotNull(response.getAuthorizationDetails());
+        assertEquals(clientId, response.getAuthorizationDetails().getClientId());
+        assertEquals(expectedResponseUri, response.getAuthorizationDetails().getResponseUri());
+    }
+
+    @Test
     @DisplayName("Should throw JWTCreationException with a clear log (not a raw RuntimeException) when no cert chain is configured")
     void getVPRequestJwt_WithX509SanDns_NoCertChainConfigured_ThrowsJWTCreationException() throws Exception {
         String requestId = "req_x5c_no_cert";

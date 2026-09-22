@@ -39,6 +39,9 @@ public class ConstantsTest {
     void testIdPrefixConstants() {
         assertEquals("txn", Constants.TRANSACTION_ID_PREFIX);
         assertEquals("req", Constants.REQUEST_ID_PREFIX);
+        assertEquals("decentralized_identifier", Constants.CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER);
+        assertEquals("x509_san_dns", Constants.CLIENT_ID_PREFIX_X509_SAN_DNS);
+        assertEquals("redirect_uri", Constants.CLIENT_ID_PREFIX_REDIRECT_URI);
     }
 
     @Test

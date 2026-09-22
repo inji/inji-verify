@@ -4,7 +4,10 @@ import vpVerificationReducer, {
     setFlowType,
     getVpRequest,
     verificationSubmissionComplete,
-    resetVpRequest
+    resetVpRequest,
+    setSelectedWallet,
+    setShowWalletSelector,
+    showMissingCredentialOptions,
 } from "../../../../redux/features/verify/vpVerificationState";
 import { VCShareType } from "../../../../types/data-types";
 import {getVerifiableClaims, VerificationSteps} from "../../../../utils/config";
@@ -223,6 +226,82 @@ describe("vpVerification slice", () => {
         expect(state.flowType).toBe("crossDevice");
     });
 
+    test("uses unverified credentials when requesting again after partial sharing", () => {
+        const missingCredential = {
+            id: "missing",
+            type: "Type2",
+            essential: false,
+            dcqlQuery: mockDcqlQuery,
+        } as any;
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            isPartiallyShared: true,
+            unVerifiedCredentials: [missingCredential],
+            selectedCredentials: [],
+            originalSelectedCredentials: [],
+        } as any;
+
+        const state = vpVerificationReducer(
+            initialState,
+            getVpRequest({ selectedCredentials: [] }),
+        );
+
+        expect(state.selectedCredentials).toEqual([missingCredential]);
+        expect(state.unVerifiedCredentials).toEqual([]);
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.ScanQrCode);
+    });
+
+    test("stores the selected wallet and opens the wallet selector", () => {
+        const selectedWalletState = vpVerificationReducer(
+            vpVerificationReducer(undefined, { type: "@@INIT" }),
+            setSelectedWallet({ walletId: "wallet-id", walletBaseUrl: "https://wallet.example" }),
+        );
+        const state = vpVerificationReducer(selectedWalletState, setShowWalletSelector());
+
+        expect(state.selectedWalletId).toBe("wallet-id");
+        expect(state.selectedWalletBaseUrl).toBe("https://wallet.example");
+        expect(state.SelectWalletPanel).toBe(true);
+        expect(state.SelectionPanel).toBe(false);
+        expect(state.flowType).toBe("sameDevice");
+    });
+
+    test("shows missing credentials in the wallet selector for same-device flow", () => {
+        const missingCredentials = [
+            { id: "missing", type: "Type2", essential: false, dcqlQuery: mockDcqlQuery },
+        ] as any;
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            flowType: "sameDevice",
+            unVerifiedCredentials: missingCredentials,
+            selectedCredentials: [],
+            isShowResult: true,
+        } as any;
+
+        const state = vpVerificationReducer(initialState, showMissingCredentialOptions());
+
+        expect(state.selectedCredentials).toEqual(missingCredentials);
+        expect(state.SelectWalletPanel).toBe(true);
+        expect(state.SelectionPanel).toBe(false);
+        expect(state.isShowResult).toBe(false);
+    });
+
+    test("shows missing credentials in the selection panel for cross-device flow", () => {
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            flowType: "crossDevice",
+            unVerifiedCredentials: [
+                { id: "missing", type: "Type2", essential: false, dcqlQuery: mockDcqlQuery },
+            ],
+            selectedCredentials: [],
+        } as any;
+
+        const state = vpVerificationReducer(initialState, showMissingCredentialOptions());
+
+        expect(state.SelectWalletPanel).toBe(false);
+        expect(state.SelectionPanel).toBe(true);
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectCredential);
+    });
+
     test("should handle verificationSubmissionComplete (full success)", () => {
         (calculateUnverifiedClaims as jest.Mock).mockReturnValue([]);
 
@@ -273,6 +352,29 @@ describe("vpVerification slice", () => {
         expect(state.unVerifiedCredentials).toEqual([]);
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.DisplayResult);
         expect(state.verificationSubmissionResult).toEqual(verificationResult);
+    });
+
+    test("shows the missing-credential step after a partial verification", () => {
+        const missingCredential = { id: "missing", type: "Type2", dcqlQuery: mockDcqlQuery } as any;
+        (calculateUnverifiedClaims as jest.Mock).mockReturnValue([missingCredential]);
+
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            method: "VERIFY",
+            flowType: "sameDevice",
+            originalSelectedCredentials: [missingCredential],
+            verificationSubmissionResult: [],
+        } as any;
+
+        const state = vpVerificationReducer(
+            initialState,
+            verificationSubmissionComplete({ verificationResult: [] } as any),
+        );
+
+        expect(state.isPartiallyShared).toBe(true);
+        expect(state.unVerifiedCredentials).toEqual([missingCredential]);
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.RequestMissingCredential);
+        expect(state.flowType).toBe("sameDevice");
     });
 
     test("should append all service credentials without deduplicating by type", () => {

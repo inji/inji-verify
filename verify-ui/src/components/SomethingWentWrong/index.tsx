@@ -7,6 +7,7 @@ import { useTranslation } from "react-i18next";
 import { Button } from "../Home/VerificationSection/commons/Button";
 import store from "../../redux/store";
 import {Pages} from "../../utils/config";
+import { checkInternetStatus } from "../../utils/misc";
 
 function SomethingWentWrong(props: any) {
   const navigate = useNavigate();
@@ -36,13 +37,21 @@ function SomethingWentWrong(props: any) {
           id="please-try-again-button"
           title={t("retry")}
           className="my-[30px] mx-auto"
-          onClick={() => {
+          onClick={async () => {
             dispatch(
               updateInternetConnectionStatus({
-                internetConnectionStatus: "UNKNOWN",
+                internetConnectionStatus: "LOADING",
               })
             );
+            const isOnline = await checkInternetStatus();
+            dispatch(
+              updateInternetConnectionStatus({
+                internetConnectionStatus: isOnline ? "ONLINE" : "OFFLINE",
+              })
+            );
+            if (isOnline) {
               navigate(`${redirectPage}`);
+            }
           }}
         />
       </div>

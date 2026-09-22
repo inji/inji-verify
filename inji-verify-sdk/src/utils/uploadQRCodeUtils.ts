@@ -27,6 +27,14 @@ const createQrNotFoundError = (message = "No QR code found") => {
     return error;
 };
 
+const createMultipleQrFoundError = () => {
+    const error = new Error(
+        "Multiple QR codes detected, please retry with an image containing a single QR code.",
+    );
+    error.name = "MULTIPLE_QR_FOUND";
+    return error;
+};
+
 const containsPotentialQrCode = async (file: File): Promise<boolean> => {
     const imageUrl = URL.createObjectURL(file);
 
@@ -106,11 +114,16 @@ export const readQRcodeFromImageFile = async (
         tryInvert: true,
         tryDownscale: false,
         tryDenoise: true,
+        maxNumberOfSymbols: 10,
     });
 
-    const decodedQrCode = results.find((result) => result.isValid);
-    if (decodedQrCode) {
-        return decodedQrCode.text;
+    const validQrCodes = results.filter((result) => result.isValid);
+    if (validQrCodes.length > 1) {
+        throw createMultipleQrFoundError();
+    }
+
+    if (validQrCodes.length === 1) {
+        return validQrCodes[0].text;
     }
 
     if (results.some((result) => result.format === "QRCode" && !result.isValid)) {
@@ -130,6 +143,7 @@ const readQRcodeFromPdf = async (file: File, format: string) => {
     const pdfData = await file.arrayBuffer();
     const pdf = await pdfjsLib.getDocument({data: pdfData}).promise;
     let decodeFailure: Error | undefined;
+    let detectedQrCode: string | undefined;
 
     for (let i = 1; i <= pdf.numPages; i++) {
         const page = await pdf.getPage(i);
@@ -147,25 +161,60 @@ const readQRcodeFromPdf = async (file: File, format: string) => {
                 viewport: viewport,
             };
             await page.render(renderContext).promise;
-            const dataURL = canvas.toDataURL();
-            const blob = await (await fetch(dataURL)).blob();
-            const fileFromBlob = new File([blob], "tempFileName", {type: blob.type});
-            try {
-                const qrCode = await readQRcodeFromImageFile(fileFromBlob, format, true);
-                if (qrCode) {
-                    return qrCode;
+            const scanRegions = [
+                {x: 0, y: 0, width: 1, height: 1},
+                {x: 0, y: 0, width: 1, height: 0.6},
+                {x: 0, y: 0.4, width: 1, height: 0.6},
+                {x: 0, y: 0, width: 0.6, height: 1},
+                {x: 0.4, y: 0, width: 0.6, height: 1},
+            ];
+
+            for (const region of scanRegions) {
+                const scanCanvas = document.createElement("canvas");
+                scanCanvas.width = canvas.width * region.width;
+                scanCanvas.height = canvas.height * region.height;
+                const scanContext = scanCanvas.getContext("2d");
+                if (!scanContext) {
+                    throw new Error("Failed to get canvas 2D context");
                 }
-            } catch (error) {
-                if (error instanceof Error && error.name === "QR_DECODE_FAILED") {
-                    decodeFailure ??= error;
-                    continue;
+                scanContext.drawImage(
+                    canvas,
+                    canvas.width * region.x,
+                    canvas.height * region.y,
+                    canvas.width * region.width,
+                    canvas.height * region.height,
+                    0,
+                    0,
+                    scanCanvas.width,
+                    scanCanvas.height,
+                );
+                const dataURL = scanCanvas.toDataURL();
+                const blob = await (await fetch(dataURL)).blob();
+                const fileFromBlob = new File([blob], "tempFileName", {type: blob.type});
+                try {
+                    const qrCode = await readQRcodeFromImageFile(fileFromBlob, format, true);
+                    if (qrCode) {
+                        if (detectedQrCode && detectedQrCode !== qrCode) {
+                            throw createMultipleQrFoundError();
+                        }
+                        detectedQrCode ??= qrCode;
+                    }
+                } catch (error) {
+                    if (error instanceof Error && error.name === "QR_DECODE_FAILED") {
+                        decodeFailure ??= error;
+                        continue;
+                    }
+                    throw error;
                 }
-                throw error;
             }
         }
     }
     if (decodeFailure) {
         throw decodeFailure;
+    }
+
+    if (detectedQrCode) {
+        return detectedQrCode;
     }
 
     throw createQrNotFoundError(`No ${format} found`);

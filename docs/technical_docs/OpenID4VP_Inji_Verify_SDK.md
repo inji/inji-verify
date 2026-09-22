@@ -109,7 +109,7 @@ import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
 
 When the QR code contains a data-share URL (prefixed with `INJI_OVP://`):
 
-**`isVPSubmissionSupported=false` (default):** Redirects directly to the Online VC Provider with `client_id` and `redirect_uri`. The provider returns a VC via redirect. Simple redirect, no backend VP session involved.
+**`isVPSubmissionSupported=false` (default):** Redirects directly to the Online VC Provider with `client_id` and `redirect_uri`. The provider returns an OpenID4VP 1.0 DCQL `vp_token` in the redirect hash (no `presentation_submission`). The SDK extracts the VC and verifies it via `/v2/vc-verification`. No backend VP session involved.
 
 **`isVPSubmissionSupported=true`:** Full VP flow — creates a VP request on the backend, redirects to the Online VC Provider with full authorization parameters, receives `response_code` on redirect back, and fetches results via `/vp-session-results`.
 

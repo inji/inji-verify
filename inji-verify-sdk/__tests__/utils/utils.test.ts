@@ -3,6 +3,10 @@ import {
   isMobileDevice,
   isSignedRequestScheme,
   isChromeDcApiSecurityVersionMet,
+  isDcqlVpToken,
+  parseVpTokenFromFragment,
+  extractVcFromVpToken,
+  getRawHashParam,
 } from "../../src/utils/utils";
 import { DC_API_PROTOCOL } from "../../src/utils/constants";
 
@@ -106,6 +110,125 @@ describe("isDcApiSupported", () => {
     });
     mockDcApi();
     expect(isDcApiSupported(DID_CLIENT_ID)).toBe(false);
+  });
+});
+
+describe("vp token redirect helpers", () => {
+  it("detects DCQL vp_token shape", () => {
+    expect(isDcqlVpToken({ "cred-id": [{}] })).toBe(true);
+    // Shape alone cannot distinguish PE when query id is "verifiableCredential".
+    expect(isDcqlVpToken({ verifiableCredential: [{}] })).toBe(true);
+    expect(isDcqlVpToken(null)).toBe(false);
+    expect(isDcqlVpToken([])).toBe(false);
+    expect(isDcqlVpToken({ foo: "bar" })).toBe(false);
+  });
+
+  it("parses URL-encoded vp_token fragments", () => {
+    const encoded = encodeURIComponent(
+      JSON.stringify({ "cred-id": [{ type: ["VerifiableCredential"] }] })
+    );
+    expect(parseVpTokenFromFragment(encoded)).toEqual({
+      "cred-id": [{ type: ["VerifiableCredential"] }],
+    });
+  });
+
+  it("restores spaces from form-urlencoded + in vp_token fragments", () => {
+    const payload = {
+      "cred-id": [
+        {
+          type: ["VerifiableCredential"],
+          credentialSubject: {
+            fullName: "Alheri Bobby",
+            phone: "+919427357934",
+            region: "yuan wee 3",
+          },
+        },
+      ],
+    };
+    // Java URLEncoder / form-urlencoded: space → +, literal + → %2B
+    const formEncoded = encodeURIComponent(JSON.stringify(payload)).replace(
+      /%20/g,
+      "+"
+    );
+    expect(formEncoded).toContain("Alheri+Bobby");
+    expect(formEncoded).toContain("%2B919427357934");
+    expect(parseVpTokenFromFragment(formEncoded)).toEqual(payload);
+  });
+
+  it("parses plain JSON vp_token fragments", () => {
+    const payload = {
+      "cred-id": [
+        {
+          type: ["VerifiableCredential"],
+          credentialSubject: { fullName: "José García", city: "München" },
+        },
+      ],
+    };
+    expect(parseVpTokenFromFragment(JSON.stringify(payload))).toEqual(payload);
+  });
+
+  it("preserves literal percent escapes in plain JSON vp_token fragments", () => {
+    const payload = {
+      "cred-id": [
+        {
+          type: ["VerifiableCredential"],
+          credentialSubject: { note: "discount 50% off", code: "%7Bnot-encoded%7D" },
+        },
+      ],
+    };
+    expect(parseVpTokenFromFragment(JSON.stringify(payload))).toEqual(payload);
+  });
+
+  it("preserves literal percent escapes when reading vp_token from the hash", () => {
+    const payload = {
+      "cred-id": [
+        {
+          type: ["VerifiableCredential"],
+          credentialSubject: { code: "%7Bnot-encoded%7D" },
+        },
+      ],
+    };
+    const hash = `#vp_token=${JSON.stringify(payload)}`;
+    const raw = getRawHashParam(hash, "vp_token");
+    expect(raw).toBe(JSON.stringify(payload));
+    expect(parseVpTokenFromFragment(raw as string)).toEqual(payload);
+    // URLSearchParams would decode the literal %7B / %7D sequences.
+    expect(new URLSearchParams(hash.slice(1)).get("vp_token")).not.toBe(
+      JSON.stringify(payload)
+    );
+  });
+
+  it("extracts a VC from DCQL vp_token", () => {
+    const vc = {
+      type: ["VerifiableCredential"],
+      credentialSubject: { id: "1" },
+    };
+    expect(
+      extractVcFromVpToken({
+        "6426c84e-88af-4a6a-bd47-007ba549e3c9": [vc],
+      })
+    ).toEqual(vc);
+  });
+
+  it("extracts a VC nested in a presentation from DCQL vp_token", () => {
+    const vc = { type: ["VerifiableCredential"] };
+    expect(
+      extractVcFromVpToken({
+        query_id: [{ type: ["VerifiablePresentation"], verifiableCredential: [vc] }],
+      })
+    ).toEqual(vc);
+  });
+
+  it("rejects null presentation entries in DCQL vp_token", () => {
+    expect(() => extractVcFromVpToken({ id: [null] })).toThrow(
+      "Empty credential entry in vp_token"
+    );
+  });
+
+  it("rejects non-array-valued vp_token objects", () => {
+    expect(() => extractVcFromVpToken({ foo: "bar" })).toThrow(
+      "Unsupported vp_token format in redirect URL"
+    );
   });
 });
 

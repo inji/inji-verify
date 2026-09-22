@@ -23,6 +23,9 @@ class ErrorCodeTest {
         assertEquals("DID_CREATION_FAILED", ErrorCode.DID_CREATION_FAILED.getErrorCode());
         assertEquals("Error while creating DID document.",
                 ErrorCode.DID_CREATION_FAILED.getErrorMessage());
+
+        assertEquals("invalid_request", ErrorCode.CLIENT_ID_REDIRECT_URI_INVALID.getErrorCode());
+        assertEquals("invalid_request", ErrorCode.CLIENT_ID_REDIRECT_URI_MISMATCH.getErrorCode());
     }
 
     @Test

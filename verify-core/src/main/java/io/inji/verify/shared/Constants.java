@@ -34,11 +34,15 @@ public final class Constants {
     public static final String TRANSACTION_ID_PREFIX = "txn";
     public static final String REQUEST_ID_PREFIX = "req";
 
-    // client_id scheme prefixes (OpenID4VP). A clientId starting with one of these triggers the
-    // by-reference (request_uri) signed-JWT flow; the prefix also dictates which JWT header the
-    // signed request must use.
+    // client_id scheme prefixes (OpenID4VP). A clientId starting with decentralized_identifier:
+    // or x509_san_dns: triggers the by-reference (request_uri) signed-JWT flow; the prefix also
+    // dictates which JWT header the signed request must use.
     public static final String CLIENT_ID_PREFIX_DECENTRALIZED_IDENTIFIER = "decentralized_identifier";
     public static final String CLIENT_ID_PREFIX_X509_SAN_DNS = "x509_san_dns";
+    // redirect_uri: prefix — unsigned by-value Authorization Request. The URI after the prefix is
+    // the Verifier response_uri (direct_post), must be absolute HTTPS, and must match this
+    // deployment's submission URL.
+    public static final String CLIENT_ID_PREFIX_REDIRECT_URI = "redirect_uri";
 
     // Fixed symbolic `aud` value for Self-Issued OpenID Provider v2 (Static Discovery), per
     // OpenID4VP 1.0 5.8: mandatory on every signed Request Object we produce, since we have no

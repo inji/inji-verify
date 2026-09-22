@@ -1,0 +1,6 @@
+{
+  "clientId": "{{clientId}}",
+  "nonce": "{{nonce}}",
+  "responseCodeValidationRequired": {{responseCodeValidationRequired}}{{#if includeDcqlQuery}},
+  "dcqlQuery": {{#if invalidDcqlType}}"string_instead_of_object"{{else}}{}{{/if}}{{/if}}
+}

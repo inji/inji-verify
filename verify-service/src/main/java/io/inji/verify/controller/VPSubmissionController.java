@@ -29,6 +29,9 @@ import java.util.Map;
 import java.util.Optional;
 import java.util.Set;
 
+import static io.inji.verify.shared.Constants.VP_DC_API_SUBMISSION_URI;
+import static io.inji.verify.shared.Constants.VP_DIRECT_POST_SUBMISSION_URI;
+
 /**
  * Controller to handle Verifiable Presentation (VP) submission requests.
  * This controller validates incoming VP submissions and processes them according to the VP request details.
@@ -68,7 +71,7 @@ public class VPSubmissionController {
                     description = "VP submission processed successfully. If a response code was generated, the response will include a redirect_uri for the client to be redirected to."
             )
     })
-    @PostMapping(path = "/v2/vp-submission/direct-post", consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
+    @PostMapping(path = VP_DIRECT_POST_SUBMISSION_URI, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
     public ResponseEntity<?> submitVP(
             @Parameter(description = "The vp_token containing the Verifiable Presentation data. This parameter is optional but either this or the error parameter must be provided. If provided, it must be a valid JSON object with specific structure rules.")
             @RequestParam(value = "vp_token", required = false) String vpToken,
@@ -106,7 +109,7 @@ public class VPSubmissionController {
     @ApiResponses({
             @ApiResponse(responseCode = "200", description = "VP submission accepted (empty body).")
     })
-    @PostMapping(path = "/vp-submission/dc-api", consumes = MediaType.APPLICATION_JSON_VALUE)
+    @PostMapping(path = VP_DC_API_SUBMISSION_URI, consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<?> submitVpDcApi(
             @Valid @RequestBody DcApiVpSubmissionRequestDto body,
             HttpServletRequest request) {
