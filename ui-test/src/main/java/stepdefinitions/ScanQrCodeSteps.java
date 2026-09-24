@@ -511,7 +511,9 @@ public class ScanQrCodeSteps extends BaseSteps {
 
     private void validateStepAfterScan(String actualLabel, String actualClass, String expectedLabel) {
         try {
+            test.log(Status.INFO, "Validating step label after scan. Expected label: '" +expectedLabel + "', Actual label: '" + actualLabel + "'");
             Assert.assertEquals(actualLabel, expectedLabel);
+            test.log(Status.INFO, "Validating step class after scan. Expected class: '" + UiConstants.SCAN_QR_CODE_LABEL_FONT_AFTER_STEP + "', Actual class: '" + actualClass + "'");
             Assert.assertEquals(actualClass, UiConstants.SCAN_QR_CODE_LABEL_FONT_AFTER_STEP);
             test.log(Status.PASS, "Successfully validated step after scanning the QR code.");
         } catch (AssertionError e) {

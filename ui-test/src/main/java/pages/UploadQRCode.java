@@ -81,7 +81,7 @@ public class UploadQRCode extends BasePage {
 	@FindBy(xpath = "//*[@id='vc-result-display-message']")
 	WebElement ErrorMessageForExpiredQRCode;
 
-	@FindBy(xpath = "//span[@id='please-try-again-button']")
+	@FindBy(id = "please-try-again-button")
 	WebElement PleaseTryAgain;
 
 	@FindBy(xpath = "//input[@type='file']")
@@ -479,7 +479,8 @@ public class UploadQRCode extends BasePage {
 				|| isDisplayedWithoutWaiting(ErrorTextExpiredQRCode)
 				|| isDisplayedWithoutWaiting(ErrorTextLargeSizeQRCode)
 				|| isDisplayedWithoutWaiting(UploadQRCodeStep2LabelAfter)
-				|| isDisplayedWithoutWaiting(UploadQRCodeStep3LabelAfter);
+				|| isDisplayedWithoutWaiting(UploadQRCodeStep3LabelAfter)
+				|| isDisplayedWithoutWaiting(PleaseTryAgain);
 	}
 
 	private boolean isDisplayedWithoutWaiting(WebElement element) {

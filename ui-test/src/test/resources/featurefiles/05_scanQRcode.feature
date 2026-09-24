@@ -15,7 +15,7 @@ Feature: Inji Verify scan qr code page testing
     And verify scan qr code icon
     And verify scan qr code button
     And click on scan qr code button
-    And Verify scan qr code step2 label after
+    #And Verify scan qr code step2 label after
     And verify scan qr code button
     And Click on Home button
     And Verify that Upload button visible

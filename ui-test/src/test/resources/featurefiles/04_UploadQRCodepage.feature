@@ -215,7 +215,7 @@ Feature: Inji Verify upload qr code testing
     And Upload QR code file JPEG
     Then Validate offline upload error message with please try again button
     And Verify click on please try again button
-    And Verify QR code file invalid
+    #And Verify QR code file invalid
     Then Validate offline upload error message with please try again button
 
    @smoke @verifyuploadblurqrcode

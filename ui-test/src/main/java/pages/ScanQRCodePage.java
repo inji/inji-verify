@@ -41,7 +41,7 @@ public class ScanQRCodePage extends BasePage {
 	@FindBy(xpath = "//div[@id='verification-in-progress-description']")
 	WebElement ScanQRCodeStep3Description;
 
-	@FindBy(xpath = "(//div[@class='ml-[10px] text-[16px]  font-bold text-[#868686]'])[3]")
+	@FindBy(id = "view-result")
 	WebElement ScanQRCodeStep4Label;
 
 	@FindBy(xpath = "//div[@id='view-result-description']")
