@@ -152,3 +152,5 @@ git checkout branchName/tagname
 ```
 
 ## [Deployment in K8 cluster](deploy/README.md)
+
+<!-- Temporary Sonar workflow validation. -->
