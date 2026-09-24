@@ -414,6 +414,72 @@ public class InjiVerifyUtil extends AdminTestUtil {
 	public static String decodeBase64Url(String encoded) {
 		return new String(Base64.getUrlDecoder().decode(encoded));
 	}
+	
+	public static void validateX509SanDnsAuthorizationRequest(
+	        String headerJson,
+	        String payloadJson) throws AdminTestException {
+
+	    try {
+	        JSONObject header = new JSONObject(headerJson);
+	        JSONObject payload = new JSONObject(payloadJson);
+
+	        if (!header.has("x5c")) {
+	            throw new AdminTestException(
+	                    "X509 authorization request must contain an x5c header");
+	        }
+
+	        Object x5cObject = header.get("x5c");
+
+	        if (!(x5cObject instanceof org.json.JSONArray)
+	                || ((org.json.JSONArray) x5cObject).length() == 0) {
+	            throw new AdminTestException(
+	                    "X509 authorization request must contain a non-empty x5c certificate chain");
+	        }
+
+	        if (header.has("kid")) {
+	            throw new AdminTestException(
+	                    "kid must not be present for an x509_san_dns authorization request");
+	        }
+
+	        if (!payload.has("client_id")) {
+	            throw new AdminTestException(
+	                    "Authorization request must contain client_id");
+	        }
+
+	        String clientId = payload.getString("client_id");
+
+	        if (!clientId.startsWith("x509_san_dns:")) {
+	            throw new AdminTestException(
+	                    "client_id must start with x509_san_dns:");
+	        }
+
+	        String dnsName = clientId.substring("x509_san_dns:".length());
+
+	        if (dnsName.trim().isEmpty()) {
+	            throw new AdminTestException(
+	                    "DNS name must be present after x509_san_dns:");
+	        }
+
+	        if (!payload.has("iss")) {
+	            throw new AdminTestException(
+	                    "Authorization request must contain iss");
+	        }
+
+	        String issuer = payload.getString("iss");
+
+	        if (!issuer.equals(dnsName)) {
+	            throw new AdminTestException(
+	                    "iss must contain the DNS name without the x509_san_dns: prefix");
+	        }
+
+	    } catch (AdminTestException e) {
+	        throw e;
+	    } catch (Exception e) {
+	        throw new AdminTestException(
+	                "Unable to validate x509_san_dns authorization request: "
+	                        + e.getMessage());
+	    }
+	}
 
 	/**
 	 * Validates client_metadata shape per OpenID4VP v1.0: vp_formats_supported

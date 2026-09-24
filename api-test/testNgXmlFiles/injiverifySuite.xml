@@ -553,4 +553,28 @@
 			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
 		</classes>
 	</test>
+	<test name="CreateNewVerificationRequestWithX509SanDns">
+    <parameter name="ymlFile"
+        value="injiverify/CreateNewVerificationRequestWithX509SanDns/CreateNewVerificationRequestWithX509SanDns.yml"/>
+    <parameter name="idKeyName"
+        value="transactionId,requestId,id,nonce"/>
+    <parameter name="headers" value=""/>
+    <parameter name="pathParams" value=""/>
+
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId"/>
+    </classes>
+</test>
+
+<test name="GetVpRequestWithX509SanDns">
+    <parameter name="ymlFile"
+        value="injiverify/GetVpRequestWithX509SanDns/GetVpRequestWithX509SanDns.yml"/>
+
+    <parameter name="headers" value=""/>
+    <parameter name="pathParams" value="requestId"/>
+
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParamAndHeader"/>
+    </classes>
+</test>
 </suite>

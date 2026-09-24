@@ -1,0 +1,16 @@
+GetVpRequestWithX509SanDns:
+  Injiverify_GetVpRequestWithX509SanDns_Valid_Smoke_Sid:
+    endPoint: /v1/verify/v2/vp-request/{requestId}
+    description: Retrieve the x509_san_dns authorization request JWT and expect HTTP 200, the correct content type, a non-empty leaf-first x5c certificate chain, no kid header, correct client_id and iss values, matching certificate SAN, and valid client metadata
+    uniqueIdentifier: TC_InjiVerify_X509SanDns_12
+    role: noauth
+    restMethod: get
+    inputTemplate: injiverify/GetVpRequestWithDID/GetVpRequestWithDID
+    outputTemplate: injiverify/GetVpRequestWithDID/GetVpRequestWithDIDResult
+    input: '{
+      "requestId": "$ID:CreateNewVerificationRequestWithX509SanDns_Valid_Smoke_Sid_requestId$",
+      "acceptHeader": "*/*"
+    }'
+    output: '{
+      "client_id": "x509_san_dns:test.example.com"
+    }'

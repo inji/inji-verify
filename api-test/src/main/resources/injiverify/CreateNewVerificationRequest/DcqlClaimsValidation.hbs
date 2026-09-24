@@ -1,0 +1,62 @@
+{
+  "clientId": "client123",
+  "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+  "responseCodeValidationRequired": false,
+  "dcqlQuery": {
+    "credentials": [
+      {
+        "id": "credential_id",
+        "format": "vc+sd-jwt",
+        "meta": {
+          "vct_values": ["eu.europa.ec.eudi.pid.1"]
+        },
+        "claims": [
+          {{#if missingPath}}
+          {
+            "id": "claim_id"
+          }
+          {{else if invalidPath}}
+          {
+            "id": "claim_id",
+            "path": 123
+          }
+          {{else if invalidClaimId}}
+          {
+            "id": "claim id!",
+            "path": ["name"]
+          }
+          {{else if emptyClaimValues}}
+          {
+            "id": "claim_id",
+            "path": ["name"],
+            "values": []
+          }
+          {{else if duplicatePath}}
+          {
+            "id": "claim_one",
+            "path": ["name"]
+          },
+          {
+            "id": "claim_two",
+            "path": ["name"]
+          }
+          {{else if duplicateClaimId}}
+          {
+            "id": "duplicate_claim",
+            "path": ["name"]
+          },
+          {
+            "id": "duplicate_claim",
+            "path": ["phone"]
+          }
+          {{else}}
+          {
+            "id": "claim_id",
+            "path": ["name"]
+          }
+          {{/if}}
+        ]
+      }
+    ]
+  }
+}
