@@ -5,6 +5,10 @@ module.exports = {
   rootDir: './',
   testPathIgnorePatterns: ["<rootDir>/node_modules"],
   testMatch: ["<rootDir>/src/__tests__/**/*.spec.ts", "<rootDir>/src/__tests__/**/*.spec.tsx", "<rootDir>/src/__tests__/**/*.spec.js"],
+  collectCoverageFrom: [
+    "src/**/*.{ts,tsx}",
+    "!src/**/*.spec.{ts,tsx}",
+  ],
   setupFiles: ["<rootDir>/src/polyfills/stringReplaceAll.ts"],
   setupFilesAfterEnv: ["<rootDir>/src/setupTests.ts"],
   extensionsToTreatAsEsm: [".ts", ".tsx"],
