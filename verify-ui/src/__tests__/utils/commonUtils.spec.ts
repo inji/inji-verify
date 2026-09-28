@@ -6,6 +6,7 @@ import {
   getDetailsOrder,
   getDcqlCredentialQueryCount,
   getTotalCredentialCount,
+  getQrErrorMessage,
   isVPSubmissionSupported,
 } from "../../utils/commonUtils";
 import { claim, DcqlCredentialQuery, MatchingVc } from "../../types/data-types";
@@ -46,6 +47,30 @@ const matchingResult = (
 ): MatchingVc => ({ vc, vcStatus });
 
 describe("commonUtils credential matching", () => {
+  describe("getQrErrorMessage", () => {
+    test("maps the expired-resource error through the translation function", () => {
+      const t = jest.fn((key: string) => key);
+      expect(
+        getQrErrorMessage(
+          new Error("  The requested resource expired., resource_not_found  "),
+          t as any,
+        ),
+      ).toBe("AlertMessages:qrVerificationLimitReached");
+      expect(t).toHaveBeenCalledWith(
+        "AlertMessages:qrVerificationLimitReached",
+        expect.objectContaining({ defaultValue: expect.any(String) }),
+      );
+    });
+
+    test("returns an ordinary QR error unchanged", () => {
+      const t = jest.fn();
+      expect(getQrErrorMessage(new Error("camera unavailable"), t as any)).toBe(
+        "camera unavailable",
+      );
+      expect(t).not.toHaveBeenCalled();
+    });
+  });
+
   describe("getCredentialType", () => {
     test("returns non-VerifiableCredential type from ldp_vc type array", () => {
       expect(getCredentialType(ldpVc("InsuranceCredential"))).toBe(
@@ -665,6 +690,49 @@ describe("commonUtils credential matching", () => {
         ),
       ).toEqual([{ key: "address", value: ["Bengaluru", "Karnataka"] }]);
     });
+
+    test("handles language fallback, arrays, protected keys, and null values", () => {
+      expect(
+        getDetailsOrder(
+          {
+            credentialSubject: {
+              preferredName: [
+                { "@language": "fr", "@value": "Jean" },
+                { language: "en", value: "John" },
+              ],
+              noValue: null,
+              nested: { value: ["one", "two"] },
+              __proto__: "ignored",
+            },
+          },
+          "de",
+        ),
+      ).toEqual([
+        { key: "preferredName", value: "John" },
+        { key: "nested", value: ["one", "two"] },
+      ]);
+    });
+
+    test("covers the supported credential render orders", () => {
+      expect(
+        getDetailsOrder(
+          { type: ["VerifiableCredential", "LifeInsuranceCredential"], credentialSubject: { name: "Life" } },
+          "en",
+        ),
+      ).toEqual([{ key: "name", value: "Life" }]);
+      expect(
+        getDetailsOrder(
+          { type: ["VerifiableCredential", "MOSIPVerifiableCredential"], credentialSubject: { name: "Mosip" } },
+          "en",
+        ),
+      ).toEqual([{ key: "name", value: "Mosip" }]);
+      expect(
+        getDetailsOrder(
+          { type: ["VerifiableCredential", "IncomeTaxAccountCredential"], credentialSubject: { name: "Tax" } },
+          "en",
+        ),
+      ).toEqual([{ key: "name", value: "Tax" }]);
+    });
   });
 
   describe("small helper functions", () => {
@@ -687,6 +755,28 @@ describe("commonUtils credential matching", () => {
 
       (window as any)._env_.VP_SUBMISSION_SUPPORTED = "false";
       expect(isVPSubmissionSupported()).toBe(false);
+    });
+
+    test("handles missing environment values", () => {
+      delete (window as any)._env_;
+      expect(getClientId()).toBeUndefined();
+      expect(isVPSubmissionSupported()).toBe(false);
+    });
+
+    test("extracts credential types from object and fallback forms", () => {
+      expect(
+        getCredentialType({ regularClaims: { type: [{ _value: "VerifiableCredential" }, { _value: "CustomType" }] } }),
+      ).toBe("CustomType");
+      expect(
+        getCredentialType({ regularClaims: { type: { _value: "ObjectType" } } }),
+      ).toBe("ObjectType");
+      expect(getCredentialType({ type: [{ _value: "VerifiableCredential" }] })).toBe(
+        "verifiableCredential",
+      );
+      expect(getCredentialType({ type: [42] })).toBe("42");
+      expect(getCredentialType({ regularClaims: { vct: "VerifiableCredential" } })).toBe(
+        "verifiableCredential",
+      );
     });
   });
 });

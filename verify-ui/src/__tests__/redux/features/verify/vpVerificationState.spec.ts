@@ -59,6 +59,33 @@ describe("vpVerification slice", () => {
         expect(state.sharingType).toBe(VCShareType.SINGLE);
     });
 
+    test("uses multiple sharing when more than one credential is selected", () => {
+        const selectedCredentials = [
+            {
+                id: "1",
+                type: "Type1",
+                essential: true,
+                dcqlQuery: mockDcqlQuery,
+            },
+            {
+                id: "2",
+                type: "Type2",
+                essential: false,
+                dcqlQuery: {
+                    credentials: [{ id: "desc2", format: "dc+sd-jwt", meta: {} }],
+                },
+            },
+        ] as any;
+
+        const state = vpVerificationReducer(
+            vpVerificationReducer(undefined, { type: "@@INIT" }),
+            setSelectedCredentials({ selectedCredentials }),
+        );
+
+        expect(state.sharingType).toBe(VCShareType.MULTIPLE);
+        expect(state.dcqlQuery.credentials).toHaveLength(2);
+    });
+
     test("should merge credential_sets from selected credentials into dcqlQuery", () => {
         const firstCredentialSets = [
             {
@@ -302,6 +329,30 @@ describe("vpVerification slice", () => {
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.SelectCredential);
     });
 
+    test("uses multiple sharing when several credentials are missing", () => {
+        const missingCredentials = [
+            { id: "missing-1", type: "Type1", dcqlQuery: mockDcqlQuery },
+            {
+                id: "missing-2",
+                type: "Type2",
+                dcqlQuery: {
+                    credentials: [{ id: "desc2", format: "dc+sd-jwt", meta: {} }],
+                },
+            },
+        ] as any;
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            flowType: "crossDevice",
+            unVerifiedCredentials: missingCredentials,
+            selectedCredentials: [],
+        } as any;
+
+        const state = vpVerificationReducer(initialState, showMissingCredentialOptions());
+
+        expect(state.sharingType).toBe(VCShareType.MULTIPLE);
+        expect(state.selectedCredentials).toHaveLength(2);
+    });
+
     test("should handle verificationSubmissionComplete (full success)", () => {
         (calculateUnverifiedClaims as jest.Mock).mockReturnValue([]);
 
@@ -375,6 +426,28 @@ describe("vpVerification slice", () => {
         expect(state.unVerifiedCredentials).toEqual([missingCredential]);
         expect(state.activeScreen).toBe(VerificationSteps.VERIFY.RequestMissingCredential);
         expect(state.flowType).toBe("sameDevice");
+    });
+
+    test("switches a partial cross-device submission back to cross-device flow", () => {
+        const missingCredential = { id: "missing", type: "Type2", dcqlQuery: mockDcqlQuery } as any;
+        (calculateUnverifiedClaims as jest.Mock).mockReturnValue([missingCredential]);
+
+        const initialState = {
+            ...vpVerificationReducer(undefined, { type: "@@INIT" }),
+            method: "VERIFY",
+            flowType: "crossDevice",
+            originalSelectedCredentials: [missingCredential],
+            verificationSubmissionResult: [],
+        } as any;
+
+        const state = vpVerificationReducer(
+            initialState,
+            verificationSubmissionComplete({ verificationResult: [] } as any),
+        );
+
+        expect(state.isPartiallyShared).toBe(true);
+        expect(state.flowType).toBe("crossDevice");
+        expect(state.activeScreen).toBe(VerificationSteps.VERIFY.RequestMissingCredential);
     });
 
     test("should append all service credentials without deduplicating by type", () => {
