@@ -65,7 +65,7 @@ export function getLanguageCodes(lang: string): string[] {
 export const defaultLanguage = normalizeLanguageCode(window._env_?.DEFAULT_LANG) || "en";
 export const selected_language = normalizeLanguageCode(storage.getItem(storage.SELECTED_LANGUAGE));
 
-i18n.use(initReactI18next).init({
+void i18n.use(initReactI18next).init({
   resources,
   lng: selected_language || defaultLanguage,
   fallbackLng: defaultLanguage,

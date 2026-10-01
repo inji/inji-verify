@@ -110,7 +110,7 @@ export const checkInternetStatus = async (): Promise<boolean> => {
 
 export const convertToId = (content: string) => content.toLowerCase().replaceAll(" ", "-");
 
-export const saveData = async (vc: any) => {
+export const saveData = (vc: any) => {
   const myData = vc;
   const fileName = vc.type ? vc?.type[1] : "Inji_Verify_Credential_Data";
   const json = JSON.stringify(myData, null, 2);

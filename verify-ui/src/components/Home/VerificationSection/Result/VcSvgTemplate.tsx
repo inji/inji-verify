@@ -58,7 +58,7 @@ const VcSvgTemplate = ({ vc, templateUrl, onError }: VcSvgTemplateProps) => {
         setLoader(false);
       }
     };
-    loadTemplate();
+    void loadTemplate();
   }, [onError, templateUrl]);
 
   if (loader) return <Loader innerBg="bg-white" className="w-5 h-5 mt-20" />;

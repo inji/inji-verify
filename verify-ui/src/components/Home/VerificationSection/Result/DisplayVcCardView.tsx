@@ -28,7 +28,9 @@ function DisplayVcCardView(ViewVc: VpSubmissionResultInt) {
         setCredentialType(getCredentialType(vc));
       }
     };
-    fetchDecodedClaims();
+    void fetchDecodedClaims().catch((error) => {
+      console.error("Unable to decode credential claims:", error);
+    });
   }, [vc]);
 
   return (

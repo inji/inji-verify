@@ -22,7 +22,7 @@ export const LanguageSelector: React.FC = () => {
 
   const handleChange = (item: DropdownItem) => {
     setIsOpen(false);
-    switchLanguage(item.value);
+    void switchLanguage(item.value);
     dispatch(storeLanguage({ language: item.value }));
   };
 
