@@ -203,7 +203,7 @@ export const initializeClaims = async () => {
   }
 };
 
-initializeClaims();
+void initializeClaims();
 
 export const backgroundColorMapping: Record<VcStatus, string> ={
   SUCCESS: "bg-success",
