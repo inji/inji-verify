@@ -93,7 +93,7 @@ public class DcqlValidator {
                 for (String credentialId : option) {
                     if (!credentialIds.contains(credentialId)) {
                         throw new VPRequestValidationException(
-                                ErrorCode.DCQL_INVALID_CREDENTIAL_SET);
+                                ErrorCode.DCQL_CREDENTIAL_SET_UNKNOWN_CREDENTIAL_ID);
                     }
                 }
             }
@@ -125,7 +125,7 @@ public class DcqlValidator {
             for (ClaimQueryDto claim : credential.getClaims()) {
                 if (claim.getId() == null || claim.getId().isBlank()) {
                     throw new VPRequestValidationException(
-                            ErrorCode.DCQL_MISSING_CLAIM_ID);
+                            ErrorCode.DCQL_CLAIM_ID_REQUIRED);
                 }
             }
         }
@@ -304,7 +304,7 @@ public class DcqlValidator {
         }
 
         if (credential.getClaims() == null) {
-            throw new VPRequestValidationException(ErrorCode.DCQL_INVALID_CLAIM_SET);
+            throw new VPRequestValidationException(ErrorCode.DCQL_CLAIM_SET_UNKNOWN_CLAIM_ID);
         }
 
         Set<String> claimIds = credential.getClaims()
@@ -317,7 +317,7 @@ public class DcqlValidator {
         for (List<String> claimSet : credential.getClaimSets()) {
             for (String claimId : claimSet) {
                 if (!claimIds.contains(claimId)) {
-                    throw new VPRequestValidationException(ErrorCode.DCQL_INVALID_CLAIM_SET);
+                    throw new VPRequestValidationException(ErrorCode.DCQL_CLAIM_SET_UNKNOWN_CLAIM_ID);
                 }
             }
         }

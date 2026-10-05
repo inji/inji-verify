@@ -172,7 +172,7 @@ class DcqlQueryValidatorTest {
         VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
                 () -> validator.validate(query));
 
-        assertEquals(ErrorCode.DCQL_INVALID_CREDENTIAL_SET, ex.getErrorCode());
+        assertEquals(ErrorCode.DCQL_CREDENTIAL_SET_UNKNOWN_CREDENTIAL_ID, ex.getErrorCode());
     }
 
     @Test
@@ -478,7 +478,7 @@ class DcqlQueryValidatorTest {
         VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
                 () -> validator.validate(query));
 
-        assertEquals(ErrorCode.DCQL_MISSING_CLAIM_ID, ex.getErrorCode());
+        assertEquals(ErrorCode.DCQL_CLAIM_ID_REQUIRED, ex.getErrorCode());
     }
 
     @Test
@@ -507,7 +507,7 @@ class DcqlQueryValidatorTest {
         VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
                 () -> validator.validate(query));
 
-        assertEquals(ErrorCode.DCQL_INVALID_CLAIM_SET, ex.getErrorCode());
+        assertEquals(ErrorCode.DCQL_CLAIM_SET_UNKNOWN_CLAIM_ID, ex.getErrorCode());
     }
 
     @Test
@@ -519,7 +519,7 @@ class DcqlQueryValidatorTest {
         VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
                 () -> validator.validate(query));
 
-        assertEquals(ErrorCode.DCQL_INVALID_CLAIM_SET, ex.getErrorCode());
+        assertEquals(ErrorCode.DCQL_CLAIM_SET_UNKNOWN_CLAIM_ID, ex.getErrorCode());
     }
 
     @Test
@@ -831,6 +831,6 @@ class DcqlQueryValidatorTest {
 
         VPRequestValidationException ex = assertThrows(VPRequestValidationException.class,
                 () -> validator.validate(query));
-        assertEquals(ErrorCode.DCQL_MISSING_CLAIM_ID, ex.getErrorCode());
+        assertEquals(ErrorCode.DCQL_CLAIM_ID_REQUIRED, ex.getErrorCode());
     }
 }

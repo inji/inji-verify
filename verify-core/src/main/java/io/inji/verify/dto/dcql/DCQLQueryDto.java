@@ -5,7 +5,6 @@ import com.fasterxml.jackson.annotation.JsonProperty;
 import com.nimbusds.jose.shaded.gson.annotations.SerializedName;
 import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.Valid;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,7 +21,7 @@ import java.util.List;
 public class DCQLQueryDto {
     @Valid
     @NotNull(message = "DCQL_CREDENTIALS_REQUIRED")
-    @NotEmpty(message = "DCQL_CREDENTIALS_INVALID")
+    @Size(min = 1, message = "DCQL_CREDENTIALS_INVALID")
     @Schema(description = "List of credentials to be matched against the wallet.")
     private List<CredentialQueryDto> credentials;
 

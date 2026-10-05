@@ -5,6 +5,7 @@ import io.swagger.v3.oas.annotations.media.Schema;
 import jakarta.validation.constraints.NotBlank;
 import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
+import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
 import lombok.Getter;
 import lombok.NoArgsConstructor;
@@ -22,7 +23,7 @@ public class CredentialSetQueryDto {
      * Each inner list contains credential ids.
      */
     @NotNull(message = "DCQL_CREDENTIAL_SETS_REQUIRED")
-    @NotEmpty(message = "DCQL_CREDENTIAL_SETS_INVALID")
+    @Size(min = 1, message = "DCQL_CREDENTIAL_SETS_INVALID")
     @Schema(description = "List of options for matching against sets of credentials in the wallet.")
     private List<
             @NotEmpty(message = "DCQL_CREDENTIAL_SETS_INVALID")

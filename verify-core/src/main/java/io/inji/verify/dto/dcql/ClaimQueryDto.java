@@ -2,7 +2,6 @@ package io.inji.verify.dto.dcql;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import io.swagger.v3.oas.annotations.media.Schema;
-import jakarta.validation.constraints.NotEmpty;
 import jakarta.validation.constraints.NotNull;
 import jakarta.validation.constraints.Size;
 import lombok.AllArgsConstructor;
@@ -22,7 +21,7 @@ public class ClaimQueryDto {
     private String id;
 
     @NotNull(message = "DCQL_CLAIM_PATH_REQUIRED")
-    @NotEmpty(message = "DCQL_CLAIM_PATH_INVALID")
+    @Size(min = 1, message = "DCQL_CLAIM_PATH_INVALID")
     @Schema(description = "Path to the claim within the credential. Per the DCQL spec, each element must be a non-blank string (object key), null (wildcard), or a non-negative integer (array index).")
     private List<Object> path;
 
