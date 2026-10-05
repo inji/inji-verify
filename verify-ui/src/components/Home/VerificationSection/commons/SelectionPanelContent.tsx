@@ -178,8 +178,9 @@ function SelectionPanelContent() {
                       : ""
                   }`}
                 >
-                  <div
-                    className={`flex items-center justify-between w-full p-2 lg:p-4 shadow rounded-md ${
+                  <label
+                    htmlFor={claim.name}
+                    className={`flex items-center justify-between w-full p-2 lg:p-4 shadow rounded-md cursor-pointer ${
                       isSelectedClaim ? `bg-red-50 bg-opacity-95` : ""
                     }`}
                   >
@@ -193,10 +194,7 @@ function SelectionPanelContent() {
                         {claim.name}
                       </span>
                     </div>
-                    <label
-                      htmlFor={claim.name}
-                      className="flex items-center cursor-pointer"
-                    >
+                    <div className="flex items-center">
                       <input
                         type="checkbox"
                         id={claim.name}
@@ -221,8 +219,8 @@ function SelectionPanelContent() {
                         </span>
                       </div>
                       <span className="sr-only"> {claim.name} </span>
-                    </label>
-                  </div>
+                    </div>
+                  </label>
                 </li>
               );
             })}

@@ -89,6 +89,17 @@ describe("SelectionPanelContent", () => {
     });
   });
 
+  test("selects a credential when its card text is clicked", () => {
+    render(<SelectionPanelContent />);
+
+    fireEvent.click(screen.getByTestId("ItemBox-Text-1"));
+
+    expect(dispatch).toHaveBeenCalledWith({
+      type: "selected",
+      payload: { selectedCredentials: [claims[0], claims[1]] },
+    });
+  });
+
   test("supports wallet, back, and mobile-wallet actions", () => {
     (isMobileDevice as jest.Mock).mockReturnValue(true);
     render(<SelectionPanelContent />);
