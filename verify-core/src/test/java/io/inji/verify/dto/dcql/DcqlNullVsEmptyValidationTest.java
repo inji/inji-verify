@@ -36,37 +36,37 @@ class DcqlNullVsEmptyValidationTest {
     }
 
     @Test
-    void nullCredentials_failsOnlyRequired() {
+    void should_failOnlyRequiredConstraint_when_credentialsIsNull() {
         assertEquals(Set.of("DCQL_CREDENTIALS_REQUIRED"), violationMessages(new DCQLQueryDto(null, null)));
     }
 
     @Test
-    void emptyCredentials_failsOnlyInvalid() {
+    void should_failOnlyInvalidConstraint_when_credentialsIsEmpty() {
         assertEquals(Set.of("DCQL_CREDENTIALS_INVALID"), violationMessages(new DCQLQueryDto(List.of(), null)));
     }
 
     @Test
-    void nullClaimPath_failsOnlyRequired() {
+    void should_failOnlyRequiredConstraint_when_claimPathIsNull() {
         assertEquals(Set.of("DCQL_CLAIM_PATH_REQUIRED"), violationMessages(new ClaimQueryDto(null, null, null)));
     }
 
     @Test
-    void emptyClaimPath_failsOnlyInvalid() {
+    void should_failOnlyInvalidConstraint_when_claimPathIsEmpty() {
         assertEquals(Set.of("DCQL_CLAIM_PATH_INVALID"), violationMessages(new ClaimQueryDto(null, List.of(), null)));
     }
 
     @Test
-    void nullCredentialSetOptions_failsOnlyRequired() {
+    void should_failOnlyRequiredConstraint_when_credentialSetOptionsIsNull() {
         assertEquals(Set.of("DCQL_CREDENTIAL_SETS_REQUIRED"), violationMessages(new CredentialSetQueryDto(null, true)));
     }
 
     @Test
-    void emptyCredentialSetOptions_failsOnlyInvalid() {
+    void should_failOnlyInvalidConstraint_when_credentialSetOptionsIsEmpty() {
         assertEquals(Set.of("DCQL_CREDENTIAL_SETS_INVALID"), violationMessages(new CredentialSetQueryDto(List.of(), true)));
     }
 
     @Test
-    void nullCredentials_failsOnlyOnceSoFirstErrorIsDeterministic() {
+    void should_returnExactlyOneViolation_when_credentialsIsNull() {
         assertEquals(1, validator.validate(new DCQLQueryDto(null, null)).size());
     }
 }
