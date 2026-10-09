@@ -2,10 +2,17 @@
 name: "CodeQL Advanced"
 
 on:
+  workflow_dispatch:
+    inputs:
+      message:
+        description: 'Message for manually triggering'
+        required: false
+        default: 'Triggered for Updates'
+        type: string
   push:
-    branches: [ "master", "develop", "release-0.10.x", "release-0.8.x", "release-0.9.x" ]
+    branches: [ "master", "develop", "release-*" ]
   pull_request:
-    branches: [ "master", "develop", "release-0.10.x", "release-0.8.x", "release-0.9.x" ]
+    branches: [ "master", "develop", "release-*" ]
   schedule:
     - cron: '30 10 * * 2'
 
