@@ -24,6 +24,7 @@ import {
     vcSubmission,
     vcVerificationV2,
     vpSessionResults,
+    isAppError,
 } from "../../utils/api";
 import type { DcqlQuery } from "../openid4vp-verification/OpenID4VPVerification.types";
 import {
@@ -404,6 +405,9 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
       return data;
     } catch (error) {
       resetState();
+      if(isAppError(error)) {
+        throw new Error(error.errorMessage);
+      }
       throw error instanceof Error ? error : new Error(String(error));
     }
   };

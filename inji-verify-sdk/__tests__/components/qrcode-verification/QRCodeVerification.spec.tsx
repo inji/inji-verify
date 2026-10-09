@@ -1,5 +1,5 @@
 import React from "react";
-import { render, screen, waitFor } from "@testing-library/react";
+import { fireEvent, render, screen, waitFor } from "@testing-library/react";
 import "@testing-library/jest-dom";
 
 jest.mock("@ant-design/icons", () => ({
@@ -14,6 +14,9 @@ jest.mock("@mui/material", () => ({
 }));
 
 import QRCodeVerification from "../../../src/components/qrcode-verification/QRCodeVerification";
+import { scanFilesForQr } from "../../../src/utils/uploadQRCodeUtils";
+import { extractRedirectUrlFromQrData } from "../../../src/utils/dataProcessor";
+import { vpSessionRequest } from "../../../src/utils/api";
 
 jest.mock("../../../src/utils/uploadQRCodeUtils", () => ({
   doFileChecks: jest.fn(() => true),
@@ -28,6 +31,14 @@ jest.mock("../../../src/utils/dataProcessor", () => ({
 jest.mock("zxing-wasm/full", () => ({
   readBarcodes: jest.fn(),
 }));
+
+jest.mock("../../../src/utils/api", () => {
+  const actual = jest.requireActual("../../../src/utils/api");
+  return {
+    ...actual,
+    vpSessionRequest: jest.fn(),
+  };
+});
 
 describe("QRCodeVerification", () => {
   const baseProps = {
@@ -145,6 +156,45 @@ describe("QRCodeVerification", () => {
     await waitFor(() => {
       expect(screen.getByTestId("error-message")).toHaveTextContent(
         "Only one of onVCReceived or onVCProcessed can be provided."
+      );
+    });
+  });
+
+  test("passes the VP request error message to onError", async () => {
+    const onError = jest.fn();
+    const redirectUrl = "https://wallet.example/authorize?dcql_query=" + encodeURIComponent(JSON.stringify({
+      credentials: [{ id: "mdl", format: "mso_mdoc" }],
+    }));
+    (scanFilesForQr as jest.Mock).mockResolvedValue({
+      data: `INJI_OVP://${redirectUrl}`,
+      error: null,
+    });
+    (extractRedirectUrlFromQrData as jest.Mock).mockReturnValue(redirectUrl);
+    (vpSessionRequest as jest.Mock).mockRejectedValue({
+      errorCode: "dcql_query_meta_required",
+      errorMessage: "Each DCQL credential entry must contain meta.",
+    });
+
+    render(
+      <QRCodeVerification
+        {...baseProps}
+        onError={onError}
+        scannerActive={false}
+        isEnableScan={false}
+        isEnableUpload={true}
+        isVPSubmissionSupported={true}
+      />
+    );
+
+    fireEvent.change(document.getElementById("upload-qr") as HTMLInputElement, {
+      target: { files: [new File(["qr"], "mdl.png", { type: "image/png" })] },
+    });
+
+    await waitFor(() => {
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          message: "Each DCQL credential entry must contain meta.",
+        })
       );
     });
   });
