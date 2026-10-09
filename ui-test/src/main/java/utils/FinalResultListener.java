@@ -1,5 +1,6 @@
 package utils;
 
+import api.InjiVerifyConfigManager;
 import io.cucumber.testng.PickleWrapper;
 import org.apache.log4j.Logger;
 import org.testng.ISuite;
@@ -20,6 +21,7 @@ public class FinalResultListener implements ITestListener, ISuiteListener {
     @Override
     public void onStart(ISuite suite) {
         reset();
+        InjiVerifyConfigManager.init();
         BaseTest.clearScenarioHookStatuses();
     }
 
