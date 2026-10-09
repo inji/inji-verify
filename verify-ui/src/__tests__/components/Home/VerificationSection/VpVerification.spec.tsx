@@ -92,6 +92,12 @@ jest.mock("@injistack/react-inji-verify-sdk", () => {
                             transactionId: "tx-1",
                         });
                     },
+                    onContextMenu: () => {
+                        props.onError?.({
+                            errorCode: "access_denied",
+                            transactionId: "tx-1",
+                        });
+                    },
                 },
                 "SDK MOCK"
             ),
@@ -252,7 +258,7 @@ describe("VpVerification Component", () => {
         );
     });
 
-    test("maps wallet access_denied error to localized alert message", async () => {
+    test("shows wallet error code and reason without the localized message", async () => {
         const { raiseAlert } = jest.requireMock("../../../../redux/features/alerts/alerts.slice");
         raiseAlert.mockImplementation((payload: any) => ({ type: "alerts/raiseAlert", payload }));
 
@@ -264,9 +270,29 @@ describe("VpVerification Component", () => {
         await waitFor(() =>
             expect(raiseAlert).toHaveBeenCalledWith(
                 expect.objectContaining({
-                    message: "Wallet access denied",
+                    message: undefined,
                     errorCode: "access_denied",
                     errorReason: "user cancelled",
+                    open: true,
+                })
+            )
+        );
+    });
+
+    test("keeps the localized message when the wallet sends only an error code", async () => {
+        const { raiseAlert } = jest.requireMock("../../../../redux/features/alerts/alerts.slice");
+        raiseAlert.mockImplementation((payload: any) => ({ type: "alerts/raiseAlert", payload }));
+
+        mockState({ isShowResult: false, flowType: "crossDevice" });
+        render(<VpVerification />);
+
+        fireEvent.contextMenu(screen.getByTestId("openid-verification-sdk"));
+
+        await waitFor(() =>
+            expect(raiseAlert).toHaveBeenCalledWith(
+                expect.objectContaining({
+                    message: "Wallet access denied",
+                    errorCode: "access_denied",
                     open: true,
                 })
             )

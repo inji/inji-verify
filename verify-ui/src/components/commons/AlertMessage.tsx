@@ -45,9 +45,11 @@ const AlertMessage = (props:any) => {
                   <CloseIcon/>
                 </button>
               </header>
-              <p id="alert-message">
-                {alertInfo.message}
-              </p>
+              {alertInfo.message ? (
+                <p id="alert-message">
+                  {alertInfo.message}
+                </p>
+              ) : null}
               <div
                 className="mt-4 py-4 px-4 rounded-[12px] bg-white bg-opacity-20">
                 {alertInfo.errorCode &&

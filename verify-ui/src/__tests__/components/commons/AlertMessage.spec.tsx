@@ -33,4 +33,27 @@ describe("AlertMessage", () => {
 
         expect(screen.getByRole("button", { name: /close/i })).toBeInTheDocument();
     });
+
+    test("omits the top message when only error code and reason are set", () => {
+        const store = mockStore({
+            verification: PreloadedState,
+            alert: {
+                title: "Request Failed",
+                errorCode: "access_denied",
+                errorReason: "user cancelled",
+                severity: "error",
+                open: true,
+            },
+        });
+
+        render(
+            <Provider store={store}>
+                <AlertMessage />
+            </Provider>
+        );
+
+        expect(document.getElementById("alert-message")).toBeNull();
+        expect(screen.getByText(/access_denied/)).toBeInTheDocument();
+        expect(screen.getByText(/user cancelled/)).toBeInTheDocument();
+    });
 });

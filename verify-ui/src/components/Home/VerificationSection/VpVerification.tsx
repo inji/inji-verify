@@ -99,12 +99,14 @@ const DisplayActiveStep = () => {
   const handleOnError = (error: any) => {
     dispatch(closeAlert({}));
     dispatch(resetVpRequest());
+    const hasWalletDetail = Boolean(error.errorCode && error.errorMessage);
     const walletAlert = getWalletErrorAlert(error.errorCode);
-    const message =
-      walletAlert?.message ??
-      (error.errorCode
-        ? AlertMessages().requestFailedGeneric.message
-        : error.message);
+    const message = hasWalletDetail
+      ? undefined
+      : walletAlert?.message ??
+        (error.errorCode
+          ? AlertMessages().requestFailedGeneric.message
+          : error.message);
     dispatch(raiseAlert({
       title: "Request Failed",
       errorCode: error.errorCode,
