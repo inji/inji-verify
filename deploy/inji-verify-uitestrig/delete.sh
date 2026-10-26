@@ -12,7 +12,7 @@ function deleting_uitestrig() {
       read -p "Are you sure you want to delete verify uitestrig helm charts?(Y/n) " yn
       if [ $yn = "Y" ]
         then
-          helm -n $NS delete uitestrig-injiverify
+          helm -n $NS delete inji-verify-uitestrig
           break
         else
           break

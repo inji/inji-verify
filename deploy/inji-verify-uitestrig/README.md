@@ -3,6 +3,8 @@
 ## Introduction
 UITESTRIG will test end-to-end functional flows involving multiple INJIVERIFY-UI module.
 
+It is deployed using the [inji-verify-uitestrig](../../helm/inji-verify-uitestrig) helm chart maintained in this repository (published as `inji/inji-verify-uitestrig`).
+
 ## Update the values.yaml
 
 1. Create the required BrowserStack credentials by referring to this [documentation](https://www.browserstack.com/docs/references/service-accounts) and  create google credentials by referring to this [documentation](https://mosip.atlassian.net/wiki/spaces/QT/pages/1671168131/Generate+ID+Token+for+Inji+Web+Login+API+using+Google+Sign+In).
@@ -32,11 +34,11 @@ UITESTRIG will test end-to-end functional flows involving multiple INJIVERIFY-UI
 * Install `kubectl` package to your local machine.
 * Run UITESTRIG manually via CLI by creating a new job from an existing k8s cronjob.
   ```
-  kubectl --kubeconfig=<k8s-config-file> -n UITESTRIG create job --from=cronjob/<cronjob-name> <job-name>
+  kubectl --kubeconfig=<k8s-config-file> -n uitestrig-injiverify create job --from=cronjob/<cronjob-name> <job-name>
   ```
   example:
   ```
-  kubectl --kubeconfig=/home/xxx/Downloads/qa4.config -n UITESTRIG create job --from=cronjob/cronjob-uitestrig cronjob-uitestrig
+  kubectl --kubeconfig=/home/xxx/Downloads/qa4.config -n uitestrig-injiverify create job --from=cronjob/cronjob-inji-verify-uitestrig-verifyui cronjob-inji-verify-uitestrig-verifyui
   ```
 
 

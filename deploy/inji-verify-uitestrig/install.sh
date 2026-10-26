@@ -36,6 +36,7 @@ function installing_uitestrig() {
 
   echo Istio label
   kubectl label ns $NS istio-injection=disabled --overwrite
+  helm repo add inji https://inji.github.io/helm
   helm repo update
 
   echo Copy configmaps
@@ -55,7 +56,7 @@ function installing_uitestrig() {
   API_INTERNAL_HOST=$( kubectl -n default get cm global -o json  |jq -r '.data."mosip-api-internal-host"' )
 
   echo Installing verify uitestrig
-  helm -n $NS install uitestrig-injiverify mosip/uitestrig \
+  helm -n $NS install inji-verify-uitestrig inji/inji-verify-uitestrig \
   -f values.yaml  \
   --version $CHART_VERSION \
   $ENABLE_INSECURE

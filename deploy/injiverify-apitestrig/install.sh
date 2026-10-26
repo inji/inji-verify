@@ -13,6 +13,7 @@ echo Create $NS namespace
 kubectl create ns $NS
 
 function installing_apitestrig() {
+  helm repo add inji https://inji.github.io/helm
   helm repo update
 
   echo Copy Configmaps
@@ -76,7 +77,7 @@ function installing_apitestrig() {
 
   read -p "Please provide slack webhook URL to notify server end issues on your slack channel : " slackWebhookUrl
 
-  if [ -z $slackWebhookUrl ]; then
+  if [ -z "$slackWebhookUrl" ]; then
     echo "slack webhook URL not provided; EXITING;"
     exit 1;
   fi
@@ -86,7 +87,11 @@ function installing_apitestrig() {
 
  while [[ ! " ${valid_inputs[@]} " =~ " ${eSignetDeployed} " ]]; do
      read -p "Is the eSignet service deployed? (yes/no): " eSignetDeployed
-     eSignetDeployed=${eSignetDeployed,,}  # Convert input to lowercase
+     eSignetDeployed=$(echo "$eSignetDeployed" | tr '[:upper:]' '[:lower:]')  # Convert input to lowercase (bash 3.2 compatible)
+     case "$eSignetDeployed" in
+       y) eSignetDeployed="yes" ;;
+       n) eSignetDeployed="no" ;;
+     esac
  done
 
  if [[ $eSignetDeployed == "yes" ]]; then
@@ -96,7 +101,7 @@ function installing_apitestrig() {
  fi
 
   echo Installing apitestrig
-  helm -n $NS install apitestrig-injiverify mosip/apitestrig \
+  helm -n $NS install injiverify-apitestrig inji/injiverify-apitestrig \
   --set crontime="0 $time * * *" \
   -f values.yaml  \
   --version $CHART_VERSION \

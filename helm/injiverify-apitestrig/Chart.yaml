@@ -1,0 +1,21 @@
+apiVersion: v2
+name: injiverify-apitestrig
+description: A Helm chart to deploy APITESTRIG for Inji Verify
+type: application
+version: 0.0.1-develop
+appVersion: ""
+dependencies:
+  - name: common
+    repository: https://charts.bitnami.com/bitnami
+    tags:
+      - bitnami-common
+    version: 1.x.x
+home: https://inji.io
+keywords:
+  - mosip
+  - inji
+  - inji-verify
+  - apitestrig
+maintainers:
+  - email: info@mosip.io
+    name: INJI

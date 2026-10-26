@@ -12,7 +12,7 @@ function deleting_apitestrig() {
       read -p "Are you sure you want to delete apitestrig helm charts?(Y/n) " yn
       if [ $yn = "Y" ]
         then
-          helm -n $NS delete apitestrig-injiverify
+          helm -n $NS delete injiverify-apitestrig
           break
         else
           break
