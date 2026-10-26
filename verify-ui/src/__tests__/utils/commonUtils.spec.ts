@@ -62,6 +62,13 @@ describe("commonUtils credential matching", () => {
       );
     });
 
+    test("maps the short expired-resource error returned by the VP flow", () => {
+      const t = jest.fn((key: string) => key);
+      expect(
+        getQrErrorMessage(new Error("The requested resource expired."), t as any),
+      ).toBe("AlertMessages:qrVerificationLimitReached");
+    });
+
     test("returns an ordinary QR error unchanged", () => {
       const t = jest.fn();
       expect(getQrErrorMessage(new Error("camera unavailable"), t as any)).toBe(

@@ -5,7 +5,11 @@ import { TFunction } from "i18next";
 import en from "../locales/en.json";
 
 export const getQrErrorMessage = (error: Error, t: TFunction): string => {
-  if (error.message.trim() === "The requested resource expired., resource_not_found") {
+  const message = error.message.trim();
+  if (
+    message === "The requested resource expired., resource_not_found" ||
+    message === "The requested resource expired."
+  ) {
     return t("AlertMessages:qrVerificationLimitReached", {
       defaultValue: en.AlertMessages.qrVerificationLimitReached,
     });
