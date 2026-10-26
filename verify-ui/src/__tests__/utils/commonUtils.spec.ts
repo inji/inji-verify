@@ -63,10 +63,10 @@ describe("commonUtils credential matching", () => {
     });
 
     test("maps the short expired-resource error returned by the VP flow", () => {
-      const t = jest.fn((key: string) => key);
+      const t = jest.fn((_key: string, options: {defaultValue: string}) => options.defaultValue);
       expect(
         getQrErrorMessage(new Error("The requested resource expired."), t as any),
-      ).toBe("AlertMessages:qrVerificationLimitReached");
+      ).toBe("This QR code has reached its verification limit. Please request a new one.");
     });
 
     test("returns an ordinary QR error unchanged", () => {
