@@ -1,4 +1,5 @@
 import {
+  defaultLanguage,
   getDirCurrentLanguage,
   getLanguageCodes,
   isRTL,
@@ -8,6 +9,11 @@ import {
 import { fetchSvgTemplate, getTemplateUrl } from "../../utils/svg-template-utils";
 
 describe("language helpers", () => {
+  beforeEach(() => {
+    window.localStorage.clear();
+    window.sessionStorage.clear();
+  });
+
   test.each([
     ["en", "en"],
     ["ENG", "en"],
@@ -27,9 +33,34 @@ describe("language helpers", () => {
     expect(getDirCurrentLanguage("en")).toBe("ltr");
   });
 
-  test("switches language and persists the normalized value", async () => {
+  test("switches language for the current browser session only", async () => {
     await switchLanguage("fra");
-    expect(window.localStorage.getItem("selected_language")).toBe(JSON.stringify("fr"));
+    expect(window.sessionStorage.getItem("selected_language")).toBe(JSON.stringify("fr"));
+    expect(window.localStorage.getItem("selected_language")).toBeNull();
+  });
+
+  test("ignores a language saved by an earlier browser session", () => {
+    window.localStorage.setItem("selected_language", JSON.stringify("fr"));
+    let sessionLanguage = "";
+
+    jest.isolateModules(() => {
+      const sessionI18n = require("../../utils/i18n") as typeof import("../../utils/i18n");
+      sessionLanguage = sessionI18n.selected_language;
+    });
+
+    expect(sessionLanguage).toBe(defaultLanguage);
+  });
+
+  test("uses the language saved in the current browser session", () => {
+    window.sessionStorage.setItem("selected_language", JSON.stringify("fr"));
+    let sessionLanguage = "";
+
+    jest.isolateModules(() => {
+      const sessionI18n = require("../../utils/i18n") as typeof import("../../utils/i18n");
+      sessionLanguage = sessionI18n.selected_language;
+    });
+
+    expect(sessionLanguage).toBe("fr");
   });
 });
 

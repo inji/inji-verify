@@ -1,7 +1,10 @@
 import { storage } from "../../utils/storage";
 
 describe("storage helpers", () => {
-  beforeEach(() => localStorage.clear());
+  beforeEach(() => {
+    localStorage.clear();
+    sessionStorage.clear();
+  });
 
   test("stores and reads selected language", () => {
     storage.setItem(storage.SELECTED_LANGUAGE, "fr");
