@@ -121,6 +121,109 @@ public class UtilsTest {
     }
 
     @Test
+    void shouldReturnMsoMdocBeforeCwtForAnMdl() {
+        CBORObject issuerSigned = CBORObject.NewMap();
+        issuerSigned.Add("issuerAuth", CBORObject.NewArray());
+        issuerSigned.Add("nameSpaces", CBORObject.NewMap());
+        CBORObject document = CBORObject.NewMap();
+        document.Add("docType", "org.iso.18013.5.1.mDL");
+        document.Add("issuerSigned", issuerSigned);
+        String mdl = Base64.getUrlEncoder().withoutPadding().encodeToString(document.EncodeToBytes());
+
+        assertTrue(Utils.isMdl(mdl));
+        assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(mdl));
+        assertFalse(Utils.isMdl("{\"type\":[\"VerifiableCredential\"]}"));
+        assertFalse(Utils.isMdl("eyJ0eXAiOiJkYytzZC1qd3QifQ.payload.signature"));
+
+        byte[] withTrailingBytes = Arrays.copyOf(document.EncodeToBytes(), document.EncodeToBytes().length + 8);
+        String mdlWithTrailingBytes = Base64.getUrlEncoder().withoutPadding().encodeToString(withTrailingBytes);
+        assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(mdlWithTrailingBytes));
+    }
+
+    @Test
+    void shouldExtractMdocDataElements() {
+        CBORObject item = CBORObject.NewMap();
+        item.Add("elementIdentifier", "family_name");
+        item.Add("elementValue", "Cooper");
+        CBORObject items = CBORObject.NewArray();
+        items.Add(CBORObject.FromObject(item.EncodeToBytes()));
+        CBORObject namespaces = CBORObject.NewMap();
+        namespaces.Add("org.iso.18013.5.1", items);
+        CBORObject document = CBORObject.NewMap();
+        document.Add("docType", "org.iso.18013.5.1.mDL");
+        document.Add("issuerAuth", CBORObject.NewArray());
+        document.Add("nameSpaces", namespaces);
+        String mdl = Base64.getUrlEncoder().withoutPadding().encodeToString(document.EncodeToBytes());
+
+        Map<String, Object> claims = Utils.extractMdocClaims(mdl);
+
+        assertEquals("org.iso.18013.5.1.mDL", claims.get("docType"));
+        assertEquals("Cooper", claims.get("family_name"));
+    }
+
+    @Test
+    void shouldExtractMdocClaimsFromIssuerSignedNamespaces() {
+        String mdl = encodeMdoc(documentWithNamespaces(issuerSignedNamespaces("Doe"), false));
+
+        Map<String, Object> claims = Utils.extractMdocClaims(mdl);
+
+        assertEquals("Doe", claims.get("family_name"));
+    }
+
+    @Test
+    void shouldExtractMdocClaimsFromTheFirstDocument() {
+        CBORObject document = documentWithNamespaces(issuerSignedNamespaces("Ada"), true);
+        CBORObject documents = CBORObject.NewArray().Add(document);
+        CBORObject root = CBORObject.NewMap().Add("documents", documents);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(root));
+
+        assertEquals("Ada", claims.get("family_name"));
+    }
+
+    @Test
+    void shouldExtractTag24MdocItems() {
+        CBORObject item = CBORObject.NewMap();
+        item.Add("elementIdentifier", "given_name");
+        item.Add("elementValue", "Gorge");
+        CBORObject items = CBORObject.NewArray().Add(CBORObject.FromObjectAndTag(item.EncodeToBytes(), 24));
+        CBORObject namespaces = CBORObject.NewMap().Add("org.iso.18013.5.1", items);
+        CBORObject document = CBORObject.NewMap()
+                .Add("docType", "org.iso.18013.5.1.mDL")
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document));
+
+        assertEquals("Gorge", claims.get("given_name"));
+    }
+
+    @Test
+    void shouldRejectMalformedMdocClaims() {
+        assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims("%%%"));
+    }
+
+    private static String encodeMdoc(CBORObject document) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(document.EncodeToBytes());
+    }
+
+    private static CBORObject issuerSignedNamespaces(String familyName) {
+        CBORObject item = CBORObject.NewMap();
+        item.Add("elementIdentifier", "family_name");
+        item.Add("elementValue", familyName);
+        CBORObject items = CBORObject.NewArray().Add(CBORObject.FromObject(item.EncodeToBytes()));
+        CBORObject namespaces = CBORObject.NewMap().Add("org.iso.18013.5.1", items);
+        return CBORObject.NewMap().Add("nameSpaces", namespaces);
+    }
+
+    private static CBORObject documentWithNamespaces(CBORObject issuerSigned, boolean includeDocType) {
+        CBORObject document = CBORObject.NewMap().Add("issuerSigned", issuerSigned);
+        if (includeDocType) {
+            document.Add("docType", "org.iso.18013.5.1.mDL");
+        }
+        return document;
+    }
+
+    @Test
     void shouldReturnCwtFormatByMocking() {
         try (var mockedUtils = mockStatic(Utils.class)) {
             mockedUtils.when(() -> Utils.isCwt("abcabcabcbabc")).thenReturn(true);

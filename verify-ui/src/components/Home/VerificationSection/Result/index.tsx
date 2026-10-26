@@ -13,7 +13,7 @@ import {
 import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
 import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
-import { extractMappedClaim, isCWT, uint8ArrayToHex } from "../../../../utils/cborUtils";
+import { extractMappedClaim, extractMdocDisplayClaims, isCWT, isMsoMdoc, uint8ArrayToHex } from "../../../../utils/cborUtils";
 import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
 
 const Result = () => {
@@ -54,6 +54,15 @@ const Result = () => {
           const message = err instanceof Error ? err.message : String(err);
           dispatch(raiseAlert({ message, severity: "error", open: true }));
 
+        }
+      } else if (typeof vc === "string" && isMsoMdoc(vc)) {
+        try {
+          const claims = extractMdocDisplayClaims(vc);
+          setClaims(claims as LdpVc);
+          setCredentialType(typeof claims.docType === "string" ? claims.docType : "mDL");
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          dispatch(raiseAlert({ message, severity: "error", open: true }));
         }
       } else if (typeof vc === "string") {
         try {

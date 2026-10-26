@@ -728,6 +728,88 @@
               "response": []
             }
           ]
+        },
+        {
+          "name": "mso_mdoc",
+          "item": [
+            {
+              "name": "mso_mdoc valid",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                                            "",
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"mDL verification response includes decoded claims\", function () {",
+                      "    pm.expect(body.allChecksSuccessful).to.eql(true);",
+                      "    pm.expect(body.schemaAndSignatureCheck.valid).to.eql(true);",
+                      "    pm.expect(body.schemaAndSignatureCheck.error).to.eql(null);",
+                      "    pm.expect(body.expiryCheck.valid).to.eql(true);",
+                      "    pm.expect(body.statusCheck).to.eql([]);",
+                      "    pm.expect(body.claims.docType).to.eql(\"org.iso.18013.5.1.mDL\");",
+                      "    pm.expect(body.claims.family_name).to.eql(\"Cooper\");",
+                      "    pm.expect(body.claims.given_name).to.eql(\"Gorge\");",
+                      "    pm.expect(body.claims.birth_date).to.eql(\"1985-04-29\");",
+                      "    pm.expect(body.claims.document_number).to.eql(\"DL2154189532\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"omppc3N1ZXJBdXRohEOhASahGCFZAxQwggMQMIIB-KADAgECAggH5OBze4E24DANBgkqhkiG9w0BAQsFADB4MQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExEjAQBgNVBAcMCUJBTkdBTE9SRTEOMAwGA1UECgwFSUlJVEIxFzAVBgNVBAsMDkVYQU1QTEUtQ0VOVEVSMR8wHQYDVQQDDBZ3d3cuZXhhbXBsZS5jb20gKFJPT1QpMB4XDTI1MTIxMTA4MzE1MFoXDTI4MTIxMDA4MzE1MFowgZsxCzAJBgNVBAYTAklOMQswCQYDVQQIDAJLQTESMBAGA1UEBwwJQkFOR0FMT1JFMQ4wDAYDVQQKDAVJSUlUQjEXMBUGA1UECwwORVhBTVBMRS1DRU5URVIxQjBABgNVBAMMOXd3dy5leGFtcGxlLmNvbSAoQ0VSVElGWV9WQ19TSUdOX0VDX1IxLUVDX1NFQ1AyNTZSMV9TSUdOKTBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABL2k15KBjISWyPR74YfafeKJ6nhq3CXlsuD-c1v-Bquy42JEqlexSduK7gvIHiKAdxNxNr1pimmKdRlqLOEUDDSjRTBDMBIGA1UdEwEB_wQIMAYBAf8CAQEwHQYDVR0OBBYEFDfNDlSz2v543ufjlPhOhxtEPnPkMA4GA1UdDwEB_wQEAwIChDANBgkqhkiG9w0BAQsFAAOCAQEAlB5QeiNwsA7f0ptMFd8AIS15cPe5TY6s-Y5Qfkv5n4FatwlYWz9Qo1d7EJQRHqYwo1WakJxxUp8O3WBzamUxJjQfZF6lpVn5VtV_4_8z9f-pv3j2knCp4drK9GJ9pKK2-8A4dmyVv1uetAbAEzG3FO6mBwazx-ZVW2T33Bi3SOQZn1wNDr_dqkj51p808CBX1TKKdP6IHaLZOM8js9kJRxfrrowpZ9w48DFZTaf0rDY1ix7YwUsJdMk8N93yACkiQPAboC8JRpNGjp6MSyeyjFoxABjPk_baeiA8IZQHMfSV5ZnTc2BwkRChYjswEFidiH648qihWyBoz4ZgMYCujVkBx9gYWQHCpmdkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGd2ZXJzaW9uYzEuMGx2YWxpZGl0eUluZm-jZnNpZ25lZMB0MjAyNi0xMC0xNFQwNzo1MzoxOFppdmFsaWRGcm9twHQyMDI2LTEwLTE0VDA3OjUzOjE4Wmp2YWxpZFVudGlswHQyMDI4LTEwLTE0VDA3OjUzOjE4Wmx2YWx1ZURpZ2VzdHOhcW9yZy5pc28uMTgwMTMuNS4xpABYICgS9UNEA5oQTsXPNVPFIZz0MRmliXXsFkggUwbmUJBTAVgg5cTt95VoLYmtsIz4o689iHHAKxuV3nf5PZIjg_DlGP4CWCBOA6obEVANQZFI_oHf7pgxcln0Aagp1miaIQ6-T7nKzAVYID8J27fMR_QR0Jo4UijcopjVT4_MSEkOedZ8hsiQ0UrAbWRldmljZUtleUluZm-haWRldmljZUtleaUBAgMmIAEhWCAFdlydDRFUmL_Dgeil7LU2iXyyxgy_5GyLvoEkqpomBCJYILsR_Aqh1Rzv1UH7VKurJq9uH5geCDSiP4ydAxmX4jtBb2RpZ2VzdEFsZ29yaXRobWdTSEEtMjU2WEBfhsCdlnvRtfr6Gj0UW2WrfD7NQiGgGIwxWZJok1piDuP1gTEYLg_oN6F03pYdhXu8OLXcduLTFAJRll5tD4IWam5hbWVTcGFjZXOhcW9yZy5pc28uMTgwMTMuNS4xhNgYWF6kZnJhbmRvbVgYTIEJldPz2tPObeO3vGfU01WKXUpoVlwjaGRpZ2VzdElEAGxlbGVtZW50VmFsdWVmQ29vcGVycWVsZW1lbnRJZGVudGlmaWVya2ZhbWlseV9uYW1l2BhYXKRmcmFuZG9tWBgCo8qWg2ljjol0PolnP5pEVl-aDg9vPfhoZGlnZXN0SUQBbGVsZW1lbnRWYWx1ZWVHb3JnZXFlbGVtZW50SWRlbnRpZmllcmpnaXZlbl9uYW1l2BhYZKRmcmFuZG9tWBhfqfqVqEgZAzQ8UVtRA7Wkseo27VBPpp1oZGlnZXN0SUQCbGVsZW1lbnRWYWx1ZdkD7GoxOTg1LTA0LTI5cWVsZW1lbnRJZGVudGlmaWVyamJpcnRoX2RhdGXYGFhopGZyYW5kb21YGAE-v038ZO8YkLrUY_j_pxQ4H6iRcbsq_mhkaWdlc3RJRAVsZWxlbWVudFZhbHVlbERMMjE1NDE4OTUzMnFlbGVtZW50SWRlbnRpZmllcm9kb2N1bWVudF9udW1iZXI\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                }
+              },
+              "response": [
+                {
+                  "name": "mso_mdoc valid response",
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"allChecksSuccessful\": true,\n  \"schemaAndSignatureCheck\": {\n    \"valid\": true,\n    \"error\": null\n  },\n  \"expiryCheck\": {\n    \"valid\": true\n  },\n  \"statusCheck\": [],\n  \"claims\": {\n    \"docType\": \"org.iso.18013.5.1.mDL\",\n    \"family_name\": \"Cooper\",\n    \"given_name\": \"Gorge\",\n    \"birth_date\": \"1985-04-29\",\n    \"document_number\": \"DL2154189532\"\n  }\n}"
+                }
+              ]
+            }
+          ]
         }
       ]
     },

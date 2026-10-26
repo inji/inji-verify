@@ -98,3 +98,158 @@ export function extractMappedClaim(
 
   return decodedMappedData;
 }
+
+function base64UrlToBytes(value: string): Uint8Array {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padLength = (4 - (padded.length % 4)) % 4;
+  const binary = atob(padded + "=".repeat(padLength));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function isCborTag(value: unknown): value is { tag: number; value: unknown } {
+  return (
+    typeof value === "object" &&
+    value !== null &&
+    "tag" in value &&
+    "value" in value &&
+    typeof (value as { tag: unknown }).tag === "number"
+  );
+}
+
+/** An ISO mdoc is base64url CBOR with an issuer signature, not a JWT. */
+export function isMsoMdoc(value: unknown): boolean {
+  if (typeof value !== "string" || value.length === 0 || value.includes(".") || value.startsWith("{") || value.startsWith("[")) {
+    return false;
+  }
+  try {
+    const root = decode(base64UrlToBytes(value)) as Record<string, unknown>;
+    return Boolean(root && (root.issuerAuth || root.issuerSigned || root.documents));
+  } catch {
+    return false;
+  }
+}
+
+function renderMdocValue(value: unknown): unknown {
+  if (value == null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+  if (value instanceof Uint8Array) {
+    if (value.length > 64) {
+      return `image (${value.length} bytes)`;
+    }
+    return uint8ArrayToHex(value);
+  }
+  if (isCborTag(value)) {
+    return renderMdocValue(value.value);
+  }
+  if (Array.isArray(value)) {
+    return value.map((entry) => renderMdocValue(entry));
+  }
+  if (value instanceof Date) {
+    return value.toISOString();
+  }
+  if (typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, entry]) => [key, renderMdocValue(entry)])
+    );
+  }
+  return String(value);
+}
+
+function unwrapMdocItem(item: unknown): Record<string, unknown> | null {
+  let current = item;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (current instanceof Uint8Array) {
+      current = decode(current);
+      continue;
+    }
+    if (isCborTag(current) && current.tag === 24) {
+      current = current.value instanceof Uint8Array ? decode(current.value) : current.value;
+      continue;
+    }
+    break;
+  }
+  if (current && typeof current === "object" && "elementIdentifier" in (current as object)) {
+    return current as Record<string, unknown>;
+  }
+  return null;
+}
+
+function mdocNamespaces(root: Record<string, any>): Record<string, unknown> | null {
+  if (root.nameSpaces) return root.nameSpaces;
+  if (root.issuerSigned?.nameSpaces) return root.issuerSigned.nameSpaces;
+  const document = Array.isArray(root.documents) ? root.documents[0] : undefined;
+  if (document?.issuerSigned?.nameSpaces) return document.issuerSigned.nameSpaces;
+  return null;
+}
+
+function mdocType(root: Record<string, any>): string | undefined {
+  const direct = root.docType ?? root.issuerSigned?.docType ?? root.documents?.[0]?.docType;
+  if (typeof direct === "string") return direct;
+  try {
+    const issuerAuth = root.issuerAuth ?? root.issuerSigned?.issuerAuth ?? root.documents?.[0]?.issuerSigned?.issuerAuth;
+    const payload = issuerAuth?.[2];
+    if (!(payload instanceof Uint8Array)) return undefined;
+    let mobileSecurityObject = decode(payload) as any;
+    if (isCborTag(mobileSecurityObject) && mobileSecurityObject.tag === 24 && mobileSecurityObject.value instanceof Uint8Array) {
+      mobileSecurityObject = decode(mobileSecurityObject.value);
+    }
+    return typeof mobileSecurityObject?.docType === "string" ? mobileSecurityObject.docType : undefined;
+  } catch {
+    return undefined;
+  }
+}
+
+/** Flattens issuer-signed mdoc data elements for the result screen. */
+export function extractMdocDisplayClaims(mdoc: string): Record<string, unknown> {
+  const root = decode(base64UrlToBytes(mdoc)) as Record<string, any>;
+  const claims: Record<string, unknown> = {};
+  const docType = mdocType(root);
+  if (docType) {
+    claims.docType = docType;
+  }
+  const namespaces = mdocNamespaces(root) ?? {};
+  const claimNamespaces: Record<string, string> = {};
+  Object.entries(namespaces).forEach(([namespace, items]) => {
+    if (!Array.isArray(items)) {
+      throw new Error("Invalid mdoc namespace: expected an item array");
+    }
+    items.forEach((item) => {
+      const decoded = unwrapMdocItem(item);
+      if (!decoded || typeof decoded.elementIdentifier !== "string" || !("elementValue" in decoded)) {
+        throw new Error("Invalid mdoc issuer-signed item");
+      }
+      assignMdocClaim(claims, claimNamespaces, namespace, decoded.elementIdentifier, renderMdocValue(decoded.elementValue));
+    });
+  });
+  return claims;
+}
+
+function assignMdocClaim(
+  claims: Record<string, unknown>,
+  claimNamespaces: Record<string, string>,
+  namespace: string,
+  identifier: string,
+  value: unknown,
+) {
+  if (identifier === "docType") {
+    claims[`${namespace}.${identifier}`] = value;
+    return;
+  }
+  if (Object.prototype.hasOwnProperty.call(claims, identifier)) {
+    const previousNamespace = claimNamespaces[identifier];
+    if (previousNamespace) {
+      claims[`${previousNamespace}.${identifier}`] = claims[identifier];
+      delete claims[identifier];
+      delete claimNamespaces[identifier];
+    }
+    claims[`${namespace}.${identifier}`] = value;
+    return;
+  }
+  claims[identifier] = value;
+  claimNamespaces[identifier] = namespace;
+}

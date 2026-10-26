@@ -27,6 +27,7 @@ The `/v2/vc-verification` endpoint auto-detects format from the credential conte
 | `vc+sd-jwt` | X.509 Certificate (`x5c` JWT header) | PS256, RS256, EdDSA (Ed25519), ES256, ES256K | — |
 | `dc+sd-jwt` | X.509 Certificate (`x5c` JWT header) | PS256, RS256, EdDSA (Ed25519), ES256, ES256K | — |
 | `cwt_vc` (Claim 169) | COSE_Sign1 (CWT — RFC 8392) | ES256, EdDSA | `COSE_Sign1` |
+| `mso_mdoc` (ISO 18013-5, including mDL) | COSE_Sign1 `issuerAuth` in `issuerSigned`; its payload contains the Mobile Security Object | Determined by the `issuerAuth` COSE `alg` header, subject to verifier support | `COSE_Sign1` |
 
 ---
 
@@ -44,7 +45,7 @@ There are two endpoints. Use **v2** for all new integrations.
 
 ### POST /v2/vc-verification (recommended)
 
-Verify a single Verifiable Credential server-side. Accepts JSON-LD, SD-JWT, or CWT credentials. Format is auto-detected.
+Verify a single Verifiable Credential server-side. Accepts JSON-LD, SD-JWT, CWT, or ISO mdoc (`mso_mdoc`, including mDL) credentials. Format is auto-detected. An mdoc is recognised before CWT and JSON-LD: it is a base64url string whose first CBOR map contains `issuerAuth` and `nameSpaces`, `issuerSigned`, or `documents`. Scan and upload use this endpoint for an mDL. OpenID4VP presentation does not. When `includeClaims` is `true`, mdoc `claims` contain `docType` and the issuer-signed data elements keyed by element identifier. Revocation is not checked for `mso_mdoc`, so `statusCheck` is empty.
 
 **Request**
 ```json

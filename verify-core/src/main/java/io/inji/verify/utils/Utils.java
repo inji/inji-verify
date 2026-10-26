@@ -6,6 +6,7 @@ import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORTaggedItem;
 import com.upokecenter.cbor.CBOREncodeOptions;
 import com.upokecenter.cbor.CBORObject;
+import com.upokecenter.cbor.CBORType;
 import com.authlete.sd.Disclosure;
 import com.authlete.sd.SDJWT;
 import com.authlete.sd.SDObjectDecoder;
@@ -32,6 +33,7 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -364,7 +366,165 @@ public final class Utils {
             case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential, metaClaims);
             case LDP_VC -> extractLdpClaims(verifiableCredential);
             case CWT_VC -> extractCwtClaims(verifiableCredential, pixelPass, metaClaims);
-            default -> null;
+            case MSO_MDOC -> extractMdocClaims(verifiableCredential);
+            case JWT_VC_JSON -> Map.of();
+        };
+    }
+
+    private static final int MAX_MDOC_BASE64_LENGTH = 1_048_576;
+    private static final int MAX_MDOC_DEPTH = 32;
+
+    /**
+     * Data elements from an ISO mdoc, keyed by element identifier.
+     * The verifier only returns whether the signature and digests matched.
+     */
+    public static Map<String, Object> extractMdocClaims(String credential) {
+        try {
+            String trimmed = credential.trim();
+            if (trimmed.length() > MAX_MDOC_BASE64_LENGTH) {
+                throw new IllegalArgumentException("mdoc credential exceeds maximum size");
+            }
+            byte[] encoded = Base64.getUrlDecoder().decode(trimmed);
+            CBORObject root = CBORObject.Read(new ByteArrayInputStream(encoded));
+            Map<String, Object> claims = new LinkedHashMap<>();
+            Map<String, String> claimNamespaces = new LinkedHashMap<>();
+            String docType = mdocDocType(root);
+            if (docType != null) {
+                claims.put("docType", docType);
+            }
+            CBORObject namespaces = mdocNamespaces(root);
+            if (namespaces == null || namespaces.getType() != CBORType.Map) {
+                return claims;
+            }
+            for (CBORObject namespace : namespaces.getKeys()) {
+                String namespaceName = namespace.getType() == CBORType.TextString ? namespace.AsString() : namespace.toString();
+                CBORObject items = namespaces.get(namespace);
+                if (items.getType() != CBORType.Array) {
+                    continue;
+                }
+                for (int index = 0; index < items.size(); index++) {
+                    CBORObject item = unwrapMdocItem(items.get(index));
+                    if (item == null || !item.ContainsKey("elementIdentifier")) {
+                        continue;
+                    }
+                    putMdocClaim(claims, claimNamespaces, namespaceName,
+                            item.get("elementIdentifier").AsString(), toJava(item.get("elementValue"), 0));
+                }
+            }
+            return claims;
+        } catch (InvalidCredentialException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to extract mdoc claims", e);
+        }
+    }
+
+    private static void putMdocClaim(Map<String, Object> claims, Map<String, String> claimNamespaces,
+                                     String namespace, String identifier, Object value) {
+        if ("docType".equals(identifier)) {
+            claims.put(namespace + "." + identifier, value);
+            return;
+        }
+        if (claims.containsKey(identifier)) {
+            String previousNamespace = claimNamespaces.remove(identifier);
+            if (previousNamespace != null) {
+                claims.put(previousNamespace + "." + identifier, claims.remove(identifier));
+            }
+            claims.put(namespace + "." + identifier, value);
+            return;
+        }
+        claims.put(identifier, value);
+        claimNamespaces.put(identifier, namespace);
+    }
+
+    private static CBORObject mdocNamespaces(CBORObject root) {
+        if (root.ContainsKey("nameSpaces")) {
+            return root.get("nameSpaces");
+        }
+        if (root.ContainsKey("issuerSigned") && root.get("issuerSigned").ContainsKey("nameSpaces")) {
+            return root.get("issuerSigned").get("nameSpaces");
+        }
+        if (root.ContainsKey("documents") && root.get("documents").size() > 0) {
+            CBORObject issuerSigned = root.get("documents").get(0).get("issuerSigned");
+            if (issuerSigned != null && issuerSigned.ContainsKey("nameSpaces")) {
+                return issuerSigned.get("nameSpaces");
+            }
+        }
+        return null;
+    }
+
+    private static String mdocDocType(CBORObject root) {
+        if (root.ContainsKey("docType") && root.get("docType").getType() == CBORType.TextString) {
+            return root.get("docType").AsString();
+        }
+        CBORObject issuerAuth = root.ContainsKey("issuerAuth") ? root.get("issuerAuth") : null;
+        if (issuerAuth == null && root.ContainsKey("issuerSigned")) {
+            issuerAuth = root.get("issuerSigned").get("issuerAuth");
+        }
+        if (issuerAuth == null || issuerAuth.getType() != CBORType.Array || issuerAuth.size() < 3) {
+            return null;
+        }
+        try {
+            CBORObject payload = CBORObject.DecodeFromBytes(issuerAuth.get(2).GetByteString());
+            if (payload.HasMostOuterTag(24)) {
+                payload = CBORObject.DecodeFromBytes(payload.Untag().GetByteString());
+            }
+            return payload.ContainsKey("docType") ? payload.get("docType").AsString() : null;
+        } catch (Exception ignored) {
+            return null;
+        }
+    }
+
+    private static CBORObject unwrapMdocItem(CBORObject item) {
+        CBORObject current = item;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            if (current.HasMostOuterTag(24)) {
+                current = current.Untag();
+            }
+            if (current.getType() == CBORType.ByteString) {
+                current = CBORObject.DecodeFromBytes(current.GetByteString());
+                continue;
+            }
+            break;
+        }
+        return current.getType() == CBORType.Map ? current : null;
+    }
+
+    private static Object toJava(CBORObject value, int depth) {
+        if (depth > MAX_MDOC_DEPTH) {
+            throw new IllegalArgumentException("mdoc claim nesting is too deep");
+        }
+        if (value == null || value.isNull()) {
+            return null;
+        }
+        if (value.HasMostOuterTag(24) && value.getType() == CBORType.ByteString) {
+            return toJava(CBORObject.DecodeFromBytes(value.Untag().GetByteString()), depth + 1);
+        }
+        return switch (value.getType()) {
+            case TextString -> value.AsString();
+            case Integer, Number -> {
+                var number = value.AsNumber();
+                yield number.CanTruncatedIntFitInInt64() ? (Object) number.ToInt64Checked() : number.toString();
+            }
+            case Boolean -> value.AsBoolean();
+            case ByteString -> Base64.getEncoder().encodeToString(value.GetByteString());
+            case FloatingPoint -> value.AsDouble();
+            case Array -> {
+                List<Object> values = new ArrayList<>();
+                for (int index = 0; index < value.size(); index++) {
+                    values.add(toJava(value.get(index), depth + 1));
+                }
+                yield values;
+            }
+            case Map -> {
+                Map<String, Object> values = new LinkedHashMap<>();
+                for (CBORObject key : value.getKeys()) {
+                    String name = key.getType() == CBORType.TextString ? key.AsString() : key.toString();
+                    values.put(name, toJava(value.get(key), depth + 1));
+                }
+                yield values;
+            }
+            default -> value.toString();
         };
     }
 
@@ -446,8 +606,41 @@ public final class Utils {
         }
     }
 
+    /**
+     * An ISO mdoc / mDL is base64url CBOR. It is not a CWT and not JSON, so it has to be
+     * recognised before those checks or it is sent to the JSON-LD verifier.
+     */
+    public static boolean isMdl(String credential) {
+        if (credential == null) {
+            return false;
+        }
+        String trimmed = credential.trim();
+        if (trimmed.isEmpty() || trimmed.length() > MAX_MDOC_BASE64_LENGTH
+                || trimmed.indexOf('.') >= 0 || trimmed.charAt(0) == '{' || trimmed.charAt(0) == '[') {
+            return false;
+        }
+        try {
+            byte[] encoded = Base64.getUrlDecoder().decode(trimmed);
+            // Read the first CBOR item only. DecodeFromBytes rejects a buffer that
+            // continues past that item, which was sending these credentials to JSON-LD.
+            CBORObject root = CBORObject.Read(new ByteArrayInputStream(encoded));
+            if (root.getType() != CBORType.Map) {
+                return false;
+            }
+            return root.ContainsKey("documents")
+                    || root.ContainsKey("issuerSigned")
+                    || (root.ContainsKey("issuerAuth") && root.ContainsKey("nameSpaces"));
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
     public static CredentialFormat getCredentialFormat(String verifiableCredential) {
         try {
+            if (Utils.isMdl(verifiableCredential)) {
+                return CredentialFormat.MSO_MDOC;
+            }
+
             if (Utils.isCwt(verifiableCredential)) {
                 return CredentialFormat.CWT_VC;
             }

@@ -8,6 +8,7 @@ import {
   getTotalCredentialCount,
   getQrErrorMessage,
   isVPSubmissionSupported,
+  vcStatusFromVerificationResponse,
 } from "../../utils/commonUtils";
 import { claim, DcqlCredentialQuery, MatchingVc } from "../../types/data-types";
 
@@ -761,6 +762,40 @@ describe("commonUtils credential matching", () => {
       delete (window as any)._env_;
       expect(getClientId()).toBeUndefined();
       expect(isVPSubmissionSupported()).toBe(false);
+    });
+
+    test("derives the result status from a full verification body", () => {
+      expect(
+        vcStatusFromVerificationResponse({
+          allChecksSuccessful: true,
+          schemaAndSignatureCheck: { valid: true, error: null },
+          expiryCheck: { valid: true },
+          statusCheck: [],
+          claims: { docType: "org.iso.18013.5.1.mDL" },
+        }),
+      ).toBe("SUCCESS");
+      expect(
+        vcStatusFromVerificationResponse({
+          verificationStatus: "EXPIRED",
+        }),
+      ).toBe("EXPIRED");
+      expect(
+        vcStatusFromVerificationResponse({
+          schemaAndSignatureCheck: { valid: false },
+        }),
+      ).toBe("INVALID");
+      expect(
+        vcStatusFromVerificationResponse({
+          schemaAndSignatureCheck: { valid: true },
+          expiryCheck: { valid: false },
+        }),
+      ).toBe("EXPIRED");
+      expect(
+        vcStatusFromVerificationResponse({
+          schemaAndSignatureCheck: { valid: true },
+          statusCheck: [{ purpose: "revocation", valid: false, error: null }],
+        }),
+      ).toBe("REVOKED");
     });
 
     test("extracts credential types from object and fallback forms", () => {

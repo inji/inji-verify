@@ -23,6 +23,7 @@ Inji Verify supports VC verification by scanning a QR code with the device camer
 | W3C JSON-LD | `ldp_vc` | JSON object embedded in QR |
 | IETF SD-JWT VC | `dc+sd-jwt` / `vc+sd-jwt` | Compact string embedded in QR |
 | Claim 169 / CWT | auto-detected | Base45 + zlib/Brotli compressed in QR |
+| ISO mdoc / mDL | `mso_mdoc` | Base64url CBOR string embedded in QR |
 | Data-share URL | `INJI_OVP://` prefix | Redirect URL to Online VC Provider |
 
 The component detects the format automatically after decoding.
@@ -33,7 +34,7 @@ The component detects the format automatically after decoding.
 
 ![Scan / Upload verification flow](images/vc-verification-flow.svg)
 
-### Embedded VC (JSON-LD, SD-JWT, CWT)
+### Embedded VC (JSON-LD, SD-JWT, CWT, mDL)
 
 1. User scans or uploads a file containing an embedded VC.
 2. SDK decodes the QR using [PixelPass](https://github.com/inji/pixelpass) / `zxing-wasm`.
@@ -106,8 +107,15 @@ Passed via the `vcVerificationV2Request` prop on `QRCodeVerification`:
 | `ldp_vc` | JSON-LD proof | `expirationDate` / `validUntil` | BitstringStatusList | VP proof |
 | `dc+sd-jwt` / `vc+sd-jwt` | JWT signature + disclosures | `exp` claim | Not applicable | KB-JWT (aud, nonce, iat, sd_hash, signature) |
 | CWT (Claim 169) | COSE signature | CWT `exp` claim | Not applicable | Not applicable |
+| `mso_mdoc` | COSE `issuerAuth` | MSO `validityInfo` | Not supported | Not applicable |
 
-See the format-specific docs for full details: [VC_Format_W3C_LDP_VC.md](./VC_Format_W3C_LDP_VC.md), [VC_Format_IETF_SD_JWT.md](./VC_Format_IETF_SD_JWT.md), [VC_Format_Claim_169.md](./VC_Format_Claim_169.md).
+Scan and upload accept an ISO 18013-5 mdoc, including an mDL (`docType` `org.iso.18013.5.1.mDL`). This path does not cover OpenID4VP presentation.
+
+The backend detects the credential before the CWT and JSON-LD checks: a base64url string whose first CBOR map contains `issuerAuth` and `nameSpaces`, `issuerSigned`, or `documents`. It verifies that credential as `mso_mdoc`. Revocation is not checked, so `statusCheck` is empty.
+
+The result screen follows the same display path as SD-JWT and CWT. `summariseResults` stays at its default, so `onVCProcessed` still receives only `verificationStatus` plus the original credential in `vc`. The UI decodes that base64url string and shows `docType` together with the issuer-signed data elements (`family_name`, `given_name`, and the rest). `POST /v2/vc-verification` also returns those claims when `includeClaims` is `true`; the scan and upload screen does not read that field.
+
+JSON-LD, SD-JWT, and CWT are described in [VC_Format_W3C_LDP_VC.md](./VC_Format_W3C_LDP_VC.md), [VC_Format_IETF_SD_JWT.md](./VC_Format_IETF_SD_JWT.md), and [VC_Format_Claim_169.md](./VC_Format_Claim_169.md).
 
 ---
 
