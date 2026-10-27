@@ -351,6 +351,15 @@
 			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePost" />
 		</classes>
 	</test>
+	
+		<test name="VcVerificationQrPdf">
+		<parameter name="ymlFile"
+			value="injiverify/VcVerificationQrPdf/VcVerificationQrPdf.yml" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostWithQrPdf" />
+		</classes>
+	</test>
 	<test name="VpRequestUriEdge_SimplePostForAutoGenId">
 		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpRequestUriEdge/VpRequestUriEdge_SimplePostForAutoGenId.yml" />
 		<parameter name="idKeyName" value="transactionId,requestId" />
