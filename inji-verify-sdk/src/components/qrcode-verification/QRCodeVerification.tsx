@@ -380,7 +380,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     setLoading(true);
     try {
       const vc = await extractVerifiableCredential(data);
-      if (vc instanceof Error) throw vc;
+      if (vc instanceof Error || isAppError(vc)) throw vc;
       if (vc && vc.toString().endsWith(BASE64_PADDING)) {
         throw Error("Vc Type Not Supported");
       }
@@ -406,7 +406,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
     } catch (error) {
       resetState();
       if(isAppError(error)) {
-        throw new Error(error.errorMessage);
+        throw error;
       }
       throw error instanceof Error ? error : new Error(String(error));
     }
@@ -583,7 +583,7 @@ const QRCodeVerification: React.FC<QRCodeVerificationProps> = ({
         frameProcessingRef.current = false;
         stopVideoStream();
         if (isAppError(error)) {
-            onError(new Error(error.errorMessage));
+            onError(error);
             return;
         }
         onError(
