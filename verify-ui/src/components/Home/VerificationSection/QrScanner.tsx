@@ -1,5 +1,4 @@
 import { useEffect, useState } from "react";
-import { useTranslation } from "react-i18next";
 import CameraAccessDenied from "./CameraAccessDenied";
 import { useAppDispatch } from "../../../redux/hooks";
 import {
@@ -8,14 +7,13 @@ import {
 } from "../../../redux/features/verification/verification.slice";
 import { raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import { getClientId, getQrErrorMessage, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
+import { getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
 
 function QrScanner({ onClose, scannerActive }: {
   onClose: () => void;
   scannerActive: boolean;
 }) {
   const dispatch = useAppDispatch();
-  const { t } = useTranslation();
   const [isCameraBlocked, setIsCameraBlocked] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
 
@@ -67,7 +65,7 @@ const handleOnVCProcessed = (data: any[]) => {
                   title: error instanceof Error ? undefined : "Verification Failed",
                   errorCode: error instanceof Error ? undefined : error.errorCode,
                   errorReason: error instanceof Error ? undefined : error.errorMessage,
-                  message: error instanceof Error ? getQrErrorMessage(error, t) : error.errorMessage,
+                  message: error instanceof Error ? error.message : error.errorMessage,
                   severity: "error",
                 })
               );

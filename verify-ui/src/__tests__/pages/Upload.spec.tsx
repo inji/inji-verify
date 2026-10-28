@@ -34,7 +34,7 @@ describe("Upload", () => {
     onError = undefined;
   });
 
-  test("shows the multiple QR message when the SDK detects multiple valid QR codes", async () => {
+  test("shows a normal QR error message returned by the SDK", async () => {
     render(<Upload />);
 
     expect(onError).toBeDefined();
@@ -44,7 +44,7 @@ describe("Upload", () => {
       expect(mockDispatch).toHaveBeenCalledWith(
         expect.objectContaining({
           payload: expect.objectContaining({
-            message: "Multiple QR codes detected, please retry with an image containing a single QR code.",
+            message: "Multiple QR codes found",
           }),
         }),
       );
