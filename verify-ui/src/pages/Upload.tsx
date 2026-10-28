@@ -69,16 +69,22 @@ return (
                         );
                         if (isOnline) {
                             document.getElementById("trigger-upload")?.click();
+                            const qrErrorName = error instanceof Error ? error.name : undefined;
                             dispatch(
                                 raiseAlert({
                                         message:
-                                            error.name === "QR_DECODE_FAILED"
+                                            qrErrorName === "QR_DECODE_FAILED"
                                                 ? t("AlertMessages:qrDecodeFailed")
-                                                : error.name === "QR_NOT_FOUND"
+                                                : qrErrorName === "QR_NOT_FOUND"
                                                     ? t("AlertMessages:qrNotDetected")
-                                                    : error.name === "MULTIPLE_QR_FOUND"
+                                                    : qrErrorName === "MULTIPLE_QR_FOUND"
                                                         ? t("AlertMessages:multipleQrFound")
-                                                        : getQrErrorMessage(error, t),
+                                                        : error instanceof Error
+                                                            ? getQrErrorMessage(error, t)
+                                                            : error.errorMessage,
+                                    title: error instanceof Error ? undefined : "Verification Failed",
+                                    errorCode: error instanceof Error ? undefined : error.errorCode,
+                                    errorReason: error instanceof Error ? undefined : error.errorMessage,
                                     severity: "error",
                                     open: true,
                                 })

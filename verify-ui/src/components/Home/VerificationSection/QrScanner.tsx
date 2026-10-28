@@ -58,12 +58,18 @@ const handleOnVCProcessed = (data: any[]) => {
           onVCProcessed={handleOnVCProcessed}
           onClose={onClose}
           onError={(error) => {
-            if (error.name === "NotAllowedError") {
+            if (error instanceof Error && error.name === "NotAllowedError") {
               setIsCameraBlocked(true);
             } else {
               dispatch(goToHomeScreen({}));
               dispatch(
-                raiseAlert({ message: getQrErrorMessage(error, t), severity: "error" })
+                raiseAlert({
+                  title: error instanceof Error ? undefined : "Verification Failed",
+                  errorCode: error instanceof Error ? undefined : error.errorCode,
+                  errorReason: error instanceof Error ? undefined : error.errorMessage,
+                  message: error instanceof Error ? getQrErrorMessage(error, t) : error.errorMessage,
+                  severity: "error",
+                })
               );
             }
           }}

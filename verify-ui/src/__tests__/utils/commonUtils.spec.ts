@@ -48,18 +48,15 @@ const matchingResult = (
 
 describe("commonUtils credential matching", () => {
   describe("getQrErrorMessage", () => {
-    test("maps the expired-resource error through the translation function", () => {
+    test("returns the VC Verify message unchanged", () => {
       const t = jest.fn((key: string) => key);
       expect(
         getQrErrorMessage(
           new Error("  The requested resource expired., resource_not_found  "),
           t as any,
         ),
-      ).toBe("AlertMessages:qrVerificationLimitReached");
-      expect(t).toHaveBeenCalledWith(
-        "AlertMessages:qrVerificationLimitReached",
-        expect.objectContaining({ defaultValue: expect.any(String) }),
-      );
+      ).toBe("  The requested resource expired., resource_not_found  ");
+      expect(t).not.toHaveBeenCalled();
     });
 
     test("returns an ordinary QR error unchanged", () => {
