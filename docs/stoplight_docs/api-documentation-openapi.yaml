@@ -1588,7 +1588,7 @@ paths:
         3. **Credential Status Checks** (Optional) — revocation/suspension. Skipped when `skipStatusChecks=true`.
         4. **Claims Extraction** (Optional) — when `includeClaims=true` and stage 1 passes.
 
-        **Supported formats:** JSON-LD, SD-JWT (`dc+sd-jwt`, `vc+sd-jwt`), CWT.
+        **Supported formats:** JSON-LD, SD-JWT (`dc+sd-jwt`, `vc+sd-jwt`), CWT, ISO mdoc / mDL (`mso_mdoc`, base64url CBOR).
 
         Runtime exceptions are propagated as HTTP 500.
       operationId: verifyVCV2
@@ -2312,7 +2312,7 @@ components:
       properties:
         verifiableCredential:
           type: string
-          description: 'Verifiable Credential to verify (JSON-LD, SD-JWT (`dc+sd-jwt` or `vc+sd-jwt`), or CWT as HEX value of CBOR).'
+          description: 'Verifiable Credential to verify (JSON-LD, SD-JWT (`dc+sd-jwt` or `vc+sd-jwt`), CWT as HEX value of CBOR, or ISO mdoc / mDL as base64url CBOR).'
         skipStatusChecks:
           type: boolean
           default: false

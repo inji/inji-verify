@@ -98,7 +98,7 @@ import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
 
 | QR content | Behaviour |
 |---|---|
-| Embedded VC (JSON-LD, SD-JWT, CWT) | Decoded with [PixelPass](https://github.com/inji/pixelpass), verified via `/v2/vc-verification` |
+| Embedded VC (JSON-LD, SD-JWT, CWT, ISO mdoc / mDL) | Decoded with [PixelPass](https://github.com/inji/pixelpass), verified via `/v2/vc-verification` |
 | Data-share URL (starts with `INJI_OVP://`) | See data-share flow below |
 
 ### Sequence — Standard Scan/Upload Flow

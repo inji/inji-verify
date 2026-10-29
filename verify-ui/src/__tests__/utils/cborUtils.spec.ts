@@ -71,6 +71,50 @@ describe("cborUtils", () => {
     expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo").birth_date).toBe(birth.toISOString());
   });
 
+  it("qualifies colliding namespace claims and keeps docType metadata", () => {
+    mockDecode.mockReturnValue({
+      docType: "org.iso.18013.5.1.mDL",
+      nameSpaces: {
+        "org.iso.18013.5.1": [
+          { elementIdentifier: "family_name", elementValue: "First" },
+        ],
+        "org.iso.18013.5.1.custom": [
+          { elementIdentifier: "family_name", elementValue: "Second" },
+          { elementIdentifier: "docType", elementValue: "element-doc-type" },
+        ],
+      },
+    } as never);
+
+    expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
+      docType: "org.iso.18013.5.1.mDL",
+      "org.iso.18013.5.1.family_name": "First",
+      "org.iso.18013.5.1.custom.family_name": "Second",
+      "org.iso.18013.5.1.custom.docType": "element-doc-type",
+    });
+  });
+
+  it("rejects malformed mdoc namespaces and items", () => {
+    mockDecode.mockReturnValue({
+      docType: "org.iso.18013.5.1.mDL",
+      nameSpaces: {
+        "org.iso.18013.5.1": { not: "an-array" },
+      },
+    } as never);
+    expect(() => extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toThrow(
+      "Invalid mdoc namespace: expected an item array",
+    );
+
+    mockDecode.mockReturnValue({
+      docType: "org.iso.18013.5.1.mDL",
+      nameSpaces: {
+        "org.iso.18013.5.1": [{ elementValue: "missing-identifier" }],
+      },
+    } as never);
+    expect(() => extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toThrow(
+      "Invalid mdoc issuer-signed item",
+    );
+  });
+
   it("rejects invalid CWT values", () => {
     expect(isCWT("")).toBe(false);
     expect(isCWT("abc")).toBe(false);

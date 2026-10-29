@@ -202,6 +202,67 @@ public class UtilsTest {
         assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims("%%%"));
     }
 
+    @Test
+    void shouldRejectOversizedMdocCredentials() {
+        String oversized = "a".repeat(1_048_577);
+
+        assertFalse(Utils.isMdl(oversized));
+        assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims(oversized));
+    }
+
+    @Test
+    void shouldQualifyCollidingMdocNamespaceClaims() {
+        CBORObject first = CBORObject.NewMap()
+                .Add("elementIdentifier", "family_name")
+                .Add("elementValue", "First");
+        CBORObject second = CBORObject.NewMap()
+                .Add("elementIdentifier", "family_name")
+                .Add("elementValue", "Second");
+        CBORObject docTypeItem = CBORObject.NewMap()
+                .Add("elementIdentifier", "docType")
+                .Add("elementValue", "element-doc-type");
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray().Add(CBORObject.FromObject(first.EncodeToBytes())))
+                .Add("org.iso.18013.5.1.custom", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(second.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(docTypeItem.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("docType", "org.iso.18013.5.1.mDL")
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document));
+
+        assertEquals("org.iso.18013.5.1.mDL", claims.get("docType"));
+        assertEquals("First", claims.get("org.iso.18013.5.1.family_name"));
+        assertEquals("Second", claims.get("org.iso.18013.5.1.custom.family_name"));
+        assertEquals("element-doc-type", claims.get("org.iso.18013.5.1.custom.docType"));
+        assertFalse(claims.containsKey("family_name"));
+    }
+
+    @Test
+    void shouldPreserveLargeMdocIntegersAsStrings() {
+        CBORObject item = CBORObject.NewMap()
+                .Add("elementIdentifier", "large_number")
+                .Add("elementValue", CBORObject.FromObject(new java.math.BigInteger("18446744073709551615")));
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray().Add(CBORObject.FromObject(item.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("docType", "org.iso.18013.5.1.mDL")
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document));
+
+        assertEquals("18446744073709551615", claims.get("large_number"));
+    }
+
+    @Test
+    void shouldReturnEmptyClaimsMapForJwtVcJson() {
+        Map<String, Object> claims = Utils.extractClaims("unused", CredentialFormat.JWT_VC_JSON, null, null);
+
+        assertNotNull(claims);
+        assertTrue(claims.isEmpty());
+    }
+
     private static String encodeMdoc(CBORObject document) {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(document.EncodeToBytes());
     }

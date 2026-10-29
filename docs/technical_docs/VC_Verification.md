@@ -115,7 +115,7 @@ The backend detects the credential before the CWT and JSON-LD checks: a base64ur
 
 The result screen follows the same display path as SD-JWT and CWT. `summariseResults` stays at its default, so `onVCProcessed` still receives only `verificationStatus` plus the original credential in `vc`. The UI decodes that base64url string and shows `docType` together with the issuer-signed data elements (`family_name`, `given_name`, and the rest). `POST /v2/vc-verification` also returns those claims when `includeClaims` is `true`; the scan and upload screen does not read that field.
 
-JSON-LD, SD-JWT, and CWT are described in [VC_Format_W3C_LDP_VC.md](./VC_Format_W3C_LDP_VC.md), [VC_Format_IETF_SD_JWT.md](./VC_Format_IETF_SD_JWT.md), and [VC_Format_Claim_169.md](./VC_Format_Claim_169.md).
+Format-specific details: [VC_Format_W3C_LDP_VC.md](./VC_Format_W3C_LDP_VC.md), [VC_Format_IETF_SD_JWT.md](./VC_Format_IETF_SD_JWT.md), [VC_Format_Claim_169.md](./VC_Format_Claim_169.md), and [VC_Format_ISO_MSO_MDOC.md](./VC_Format_ISO_MSO_MDOC.md).
 
 ---
 
