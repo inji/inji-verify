@@ -20,7 +20,7 @@
     "@types/react-dom": "^18.2.23",
     "@types/react-redux": "^7.1.33",
     "cbor-x": "^1.6.0",
-    "dompurify": "^3.4.14",
+    "dompurify": "3.4.17",
     "i18next": "^23.11.2",
     "iso-639-3": "^3.0.1",
     "mustache": "^4.2.0",
@@ -87,7 +87,12 @@
     "yaml": "^2.8.3"
   },
   "overrides": {
+    "compression": "1.8.2",
     "nth-check": "2.0.1",
+    "follow-redirects": "1.16.2",
+    "launch-editor": "2.14.2",
+    "proxy-addr": "2.0.8",
+    "shell-quote": "1.12.0",
     "sucrase": "3.34.0",
     "underscore": "1.13.8",
     "canvas": "2.11.2",
