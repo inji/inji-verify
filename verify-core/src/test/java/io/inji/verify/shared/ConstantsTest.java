@@ -122,7 +122,7 @@ public class ConstantsTest {
         Constructor<Constants> constructor = Constants.class.getDeclaredConstructor();
         constructor.setAccessible(true);
 
-        Executable exec = () -> constructor.newInstance();
+        Executable exec = constructor::newInstance;
         assertDoesNotThrow(exec);
     }
 
