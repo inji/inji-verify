@@ -87,6 +87,8 @@ public class BaseTestUtil {
         chromeOptions.addArguments("--disable-infobars");
         chromeOptions.addArguments("--no-sandbox");
         chromeOptions.addArguments("--disable-dev-shm-usage");
+
+        chromeOptions.addArguments("--disable-features=LocalNetworkAccessChecks");
         chromeOptions.setExperimentalOption("prefs", getLocalChromePreferences());
         chromeOptions.setCapability("goog:loggingPrefs", getChromeLoggingPreferences());
 
@@ -401,6 +403,16 @@ public class BaseTestUtil {
         }
         if (scenario.getSourceTagNames().contains("@browser_back_navigation")) {
             return createNavigationOnlyScanSourceImage().getAbsolutePath();
+        }
+        if (scenario.getSourceTagNames().contains("@qr_health_insurence")) {
+            return "src/test/resources/QRCodes/health_insurence.png";
+        }
+        if (scenario.getSourceTagNames().contains("@qr_svg")) {
+            String farmerCredentialPng = BaseTest.getFarmerCredentialPngPath();
+            if (farmerCredentialPng != null && new File(farmerCredentialPng).exists()) {
+                return farmerCredentialPng;
+            }
+            return "src/test/resources/QRCodes/SVG.png";
         }
         if (scenario.getSourceTagNames().contains("@qr_valid")) {
             return generateRuntimeScanQrCodeFromInsuranceCredential();

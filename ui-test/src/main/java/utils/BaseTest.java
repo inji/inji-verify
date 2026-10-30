@@ -94,6 +94,12 @@ public class BaseTest extends BaseTestUtil {
 	private static volatile String insuranceCredentialPngPath;
 	private static volatile String insuranceCredentialJpgPath;
 	private static volatile String insuranceCredentialJpegPath;
+
+	private static final Object svgArtifactsLock = new Object();
+	private static final AtomicBoolean svgArtifactsPreparedForRun = new AtomicBoolean(false);
+	private static final AtomicBoolean svgArtifactsRunInitialised = new AtomicBoolean(false);
+	private static volatile String downloadedFarmerCredentialPdfPath;
+	private static volatile String farmerCredentialPngPath;
 	private static ThreadLocal<Boolean> skipScenario = ThreadLocal.withInitial(() -> false);
 	private static ThreadLocal<String> skipReason = new ThreadLocal<>();
 
@@ -173,6 +179,8 @@ public class BaseTest extends BaseTestUtil {
 		initialiseScenarioRuntimeArtifacts(scenario);
 		initialiseSharedInsuranceArtifactPaths();
 		initialiseInsuranceArtifactsForRun();
+		initialiseSharedSvgArtifactPaths();
+		initialiseSvgArtifactsForRun();
 		totalCount.incrementAndGet();
 		ExtentReportManager.initReport();
 		ExtentReportManager.createTest(scenario.getName());
@@ -315,6 +323,46 @@ public class BaseTest extends BaseTestUtil {
 				insuranceArtifactsPreparedForRun.set(false);
 			} catch (IOException e) {
 				throw new RuntimeException("Unable to reset shared insurance artifacts at suite start.", e);
+			}
+		}
+	}
+
+	private void initialiseSharedSvgArtifactPaths() {
+		if (downloadedFarmerCredentialPdfPath != null) {
+			return;
+		}
+
+		synchronized (svgArtifactsLock) {
+			if (downloadedFarmerCredentialPdfPath != null) {
+				return;
+			}
+
+			try {
+				File sharedDir = new File(
+						System.getProperty("user.dir") + File.separator + "test-output" + File.separator
+								+ "runtime-media" + File.separator + "shared-svg-artifacts");
+				Files.createDirectories(sharedDir.toPath());
+				downloadedFarmerCredentialPdfPath = new File(sharedDir, "FarmerCredential_VCDM2.0_WithFace.pdf")
+						.getAbsolutePath();
+				farmerCredentialPngPath = new File(sharedDir, "FarmerCredential.png")
+						.getAbsolutePath();
+			} catch (IOException e) {
+				throw new RuntimeException("Unable to create shared SVG artifact directory.", e);
+			}
+		}
+	}
+
+	private void initialiseSvgArtifactsForRun() {
+		if (!svgArtifactsRunInitialised.compareAndSet(false, true)) {
+			return;
+		}
+
+		synchronized (svgArtifactsLock) {
+			try {
+				deleteSharedSvgArtifacts();
+				svgArtifactsPreparedForRun.set(false);
+			} catch (IOException e) {
+				throw new RuntimeException("Unable to reset shared SVG artifacts at suite start.", e);
 			}
 		}
 	}
@@ -598,6 +646,11 @@ public class BaseTest extends BaseTestUtil {
 			logger.error("Failed to clean shared insurance artifacts at suite end", e);
 		}
 		try {
+			cleanupSharedSvgArtifactsForSuite();
+		} catch (Exception e) {
+			logger.error("Failed to clean shared SVG artifacts at suite end", e);
+		}
+		try {
 			pushReportsOnce();
 		} catch (Exception e) {
 			logger.error("Failed to push reports once", e);
@@ -694,6 +747,34 @@ public class BaseTest extends BaseTestUtil {
 		}
 	}
 
+	public static Object getSvgArtifactsLock() {
+		return svgArtifactsLock;
+	}
+
+	public static String getDownloadedFarmerCredentialPdfPath() {
+		return downloadedFarmerCredentialPdfPath;
+	}
+
+	public static String getFarmerCredentialPngPath() {
+		return farmerCredentialPngPath;
+	}
+
+	public static boolean isSVGArtifactsPreparedForRun() {
+		return svgArtifactsPreparedForRun.get();
+	}
+
+	public static void markSVGInsuranceArtifactsPreparedForRun() {
+		svgArtifactsPreparedForRun.set(true);
+	}
+
+	public static void cleanupSharedSvgArtifactsForSuite() throws IOException {
+		synchronized (svgArtifactsLock) {
+			deleteSharedSvgArtifacts();
+			svgArtifactsPreparedForRun.set(false);
+			svgArtifactsRunInitialised.set(false);
+		}
+	}
+
 	public static String getLocalDownloadsDirectoryPath() {
 		return getLocalDownloadsDirectory().getAbsolutePath();
 	}
@@ -704,6 +785,11 @@ public class BaseTest extends BaseTestUtil {
 		deleteIfExists(insuranceCredentialPngPath);
 		deleteIfExists(insuranceCredentialJpgPath);
 		deleteIfExists(insuranceCredentialJpegPath);
+	}
+
+	private static void deleteSharedSvgArtifacts() throws IOException {
+		deleteIfExists(downloadedFarmerCredentialPdfPath);
+		deleteIfExists(farmerCredentialPngPath);
 	}
 
 	private static void deleteIfExists(String path) throws IOException {

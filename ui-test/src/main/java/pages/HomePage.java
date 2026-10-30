@@ -34,13 +34,15 @@ public class HomePage extends BasePage {
 
     private static final String stayProtectedIssuer = InjiVerifyConfigManager.getproperty("stayProtectedIssuer");
     private static final String stayProtectedIssuerCredentialType = InjiVerifyConfigManager.getproperty("stayProtectedIssuerCredentialType");
+    private static final String svgIssuer = InjiVerifyConfigManager.getproperty("SVGIssuer");
+    private static final String svgIssuerCredentialType = InjiVerifyConfigManager.getproperty("SVGIssuerCredentialType");
 
 	public HomePage(WebDriver driver) {
 		super(driver);
 		PageFactory.initElements(driver, this);
 	}
 
-	@FindBy(xpath = "//nav/div/a/svg")
+	@FindBy(xpath = "//a[contains(@class,'flex') and contains(@class,'items-center')]")
 	WebElement injiVerifyLogo;
 
 	@FindBy(id = "verify-credentials-heading")
@@ -117,6 +119,12 @@ public class HomePage extends BasePage {
 
 	@FindBy(xpath = "//div[@class='grid text-center content-center justify-center pt-2']")
 	WebElement FormatConstraintText;
+
+	@FindBy(id = "faq")
+	WebElement faqButton;
+
+	@FindBy(id = "alert-message")
+	WebElement faqAlertMessage;
 
 	@FindBy(xpath = "//*[@id='upload-qr-code-button']")
 	WebElement QRUploadButton;
@@ -251,6 +259,14 @@ public class HomePage extends BasePage {
 		clickOnElement(driver, homeButton);
 	}
 
+	public void clickOnInjiVerifyLogo() {
+		clickOnElement(driver, injiVerifyLogo);
+	}
+
+	public void clickOutsideHelpDropdown() {
+		clickOnElement(driver, CopyrightText);
+	}
+
 	public Boolean isUploadQRButtonVisible() {
 		return isElementIsVisible(driver, UploadQRButton);
 	}
@@ -326,6 +342,14 @@ public class HomePage extends BasePage {
 
 	}
 
+	public void clickOnFaqButton() {
+		clickOnElement(driver, faqButton);
+	}
+
+	public String getFaqAlertMessage() {
+		return getText(driver, faqAlertMessage);
+	}
+
 	public void clickOnQRUploadButton() {
 		clickOnElement(driver, QRUploadButton);
 	}
@@ -379,6 +403,22 @@ public void clickOnMosipNationalId() {
 		clickOnElement(driver, healthInsurance);
 	}
 
+	public void clickOnFarmerIdCardIssuer() {
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(BasePage.getTimeout()));
+		By farmerIssuerLocator = By.xpath("//h3[normalize-space()='" + svgIssuer + "']");
+		WebElement farmerIssuerElement = wait.until(ExpectedConditions.elementToBeClickable(farmerIssuerLocator));
+		clickOnElement(driver, farmerIssuerElement);
+	}
+
+	public void clickOnFarmerCredentialType() {
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(BasePage.getTimeout()));
+		By farmerCredentialTypeLocator = By.xpath(
+				"//h3[@data-testid='ItemBox-Text' and normalize-space()='" + svgIssuerCredentialType + "']");
+		WebElement farmerCredentialTypeElement = wait.until(
+				ExpectedConditions.elementToBeClickable(farmerCredentialTypeLocator));
+		clickOnElement(driver, farmerCredentialTypeElement);
+	}
+
 
 public void clickOnOnProceed() {
     WaitUtil.waitForClickability(driver, getOnOnProceed);
@@ -409,6 +449,36 @@ public void enterOtp(String otpString) {
 
 	public void clickOnVerify() {
 		clickOnElement(driver, verifyOtp);
+	}
+
+	public void enterUinForFarmerCredential(String uin) {
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(BasePage.getTimeout()));
+		wait.until(ExpectedConditions.visibilityOfElementLocated(By.id("Otp_vid")));
+		enterText(driver, By.id("Otp_vid"), uin);
+	}
+
+	public void enterOtpForFarmerCredential(String otpString) {
+		By otpInputsLocator = By.cssSelector("input.pincode-input-text");
+		WebDriverWait wait = new WebDriverWait(driver, Duration.ofSeconds(BasePage.getTimeout()));
+
+		// Wait until the expected number of OTP input boxes is visible before entering anything.
+		List<WebElement> otpInputs = wait.until(webDriver -> {
+			List<WebElement> inputs = webDriver.findElements(otpInputsLocator);
+			if (inputs.size() < otpString.length()) {
+				return null;
+			}
+			for (WebElement input : inputs) {
+				if (!input.isDisplayed()) {
+					return null;
+				}
+			}
+			return inputs;
+		});
+
+		// Enter one digit per field, strictly in DOM order.
+		for (int i = 0; i < otpString.length(); i++) {
+			otpInputs.get(i).sendKeys(String.valueOf(otpString.charAt(i)));
+		}
 	}
 
 public String isSuccessMessageDisplayed() {
@@ -696,12 +766,22 @@ public String isSuccessMessageDisplayed() {
 
 	}
 
+	public String getNameValueInEnglish() {
+		return getText(driver, fullNameValue);
+
+	}
+
 	public String getGenderValueInArabic() {
 		return getText(driver, fullGenderValue);
 
 	}
 
 	public String getGenderValueInFrench() {
+		return getText(driver, fullGenderValue);
+
+	}
+
+	public String getGenderValueInEnglish() {
 		return getText(driver, fullGenderValue);
 
 	}
@@ -716,6 +796,10 @@ public String isSuccessMessageDisplayed() {
 
 	public boolean isTryAgainButtonVisible() {
 		return isElementIsVisible(driver, tryAgainButton);
+	}
+
+	public String getTryAgainButtonText() {
+		return getText(driver, tryAgainButton);
 	}
 
 	public void clickOnTryAgainButton() {

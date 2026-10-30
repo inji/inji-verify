@@ -12,11 +12,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 import java.nio.file.Files;
 import java.time.Duration;
+import java.util.ArrayList;
 import java.util.List;
 
 import javax.imageio.ImageIO;
 
 import org.openqa.selenium.*;
+import org.openqa.selenium.interactions.Actions;
 import org.openqa.selenium.remote.LocalFileDetector;
 import org.openqa.selenium.remote.RemoteWebDriver;
 import org.openqa.selenium.remote.RemoteWebElement;
@@ -127,6 +129,15 @@ public boolean isElementIsVisibleAfterIdle(WebDriver driver, WebElement element)
     public Boolean isButtonEnabled(WebDriver driver, WebElement element) {
         waitForElementVisible(driver, element);
         return element.isEnabled();
+    }
+
+    public boolean isElementClickable(WebDriver driver, WebElement element) {
+        try {
+            return new WebDriverWait(driver, Duration.ofSeconds(getTimeout()))
+                    .until(ExpectedConditions.elementToBeClickable(element)) != null;
+        } catch (TimeoutException e) {
+            return false;
+        }
     }
 
     public void enterText(WebDriver driver, By locator, String text) {
@@ -578,6 +589,11 @@ public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger,
         return allLinksValid;
     }
 
+    public void hoverOverElement(WebDriver driver, WebElement element) {
+        waitForElementVisible(driver, element);
+        new Actions(driver).moveToElement(element).perform();
+    }
+
     protected void sendKeysToTextBox(WebDriver driver, WebElement element, String text) {
         WaitUtil.waitForVisibility(driver, element, getTimeout());
         element.sendKeys(text);
@@ -606,5 +622,37 @@ public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger,
 			logger.error("Invalid scanVerificationTimeoutMultiplier value from properties. Using default 6.");
 		}
 		return 6;
+	}
+
+	public List<String> getOverflowingButtonTexts() {
+		List<WebElement> buttons = driver.findElements(By.tagName("button"));
+		List<String> overflowing = new ArrayList<>();
+		for (WebElement btn : buttons) {
+			try {
+				if (!btn.isDisplayed()) continue;
+				String swStr = btn.getDomProperty("scrollWidth");
+				String owStr = btn.getDomProperty("offsetWidth");
+				String shStr = btn.getDomProperty("scrollHeight");
+				String ohStr = btn.getDomProperty("offsetHeight");
+				if (swStr == null || owStr == null || shStr == null || ohStr == null) continue;
+				boolean overflows = Integer.parseInt(swStr) > Integer.parseInt(owStr)
+						|| Integer.parseInt(shStr) > Integer.parseInt(ohStr);
+				if (overflows) {
+					String text = btn.getText().trim();
+					overflowing.add(text.isEmpty() ? "[unnamed button]" : text);
+				}
+			} catch (Exception ignored) {
+			}
+		}
+		return overflowing;
+	}
+
+	public void injectNoReloadSentinel() {
+		((JavascriptExecutor) driver).executeScript("window.__noReloadSentinel = true;");
+	}
+
+	public boolean isPageNotReloaded() {
+		Object result = ((JavascriptExecutor) driver).executeScript("return window.__noReloadSentinel === true;");
+		return Boolean.TRUE.equals(result);
 	}
 }
