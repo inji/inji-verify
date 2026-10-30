@@ -4,7 +4,6 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.verification.VCVerificationStatusDto;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import io.inji.verify.services.VCVerificationService;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
@@ -20,26 +19,26 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 
 public class VCVerificationControllerTest {
 
-    private final VCVerificationService VCVerificationService = Mockito.mock(VCVerificationService.class);
+    private final VCVerificationService vcVerificationService = mock(VCVerificationService.class);
 
     private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    public void setUp() {
-        VCVerificationController vcVerificationController = new VCVerificationController(VCVerificationService);
+    void setUp() {
+        VCVerificationController vcVerificationController = new VCVerificationController(vcVerificationService);
         mockMvc = MockMvcBuilders.standaloneSetup(vcVerificationController).build();
     }
 
     @Test
-    public void testVerifyValidVC() throws Exception {
+    void testVerifyValidVC() throws Exception {
         String validVC = "validVC";
         String contentType = "application/ldp+json";
 
         VCVerificationStatusDto expectedStatus = createStatus("SUCCESS");
 
-        when(VCVerificationService.verify(validVC, contentType)).thenReturn(expectedStatus);
+        when(vcVerificationService.verify(validVC, contentType)).thenReturn(expectedStatus);
 
         String result = mockMvc.perform(post("/vc-verification")
                         .contentType(contentType)
@@ -49,16 +48,16 @@ public class VCVerificationControllerTest {
 
         assertEquals(objectMapper.writeValueAsString(expectedStatus), result);
 
-        verify(VCVerificationService, times(1)).verify(validVC, contentType);
+        verify(vcVerificationService, times(1)).verify(validVC, contentType);
     }
 
     @Test
-    public void testVerifyInvalidVC() throws Exception {
+    void testVerifyInvalidVC() throws Exception {
         String invalidVC = "invalidVC";
         String contentType = "application/ldp+json";
         VCVerificationStatusDto expectedStatus = createStatus("INVALID");
 
-        when(VCVerificationService.verify(invalidVC, contentType)).thenReturn(expectedStatus);
+        when(vcVerificationService.verify(invalidVC, contentType)).thenReturn(expectedStatus);
 
         mockMvc.perform(post("/vc-verification")
                         .contentType(contentType)
@@ -66,11 +65,11 @@ public class VCVerificationControllerTest {
                 .andExpect(status().isOk())
                 .andExpect(content().string(objectMapper.writeValueAsString(expectedStatus)));
 
-        verify(VCVerificationService, times(1)).verify(invalidVC, contentType);
+        verify(vcVerificationService, times(1)).verify(invalidVC, contentType);
     }
 
     @Test
-    public void testVerifyEmptyBody() throws Exception {
+    void testVerifyEmptyBody() throws Exception {
         mockMvc.perform(post("/vc-verification")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
