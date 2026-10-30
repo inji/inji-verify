@@ -13,20 +13,20 @@ import org.springframework.web.bind.annotation.*;
 @RestController
 @Slf4j
 public class VCVerificationController {
-    final VCVerificationService VCVerificationService;
+    final VCVerificationService vcVerificationService;
 
     public VCVerificationController(VCVerificationService vcVerificationService) {
-        this.VCVerificationService = vcVerificationService;
+        this.vcVerificationService = vcVerificationService;
     }
 
     @PostMapping(path = "/vc-verification")
     public VCVerificationStatusDto verify(@RequestBody String vc, @RequestHeader("Content-Type") String contentType) throws CredentialStatusCheckException {
-        return VCVerificationService.verify(vc, contentType);
+        return vcVerificationService.verify(vc, contentType);
     }
 
     @PostMapping(path = "/v2/vc-verification", consumes = MediaType.APPLICATION_JSON_VALUE)
     public VCVerificationResultDto verifyV2(@Valid @RequestBody VCVerificationRequestDto request) {
         // Plain VC verification endpoint — no VP session context, KB-JWT validation not applicable.
-        return VCVerificationService.verifyV2(request, false);
+        return vcVerificationService.verifyV2(request, false);
     }
 }
