@@ -1,7 +1,6 @@
 package io.inji.verify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
-import io.inji.verify.dto.VerificationSessionRequestDto;
 import java.util.Base64;
 import static io.inji.verify.shared.Constants.COOKIE_NAME;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
@@ -23,7 +22,6 @@ import io.inji.verify.services.VerifiablePresentationSubmissionService;
 import jakarta.servlet.http.Cookie;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
-import org.mockito.Mockito;
 import org.springframework.http.MediaType;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.setup.MockMvcBuilders;
@@ -43,14 +41,14 @@ import static org.hamcrest.Matchers.emptyOrNullString;
  */
 public class VPResultControllerTest {
 
-    private final VerifiablePresentationSubmissionService verifiablePresentationSubmissionService = Mockito.mock(VerifiablePresentationSubmissionService.class);
+    private final VerifiablePresentationSubmissionService verifiablePresentationSubmissionService = mock(VerifiablePresentationSubmissionService.class);
 
     private MockMvc mockMvc;
 
     private final ObjectMapper objectMapper = new ObjectMapper();
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         VPResultController vpResultController = new VPResultController(verifiablePresentationSubmissionService);
         mockMvc = MockMvcBuilders.standaloneSetup(vpResultController).build();
     }
@@ -58,7 +56,7 @@ public class VPResultControllerTest {
     // ── v1: /vp-result/{transactionId} ──────────────────────────────────────
 
     @Test
-    public void testGetVPResult_Success() throws Exception {
+    void testGetVPResult_Success() throws Exception {
         String transactionId = "tx123";
         VPTokenResultDto resultDto = new VPTokenResultDto("tId", VPResultStatus.SUCCESS, new ArrayList<>());
 
@@ -73,7 +71,7 @@ public class VPResultControllerTest {
     }
 
     @Test
-    public void testGetVPResult_NotFound_InvalidTransactionId() throws Exception {
+    void testGetVPResult_NotFound_InvalidTransactionId() throws Exception {
         String transactionId = "tx789";
 
         when(verifiablePresentationSubmissionService.getVPResult(transactionId))
@@ -88,7 +86,7 @@ public class VPResultControllerTest {
     }
 
     @Test
-    public void testGetVPResult_NotFound_VPSubmissionNotFound() throws Exception {
+    void testGetVPResult_NotFound_VPSubmissionNotFound() throws Exception {
         String transactionId = "tx101";
 
         when(verifiablePresentationSubmissionService.getVPResult(transactionId))
@@ -185,7 +183,7 @@ public class VPResultControllerTest {
     // ── v1: vcSubmission found (fallback now handled inside the service) ──────
 
     @Test
-    public void testGetVPResult_FoundVCSubmission() throws Exception {
+    void testGetVPResult_FoundVCSubmission() throws Exception {
         String transactionId = "tx_vc_found";
         VCSubmissionVerificationStatusDto vcDto = mock(VCSubmissionVerificationStatusDto.class);
 

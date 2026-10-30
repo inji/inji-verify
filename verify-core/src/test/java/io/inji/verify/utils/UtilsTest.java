@@ -37,7 +37,7 @@ public class UtilsTest {
     void coverPrivateConstructor() throws Exception {
         Constructor<Utils> constructor = Utils.class.getDeclaredConstructor();
         constructor.setAccessible(true);
-        Executable exec = () -> constructor.newInstance();
+        Executable exec = constructor::newInstance;
         assertDoesNotThrow(exec);
     }
     @Test
