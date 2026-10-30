@@ -17,7 +17,10 @@ import java.io.IOException;
 
 import utils.BaseTest;
 import java.util.Base64;
+import java.util.HashMap;
 import java.util.HashSet;
+import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.io.OutputStream;
 import java.io.FileOutputStream;
@@ -26,6 +29,10 @@ import java.nio.file.Files;
 import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.time.Instant;
+import java.time.LocalDate;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.util.Locale;
 
 import org.apache.pdfbox.pdmodel.PDDocument;
 import org.apache.pdfbox.text.PDFTextStripper;
@@ -55,6 +62,27 @@ import java.time.Duration;
 
 public class StepDef extends BaseSteps {
 
+    /** Maps English language names (used in feature files) to their native UI display names. */
+    private static final Map<String, String> ENGLISH_TO_DISPLAY_NAME = new HashMap<>();
+    static {
+        ENGLISH_TO_DISPLAY_NAME.put("English",    "English");
+        ENGLISH_TO_DISPLAY_NAME.put("Portuguese", "Português");
+        ENGLISH_TO_DISPLAY_NAME.put("Tamil",      "தமிழ்");
+        ENGLISH_TO_DISPLAY_NAME.put("Kannada",    "ಕನ್ನಡ");
+        ENGLISH_TO_DISPLAY_NAME.put("Hindi",      "हिंदी");
+        ENGLISH_TO_DISPLAY_NAME.put("French",     "Français");
+        ENGLISH_TO_DISPLAY_NAME.put("Arabic",     "عربي");
+        ENGLISH_TO_DISPLAY_NAME.put("Spanish",    "español");
+        ENGLISH_TO_DISPLAY_NAME.put("Khmer",      "ខ្មែរ");
+    }
+
+    private static String toDisplayName(String englishName) {
+        return ENGLISH_TO_DISPLAY_NAME.getOrDefault(englishName, englishName);
+    }
+
+    private String uploadPageUrl;
+    private String scanPageUrl;
+    private String vpVerificationPageUrl;
 
     @Given("User gets the title of the page")
     public void userGetsTheTitleOfThePage() {
@@ -651,6 +679,157 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 
+    @When("Block SVG credential template network requests")
+    public void blockSvgCredentialTemplateNetworkRequests() {
+        try {
+            uploadqrcode.blockSvgTemplateNetworkRequests();
+            test.log(Status.PASS, "Blocked network requests to the SVG credential template host.");
+        } catch (Exception e) {
+            logFailure(test, driver, "Unable to block SVG credential template network requests", e);
+            throw e;
+        }
+    }
+
+    @When("Throttle network for SVG credential template requests")
+    public void throttleNetworkForSvgCredentialTemplateRequests() {
+        try {
+            uploadqrcode.throttleSvgTemplateNetworkRequests();
+            test.log(Status.PASS, "Throttled network for the SVG credential template host.");
+        } catch (Exception e) {
+            logFailure(test, driver, "Unable to throttle SVG credential template network requests", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify failed to load credential template alert message is shown")
+    public void verifyFailedToLoadCredentialTemplateAlertMessageIsShown() {
+        try {
+            Assert.assertEquals(uploadqrcode.getErrorMessageForSvgTemplateFailure(),
+                UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE,
+                "Alert message does not match 'Failed to load credential template'.");
+            test.log(Status.PASS, "Successfully verified the 'Failed to load credential template' alert message.");
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Alert message did not match 'Failed to load credential template'", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying the SVG template failure alert message", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying the SVG template failure alert message", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify VC details grid is displayed instead of SVG template")
+    public void verifyVcDetailsGridIsDisplayedInsteadOfSvgTemplate() {
+        try {
+            Assert.assertTrue(uploadqrcode.isVcDetailsGridVisible(), "VC details grid was not displayed as a fallback.");
+            Assert.assertFalse(uploadqrcode.isSvgTemplateRenderedNow(), "SVG template should not have rendered after a fetch failure.");
+            test.log(Status.PASS, "Successfully verified fallback to the VC details grid.");
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Fallback to VC details grid was not as expected", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying fallback to the VC details grid", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying fallback to the VC details grid", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify SVG template is rendered successfully")
+    public void verifySvgTemplateIsRenderedSuccessfully() {
+        try {
+            Assert.assertTrue(uploadqrcode.isSvgTemplateRendered(), "SVG template was not rendered.");
+            test.log(Status.PASS, "Successfully verified the SVG template rendered.");
+        } catch (AssertionError e) {
+            logFailure(test, driver, "SVG template did not render as expected", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying the SVG template rendered", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying the SVG template rendered", e);
+            throw e;
+        }
+    }
+
+    @When("Upload SVG VC with invalid template mediaType")
+    public void uploadSvgVcWithInvalidTemplateMediaType() {
+        try {
+            uploadqrcode.clickOnUploadSvgInvalidMediaTypeQRCode();
+            test.log(Status.PASS, "Successfully uploaded SVG VC with an invalid template mediaType.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SVG VC with invalid template mediaType", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while uploading SVG VC with invalid template mediaType", e);
+            throw e;
+        }
+    }
+
+    @When("Upload SVG VC with missing template data")
+    public void uploadSvgVcWithMissingTemplateData() {
+        try {
+            uploadqrcode.clickOnUploadSvgMissingDataQRCode();
+            test.log(Status.PASS, "Successfully uploaded SVG VC with missing template data.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SVG VC with missing template data", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while uploading SVG VC with missing template data", e);
+            throw e;
+        }
+    }
+
+    // The SVG-template fetch-failure alert ("Failed to load credential template") is
+    // currently dispatched as a raw Error.message and never routed through i18n (see
+    // DisplayVcDetailView.onTemplateError), unlike other alerts which use
+    // t("AlertMessages:...") across locales. This step asserts the REAL expected localized
+    // text per language (not the current English-only text), so it is EXPECTED TO FAIL today
+    // for non-English languages - that is intentional: it documents the actual product gap as
+    // a genuine regression target, and will start passing once the message is localized.
+    @Then("Verify failed to load credential template alert message is shown in {string}")
+    public void verifyFailedToLoadCredentialTemplateAlertMessageIsShownInLanguage(String language) {
+        String expectedMessage;
+        switch (language) {
+            case "French":
+                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_FRENCH;
+                break;
+            case "Arabic":
+                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_ARABIC;
+                break;
+            case "Spanish":
+                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_SPANISH;
+                break;
+            case "Tamil":
+                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_TAMIL;
+                break;
+            default:
+                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE;
+                break;
+        }
+        try {
+            String actualMessage = uploadqrcode.getErrorMessageForSvgTemplateFailure();
+            Assert.assertEquals(actualMessage, expectedMessage,
+                "SVG template failure alert message for language '" + language
+                    + "' does not match the expected localized text. This is expected to fail until the "
+                    + "product localizes this message (it is currently a hardcoded English string).");
+            test.log(Status.PASS,
+                "Successfully verified the SVG template failure alert message in '" + language + "': " + actualMessage);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "SVG template failure alert message did not match the expected localized text for language '" + language + "'", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying the SVG template failure alert message in '" + language + "'", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying the SVG template failure alert message in '" + language + "'", e);
+            throw e;
+        }
+    }
+
     @Then("Upload claim 169 VC")
 	public void uploadClaim169VcCode() {
         try {
@@ -743,6 +922,196 @@ public class StepDef extends BaseSteps {
         }
     }
 
+    @Then("verify full name matches expected value")
+    public void verifyFullNameMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getFullNameValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_FULL_NAME,
+                    "Full Name does not match. Expected: " + UiConstants.EXPECTED_VC_FULL_NAME + ", Actual: " + actual);
+            test.log(Status.PASS, "Full Name matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Full Name value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Full Name value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Full Name value", e);
+            throw e;
+        }
+    }
+
+    @Then("verify policy issued on matches expected value")
+    public void verifyPolicyIssuedOnMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getPolicyIssuedOnValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_POLICY_ISSUED_ON,
+                    "Policy Issued On does not match. Expected: " + UiConstants.EXPECTED_VC_POLICY_ISSUED_ON + ", Actual: " + actual);
+            test.log(Status.PASS, "Policy Issued On matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Policy Issued On value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Policy Issued On value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Policy Issued On value", e);
+            throw e;
+        }
+    }
+
+    @Then("verify policy expires on matches expected value")
+    public void verifyPolicyExpiresOnMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getPolicyExpiresOnValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_POLICY_EXPIRES_ON,
+                    "Policy Expires On does not match. Expected: " + UiConstants.EXPECTED_VC_POLICY_EXPIRES_ON + ", Actual: " + actual);
+            test.log(Status.PASS, "Policy Expires On matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Policy Expires On value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Policy Expires On value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Policy Expires On value", e);
+            throw e;
+        }
+    }
+
+
+    @Then("verify policy number matches expected value")
+    public void verifyPolicyNumberMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getPolicyNumberValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_POLICY_NUMBER,
+                    "Policy Number does not match. Expected: " + UiConstants.EXPECTED_VC_POLICY_NUMBER + ", Actual: " + actual);
+            test.log(Status.PASS, "Policy Number matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Policy Number value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Policy Number value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Policy Number value", e);
+            throw e;
+        }
+    }
+
+    @Then("verify policy name matches expected value")
+    public void verifyPolicyNameMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getPolicyNameValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_POLICY_NAME,
+                    "Policy Name does not match. Expected: " + UiConstants.EXPECTED_VC_POLICY_NAME + ", Actual: " + actual);
+            test.log(Status.PASS, "Policy Name matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Policy Name value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Policy Name value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Policy Name value", e);
+            throw e;
+        }
+    }
+
+    @Then("verify benefits matches expected value")
+    public void verifyBenefitsMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getBenefitsValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_BENEFITS,
+                    "Benefits does not match. Expected: " + UiConstants.EXPECTED_VC_BENEFITS + ", Actual: " + actual);
+            test.log(Status.PASS, "Benefits matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Benefits value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Benefits value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Benefits value", e);
+            throw e;
+        }
+    }
+
+    @Then("verify mobile matches expected value")
+    public void verifyMobileMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getMobileValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_MOBILE,
+                    "Mobile does not match. Expected: " + UiConstants.EXPECTED_VC_MOBILE + ", Actual: " + actual);
+            test.log(Status.PASS, "Mobile matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Mobile value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Mobile value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Mobile value", e);
+            throw e;
+        }
+    }
+
+    @Then("verify email matches expected value")
+    public void verifyEmailMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getEmailValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_EMAIL,
+                    "Email does not match. Expected: " + UiConstants.EXPECTED_VC_EMAIL + ", Actual: " + actual);
+            test.log(Status.PASS, "Email matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Email value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Email value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Email value", e);
+            throw e;
+        }
+    }
+
+    @Then("verify gender matches expected value")
+    public void verifyGenderMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getGenderValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_GENDER,
+                    "Gender does not match. Expected: " + UiConstants.EXPECTED_VC_GENDER + ", Actual: " + actual);
+            test.log(Status.PASS, "Gender matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Gender value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Gender value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Gender value", e);
+            throw e;
+        }
+    }
+
+    @Then("verify dob matches expected value")
+    public void verifyDobMatchesExpectedValue() {
+        try {
+            String actual = uploadqrcode.getDobValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_VC_DOB,
+                    "DOB does not match. Expected: " + UiConstants.EXPECTED_VC_DOB + ", Actual: " + actual);
+            test.log(Status.PASS, "DOB matches expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "DOB value mismatch", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying DOB value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying DOB value", e);
+            throw e;
+        }
+    }
 
     @Then("verify policy expires on value")
     public void verifyPolicyExpiresOnValue() {
@@ -757,6 +1126,79 @@ public class StepDef extends BaseSteps {
             logFailure(test, driver, "Unexpected error while verifying Policy Expires On value", e);
             throw e;
         }
+    }
+
+
+    @Then("verify policy issued on date is in human readable format")
+    public void verifyPolicyIssuedOnDateIsHumanReadable() {
+        try {
+            String policyIssuedOnValue = uploadqrcode.getPolicyIssuedOnValue();
+            assertDateIsHumanReadable("Policy Issued On", policyIssuedOnValue);
+            test.log(Status.PASS, "Policy Issued On date is in a human readable format: " + policyIssuedOnValue);
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Policy Issued On date format", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Policy Issued On date format", e);
+            throw e;
+        }
+    }
+
+
+    @Then("verify policy expires on date is in human readable format")
+    public void verifyPolicyExpiresOnDateIsHumanReadable() {
+        try {
+            String policyExpiresOnValue = uploadqrcode.getPolicyExpiresOnValue();
+            assertDateIsHumanReadable("Policy Expires On", policyExpiresOnValue);
+            test.log(Status.PASS, "Policy Expires On date is in a human readable format: " + policyExpiresOnValue);
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Policy Expires On date format", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Policy Expires On date format", e);
+            throw e;
+        }
+    }
+
+
+    private static final String[] HUMAN_READABLE_DATE_PATTERNS = {
+            "yyyy-MM-dd",    // 2026-10-16  (ISO)
+            "d MMM yyyy",    // 16 Oct 2026
+            "d MMMM yyyy",   // 16 October 2026
+            "MMM d, yyyy",   // Oct 16, 2026
+            "MMMM d, yyyy",  // October 16, 2026
+            "d/M/yyyy",      // 16/10/2026  (day-first, most of the world)
+            "M/d/yyyy",      // 10/16/2026  (month-first, US)
+            "d-M-yyyy",      // 16-10-2026  (day-first, dashes)
+            "M-d-yyyy",      // 10-16-2026  (month-first, dashes)
+            "d.M.yyyy"       // 16.10.2026  (European, dots)
+    };
+
+    private void assertDateIsHumanReadable(String label, String value) {
+        Assert.assertNotNull(value, label + " value is null.");
+        String trimmed = value.trim();
+        Assert.assertFalse(trimmed.isEmpty(), label + " value is empty.");
+        Assert.assertNotEquals(trimmed, "N/A", label + " value is not available (N/A).");
+
+        Assert.assertFalse(trimmed.matches("^\\d+$"),
+                label + " is shown as a raw epoch timestamp and is not human readable: " + trimmed);
+        Assert.assertFalse(trimmed.matches("^\\d{4}-\\d{2}-\\d{2}T.*"),
+                label + " is shown in raw ISO-8601 date-time format and is not human readable: " + trimmed);
+
+        boolean isHumanReadable = false;
+        for (String pattern : HUMAN_READABLE_DATE_PATTERNS) {
+            try {
+                DateTimeFormatter formatter = DateTimeFormatter.ofPattern(pattern, Locale.ENGLISH);
+                LocalDate.parse(trimmed, formatter);
+                isHumanReadable = true;
+                break;
+            } catch (DateTimeParseException ignored) {
+                // try the next supported pattern
+            }
+        }
+
+        Assert.assertTrue(isHumanReadable,
+                label + " date is not in a recognised human readable format: " + trimmed);
     }
 
 
@@ -931,6 +1373,20 @@ public class StepDef extends BaseSteps {
             throw e;
         } catch (Exception e) {
             logFailure(test, driver, "Unexpected error while uploading another QR code PDF file", e);
+            throw e;
+        }
+    }
+
+    @When("Upload Farmer Credential PDF file")
+    public void uploadFarmerCredentialPdfFile() {
+        try {
+            uploadqrcode.uploadFarmerCredentialAndWaitForVerificationResult();
+            test.log(Status.PASS, "Successfully uploaded the Farmer credential PDF file.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading the Farmer credential PDF file", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while uploading the Farmer credential PDF file", e);
             throw e;
         }
     }
@@ -1318,6 +1774,80 @@ public class StepDef extends BaseSteps {
     private boolean matchesVcVerificationUrl(String candidate, String expectedUrl) {
         return candidate != null
                 && candidate.contains("/v2/vc-verification")
+                && candidate.contains(expectedUrl);
+    }
+
+    @Then("Verify vp-session-results api call in network tab with url")
+    public void verifyVpSessionResultsApiCallInNetworkTabWithUrl() {
+        try {
+            String baseUrl = InjiVerifyConfigManager.getInjiVerifyUi();
+            if (baseUrl == null || baseUrl.isEmpty()) {
+                throw new IllegalStateException("injiverify base URL is not configured in injiVerify.properties");
+            }
+
+            String normalizedBaseUrl = baseUrl.endsWith("/") ? baseUrl.substring(0, baseUrl.length() - 1) : baseUrl;
+            String expectedUrl = normalizedBaseUrl + "/v1/verify/vp-session-results";
+            boolean isExpectedCallPresent = waitForApiCallCaptured(expectedUrl, "/vp-session-results");
+
+            Assert.assertTrue(isExpectedCallPresent,
+                    "Expected vp-session-results API call to URL was not found in captured network data: " + expectedUrl);
+            test.log(Status.PASS,
+                    "Verified vp-session-results API call in captured network data with URL: " + expectedUrl);
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element-related error while verifying vp-session-results API call in network logs", e);
+            throw e;
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logFailure(test, driver, "Interrupted while waiting for vp-session-results API call in network logs", e);
+            throw new RuntimeException(e);
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying vp-session-results API call in network logs", e);
+            throw e;
+        }
+    }
+
+    private boolean waitForApiCallCaptured(String expectedUrl, String pathFragment) throws InterruptedException {
+        Instant deadline = Instant.now().plusSeconds((long) BasePage.getTimeout() * 4L);
+
+        while (Instant.now().isBefore(deadline)) {
+            if (isExpectedApiCallCaptured(expectedUrl, pathFragment)) {
+                return true;
+            }
+            Thread.sleep(1000);
+        }
+
+        return isExpectedApiCallCaptured(expectedUrl, pathFragment);
+    }
+
+    private boolean isExpectedApiCallCaptured(String expectedUrl, String pathFragment) {
+        if (driver instanceof JavascriptExecutor) {
+            Object result = ((JavascriptExecutor) driver).executeScript("return window.__networkRequests || [];");
+            if (result instanceof java.util.List<?>) {
+                java.util.List<?> urls = (java.util.List<?>) result;
+                boolean jsMatch = urls.stream().anyMatch(urlObj -> matchesApiUrl(String.valueOf(urlObj), expectedUrl, pathFragment));
+                if (jsMatch) {
+                    return true;
+                }
+            }
+        }
+
+        try {
+            LogEntries performanceLogs = driver.manage().logs().get(LogType.PERFORMANCE);
+            return performanceLogs.getAll().stream().anyMatch((LogEntry entry) -> {
+                String message = entry.getMessage();
+                return message != null
+                        && message.contains("Network.requestWillBeSent")
+                        && matchesApiUrl(message, expectedUrl, pathFragment);
+            });
+        } catch (InvalidArgumentException e) {
+            test.log(Status.INFO, "Performance logs are not available for this session. Skipping performance log fallback.");
+            return false;
+        }
+    }
+
+    private boolean matchesApiUrl(String candidate, String expectedUrl, String pathFragment) {
+        return candidate != null
+                && candidate.contains(pathFragment)
                 && candidate.contains(expectedUrl);
     }
 
@@ -1929,6 +2459,90 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 
+	private static final String FARMER_CREDENTIAL_PDF_FILE_NAME = "FarmerCredential_VCDM2.0_WithFace.pdf";
+
+	public void userVerifySVGPdfIsDownloaded() throws IOException {
+	    try {
+	        File pdfFile = BaseTest.isUsingBrowserStack()
+	                ? copyFarmerCredentialPdfFromBrowserStack()
+	                : moveFarmerCredentialPdfFromLocalDownloads();
+	        assertPdfOpensSuccessfully(pdfFile);
+	        test.log(Status.PASS, "PDF file '" + FARMER_CREDENTIAL_PDF_FILE_NAME + "' downloaded and is a valid PDF.");
+	    } catch (InterruptedException e) {
+	        test.log(Status.FAIL, "Interrupted while waiting for Farmer credential PDF download: " + e.getMessage());
+	        Thread.currentThread().interrupt();
+	        throw new RuntimeException(e);
+	    } catch (AssertionError e) {
+	        test.log(Status.FAIL, e.getMessage());
+	        throw e;
+	    } catch (Exception e) {
+	        test.log(Status.FAIL, "Error verifying Farmer credential PDF download: " + e.getMessage());
+	        throw e;
+	    }
+	}
+
+	private File copyFarmerCredentialPdfFromBrowserStack() throws IOException, InterruptedException {
+	    boolean fileExists = false;
+	    for (int i = 0; i < 5; i++) {
+	        fileExists = (boolean) baseTest.getJse().executeScript(
+	                "browserstack_executor: {\"action\": \"fileExists\", \"arguments\": {\"fileName\": \""
+	                        + FARMER_CREDENTIAL_PDF_FILE_NAME + "\"}}");
+	        if (fileExists) {
+	            break;
+	        }
+	        Thread.sleep(2000);
+	    }
+	    assertTrue("PDF file '" + FARMER_CREDENTIAL_PDF_FILE_NAME + "' was not found on BrowserStack.", fileExists);
+	    test.log(Status.PASS, "PDF file '" + FARMER_CREDENTIAL_PDF_FILE_NAME + "' exists on BrowserStack.");
+
+	    String base64EncodedFile = (String) baseTest.getJse().executeScript(
+	            "browserstack_executor: {\"action\": \"getFileContent\", \"arguments\": {\"fileName\": \""
+	                    + FARMER_CREDENTIAL_PDF_FILE_NAME + "\"}}");
+
+	    byte[] data = Base64.getDecoder().decode(base64EncodedFile);
+	    File targetFile = new File(BaseTest.getDownloadedFarmerCredentialPdfPath());
+	    Files.createDirectories(targetFile.getParentFile().toPath());
+	    try (OutputStream stream = new FileOutputStream(targetFile)) {
+	        stream.write(data);
+	    }
+	    test.log(Status.PASS, "Farmer credential PDF saved as: " + targetFile.getAbsolutePath());
+	    return targetFile;
+	}
+
+	private File moveFarmerCredentialPdfFromLocalDownloads() throws IOException, InterruptedException {
+	    Path downloadDirectory = Path.of(BaseTest.getLocalDownloadsDirectoryPath());
+	    Path downloadedPdf = waitForLocalFarmerCredentialPdf(downloadDirectory);
+	    Path canonicalPdf = Path.of(BaseTest.getDownloadedFarmerCredentialPdfPath());
+	    Files.createDirectories(canonicalPdf.getParent());
+	    Files.move(downloadedPdf, canonicalPdf, StandardCopyOption.REPLACE_EXISTING);
+	    test.log(Status.PASS, "Farmer credential PDF saved as: " + canonicalPdf.toAbsolutePath());
+	    return canonicalPdf.toFile();
+	}
+
+	private Path waitForLocalFarmerCredentialPdf(Path downloadDirectory) throws IOException, InterruptedException {
+	    Path pdfPath = downloadDirectory.resolve(FARMER_CREDENTIAL_PDF_FILE_NAME);
+	    Path partialDownloadPath = downloadDirectory.resolve(FARMER_CREDENTIAL_PDF_FILE_NAME + ".crdownload");
+
+	    for (int i = 0; i < 10; i++) {
+	        if (Files.exists(pdfPath) && !Files.exists(partialDownloadPath) && Files.size(pdfPath) > 0) {
+	            return pdfPath;
+	        }
+	        Thread.sleep(2000);
+	    }
+
+	    throw new IOException("PDF file '" + FARMER_CREDENTIAL_PDF_FILE_NAME + "' was not found in local downloads: "
+	            + downloadDirectory.toAbsolutePath());
+	}
+
+	private void assertPdfOpensSuccessfully(File pdfFile) throws IOException {
+	    assertTrue("Farmer credential PDF is empty.", pdfFile.length() > 0);
+	    // An SVG-rendered credential may not contain extractable text, so only confirm the PDF
+	    // is well-formed and has at least one page - do not assert on text content.
+	    try (PDDocument document = PDDocument.load(pdfFile)) {
+	        assertTrue("Farmer credential PDF has no pages.", document.getNumberOfPages() > 0);
+	    }
+	}
+
 	@When("User verify go back button")
 	public void userVerifyGoBackButton() {
 		try {
@@ -2023,6 +2637,134 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 
+	@Before(value = "@needsvginsurencecredetials", order = 12500)
+	public void prepareSvgCredentialArtifactsHook() throws Exception {
+	    ensureStepDependenciesInitialized();
+	    try {
+	        synchronized (BaseTest.getSvgArtifactsLock()) {
+	            File farmerPdfFile = new File(BaseTest.getDownloadedFarmerCredentialPdfPath());
+
+	            if (BaseTest.isSVGArtifactsPreparedForRun() && farmerPdfFile.exists()) {
+	                test.log(Status.PASS, "Farmer credential (SVG template) artifact is already prepared for this run.");
+	            } else {
+	                openInjiWebInNewTab();
+	                verifyClickOnContinueButton();
+	                userSearchTheIssuersSVG();
+	                userClickOnDownloadFarmerIDCardButton();
+	                userClickOnFarmerCredentialByESignetButton();
+	                userClickOnValidityDropdownButton();
+	                userClickOnNoLimitButton();
+	                userClickOnProceedButton();
+	                userEnterTheUIN();
+	                userClicksOnGetOTP();
+	                userEntersTheOTP();
+	                userClickOnVerifyButton();
+	                userVerifyDownloadSuccessTextDisplayed();
+	                userVerifySVGPdfIsDownloaded();
+	                BaseTest.markSVGInsuranceArtifactsPreparedForRun();
+	                test.log(Status.PASS, "Prepared Farmer credential (SVG template) artifact for this run.");
+	            }
+
+	            if (BaseTest.getCurrentScenarioTags().contains("@scan")
+	                    && !new File(BaseTest.getFarmerCredentialPngPath()).exists()) {
+	                verifyThatUserConvertFarmerCredentialPdfIntoPng();
+	                test.log(Status.PASS, "Converted Farmer credential PDF to PNG for scan scenario.");
+	            }
+	        }
+
+	        openInjiVerifyInNewTab();
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Failed while preparing Farmer credential (SVG template) artifact", e);
+	        throw e;
+	    }
+	}
+
+	public void userSearchTheIssuersSVG() {
+	    try {
+	        Thread.sleep(6000);
+	        String issuerText = InjiVerifyConfigManager.getproperty("issuerSearchTextforSVG");
+	        homePage.enterIssuersInSearchBox(issuerText);
+	        test.log(Status.PASS, "Searched issuers with: " + issuerText);
+	    } catch (InterruptedException e) {
+	        test.log(Status.FAIL, "Interrupted while waiting to search SVG issuers: " + e.getMessage());
+	        Thread.currentThread().interrupt();
+	        throw new RuntimeException(e);
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while searching SVG issuers", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while searching SVG issuers", e);
+	        throw e;
+	    }
+	}
+
+	public void userClickOnDownloadFarmerIDCardButton() {
+	    try {
+	        homePage.clickOnFarmerIdCardIssuer();
+	        test.log(Status.PASS, "Successfully clicked on Farmer ID Card credentials button.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while clicking Farmer ID Card credentials button", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while clicking Farmer ID Card credentials button", e);
+	        throw e;
+	    }
+	}
+
+	public void userClickOnFarmerCredentialByESignetButton() {
+	    try {
+	        homePage.clickOnFarmerCredentialType();
+	        test.log(Status.PASS, "Successfully clicked on Farmer credential type by e-signet button.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while clicking Farmer credential type by e-signet button", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while clicking Farmer credential type by e-signet button", e);
+	        throw e;
+	    }
+	}
+
+	public void userEnterTheUIN() {
+	    try {
+	        String uin = InjiVerifyConfigManager.getproperty("FarmetCredentialUIN");
+	        homePage.enterUinForFarmerCredential(uin);
+	        test.log(Status.PASS, "Successfully entered the UIN: " + uin);
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while entering the UIN", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while entering the UIN", e);
+	        throw e;
+	    }
+	}
+
+	public void userClicksOnGetOTP() {
+	    try {
+	        homePage.clickOnGetOtpButton();
+	        test.log(Status.PASS, "Successfully clicked on Get OTP button.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while clicking Get OTP button", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while clicking Get OTP button", e);
+	        throw e;
+	    }
+	}
+
+	public void userEntersTheOTP() {
+	    try {
+	        String otp = InjiVerifyConfigManager.getproperty("FarmerIsuuerOTP");
+	        homePage.enterOtpForFarmerCredential(otp);
+	        test.log(Status.PASS, "Successfully entered the OTP.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while entering the OTP", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while entering the OTP", e);
+	        throw e;
+	    }
+	}
+
 	@When("Verify that user convert pdf into png")
 	public void verifyThatUserConvertPdfIntoPng() throws IOException {
 	    String pdfPath = BaseTest.getDownloadedInsurancePdfPath();
@@ -2067,6 +2809,42 @@ public class StepDef extends BaseSteps {
 	        throw e;
 	    }
 	}
+
+	@When("Verify that user convert farmer credential pdf into png")
+	public void verifyThatUserConvertFarmerCredentialPdfIntoPng() throws IOException {
+	    String pdfPath = BaseTest.getDownloadedFarmerCredentialPdfPath();
+
+	    try {
+	        PDDocument document = PDDocument.load(new File(pdfPath));
+	        PDFRenderer renderer = new PDFRenderer(document);
+
+	        int numberOfPages = document.getNumberOfPages();
+	        assertTrue("Farmer credential PDF document has no pages.", numberOfPages > 0);
+	        test.log(Status.PASS, "Farmer credential PDF document has " + numberOfPages + " pages.");
+
+	        // Render at a higher DPI to preserve QR code fidelity for the scan flow.
+	        BufferedImage image = renderer.renderImageWithDPI(0, 300, org.apache.pdfbox.rendering.ImageType.RGB);
+
+	        String outputFileNamePng = BaseTest.getFarmerCredentialPngPath();
+	        ImageIO.write(image, "png", new File(outputFileNamePng));
+
+	        assertTrue("Farmer credential PNG file " + outputFileNamePng + " was not created.",
+	                new File(outputFileNamePng).exists());
+	        test.log(Status.PASS, "Successfully converted Farmer credential PDF to PNG at 300 DPI: " + outputFileNamePng);
+
+	        document.close();
+	    } catch (IOException e) {
+	        test.log(Status.FAIL, "Error converting Farmer credential PDF to PNG: " + e.getMessage());
+	        throw e;
+	    } catch (AssertionError e) {
+	        test.log(Status.FAIL, e.getMessage());
+	        throw e;
+	    } catch (Exception e) {
+	        test.log(Status.FAIL, "Unexpected error during Farmer credential PDF to PNG conversion: " + e.getMessage());
+	        throw e;
+	    }
+	}
+
 	@When("Upload one time use QR code file")
 	public void uploadOnetimeQRCodeFile() {
 	    try {
@@ -2284,6 +3062,119 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 
+	@When("Click outside the help dropdown")
+	public void clickOutsideHelpDropdown() {
+	    try {
+	        homePage.clickOutsideHelpDropdown();
+	        test.log(Status.PASS, "Clicked outside the help dropdown.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while clicking outside the help dropdown", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while clicking outside the help dropdown", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Verify all buttons fit their layout without text overflow")
+	public void verifyAllButtonsFitTheirLayout() {
+	    try {
+	        List<String> overflowing = homePage.getOverflowingButtonTexts();
+	        Assert.assertTrue(overflowing.isEmpty(),
+	            "Button text overflows its bounds for: " + overflowing);
+	        test.log(Status.PASS, "All visible buttons fit their layout without text overflow.");
+	    } catch (AssertionError e) {
+	        logAssertionFailure(test, driver, "Button layout check failed", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Error checking button layout", e);
+	        throw e;
+	    }
+	}
+
+	@When("Inject no-reload page sentinel")
+	public void injectNoReloadPageSentinel() {
+	    try {
+	        homePage.injectNoReloadSentinel();
+	        test.log(Status.PASS, "No-reload sentinel injected into window.__noReloadSentinel.");
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while injecting no-reload sentinel", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Verify page navigation was seamless without reload")
+	public void verifyPageNavigationWasSeamlessWithoutReload() {
+	    try {
+	        boolean notReloaded = homePage.isPageNotReloaded();
+	        Assert.assertTrue(notReloaded, "Page was fully reloaded during navigation (window.__noReloadSentinel was cleared). Expected seamless SPA navigation.");
+	        test.log(Status.PASS, "Page navigation was seamless — no full reload detected (window.__noReloadSentinel still present).");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying seamless navigation", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while verifying seamless navigation", e);
+	        throw e;
+	    }
+	}
+
+	@When("Click on Inji Verify logo")
+	public void clickOnInjiVerifyLogo() {
+	    try {
+	        homePage.clickOnInjiVerifyLogo();
+	        test.log(Status.PASS, "Successfully clicked on the Inji Verify logo.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while clicking on the Inji Verify logo", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while clicking on the Inji Verify logo", e);
+	        throw e;
+	    }
+	}
+
+	@When("Navigate to upload button using Tab key")
+	public void navigateToUploadButtonUsingTabKey() {
+	    try {
+	        uploadqrcode.tabToUploadButton();
+	        test.log(Status.PASS, "Successfully navigated to upload button using Tab key.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while navigating to upload button via Tab key", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while navigating to upload button via Tab key", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Verify upload button has keyboard focus")
+	public void verifyUploadButtonHasKeyboardFocus() {
+	    try {
+	        boolean isFocused = uploadqrcode.isUploadButtonFocused();
+	        Assert.assertTrue(isFocused, "Upload button does not have keyboard focus (document.activeElement does not match #upload-qr-code-button).");
+	        test.log(Status.PASS, "Upload button has keyboard focus confirmed via document.activeElement.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying upload button focus", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while verifying upload button focus", e);
+	        throw e;
+	    }
+	}
+
+	@When("Upload QR code file JPEG via keyboard")
+	public void uploadQRCodeFileJpegViaKeyboard() {
+	    try {
+	        uploadqrcode.uploadJpegAndWaitForVerificationResult();
+	        test.log(Status.PASS, "Successfully uploaded QR code JPEG via keyboard-navigated upload control.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while uploading QR code JPEG via keyboard", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while uploading QR code JPEG via keyboard", e);
+	        throw e;
+	    }
+	}
+
 @Then("Verify the Upload button after 2 mins idle")
 public void verifyUploadButtonVisibleAfter2MinsIdle() {
      try {
@@ -2299,7 +3190,78 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	    }
 	}
 
+	@When("Hover over the Upload QR Code button")
+	public void hoverOverUploadQRCodeButton() {
+	    try {
+	        uploadqrcode.hoverOverUploadButton();
+	        test.log(Status.PASS, "Successfully hovered over the Upload QR Code button.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while hovering over Upload QR Code button", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while hovering over Upload QR Code button", e);
+	        throw e;
+	    }
+	}
 
+	@When("Hover off the Upload QR Code button")
+	public void hoverOffUploadQRCodeButton() {
+	    try {
+	        uploadqrcode.hoverOffUploadButton();
+	        test.log(Status.PASS, "Successfully moved mouse away from the Upload QR Code button.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while hovering off Upload QR Code button", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while hovering off Upload QR Code button", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Verify gradient SVG upload icon is visible")
+	public void verifyGradientSvgUploadIconIsVisible() {
+	    try {
+	        boolean isVisible = uploadqrcode.isGradientUploadIconVisible();
+	        Assert.assertTrue(isVisible, "Gradient SVG upload icon is not visible.");
+	        test.log(Status.PASS, "Gradient SVG upload icon is visible as expected.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying gradient SVG upload icon visibility", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while verifying gradient SVG upload icon visibility", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Verify gradient SVG upload icon is not visible")
+	public void verifyGradientSvgUploadIconIsNotVisible() {
+	    try {
+	        boolean isVisible = uploadqrcode.isGradientUploadIconVisible();
+	        assertFalse("Gradient SVG upload icon should not be visible on hover.", isVisible);
+	        test.log(Status.PASS, "Gradient SVG upload icon is not visible on hover as expected.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying gradient SVG upload icon is hidden", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while verifying gradient SVG upload icon is hidden", e);
+	        throw e;
+	    }
+	}
+
+	@Then("Verify SVG upload icon is visible")
+	public void verifySvgUploadIconIsVisible() {
+	    try {
+	        boolean isVisible = uploadqrcode.isUploadSvgIconVisible();
+	        Assert.assertTrue(isVisible, "SVG upload icon is not visible.");
+	        test.log(Status.PASS, "SVG upload icon is visible as expected.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying SVG upload icon visibility", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while verifying SVG upload icon visibility", e);
+	        throw e;
+	    }
+	}
 
 	@When("Verify click on Help button")
 	public void userClickOnHomeButton() {
@@ -2311,6 +3273,39 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	        throw e;
 	    } catch (Exception e) {
 	        logFailure(test, driver, "Unexpected error while clicking home button", e);
+	        throw e;
+	    }
+	}
+
+	@When("Verify click on FAQ button")
+	public void userClickOnFaqButton() {
+	    try {
+	        homePage.clickOnFaqButton();
+	        test.log(Status.PASS, "Successfully clicked on FAQ button.");
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while clicking FAQ button", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while clicking FAQ button", e);
+	        throw e;
+	    }
+	}
+
+	@When("Verify that FAQ info message is displayed")
+	public void verifyFaqInfoMessage() {
+	    try {
+	        String alertMessage = homePage.getFaqAlertMessage();
+	        Assert.assertNotNull(alertMessage, "FAQ info message is null.");
+	        Assert.assertFalse(alertMessage.trim().isEmpty(), "FAQ info message is empty.");
+	        test.log(Status.PASS, "FAQ info message is displayed: " + alertMessage);
+	    } catch (AssertionError e) {
+	        test.log(Status.FAIL, "FAQ info message verification failed.");
+	        throw e;
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying FAQ info message", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error while verifying FAQ info message", e);
 	        throw e;
 	    }
 	}
@@ -2657,6 +3652,41 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	    }
 	}
 
+	@Then("Verify small or blur alert message in {string}")
+	public void verifyMessageForBlurQrCodeInLanguage(String language) {
+	    String expectedMessage;
+	    switch (language) {
+	        case "French":
+	            expectedMessage = UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE_IN_FRENCH;
+	            break;
+	        case "Arabic":
+	            expectedMessage = UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE_IN_ARABIC;
+	            break;
+	        case "Spanish":
+	            expectedMessage = UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE_IN_SPANISH;
+	            break;
+	        default:
+	            expectedMessage = UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE;
+	            break;
+	    }
+	    try {
+	        Assert.assertEquals(uploadqrcode.getErrorMessageForBlurQRCode(), expectedMessage);
+	        test.log(Status.PASS, "Successfully verified Small/Blur alert message in " + language + ".");
+	    } catch (AssertionError e) {
+	        test.log(Status.FAIL, "Verification failed: Small/Blur alert message in " + language
+	                + " does not match the expected value.");
+	        logFailure(test, driver, "Verification failed: Small/Blur alert message in " + language
+	                + " does not match the expected value.", e);
+	        throw e;
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying Small/Blur alert message in " + language, e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error occurred while verifying Small/Blur alert message in " + language, e);
+	        throw e;
+	    }
+	}
+
 	@Then("Upload blur QR code file")
 	public void uploadBlurQrCodeFile() {
         try {
@@ -2932,6 +3962,24 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	    }
 	}
 
+	@Then("Verify QR code is not displayed")
+	public void verifyQrCodeIsNotDisplayed() {
+	    try {
+	        Assert.assertFalse(vpverification.isVpVerificationQrCodeGenerated());
+	        test.log(Status.PASS, "Successfully verified that the QR code is not displayed.");
+	    } catch (AssertionError e) {
+	        test.log(Status.FAIL, "Verification failed: QR code is unexpectedly displayed.");
+	        logFailure(test, driver, "Verification failed: QR code is unexpectedly displayed.", e);
+	        throw e;
+	    } catch (NoSuchElementException e) {
+	        logFailure(test, driver, "Element not found while verifying absence of QR code", e);
+	        throw e;
+	    } catch (Exception e) {
+	        logFailure(test, driver, "Unexpected error occurred while verifying absence of QR code", e);
+	        throw e;
+	    }
+	}
+
 
 	@Then("Uncheck credential {string}")
 	public void uncheckCredential(String credentialKeyOrName) {
@@ -3165,36 +4213,81 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
         }
     }
 
-    @When("Verify select arabic language")
-    public void verifyselectArabicLanguage() {
+    @Then("Verify {string} language is highlighted")
+    public void verifyLanguageIsHighlighted(String englishName) {
+        String displayName = toDisplayName(englishName);
         try {
-            uploadqrcode.selectArabicLanguage();
-            test.log(Status.PASS, "Clicked on 'Arabic Language' button successfully.");
-            boolean isArabicSelected = uploadqrcode.isArabicLanguageSelected();
-            Assert.assertTrue(isArabicSelected, "Arabic language should be selected after click");
-            test.log(Status.PASS, "Arabic language is successfully selected. Language indicator shows 'العربية'.");
+            boolean hasGradient = uploadqrcode.isLanguageHighlightedWithGradient(displayName);
+            Assert.assertTrue(hasGradient, displayName + " language text should have gradient highlight");
+            test.log(Status.PASS, displayName + " language is highlighted with gradient.");
+            boolean hasTick = uploadqrcode.isLanguageTickVisible(displayName);
+            Assert.assertTrue(hasTick, displayName + " language should show a tick mark");
+            test.log(Status.PASS, displayName + " language tick mark is visible.");
         } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while clicking 'Arabic Language' button", e);
+            logFailure(test, driver, "Element not found while checking highlight for '" + displayName + "' language", e);
             throw e;
         } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while clicking 'Arabic Language' button", e);
+            logFailure(test, driver, "Unexpected error while checking highlight for '" + displayName + "' language", e);
             throw e;
         }
     }
 
-    @When("Verify select french language")
-    public void verifyselectFrenchLanguage() {
+    @When("Verify select language {string}")
+    public void verifySelectLanguage(String englishName) {
+        String displayName = toDisplayName(englishName);
         try {
-            uploadqrcode.selectFrenchLanguage();
-            test.log(Status.PASS, "Clicked on 'French Language' button successfully.");
-            boolean isFrenchSelected = uploadqrcode.isFrenchLanguageSelected();
-            Assert.assertTrue(isFrenchSelected, "French language should be selected after click");
-            test.log(Status.PASS, "French language is successfully selected. Language indicator shows 'Français'.");
+            uploadqrcode.selectLanguage(displayName);
+            test.log(Status.PASS, "Clicked on '" + displayName + "' language button successfully.");
+            boolean isSelected = uploadqrcode.isLanguageSelected(displayName);
+            Assert.assertTrue(isSelected, displayName + " language should be selected after click");
+            test.log(Status.PASS, displayName + " language is successfully selected.");
         } catch (NoSuchElementException e) {
-            logFailure(test, driver, "Element not found while clicking 'French Language' button", e);
+            logFailure(test, driver, "Element not found while clicking '" + displayName + "' language button", e);
             throw e;
         } catch (Exception e) {
-            logFailure(test, driver, "Unexpected error while clicking 'French Language' button", e);
+            logFailure(test, driver, "Unexpected error while clicking '" + displayName + "' language button", e);
+            throw e;
+        }
+    }
+
+    @When("Verify if name value is present in english")
+    public void verifyIfNameValueIsPresentInEnglish() {
+        try {
+            String actualLabel = homePage.getNameValueInEnglish();
+            Assert.assertEquals(actualLabel, UiConstants.NAME_VALUE_IN_ENGLISH,
+                "Name value in english does not match the expected value.");
+            test.log(Status.PASS, "Name value in english verification successful. Expected: "
+                + UiConstants.NAME_VALUE_IN_ENGLISH + ", Actual: " + actualLabel);
+        } catch (AssertionError e) {
+            test.log(Status.FAIL, "Name value in english verification failed. Expected: "
+                + UiConstants.NAME_VALUE_IN_ENGLISH + ", but found: " + homePage.getNameValueInEnglish());
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Name value in english", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Name value in english", e);
+            throw e;
+        }
+    }
+
+    @When("Verify if gender value is present in english")
+    public void verifyIfGenderValueIsPresentInEnglish() {
+        try {
+            String actualLabel = homePage.getGenderValueInEnglish();
+            Assert.assertEquals(actualLabel, UiConstants.GENDER_VALUE_IN_ENGLISH,
+                "Gender value in english does not match the expected value.");
+            test.log(Status.PASS, "Gender value in english verification successful. Expected: "
+                + UiConstants.GENDER_VALUE_IN_ENGLISH + ", Actual: " + actualLabel);
+        } catch (AssertionError e) {
+            test.log(Status.FAIL, "Gender value in english verification failed. Expected: "
+                + UiConstants.GENDER_VALUE_IN_ENGLISH + ", but found: " + homePage.getGenderValueInEnglish());
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Gender value in english", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying Gender value in english", e);
             throw e;
         }
     }
@@ -3454,6 +4547,409 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
             return result != null && !result.toString().trim().isEmpty();
         } catch (Exception e) {
             return false;
+        }
+    }
+
+    @When("Reload the page")
+    public void reloadThePage() {
+        try {
+            driver.navigate().refresh();
+            test.log(Status.PASS, "Page reloaded successfully.");
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while reloading the page", e);
+            throw e;
+        }
+    }
+
+    @When("Get current URL of upload QR code tab")
+    public void getCurrentUrlOfUploadQRCodeTab() {
+        try {
+            uploadPageUrl = driver.getCurrentUrl();
+            test.log(Status.PASS, "Retrieved upload QR code tab URL: " + uploadPageUrl);
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while getting upload QR code tab URL", e);
+            throw e;
+        }
+    }
+
+    @When("Get current URL of scan QR code tab")
+    public void getCurrentUrlOfScanQRCodeTab() {
+        try {
+            scanPageUrl = driver.getCurrentUrl();
+            test.log(Status.PASS, "Retrieved scan QR code tab URL: " + scanPageUrl);
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while getting scan QR code tab URL", e);
+            throw e;
+        }
+    }
+
+    @When("Get current URL of VP verification tab")
+    public void getCurrentUrlOfVpVerificationTab() {
+        try {
+            vpVerificationPageUrl = driver.getCurrentUrl();
+            test.log(Status.PASS, "Retrieved VP verification tab URL: " + vpVerificationPageUrl);
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while getting VP verification tab URL", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify user is still on the upload QR code page")
+    public void verifyUserIsStillOnUploadQRCodePage() {
+        try {
+            String currentUrl = driver.getCurrentUrl();
+            Assert.assertEquals(currentUrl, uploadPageUrl,
+                "User was redirected away from the upload QR code page. Expected: " + uploadPageUrl + ", Actual: " + currentUrl);
+            test.log(Status.PASS, "User is still on the upload QR code page. URL: " + currentUrl);
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver,
+                "Upload page URL mismatch. Expected: " + uploadPageUrl + ", Actual: " + driver.getCurrentUrl(), e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying upload QR code page URL", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify user is still on the scan QR code page")
+    public void verifyUserIsStillOnScanQRCodePage() {
+        try {
+            String currentUrl = driver.getCurrentUrl();
+            Assert.assertEquals(currentUrl, scanPageUrl,
+                "User was redirected away from the scan QR code page. Expected: " + scanPageUrl + ", Actual: " + currentUrl);
+            test.log(Status.PASS, "User is still on the scan QR code page. URL: " + currentUrl);
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver,
+                "Scan page URL mismatch. Expected: " + scanPageUrl + ", Actual: " + driver.getCurrentUrl(), e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying scan QR code page URL", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify user is still on the VP verification page")
+    public void verifyUserIsStillOnVpVerificationPage() {
+        try {
+            String currentUrl = driver.getCurrentUrl();
+            Assert.assertEquals(currentUrl, vpVerificationPageUrl,
+                "User was redirected away from the VP verification page. Expected: " + vpVerificationPageUrl + ", Actual: " + currentUrl);
+            test.log(Status.PASS, "User is still on the VP verification page. URL: " + currentUrl);
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver,
+                "VP verification page URL mismatch. Expected: " + vpVerificationPageUrl + ", Actual: " + driver.getCurrentUrl(), e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying VP verification page URL", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify that upload scan and VP verification page URLs are unique")
+    public void verifyThatUploadScanAndVPVerificationPageUrlsAreUnique() {
+        try {
+            Set<String> urls = new HashSet<>();
+            urls.add(uploadPageUrl);
+            urls.add(scanPageUrl);
+            urls.add(vpVerificationPageUrl);
+            Assert.assertEquals(urls.size(), 3,
+                "Page URLs are not unique. Upload: " + uploadPageUrl
+                + ", Scan: " + scanPageUrl
+                + ", VP Verification: " + vpVerificationPageUrl);
+            test.log(Status.PASS, "All three page URLs are unique. Upload: " + uploadPageUrl
+                + ", Scan: " + scanPageUrl + ", VP Verification: " + vpVerificationPageUrl);
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver,
+                "Page URL uniqueness verification failed. Upload: " + uploadPageUrl
+                + ", Scan: " + scanPageUrl + ", VP Verification: " + vpVerificationPageUrl, e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying page URLs are unique", e);
+            throw e;
+        }
+    }
+
+
+
+    @When("Verify congratulations message in spanish")
+    public void verifyCongratulationsMessageInSpanish() {
+        try {
+            String actualMessage = uploadqrcode.getCongratulationtext();
+            Assert.assertEquals(actualMessage, UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_SPANISH,
+                "Congratulations message in Spanish does not match the expected value.");
+            test.log(Status.PASS, "Congratulations message in Spanish verified. Expected: "
+                + UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_SPANISH + ", Actual: " + actualMessage);
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver, "Congratulations message in Spanish verification failed. Expected: "
+                + UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_SPANISH
+                + ", but found: " + uploadqrcode.getCongratulationtext(), e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying congratulations message in Spanish", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying congratulations message in Spanish", e);
+            throw e;
+        }
+    }
+
+    @When("Verify congratulations message in french")
+    public void verifyCongratulationsMessageInFrench() {
+        try {
+            String actualMessage = uploadqrcode.getCongratulationtext();
+            Assert.assertEquals(actualMessage, UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_FRENCH,
+                "Congratulations message in French does not match the expected value.");
+            test.log(Status.PASS, "Congratulations message in French verified. Expected: "
+                + UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_FRENCH + ", Actual: " + actualMessage);
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver, "Congratulations message in French verification failed. Expected: "
+                + UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_FRENCH
+                + ", but found: " + uploadqrcode.getCongratulationtext(), e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying congratulations message in French", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying congratulations message in French", e);
+            throw e;
+        }
+    }
+
+    @When("Verify congratulations message in arabic")
+    public void verifyCongratulationsMessageInArabic() {
+        try {
+            String actualMessage = uploadqrcode.getCongratulationtext();
+            Assert.assertEquals(actualMessage, UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_ARABIC,
+                "Congratulations message in Arabic does not match the expected value.");
+            test.log(Status.PASS, "Congratulations message in Arabic verified. Expected: "
+                + UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_ARABIC + ", Actual: " + actualMessage);
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver, "Congratulations message in Arabic verification failed. Expected: "
+                + UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_ARABIC
+                + ", but found: " + uploadqrcode.getCongratulationtext(), e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying congratulations message in Arabic", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying congratulations message in Arabic", e);
+            throw e;
+        }
+    }
+
+    @When("Verify congratulations message in english")
+    public void verifyCongratulationsMessageInEnglish() {
+        try {
+            String actualMessage = uploadqrcode.getCongratulationtext();
+            Assert.assertEquals(actualMessage, UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_ENGLISH,
+                "Congratulations message in English does not match the expected value.");
+            test.log(Status.PASS, "Congratulations message in English verified. Expected: "
+                + UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_ENGLISH + ", Actual: " + actualMessage);
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver, "Congratulations message in English verification failed. Expected: "
+                + UiConstants.VERIFICATION_SUCCESS_MESSAGE_IN_ENGLISH
+                + ", but found: " + uploadqrcode.getCongratulationtext(), e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying congratulations message in English", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying congratulations message in English", e);
+            throw e;
+        }
+    }
+
+    @When("selecting an invalid language")
+    public void selectingAnInvalidLanguage() {
+        try {
+            ((JavascriptExecutor) driver).executeScript(
+                "localStorage.setItem('selected_language', JSON.stringify('zz'));"
+            );
+            driver.navigate().refresh();
+            new WebDriverWait(driver, Duration.ofSeconds(BasePage.getTimeout()))
+                .until(webDriver -> ((JavascriptExecutor) webDriver)
+                    .executeScript("return document.readyState").equals("complete"));
+            new WebDriverWait(driver, Duration.ofSeconds(BasePage.getTimeout()))
+                .until(ExpectedConditions.presenceOfElementLocated(
+                    By.id("verify-credentials-heading")));
+            test.log(Status.PASS, "Set language to invalid code 'zz' via localStorage and reloaded page.");
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while setting invalid language 'zz'", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with expired certificate")
+    public void uploadSDJwtWithExpiredCertificate() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithExpiredCertificate();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT QR code with expired certificate.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT QR code with expired certificate", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT QR code with expired certificate", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with incorrect digest value")
+    public void uploadSDJwtWithIncorrectDigestValue() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithIncorrectDigestValue();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT QR code with incorrect digest value.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT QR code with incorrect digest value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT QR code with incorrect digest value", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with incorrect disclosure value")
+    public void uploadSDJwtWithIncorrectDisclosureValue() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithIncorrectDisclosureValue();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT QR code with incorrect disclosure value.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT QR code with incorrect disclosure value", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT QR code with incorrect disclosure value", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with incorrect signature")
+    public void uploadSDJwtWithIncorrectSignature() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithIncorrectSignature();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT QR code with incorrect signature.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT QR code with incorrect signature", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT QR code with incorrect signature", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with invalid digest length")
+    public void uploadSDJwtWithInvalidDigestLength() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithInvalidDigestLength();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT QR code with invalid digest length.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT QR code with invalid digest length", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT QR code with invalid digest length", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with malformed QR code")
+    public void uploadSDJwtWithMalformedQRCode() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithMalformedQRCode();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT malformed QR code.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT malformed QR code", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT malformed QR code", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with NBF set to future")
+    public void uploadSDJwtWithNBFSetToFuture() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithNBFSetToFuture();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT QR code with NBF set to future.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT QR code with NBF set to future", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT QR code with NBF set to future", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with unsupported algorithm")
+    public void uploadSDJwtWithUnsupportedAlgorithm() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithUnsupportedAlgorithm();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT QR code with unsupported algorithm.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT QR code with unsupported algorithm", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT QR code with unsupported algorithm", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with missing digest")
+    public void uploadSDJwtWithMissingDigest() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithMissingDigest();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT QR code with missing digest.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT QR code with missing digest", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT QR code with missing digest", e);
+            throw e;
+        }
+    }
+
+    @Then("Upload SD-JWT QR code with selective disclosure")
+    public void uploadSDJwtWithSelectiveDisclosure() {
+        try {
+            uploadqrcode.clickOnUploadSDJwtWithSelectiveDisclosure();
+            test.log(Status.PASS, "Successfully uploaded SD-JWT QR code with selective disclosure.");
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while uploading SD-JWT QR code with selective disclosure", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while uploading SD-JWT QR code with selective disclosure", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify SD-JWT firstname field displays value 'John'")
+    public void verifySDJwtFirstNameFieldDisplaysJohn() {
+        try {
+            String actual = uploadqrcode.getSDJwtFirstNameValue();
+            Assert.assertEquals(actual, UiConstants.EXPECTED_SDJWT_SELECTIVE_DISCLOSURE_FIRSTNAME,
+                    "Firstname value mismatch. Expected: " + UiConstants.EXPECTED_SDJWT_SELECTIVE_DISCLOSURE_FIRSTNAME + ", Actual: " + actual);
+            test.log(Status.PASS, "Firstname field displays expected value: " + actual);
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Firstname value mismatch for SD-JWT selective disclosure", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Firstname element not found in SD-JWT selective disclosure result", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying SD-JWT firstname field", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify SD-JWT lastname field is not visible")
+    public void verifySDJwtLastNameFieldIsNotVisible() {
+        try {
+            boolean isVisible = uploadqrcode.isSDJwtLastNameFieldVisible();
+            Assert.assertFalse(isVisible, "Lastname field should not be visible for SD-JWT with selective disclosure.");
+            test.log(Status.PASS, "Lastname field is correctly not visible in SD-JWT selective disclosure result.");
+        } catch (AssertionError e) {
+            logFailure(test, driver, "Lastname field is unexpectedly visible in SD-JWT selective disclosure result", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying SD-JWT lastname field visibility", e);
+            throw e;
         }
     }
 }

@@ -160,6 +160,10 @@ public class ScanQRCodePage extends BasePage {
 		return isElementIsVisible(driver, scanQRCodeButton);
 	}
 
+	public boolean isScanQRCodeButtonClickable() {
+		return isElementClickable(driver, scanQRCodeButton);
+	}
+
 	public boolean isVisibleScanQRCodeStep2LabelAfter() {
 		return isElementIsVisible(driver, ScanQRCodeStep2LabelAfter);
 	}
@@ -521,5 +525,11 @@ public class ScanQRCodePage extends BasePage {
 		} catch (TimeoutException e) {
 			// Fall through so the existing assertion path reports the remaining popup state.
 		}
+	}
+
+	public boolean isScanResultNotVisibleAfterIdle() {
+		return !isDisplayedWithoutWaiting(successMessageIcon)
+				&& !isDisplayedWithoutWaiting(statusMessage)
+				&& !isDisplayedWithoutWaiting(verifyAnotherQRCodeButton);
 	}
 }

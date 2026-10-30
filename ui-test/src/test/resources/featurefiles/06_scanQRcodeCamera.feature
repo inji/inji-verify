@@ -7,10 +7,12 @@ Feature: Inji Verify scan qr code camera testing
 
   @smoke @verifyScanValidQrCode @withoutBrowserstack @scan @qr_valid @needsInsuranceArtifacts
   Scenario: Verify the scan for valid qr code
+    And Get current URL of scan QR code tab
     And click on scan qr code button
     Then validate that QR code is scanned successfully
     And validate the step 3 after scanning the QR code
     And validate the step 4 after scanning the QR code
+    And Verify user is still on the scan QR code page
 
   @smoke @verifyFirstTimeScanQrCodePermissionPrompt @withoutBrowserstack @scan @qr_valid @needsInsuranceArtifacts
   Scenario: Verify first time scan qr code click triggers camera permission flow
@@ -31,6 +33,14 @@ Feature: Inji Verify scan qr code camera testing
     And Verify close button on timeout message
     And click on close button on timeout message
     Then validate timeout message disappears within five seconds
+
+  @negative @verifyScanQrCodeUnreadableErrorPopup @withoutBrowserstack @scan @qr_visual_effect
+  Scenario: Verify the error popup appears when the QR code cannot be read after the camera is left idle
+    Then verify scan qr code button is clickable
+    And click on scan qr code button
+    And wait for 60 seconds
+    Then validate scan does not work for visually modified qr code
+    And verify scan qr code button is clickable
 
   @negative @verifyScanInvalidQrCode @withoutBrowserstack @scan @qr_invalid
   Scenario: Verify the scan for invalid qr code
@@ -92,3 +102,38 @@ Feature: Inji Verify scan qr code camera testing
     And click on scan qr code button
     When Click browser back button
     Then Verify that Upload button visible
+
+  @smoke @withoutBrowserstack @scan @back_button @qr_visual_effect
+  Scenario: Verify back button navigates back to scan button
+    And click on scan qr code button
+    Then verify back button is visible
+    And verify click on back button
+    Then verify scan qr code button
+
+  @smoke @verifyScanVcData @withoutBrowserstack @scan @qr_health_insurence @needsInsuranceArtifacts
+  Scenario: Verify VC data is displayed correctly after scanning a valid QR code
+    And click on scan qr code button
+    Then validate that QR code is scanned successfully
+    And verify tick icon is visible on successful verification
+    And verify congratulations message on successful verification
+    And verify full name matches expected value
+    And verify policy number matches expected value
+    And verify policy name matches expected value
+    And verify policy issued on matches expected value
+    And verify policy expires on matches expected value
+    And verify benefits matches expected value
+    And verify mobile matches expected value
+    And verify email matches expected value
+    And verify gender matches expected value
+    And verify dob matches expected value
+    And Verify verify another qr code button on successful verification
+
+  @smoke @withoutBrowserstack @scan  @qr_valid @browser_back_during_scan @needsInsuranceArtifacts
+  Scenario: Verify scan page resets cleanly after navigating back during validation and VC validates on re-scan
+    And click on scan qr code button
+    When Click browser back button
+    When click on scan qr code tab
+    Then verify scan qr code button is clickable
+    And verify no VC result is visible on scan page
+    And click on scan qr code button
+    Then validate that QR code is scanned successfully

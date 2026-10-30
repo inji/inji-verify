@@ -25,6 +25,7 @@ Feature: Inji Verify vpVerification testing
     #Then Validate the title of the page
     #And Click on right arrow
     And Click on vp verification tab
+    And Get current URL of VP verification tab
     And Verify click on request verifiable credentials button
     And Uncheck credential "mosipId"
     And Select credential "healthInsurance"
@@ -38,7 +39,8 @@ Feature: Inji Verify vpVerification testing
     And User clicks consent and share button
     And User clicks consent and share card button
     And VP result is posted back to inji-verify successfully
-    
+    And Verify user is still on the VP verification page
+
 
   @smoke @verifyingVpVerification
   Scenario Outline: Verify the VP verification panel
@@ -269,6 +271,18 @@ Scenario: Verify VP verification same device flow
     Then Essential credential from config is auto selected
     And Verify Click on Generate QR Code button
     And Verify QR code generated
+
+  @smoke @verifyingVpVerification
+  Scenario: Verify QR code is not displayed after navigating away from VP verification tab
+    Given User gets the title of the page
+    Then Validate the title of the page
+    And Click on vp verification tab
+    And Verify click on request verifiable credentials button
+    And Verify Verifiable Credential Panel label
+    And Verify Click on Generate QR Code button
+    And Verify QR code generated
+    And Click on vp verification tab
+    And Verify QR code is not displayed
 
   @smoke @verifyingVpVerification @credentialAutoSelect
   Scenario: Verify user can override auto selected credential from config.json

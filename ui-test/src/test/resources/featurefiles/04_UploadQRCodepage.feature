@@ -10,6 +10,7 @@ Feature: Inji Verify upload qr code testing
     Given User gets the title of the page
     Then Validate the title of the page
     And Verify that upload QR Code tab is visible
+    And Get current URL of upload QR code tab
     And Verify upload QR code step2 label
     And Verify upload QR code step3 label
     And Verify that Upload button visible
@@ -17,10 +18,13 @@ Feature: Inji Verify upload qr code testing
     And verify upload QR code step2 description after
     And verify upload QR code step3 description after
     And verify policy issued on value
+    And verify policy issued on date is in human readable format
     And verify policy expires on value
+    And verify policy expires on date is in human readable format
     And verify full name value
     And verify tick icon is visible on successful verification
     And verify congratulations message on successful verification
+    And Verify user is still on the upload QR code page
     And Verify verify another qr code button on successful verification
     And Verify click on another qr code button
     And Verify upload QR code step2 label
@@ -31,10 +35,12 @@ Feature: Inji Verify upload qr code testing
     And verify upload QR code step3 description after
     And verify tick icon is visible on successful verification
     And verify congratulations message on successful verification
+    And Verify user is still on the upload QR code page
     And Verify verify another qr code button on successful verification
     And Verify click on another qr code button
     And Upload another QR code file png
     And Verify message for valid QR code
+    And Verify user is still on the upload QR code page
     Examples:
       | policy number | full name | date of birth |
       | 9991    | hello     | 01-01-2025   |
@@ -293,6 +299,23 @@ Feature: Inji Verify upload qr code testing
     And Upload one time use QR code file
     And Verify message when vc ran out of verification chances
 
+  @smoke @verifyUploadButtonHoverSvg
+  Scenario: Verify SVG upload icon visibility on repeated hover and hover off
+    And Verify that Upload button visible
+    And Verify gradient SVG upload icon is visible
+    And Hover over the Upload QR Code button
+    And Verify SVG upload icon is visible
+    And Hover off the Upload QR Code button
+    And Verify gradient SVG upload icon is visible
+    And Hover over the Upload QR Code button
+    And Verify SVG upload icon is visible
+    And Hover off the Upload QR Code button
+    And Verify gradient SVG upload icon is visible
+    And Hover over the Upload QR Code button
+    And Verify SVG upload icon is visible
+    And Hover off the Upload QR Code button
+    And Verify gradient SVG upload icon is visible
+
   @smoke @verifyInvalidVcVerificationStatusExpiry
   Scenario: Verify invalid vc verification status expire after countdown
     And Verify browser refresh
@@ -302,3 +325,16 @@ Feature: Inji Verify upload qr code testing
     And Upload invalid pdf
     And Verify MultiFormat alert message
     And Verify the Upload button after 2 mins idle
+
+  @smoke @keyboardAccessibilityUpload @needsInsuranceArtifacts
+  Scenario: Verify keyboard accessibility for upload control
+    Given User gets the title of the page
+    Then Validate the title of the page
+    And Verify that upload QR Code tab is visible
+    And Navigate to upload button using Tab key
+    And Verify upload button has keyboard focus
+    And Upload QR code file JPEG via keyboard
+    And verify tick icon is visible on successful verification
+    And verify congratulations message on successful verification
+
+
