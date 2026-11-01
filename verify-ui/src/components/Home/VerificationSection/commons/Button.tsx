@@ -21,6 +21,7 @@ export const Button = ({
   disabled = false,
   className = "",
   id,
+  type: buttonType = "button",
   ...rest
 }: ButtonProps) => {
   const theme = window._env_?.DEFAULT_THEME || "primary";
@@ -87,6 +88,7 @@ export const Button = ({
     <div className={wrapperClass}>
       <button
         {...rest}
+        type={buttonType}
         id={id}
         disabled={disabled}
         className={[...buttonBaseClass, buttonStateClass, hoverClass].join(" ")}
