@@ -30,7 +30,7 @@ export const LanguagesSupported: LanguageObject[] = [
 ];
 
 export function normalizeLanguageCode(lang: string | undefined | null): string {
-  const defaultLang = window._env_?.DEFAULT_LANG || "en";
+  const defaultLang = globalThis._env_?.DEFAULT_LANG || "en";
   if (!lang) return defaultLang;
 
   const code = lang.toLowerCase();
@@ -62,7 +62,7 @@ export function getLanguageCodes(lang: string): string[] {
   return Array.from(aliases);
 }
 
-export const defaultLanguage = normalizeLanguageCode(window._env_?.DEFAULT_LANG) || "en";
+export const defaultLanguage = normalizeLanguageCode(globalThis._env_?.DEFAULT_LANG) || "en";
 export const selected_language = normalizeLanguageCode(storage.getItem(storage.SELECTED_LANGUAGE));
 
 void i18n.use(initReactI18next).init({

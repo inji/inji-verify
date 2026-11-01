@@ -83,13 +83,13 @@ export const getFileExtension = (fileName: string) => fileName.slice(
 );
 
 export const checkInternetStatus = async (): Promise<boolean> => {
-    if (!window.navigator.onLine) return false;
+    if (!globalThis.navigator.onLine) return false;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
         controller.abort()
     }, InternetConnectivityCheckTimeout);
     try {
-        // Try making an api call if the window.navigator.onLine is true
+        // Try making an api call if the globalThis.navigator.onLine is true
         await fetch(InternetConnectivityCheckEndpoint, {
             method: 'HEAD',
             mode: 'no-cors',
