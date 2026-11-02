@@ -1,8 +1,8 @@
 # inji-verify: local engineering context
 
 Context for contributors and AI agents working in this repository: layout, verified build and test commands, and the
-default change scope. Produced by module onboarding with the AIDLC Engineering Agent and reviewed by the module owner.
-Every row was **verified** on `upstream/develop` @ `110c0529` (2026-10-29) from the file named, unless marked Inferred.
+default change scope. Produced by Crewline module onboarding and reviewed by the module owner.
+Every row was **verified** on `upstream/develop` @ `a4601a1a` (2026-11-02) from the file named, unless marked Inferred.
 `AGENTS.md` and the repository's own docs win where they are more specific.
 
 | Item | Value | Evidence |
@@ -14,10 +14,10 @@ Every row was **verified** on `upstream/develop` @ `110c0529` (2026-10-29) from 
 | JaCoCo | yes | `pom.xml:319` |
 | CI workflows | browserstack-web.yml, chart-lint-publish.yml, codeql.yml, publish-inji-verify-sdk-npm.yml, push-trigger.yml | `.github/workflows/` |
 | Reusable CI | mosip/kattu workflows (browserstack-web, chart-lint-publish, docker-build, maven-build, maven-publish-to-nexus, maven-sonar-analysis, npm-publish-to-npm-registry, npm-sonar-analysis) @ v0.0.1; GitHub CodeQL; actions/checkout, setup-java, cache, upload-artifact; 8398a7/action-slack | workflow `uses:` |
-| DB scripts | `db_scripts/inji_verify/`: init scripts (`db.sql`, `ddl.sql` + `ddl/*.sql`, `grants.sql`, `role_dbuser.sql`, `drop_db.sql`, `drop_role.sql`) with `deploy.sh` / `deploy.properties`; top-level `init_db.sh`, `copy_cm_func.sh`, `init_values.yaml`, `postgres-config.yaml`, `README.md`; no versioned upgrade/rollback pairs yet | `db_scripts/` listing |
+| DB scripts | `db_scripts/inji_verify/`: init scripts (`db.sql`, `ddl.sql` + `ddl/*.sql`, `grants.sql`, `role_dbuser.sql`, `drop_db.sql`, `drop_role.sql`) with `deploy.sh` / `deploy.properties`; top-level `init_db.sh`, `copy_cm_func.sh`, `init_values.yaml`, `postgres-config.yaml`, `README.md`. Versioned upgrades: `db_upgrade_script/inji_verify/sql/`, 12 `<from>_to_<to>_upgrade.sql` / `_rollback.sql` pairs, run by `upgrade.sh` | `db_scripts/`, `db_upgrade_script/` listings |
 | Deploy | Helm: `helm/inji-verify-service`, `helm/inji-verify-ui`, `helm/inji-verify-uitestrig`, `helm/injiverify-apitestrig`; 4 Dockerfiles | files |
 | Repository guidance | `AGENTS.md` | file |
-| API tests | yes, `api-test/` (see `.sdet/module-context.md`) | `api-test/` |
+| API tests | yes, `api-test/` (see `.crewline/qa/module-context.md`) | `api-test/` |
 
 ## Services and tests
 
@@ -39,6 +39,9 @@ Every row was **verified** on `upstream/develop` @ `110c0529` (2026-10-29) from 
 
 ## Verified commands (2026-10-29, upstream/develop 110c0529)
 
+Not re-run at `a4601a1a`: the only change since is `verify-ui` dependencies (`dompurify` in `package.json`, plus transitive
+lockfile updates). There is no backend change. Agents wrap these commands in `crewline run`; people run them as written.
+
 - **Backend tests + coverage** (Verified: exit 0, about 5 min; verify-core 642 tests, verify-service 84 tests, 0 failures; JaCoCo
   line coverage verify-core 87.7 %, verify-service 97.5 %), from the repository root:
   `mvn -B -Dmaven.gitcommitid.skip=true -pl verify-service -am test jacoco:report`
@@ -56,16 +59,18 @@ Every row was **verified** on `upstream/develop` @ `110c0529` (2026-10-29) from 
 - Unit tests: `mvn -B -f pom.xml -Dmaven.gitcommitid.skip=true -pl <service> -am test` -> `<service>/target/surefire-reports/TEST-*.xml`
 - Coverage: the same with `jacoco:report` -> `<service>/target/site/jacoco/jacoco.xml`
 - Component tests: follow `verify-service/src/test/java/io/inji/verify/controller/DidWebControllerTest.java`
+- Coding standards: `npx eslint .` in `inji-verify-sdk` (it declares ESLint, but no config file was found, so this may fail)
 
 ## Default change scope (a task's plan narrows it)
 
 - `verify-core/src/main/java/**`, `verify-core/src/test/java/**`
 - `verify-service/src/main/java/**`, `verify-service/src/test/java/**`
 - API tests: `api-test/src/main/resources/**`, `api-test/testNgXmlFiles/**`
-- DB: `db_scripts/**` (database-migration changes only)
+- DB: `db_scripts/**`, `db_upgrade_script/**` (database-migration changes only)
 - Sensitive, needs explicit approval: `.github/**`, `helm/**`, `deploy/**`, `**/application*.properties`, Dockerfiles
 
 ## Open (module owner to confirm)
 
 - Which environment runs a branch build for system tests.
+- Whether `verify-ui/**` and `inji-verify-sdk/**` belong in the default change scope. They are not listed above.
 - Coverage threshold, if the team's standard differs from 80 %.

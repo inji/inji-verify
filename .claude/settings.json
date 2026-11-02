@@ -1,0 +1,18 @@
+{
+  "extraKnownMarketplaces": {
+    "mosip-labs": {
+      "source": {
+        "source": "github",
+        "repo": "mosip/mosip-labs",
+        "ref": "develop",
+        "sparsePaths": [
+          ".claude-plugin",
+          "crewline"
+        ]
+      }
+    }
+  },
+  "enabledPlugins": {
+    "crewline@mosip-labs": true
+  }
+}

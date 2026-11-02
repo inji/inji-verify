@@ -1,8 +1,7 @@
 # inji-verify: API test context
 
-Context for SDET work on `api-test/` (API TestRig). Produced by module onboarding with the AIDLC Engineering Agent and reviewed by
-the module owner; **verified** on `upstream/develop` @ `110c0529` (2026-10-29). The validator profile for this module
-(`validators/profiles/inji-verify.yaml`) lives in the AIDLC Engineering Agent repository, not here.
+Context for SDET work on `api-test/` (API TestRig). Produced by Crewline module onboarding and reviewed by the module owner;
+**verified** on `upstream/develop` @ `a4601a1a` (2026-11-02). The validator profile for this module is `profile.yaml` in this folder.
 
 | Item | Value |
 |---|---|

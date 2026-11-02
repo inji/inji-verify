@@ -1,0 +1,28 @@
+{
+  "version": 1,
+  "hooks": {
+    "sessionStart": [
+      {
+        "command": "python .cursor/crewline.py hook session"
+      }
+    ],
+    "beforeShellExecution": [
+      {
+        "command": "python .cursor/crewline.py hook shell",
+        "failClosed": true
+      }
+    ],
+    "preToolUse": [
+      {
+        "command": "python .cursor/crewline.py hook write",
+        "matcher": "Write|StrReplace|Edit",
+        "failClosed": true
+      },
+      {
+        "command": "python .cursor/crewline.py hook read",
+        "matcher": "Read",
+        "failClosed": true
+      }
+    ]
+  }
+}
