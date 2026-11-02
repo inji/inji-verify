@@ -18,7 +18,7 @@ Cloning this repository and opening it in Claude Code offers the Crewline plugin
 keeps a cached copy of Crewline under `~/.crewline/`. Then ask for the work as usual. Agents follow the workflow, and your
 approval is needed before every commit, push, PR or bug.
 
-Prerequisites for the Cursor hooks: a `python` command (Python 3.8+), PyYAML and git. Without `python` the hooks cannot start, and
+Prerequisites for the Cursor hooks: a `python` command (Python 3.11+), PyYAML and git. Without `python` the hooks cannot start, and
 without PyYAML Cursor asks for confirmation on every read, write and shell command.
 
 What the hooks do: they download Crewline from `mosip/mosip-labs` branch `develop`, refresh it at most once a day, and run it on
