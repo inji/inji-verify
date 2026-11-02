@@ -97,17 +97,6 @@
 			<artifactId>apitest-commons</artifactId>
 			<version>1.5.0</version>
 		</dependency>
-		
-				<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>core</artifactId>
-			<version>3.5.3</version>
-		</dependency>
-		<dependency>
-			<groupId>com.google.zxing</groupId>
-			<artifactId>javase</artifactId>
-			<version>3.5.3</version>
-		</dependency>
 		<dependency>
 			<groupId>io.inji</groupId>
 			<artifactId>pixelpass-jar</artifactId>
@@ -118,11 +107,6 @@
 					<artifactId>bcprov-jdk15on</artifactId>
 				</exclusion>
 			</exclusions>
-		</dependency>
-		<dependency>
-			<groupId>org.jetbrains.kotlin</groupId>
-			<artifactId>kotlin-stdlib</artifactId>
-			<version>1.9.24</version>
 		</dependency>
 				<dependency>
 			<groupId>org.apache.pdfbox</groupId>
