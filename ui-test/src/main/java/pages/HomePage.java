@@ -327,12 +327,10 @@ public class HomePage extends BasePage {
 	}
 
 	public Boolean isUploadButtonIsVisible() {
-		driver.navigate().refresh();
 		return isElementIsVisible(driver, UploadButton);
 	}
 
-		public Boolean isUploadButtonIsVisibleAfterIdle() {
-		driver.navigate().refresh();
+	public Boolean isUploadButtonIsVisibleAfterIdle() {
 		return isElementIsVisibleAfterIdle(driver, UploadButton);
 	}
 

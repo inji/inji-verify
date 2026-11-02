@@ -82,13 +82,13 @@ Feature: Inji Verify homepage testing
   Scenario: Verify navigation from VP verification page via logo and home button is seamless without page reload
     Given User gets the title of the page
     And Click on vp verification tab
-    And Verify that VP Verification tab is visible
+    And verify request verifiable credentials button
     And Inject no-reload page sentinel
     And Click on Inji Verify logo
     And Verify page navigation was seamless without reload
     And Verify that Upload button visible
     And Click on vp verification tab
-    And Verify that VP Verification tab is visible
+    And verify request verifiable credentials button
     And Inject no-reload page sentinel
     And Click on Home button
     And Verify page navigation was seamless without reload

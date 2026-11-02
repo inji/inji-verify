@@ -342,9 +342,9 @@ public class BaseTest extends BaseTestUtil {
 						System.getProperty("user.dir") + File.separator + "test-output" + File.separator
 								+ "runtime-media" + File.separator + "shared-svg-artifacts");
 				Files.createDirectories(sharedDir.toPath());
-				downloadedFarmerCredentialPdfPath = new File(sharedDir, "FarmerCredential_VCDM2.0_WithFace.pdf")
-						.getAbsolutePath();
 				farmerCredentialPngPath = new File(sharedDir, "FarmerCredential.png")
+						.getAbsolutePath();
+				downloadedFarmerCredentialPdfPath = new File(sharedDir, "FarmerCredential_VCDM2.0_WithFace.pdf")
 						.getAbsolutePath();
 			} catch (IOException e) {
 				throw new RuntimeException("Unable to create shared SVG artifact directory.", e);

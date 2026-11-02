@@ -641,7 +641,8 @@ public void uploadFileForStaticQr(WebDriver driver, WebElement fileInputTrigger,
 					String text = btn.getText().trim();
 					overflowing.add(text.isEmpty() ? "[unnamed button]" : text);
 				}
-			} catch (Exception ignored) {
+			} catch (Exception e) {
+                throw new IllegalStateException("Cannot inspect button layout", e);
 			}
 		}
 		return overflowing;

@@ -77,7 +77,7 @@ Feature: Inji SVG qr code testing
     And Upload SVG VC with missing template data
     And Verify SVG template is rendered successfully
 
-  @smoke @verifySvgTemplateErrorMessageAcrossLanguages @withoutBrowserstack
+  @negative @verifySvgTemplateErrorMessageAcrossLanguages @withoutBrowserstack
   Scenario: Verify SVG template fetch-failure alert message is localized across languages
     Given User gets the title of the page
     Then Validate the title of the page

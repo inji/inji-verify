@@ -2728,7 +2728,7 @@ public class StepDef extends BaseSteps {
 	    try {
 	        String uin = InjiVerifyConfigManager.getproperty("FarmetCredentialUIN");
 	        homePage.enterUinForFarmerCredential(uin);
-	        test.log(Status.PASS, "Successfully entered the UIN: " + uin);
+	        test.log(Status.PASS, "Successfully entered the UIN for the Farmer credential.");
 	    } catch (NoSuchElementException e) {
 	        logFailure(test, driver, "Element not found while entering the UIN", e);
 	        throw e;
@@ -2769,8 +2769,7 @@ public class StepDef extends BaseSteps {
 	public void verifyThatUserConvertPdfIntoPng() throws IOException {
 	    String pdfPath = BaseTest.getDownloadedInsurancePdfPath();
 	
-	    try {
-	        PDDocument document = PDDocument.load(new File(pdfPath));
+	    try(PDDocument document = PDDocument.load(new File(pdfPath))) {
 	        PDFRenderer renderer = new PDFRenderer(document);
 	
 	        int numberOfPages = document.getNumberOfPages();
@@ -2795,9 +2794,8 @@ public class StepDef extends BaseSteps {
 	            assertTrue("JPEG file " + outputFileNamejpeg + " was not created.", new File(outputFileNamejpeg).exists());
 	            test.log(Status.PASS, "Successfully converted page " + (i + 1) + " to PNG, JPG, and JPEG at 300 DPI.");
 	        }
-	
-	        document.close();
-	        test.log(Status.PASS, "PDF to image conversion completed successfully.");
+		    document.close();
+            test.log(Status.PASS, "PDF to image conversion completed successfully.");
 	    } catch (IOException e) {
 	        test.log(Status.FAIL, "Error converting PDF to images: " + e.getMessage());
 	        throw e;
