@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {claim, VpSubmissionResultInt} from "../../../../types/data-types";
+import {Claim, VpSubmissionResultInt} from "../../../../types/data-types";
 import { useVerifyFlowSelector } from "../../../../redux/features/verification/verification.selector";
 import { getTotalCredentialCount } from "../../../../utils/commonUtils";
 import {
@@ -11,7 +11,7 @@ import {
 
 interface VpVerifyResultSummaryProps {
   verifiedVcs: VpSubmissionResultInt[];
-  unverifiedCredentials: claim[];
+  unverifiedCredentials: Claim[];
 }
 
 const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({

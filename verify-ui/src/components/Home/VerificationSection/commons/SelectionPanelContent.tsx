@@ -1,6 +1,6 @@
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../redux/hooks";
-import { claim } from "../../../../types/data-types";
+import { Claim } from "../../../../types/data-types";
 import { RootState } from "../../../../redux/store";
 import { useTranslation } from "react-i18next";
 import { isRTL } from "../../../../utils/i18n";
@@ -12,7 +12,7 @@ import {
   setSelectedCredentials,
   setShowWalletSelector,
 } from "../../../../redux/features/verify/vpVerificationState";
-import { storage } from "../../../../utils/storage";
+import { Storage } from "../../../../utils/storage";
 import { Button } from "./Button";
 import { FilterLinesIcon, SearchIcon } from "../../../../utils/theme-utils";
 import { useVerifyFlowSelector } from "../../../../redux/features/verification/verification.selector";
@@ -30,8 +30,8 @@ function SelectionPanelContent() {
   const dcqlQuery = useVerifyFlowSelector((state) => state.dcqlQuery);
   const isMobile = isMobileDevice();
 
-  const isCredentialSelected = (cred: claim) =>
-    selectedCredentials.some((c: claim) => c.name === cred.name);
+  const isCredentialSelected = (cred: Claim) =>
+    selectedCredentials.some((c: Claim) => c.name === cred.name);
 
   const filteredClaims = getVerifiableClaims()
     .filter((claim) => claim.name.toLowerCase().includes(search.toLowerCase()))
@@ -51,12 +51,12 @@ function SelectionPanelContent() {
     setSearch(event.target.value);
   };
 
-  const toggleClaimSelection = (cred: claim) => {
+  const toggleClaimSelection = (cred: Claim) => {
     if (isCredentialSelected(cred)) {
       dispatch(
         setSelectedCredentials({
           selectedCredentials: selectedCredentials.filter(
-            (c: claim) => c.name !== cred.name
+            (c: Claim) => c.name !== cred.name
           ),
         })
       );
@@ -96,8 +96,8 @@ function SelectionPanelContent() {
   };
 
   useEffect(() => {
-    selectedCredentials.forEach((cred: claim) => {
-      storage.setItem(storage.ESSENTIAL_CLAIM, cred);
+    selectedCredentials.forEach((cred: Claim) => {
+      Storage.setItem(Storage.ESSENTIAL_CLAIM, cred);
     });
   }, [selectedCredentials]);
 

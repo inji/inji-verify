@@ -1,4 +1,4 @@
-import { claim, LdpVc, MatchingVc, VcStatus} from "../types/data-types";
+import { Claim, LdpVc, MatchingVc, VcStatus} from "../types/data-types";
 import { EXCLUDE_KEYS_SD_JWT_VC, getVCRenderOrders } from "./config";
 import { getLanguageCodes } from "./i18n";
 
@@ -254,7 +254,7 @@ const credentialTypesMatch = (submittedType: string, configuredType: string): bo
   );
 };
 
-const getConfiguredTypeValuesFromClaim = (selectedClaim: claim): string[] => {
+const getConfiguredTypeValuesFromClaim = (selectedClaim: Claim): string[] => {
   const configuredTypes: string[] = [];
 
   for (const credentialDefinition of selectedClaim.dcqlQuery?.credentials ??
@@ -276,7 +276,7 @@ const getConfiguredTypeValuesFromClaim = (selectedClaim: claim): string[] => {
   return configuredTypes;
 };
 
-const credentialMatchesClaim = (credential: any, selectedClaim: claim): boolean => {
+const credentialMatchesClaim = (credential: any, selectedClaim: Claim): boolean => {
   const submittedType = getCredentialType(credential);
   const configuredTypes = getConfiguredTypeValuesFromClaim(selectedClaim);
 
@@ -286,11 +286,11 @@ const credentialMatchesClaim = (credential: any, selectedClaim: claim): boolean 
 };
 
 export const calculateVerifiedClaims = (
-  selectedClaims: claim[],
+  selectedClaims: Claim[],
   verificationSubmissionResult: MatchingVc[]
 ) => verificationSubmissionResult;
 
-export const getDcqlCredentialQueryCount = (claims: claim[]): number =>
+export const getDcqlCredentialQueryCount = (claims: Claim[]): number =>
   claims.reduce(
     (count, selectedClaim) =>
       count + (selectedClaim.dcqlQuery?.credentials?.length ?? 0),
@@ -299,8 +299,8 @@ export const getDcqlCredentialQueryCount = (claims: claim[]): number =>
 
 export const getTotalCredentialCount = (
   verifiedVcs: MatchingVc[],
-  unverifiedClaims: claim[],
-  originalSelectedClaims: claim[],
+  unverifiedClaims: Claim[],
+  originalSelectedClaims: Claim[],
 ): number => {
   const dcqlQueryCount = getDcqlCredentialQueryCount(originalSelectedClaims);
   const submittedOrMissingCount =
@@ -310,9 +310,9 @@ export const getTotalCredentialCount = (
 };
 
 export const calculateUnverifiedClaims = (
-  originalSelectedClaims: claim[],
+  originalSelectedClaims: Claim[],
   verificationSubmissionResult: { vc: LdpVc | object; vcStatus: VcStatus }[]
-): claim[] => {
+): Claim[] => {
   return originalSelectedClaims.filter((selectedClaim) => {
     return !verificationSubmissionResult.some(
       (vcResult) => credentialMatchesClaim(vcResult.vc, selectedClaim),

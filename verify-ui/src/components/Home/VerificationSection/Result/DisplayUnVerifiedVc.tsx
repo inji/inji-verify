@@ -1,8 +1,8 @@
-import { claim } from "../../../../types/data-types";
+import { Claim } from "../../../../types/data-types";
 import { convertToId, convertToTitleCase } from "../../../../utils/misc";
 import { t } from "i18next";
 
-interface DisplayUnVerifiedVcProps {claim: claim;}
+interface DisplayUnVerifiedVcProps {claim: Claim;}
 
 function DisplayUnVerifiedVc({ claim }: Readonly<DisplayUnVerifiedVcProps>) {
   return (

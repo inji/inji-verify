@@ -78,7 +78,7 @@ export interface VerificationStepsContentType {
   VERIFY: VerificationStep[];
   TO_BE_SELECTED: VerificationStep[];
 }
-export interface claim {
+export interface Claim {
   name: string;
   type: string;
   logo: string;
@@ -123,9 +123,9 @@ export type VerifyState = {
   verificationSubmissionResult: VpSubmissionResultInt[];
   SelectionPanel: boolean;
   isShowResult: boolean;
-  selectedCredentials: claim[];
-  originalSelectedCredentials: claim[];
-  unVerifiedCredentials: claim[];
+  selectedCredentials: Claim[];
+  originalSelectedCredentials: Claim[];
+  unVerifiedCredentials: Claim[];
   sharingType: VCShareType;
   isPartiallyShared: boolean;
   dcqlQuery: DcqlQuery;

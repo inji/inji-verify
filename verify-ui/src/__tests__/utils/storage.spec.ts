@@ -1,4 +1,4 @@
-import { storage } from "../../utils/storage";
+import { Storage } from "../../utils/storage";
 
 describe("storage helpers", () => {
   beforeEach(() => {
@@ -7,20 +7,20 @@ describe("storage helpers", () => {
   });
 
   test("stores and reads selected language", () => {
-    storage.setItem(storage.SELECTED_LANGUAGE, "fr");
-    expect(storage.getItem(storage.SELECTED_LANGUAGE)).toBe("fr");
+    Storage.setItem(Storage.SELECTED_LANGUAGE, "fr");
+    expect(Storage.getItem(Storage.SELECTED_LANGUAGE)).toBe("fr");
   });
 
   test("adds essential claims without duplicates", () => {
     const claim = { type: "Type1", name: "Credential" };
-    storage.setItem(storage.ESSENTIAL_CLAIM, claim);
-    storage.setItem(storage.ESSENTIAL_CLAIM, claim);
-    expect(storage.getItem(storage.ESSENTIAL_CLAIM)).toEqual([claim]);
+    Storage.setItem(Storage.ESSENTIAL_CLAIM, claim);
+    Storage.setItem(Storage.ESSENTIAL_CLAIM, claim);
+    expect(Storage.getItem(Storage.ESSENTIAL_CLAIM)).toEqual([claim]);
   });
 
   test("ignores unsupported keys and missing values", () => {
-    storage.setItem("other", "value");
-    expect(storage.getItem("other")).toBeNull();
-    expect(storage.getItem(storage.SELECTED_LANGUAGE)).toBeNull();
+    Storage.setItem("other", "value");
+    expect(Storage.getItem("other")).toBeNull();
+    expect(Storage.getItem(Storage.SELECTED_LANGUAGE)).toBeNull();
   });
 });

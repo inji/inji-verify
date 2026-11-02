@@ -8,7 +8,7 @@ import {
   getTotalCredentialCount,
   isVPSubmissionSupported,
 } from "../../utils/commonUtils";
-import { claim, DcqlCredentialQuery, MatchingVc } from "../../types/data-types";
+import { Claim, DcqlCredentialQuery, MatchingVc } from "../../types/data-types";
 
 jest.mock("../../utils/i18n", () => ({
   getLanguageCodes: jest.fn(() => ["en"]),
@@ -29,7 +29,7 @@ const buildClaim = (
   name: string,
   type: string,
   credentials: DcqlCredentialQuery[]
-): claim => ({
+): Claim => ({
   name,
   type,
   logo: "/assets/cert.png",

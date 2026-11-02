@@ -1,6 +1,6 @@
 import {
     AlertInfo,
-    claim,
+    Claim,
     VcStatus,
     VerificationStep, VerificationStepsContentType,
     WebWallet,
@@ -166,7 +166,7 @@ export const DisplayTimeout = Number.isNaN(timeout) ? 10000 : timeout;
 export const OvpQrHeader = window._env_.OVP_QR_HEADER;
 
 let VCRenderOrders: any = {};
-let verifiableClaims: claim[] = [];
+let verifiableClaims: Claim[] = [];
 let webWallets: WebWallet[] = [];
 
 export const getVCRenderOrders = () => VCRenderOrders;
@@ -189,7 +189,7 @@ export const initializeClaims = async () => {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    verifiableClaims = data.verifiableClaims as claim[];
+    verifiableClaims = data.verifiableClaims as Claim[];
     VCRenderOrders = data.VCRenderOrders as any;
     webWallets = ((data.WebWallets as WebWallet[]) ?? [])
       .filter((wallet) => !!wallet.walletBaseUrl)

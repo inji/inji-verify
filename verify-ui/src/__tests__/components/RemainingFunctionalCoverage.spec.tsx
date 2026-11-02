@@ -7,7 +7,7 @@ jest.mock("../../redux/hooks", () => ({ useAppDispatch: () => jest.fn(), useAppS
 jest.mock("../../redux/features/verification/verification.selector", () => ({ useVerifyFlowSelector: (selector: any) => selector({ selectedCredentials: [], dcqlQuery: { credentials: [{}] } }) }));
 jest.mock("../../utils/config", () => ({ isMobileDevice: () => false, getVerifiableClaims: () => [], SupportedFileTypes: ["pdf", "png"], UploadFileSizeLimits: {}, AlertMessages: {} }));
 jest.mock("../../utils/i18n", () => ({ isRTL: () => false }));
-jest.mock("../../utils/storage", () => ({ storage: { setItem: jest.fn(), ESSENTIAL_CLAIM: "essential" } }));
+jest.mock("../../utils/storage", () => ({ Storage: { setItem: jest.fn(), ESSENTIAL_CLAIM: "essential" } }));
 jest.mock("../../utils/theme-utils", () => ({ SearchIcon: () => <span />, FilterLinesIcon: () => <span /> }));
 jest.mock("../../redux/features/verify/vpVerificationState", () => ({ getVpRequest: () => ({}), resetVpRequest: () => ({}), setFlowType: () => ({}), setSelectedCredentials: () => ({}), setShowWalletSelector: () => ({}) }));
 jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (value: string) => value }) }));

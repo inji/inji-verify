@@ -1,14 +1,14 @@
 import { createSlice } from "@reduxjs/toolkit";
 import { getVerifiableClaims, VerificationSteps } from "../../../utils/config";
-import { DcqlQuery, VCShareType, VerifyState, claim } from "../../../types/data-types";
+import { DcqlQuery, VCShareType, VerifyState, Claim } from "../../../types/data-types";
 import { calculateUnverifiedClaims } from "../../../utils/commonUtils";
 
 export const OVP_SESSION_SELECTED_CREDENTIALS_KEY = "ovp_selectedCredentials";
 
-const DEFAULT_CREDENTIALS = (): claim[] =>
+const DEFAULT_CREDENTIALS = (): Claim[] =>
   getVerifiableClaims()?.filter((c) => c.essential) ?? [];
 
-const mergeDcqlFromCredentials = (credentials: claim[]): DcqlQuery => {
+const mergeDcqlFromCredentials = (credentials: Claim[]): DcqlQuery => {
   const credentialSets = credentials.flatMap(
     (c) => c.dcqlQuery?.credential_sets ?? []
   );
@@ -18,7 +18,7 @@ const mergeDcqlFromCredentials = (credentials: claim[]): DcqlQuery => {
   };
 };
 
-const hasValidCredentialStructure = (item: unknown): item is claim => {
+const hasValidCredentialStructure = (item: unknown): item is Claim => {
   if (!item || typeof item !== "object") return false;
   const c = item as Record<string, unknown>;
   const dcqlQuery = c.dcqlQuery;
@@ -44,7 +44,7 @@ const hasValidCredentialStructure = (item: unknown): item is claim => {
   return typeof type === "string" && !!type;
 };
 
-const restoreCredentialsFromSession = (): claim[] => {
+const restoreCredentialsFromSession = (): Claim[] => {
   try {
     const saved = localStorage.getItem(OVP_SESSION_SELECTED_CREDENTIALS_KEY);
     if (!saved) return DEFAULT_CREDENTIALS();
@@ -53,11 +53,11 @@ const restoreCredentialsFromSession = (): claim[] => {
     const knownTypes = new Set(getVerifiableClaims()?.map((c) => c.type) ?? []);
     const valid = parsed.filter((item) => {
       if (!hasValidCredentialStructure(item)) return false;
-      if (knownTypes.size > 0) return knownTypes.has((item as claim).type);
+      if (knownTypes.size > 0) return knownTypes.has((item as Claim).type);
       return true;
     });
     if (valid.length === 0) return DEFAULT_CREDENTIALS();
-    return valid as claim[];
+    return valid as Claim[];
   } catch {
     return DEFAULT_CREDENTIALS();
   }
