@@ -61,4 +61,4 @@ USER ${container_user_uid}:${container_user_gid}
 
 EXPOSE 8080
 
-ENTRYPOINT ["/usr/local/bin/docker-entrypoint.sh"]
+CMD ["/usr/local/bin/docker-entrypoint.sh"]
