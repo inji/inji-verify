@@ -1,3 +1,4 @@
+import { getKeyedItems } from "../../../../utils/listUtils";
 import React, { useEffect, useRef } from "react";
 import ResultSummary from "./ResultSummary";
 import { Claim, VpSubmissionResultInt } from "../../../../types/data-types";
@@ -94,16 +95,16 @@ const VpSubmissionResult: React.FC<VpSubmissionResultProps> = ({
       )}
       <div className="relative">
         <div className="flex flex-col items-center space-y-4 lg:space-y-6 mt-[-60px] lg:mt-[-70px]">
-          {showResult && verifiedVcs.map(({ vc, vcStatus }, index) => (
+          {showResult && getKeyedItems(verifiedVcs, ({ vc }) => JSON.stringify(vc)).map(({ item: { vc, vcStatus }, key }) => (
             <DisplayVcCardView
-              key={index}
+              key={key}
               vc={vc}
               vcStatus={vcStatus}
               view={originalSelectedCredentials.length === 1}
             />
           ))}
-          {unverifiedCredentials.length > 0 && unverifiedCredentials.map((claim,index) => (
-            <DisplayUnVerifiedVc key={index} claim={claim} />
+          {unverifiedCredentials.length > 0 && getKeyedItems(unverifiedCredentials, (claim) => claim.type).map(({ item: claim, key }) => (
+            <DisplayUnVerifiedVc key={key} claim={claim} />
           ))}
         </div>
       </div>

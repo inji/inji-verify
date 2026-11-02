@@ -53,6 +53,24 @@ describe("language and retry components", () => {
     expect(screen.getByTestId("Language-Selector-DropDown-Item-hi")).toBeInTheDocument();
   });
 
+  test("supports language menu keyboard navigation, selection, and escape", () => {
+    render(<LanguageSelector />);
+    const trigger = screen.getByTestId("Language-Selector-Button");
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    const english = screen.getByRole("menuitemradio", { name: "English" });
+    const hindi = screen.getByRole("menuitemradio", { name: "Hindi" });
+    expect(english).toHaveFocus();
+    fireEvent.keyDown(english, { key: "ArrowDown" });
+    expect(hindi).toHaveFocus();
+    fireEvent.click(hindi);
+    expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ payload: { language: "hi" } }));
+    expect(trigger).toHaveFocus();
+    fireEvent.click(trigger);
+    fireEvent.keyDown(screen.getByRole("menu"), { key: "Escape" });
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
   test("renders retry action on the error page", () => {
     render(
       <MemoryRouter>

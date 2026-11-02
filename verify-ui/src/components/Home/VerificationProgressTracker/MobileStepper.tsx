@@ -1,3 +1,4 @@
+import { getKeyedItems } from "../../../utils/listUtils";
 import React, {useEffect, useState} from "react";
 import { useVerificationFlowSelector, useVerifyFlowSelector } from "../../../redux/features/verification/verification.selector";
 import { convertToId, fetchVerificationSteps } from "../../../utils/misc";
@@ -69,14 +70,14 @@ function MobileStepper() {
         id="stepper"
       >
         {VerificationStepsContent.map((step, index) => (
-          <div key={index} className="flex flex-column items-center">
+          <div key={step.label} className="flex flex-column items-center">
             <Step
               stepNumber={step.stepNumber}
               isCompleted={step.isCompleted}
               isActive={step.isActive}
             />
             {index < VerificationStepsContent.length - 1 && (
-              <div className={`bg-${theme}-gradient p-[1px] w-[44px] h-[1px] ${ !VerificationStepsContent[index].isCompleted ? "opacity-20" : "" }`} >
+              <div className={`bg-${theme}-gradient p-[1px] w-[44px] h-[1px] ${ step.isCompleted ? "" : "opacity-20" }`} >
                 <div className="flex-grow border-t-2 border-transparent" />
               </div>
             )}
@@ -92,13 +93,13 @@ function MobileStepper() {
               id={`${convertToId(label)}-description`}
               className="text-stepperDescription text-smallTextSize md:text-normalTextSize text-left"
           >
-              {(description || "").split("\n").map((line: string, index: number) => {
+              {getKeyedItems((description || "").split("\n"), (line) => line).map(({ item: line, key }) => {
                   const containsColon = line.includes(":");
                   if (containsColon) {
                       const [title, ...rest] = line.split(":");
 
                       return (
-                          <ul key={index} className="list-disc pl-6 mt-1">
+                          <ul key={key} className="list-disc pl-6 mt-1">
                               <li>
                                   <strong>{title}:</strong> {rest.join(":")}
                               </li>
@@ -106,7 +107,7 @@ function MobileStepper() {
                       );
                   }
 
-                  return <p key={index}>{line}</p>;
+                  return <p key={key}>{line}</p>;
               })}
 
           </div>

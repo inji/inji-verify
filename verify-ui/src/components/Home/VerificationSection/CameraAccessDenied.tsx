@@ -19,13 +19,13 @@ const Modal = ({ isOpen, onClose, children }: ModalProps) => {
         onClick={onClose}
         aria-label="Close modal"
       />
-      <div
-        className="relative z-10 transform transition-all duration-300 scale-100 opacity-100"
-        role="dialog"
+      <dialog
+        open
+        className="relative z-10 m-0 p-0 border-0 bg-transparent overflow-visible transform transition-all duration-300 scale-100 opacity-100"
         aria-modal="true"
       >
         {children}
-      </div>
+      </dialog>
     </div>
   );
 };

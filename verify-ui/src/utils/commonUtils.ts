@@ -7,6 +7,27 @@ const isSafeKey = (key: string) =>
 
 type CredentialValue = string | string[] | undefined;
 
+const findLanguageValue = (entries: any[], languageAliases: string[], fallbackAliases: string[]) => {
+  const matchesLanguage = (entry: any, aliases: string[]) =>
+    aliases.includes(entry?.["@language"]) || aliases.includes(entry?.language);
+  return entries.find((entry) => matchesLanguage(entry, languageAliases))
+    || entries.find((entry) => matchesLanguage(entry, fallbackAliases));
+};
+
+const getObjectValue = (credentialElement: any, currentLanguage: string): CredentialValue => {
+  if ("value" in credentialElement) {
+    return getValue(credentialElement.value, currentLanguage);
+  }
+  const values: string[] = [];
+  for (const key of Object.keys(credentialElement)) {
+    if (!isSafeKey(key)) continue;
+    const nestedValue = getValue(credentialElement[key], currentLanguage);
+    if (nestedValue === undefined) continue;
+    values.push(...(Array.isArray(nestedValue) ? nestedValue : [nestedValue]));
+  }
+  return values.length > 0 ? values : undefined;
+};
+
 const getValue = (credentialElement: any, currentLanguage: string): CredentialValue => {
   if (credentialElement === null || credentialElement === undefined) {
     return undefined;
@@ -20,41 +41,11 @@ const getValue = (credentialElement: any, currentLanguage: string): CredentialVa
   const fallbackAliases = getLanguageCodes("en");
 
   if (Array.isArray(credentialElement)) {
-    const languageEntry = credentialElement.find(
-      (el) =>
-        languageAliases.includes(el?.["@language"]) ||
-        languageAliases.includes(el?.language)
-    );
-    if (languageEntry) {
-      return languageEntry["@value"] ?? languageEntry.value;
-    }
-
-    const fallbackEntry = credentialElement.find(
-      (el) =>
-        fallbackAliases.includes(el?.["@language"]) ||
-        fallbackAliases.includes(el?.language)
-    );
-    if (fallbackEntry) {
-      return fallbackEntry["@value"] ?? fallbackEntry.value;
-    }
+    const languageEntry = findLanguageValue(credentialElement, languageAliases, fallbackAliases);
+    if (languageEntry) return languageEntry["@value"] ?? languageEntry.value;
   }
   if (typeof credentialElement === "object") {
-    if ("value" in credentialElement) {
-      return getValue(credentialElement.value, currentLanguage);
-    }
-    let finalValue: string[] = [];
-    for (const key of Object.keys(credentialElement)) {
-      if (!isSafeKey(key)) continue;
-      const nestedValue = getValue(credentialElement[key], currentLanguage);
-      if (nestedValue !== undefined) {
-        if (Array.isArray(nestedValue)) {
-          finalValue.push(...nestedValue);
-        } else {
-          finalValue.push(nestedValue);
-        }
-      }
-    }
-    return finalValue.length > 0 ? finalValue : undefined;
+    return getObjectValue(credentialElement, currentLanguage);
   }
 
   return String(credentialElement);
@@ -323,9 +314,9 @@ export const calculateUnverifiedClaims = (
 const extractType = (type: any): string | undefined => {
   if (!type) return undefined;
   if (typeof type === "string")
-    return type !== "VerifiableCredential" ? type : undefined;
+    return type === "VerifiableCredential" ? undefined : type;
   if (typeof type === "object" && "_value" in type) {
-    return type._value !== "VerifiableCredential" ? type._value : undefined;
+    return type._value === "VerifiableCredential" ? undefined : type._value;
   }
   return String(type);
 };

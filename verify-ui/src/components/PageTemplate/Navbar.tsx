@@ -142,12 +142,14 @@ function Navbar(props: any) {
     const [showMenu, setShowMenu] = useState(false);
 
 
+    const menuBackground = showMenu ? `bg-${window._env_.DEFAULT_THEME}-lighter-gradient` : "bg-background";
+
     return (
         <nav className="bg-background border-gray-200 xs:px-4 lg:px-20 py-3.5 rounded drop-shadow-md z-10 relative">
             <div className="container flex flex-wrap justify-between items-center h-[40px] mx-0">
                 <div className='flex items-center'>
                     <button data-collapse-toggle="navbar-default" type="button"
-                            className={`${showMenu?`bg-${window._env_.DEFAULT_THEME}-lighter-gradient`:"bg-background"} p-3 ml-2 mr-1 lg:hidden`}
+                            className={`${menuBackground} p-3 ml-2 mr-1 lg:hidden`}
                             aria-controls="navbar-default" aria-expanded="false" id="hamburger"
                             onClick={() => setShowMenu(!showMenu)}
                     >

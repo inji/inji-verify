@@ -187,7 +187,7 @@ describe("misc utilities", () => {
             const mockLink = {
                 href: "",
                 download: "",
-                click: jest.fn(),
+                click: jest.fn(), remove: jest.fn(),
             };
 
             jest.spyOn(document, "createElement").mockReturnValue(mockLink as any);
@@ -198,6 +198,7 @@ describe("misc utilities", () => {
 
             expect(mockLink.download).toBe("MyType.json");
             expect(mockLink.click).toHaveBeenCalled();
+            expect(mockLink.remove).toHaveBeenCalled();
             expect(mockCreateObjectURL).toHaveBeenCalled();
             expect(mockRevokeObjectURL).toHaveBeenCalledWith("blob:url");
         });
@@ -208,7 +209,7 @@ describe("misc utilities", () => {
             URL.createObjectURL = mockCreateObjectURL;
             URL.revokeObjectURL = mockRevokeObjectURL;
 
-            const mockLink = {href: "", download: "", click: jest.fn(),};
+            const mockLink = {href: "", download: "", click: jest.fn(), remove: jest.fn(),};
             jest.spyOn(document, "createElement").mockReturnValue(mockLink as any);
             jest.spyOn(document.body, "appendChild").mockImplementation(() => mockLink as any);
             jest.spyOn(document.body, "removeChild").mockImplementation(() => mockLink as any);
@@ -216,6 +217,7 @@ describe("misc utilities", () => {
             await misc.saveData({ data: "test" });
             expect(mockLink.download).toBe("Inji_Verify_Credential_Data.json");
             expect(mockLink.click).toHaveBeenCalled();
+            expect(mockLink.remove).toHaveBeenCalled();
             expect(mockCreateObjectURL).toHaveBeenCalled();
             expect(mockRevokeObjectURL).toHaveBeenCalledWith("blob:url");
         });

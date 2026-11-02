@@ -58,7 +58,7 @@ const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({
               ) && (
               <div
                 className={`rounded-xl min-w-[80px] ${bgColor} border ${borderColor} mr-2 p-1`}
-                key={index}
+                key={status}
               >
                 <p
                   className={`font-normal text-lgNormalTextSize text-center ${textColor}`}

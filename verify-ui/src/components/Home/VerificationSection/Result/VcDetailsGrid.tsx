@@ -12,13 +12,13 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   orderedDetails,
   vc
 }) => {
-  const BIOMETRIC_KEYS = ["face", "portrait", "signature_usual_mark"].map((key) => key.toLowerCase());
+  const BIOMETRIC_KEYS = new Set(["face", "portrait", "signature_usual_mark"]);
 
   const biometricItems = orderedDetails.filter((item) =>
-    BIOMETRIC_KEYS.includes(item.key.toLocaleLowerCase())
+    BIOMETRIC_KEYS.has(item.key.toLocaleLowerCase())
   );
   const otherItems = orderedDetails.filter(
-    (item) => !BIOMETRIC_KEYS.includes(item.key.toLocaleLowerCase())
+    (item) => !BIOMETRIC_KEYS.has(item.key.toLocaleLowerCase())
   );
 
   const renderingItems = [...biometricItems, ...otherItems];
@@ -26,7 +26,7 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   return (
     <div className="grid relative lg:grid-cols-12 lg:gap-y-4">
       {renderingItems.map((label, index) => {
-        const isImage = BIOMETRIC_KEYS.includes(label.key.toLocaleLowerCase());
+        const isImage = BIOMETRIC_KEYS.has(label.key.toLocaleLowerCase());
         const isEven = index % 2 === 0;
         const normalizeKey = (key: string) => key.toLowerCase().trim();
         const disclosedClaims =

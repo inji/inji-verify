@@ -28,7 +28,7 @@ export const getDisplayValue = (data: any): string => {
         data.forEach(value => {
             displayValue += `${value}, `;
         });
-        return displayValue.slice(0, displayValue.length - 2);
+        return displayValue.slice(0, -2);
     }
     return data?.toString();
 }
@@ -121,6 +121,6 @@ export const saveData = (vc: any) => {
   link.download = fileName + ".json";
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   URL.revokeObjectURL(href);
 };

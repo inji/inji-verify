@@ -1,3 +1,4 @@
+import { getKeyedItems } from "../../utils/listUtils";
 // PreloadImages.js
 import React from 'react';
 
@@ -5,7 +6,7 @@ import React from 'react';
 const PreloadImages = ({ imageUrls }: {imageUrls: string[]}) => {
     return (
         <>
-            {imageUrls.map((url,index) => (<img key={index} src={url} className="hidden w-0" alt=""/>))}
+            {getKeyedItems(imageUrls, (url) => url).map(({ item: url, key }) => (<img key={key} src={url} className="hidden w-0" alt=""/>))}
         </>
     );
 };

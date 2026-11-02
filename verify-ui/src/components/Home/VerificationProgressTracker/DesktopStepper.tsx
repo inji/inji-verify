@@ -1,3 +1,4 @@
+import { getKeyedItems } from "../../../utils/listUtils";
 import React, { useEffect, useState } from "react";
 import { useVerificationFlowSelector, useVerifyFlowSelector } from "../../../redux/features/verification/verification.selector";
 import { convertToId, fetchVerificationSteps } from "../../../utils/misc";
@@ -52,7 +53,7 @@ const DesktopStepper: React.FC = () => {
           const marginClass = isLastStep(index) ? lastStepMargin : stepMargin;
 
           return (
-            <div key={index}>
+            <div key={step.label}>
               <div className="flex items-center">
                 <div className={`bg-${window._env_.DEFAULT_THEME}-gradient rounded-full bg-no-repeat p-[2px] flex items-center justify-center`}>
                   <div
@@ -87,14 +88,14 @@ const DesktopStepper: React.FC = () => {
                     id={`${convertToId(step.label)}-description`}
                     className={`${marginClass} text-normalTextSize text-stepperDescription font-normal col-end-13`}
                   >
-                      {(step.description || "").split("\n").map((line: string, index: number) => {
+                      {getKeyedItems((step.description || "").split("\n"), (line) => line).map(({ item: line, key }) => {
                           const containsColon = line.includes(":");
 
                           if (containsColon) {
                               const [title, ...rest] = line.split(":");
 
                               return (
-                                  <ul key={index} className="list-disc pl-6 mt-1">
+                                  <ul key={key} className="list-disc pl-6 mt-1">
                                       <li>
                                           <strong>{title}:</strong> {rest.join(":")}
                                       </li>
@@ -102,7 +103,7 @@ const DesktopStepper: React.FC = () => {
                               );
                           }
 
-                          return <p key={index}>{line}</p>;
+                          return <p key={key}>{line}</p>;
                       })}
                   </div>
                   {!isLastStep(index) && (

@@ -86,9 +86,7 @@ function VerificationMethodTabs(props: any) {
             onClick={handlePrevious}
             className="focus:outline-none"
           >
-            <>
-              <MdArrowBackIos className="mx-auto" />
-            </>
+            <MdArrowBackIos className="mx-auto" />
           </button>
         </div>
         <div
@@ -138,9 +136,7 @@ function VerificationMethodTabs(props: any) {
             onClick={handleNext}
             className="focus:outline-none"
           >
-            <>
-              <MdArrowForwardIos className="mx-auto" />
-            </>
+            <MdArrowForwardIos className="mx-auto" />
           </button>
         </div>
       </div>

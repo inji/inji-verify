@@ -1,3 +1,4 @@
+import { getKeyedItems } from "../../../../utils/listUtils";
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../redux/hooks";
 import { Claim } from "../../../../types/data-types";
@@ -166,12 +167,12 @@ function SelectionPanelContent() {
         </h2>
         {filteredClaims.length > 0 ? (
           <ul className="grid gap-4 max-h-[120px] lg:max-h-[250px] pr-4">
-            {filteredClaims.map((claim, index) => {
+            {getKeyedItems(filteredClaims, (claim) => claim.type).map(({ item: claim, key }, index) => {
               const isSelectedClaim = isCredentialSelected(claim);
               return (
                 <li
                   id={`${claim.name}-ItemBox`}
-                  key={index}
+                  key={key}
                   className={`grid mb-2 ${
                     isSelectedClaim
                       ? `bg-${window._env_.DEFAULT_THEME}-gradient bg-no-repeat rounded-[5px] p-px bg-opacity-95`
