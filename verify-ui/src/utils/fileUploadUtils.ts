@@ -1,10 +1,7 @@
 import { Dispatch } from "redux";
-import { checkInternetStatus, getFileExtension } from "./misc";
-import { AlertMessages, SupportedFileTypes, UploadFileSizeLimits } from "./config";
-import { raiseAlert } from "../redux/features/alerts/alerts.slice";
-import { goToHomeScreen } from "../redux/features/verification/verification.slice";
+import { checkInternetStatus } from "./misc";
+import { SupportedFileTypes } from "./config";
 import { updateInternetConnectionStatus } from "../redux/features/application-state/application-state.slice";
-import { AlertInfo } from "../types/data-types";
 
 export const acceptedFileTypes = SupportedFileTypes.map((ext) => `.${ext}`).join(", ");
 
