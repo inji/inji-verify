@@ -51,10 +51,8 @@ function VerificationMethodTabs(props: any) {
 
   function switchToVerificationMethod(method: VerificationMethod) {
     if (!localStorage.getItem("path")) localStorage.setItem("path", "/");
-    localStorage.setItem(
-      "path",
-      method === "UPLOAD" ? Pages.Home : method === "SCAN" ? Pages.Scan : Pages.VerifyCredentials
-    );
+    const scanOrVerifyPage = method === "SCAN" ? Pages.Scan : Pages.VerifyCredentials;
+    localStorage.setItem("path", method === "UPLOAD" ? Pages.Home : scanOrVerifyPage);
     dispatch(goToHomeScreen({ method }));
     dispatch(resetVpRequest());
   }

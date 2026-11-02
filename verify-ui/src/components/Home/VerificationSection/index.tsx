@@ -9,7 +9,7 @@ import { Upload } from '../../../pages/Upload';
 const DisplayActiveStep = () => {
     const {activeScreen, method} = useVerificationFlowSelector(state => ({activeScreen: state.activeScreen, qrData: state.qrReadResult?.qrData, method: state.method}));
     const screen = getStepConfig(method);
-    if (!screen) return <></>;
+    if (!screen) return null;
 
     switch (activeScreen) {
         case screen.QrCodePrompt:
@@ -20,7 +20,7 @@ const DisplayActiveStep = () => {
         case screen.DisplayResult:
             return <Result />;
         default:
-            return <></>;
+            return null;
     }
 }
 

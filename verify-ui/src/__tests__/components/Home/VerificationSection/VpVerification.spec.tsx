@@ -134,7 +134,7 @@ jest.mock("../../../../components/commons/Loader", () => {
     };
 });
 
-const {verificationSubmissionComplete: mockVerificationSubmissionComplete} = jest.requireMock("../../../../redux/features/verify/vpVerificationState") as any;
+const {verificationSubmissionComplete: mockVerificationSubmissionComplete} = jest.requireMock("../../../../redux/features/verify/vpVerificationState");
 
 describe("VpVerification Component", () => {
     beforeEach(() => {
@@ -190,7 +190,7 @@ describe("VpVerification Component", () => {
     });
 
     test("disables enableDcApi when a web wallet base URL is selected", () => {
-        Object.assign((window as any)._env_, { ENABLE_DC_API: "true" });
+        Object.assign((globalThis as any)._env_, { ENABLE_DC_API: "true" });
         mockState({
             flowType: "sameDevice",
             selectedWalletBaseUrl: "https://wallet.example.org",
@@ -205,7 +205,7 @@ describe("VpVerification Component", () => {
     });
 
     test("enables enableDcApi on same-device when no web wallet is selected", () => {
-        Object.assign((window as any)._env_, { ENABLE_DC_API: "true" });
+        Object.assign((globalThis as any)._env_, { ENABLE_DC_API: "true" });
         mockState({
             flowType: "sameDevice",
             selectedWalletBaseUrl: undefined,
@@ -226,7 +226,7 @@ describe("VpVerification Component", () => {
                 dcqlQuery: { credentials: [] },
             }],
         });
-        Object.assign((window as any)._env_, {
+        Object.assign((globalThis as any)._env_, {
             CLIENT_ID: "pre_registered:client",
             CLIENT_ID_DID: "decentralized_identifier:did:web:test.example.com",
             CLIENT_ID_X509: "x509_san_dns:test.example.com",

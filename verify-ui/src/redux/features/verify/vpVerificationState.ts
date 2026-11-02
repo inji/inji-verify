@@ -53,7 +53,7 @@ const restoreCredentialsFromSession = (): Claim[] => {
     const knownTypes = new Set(getVerifiableClaims()?.map((c) => c.type) ?? []);
     const valid = parsed.filter((item) => {
       if (!hasValidCredentialStructure(item)) return false;
-      if (knownTypes.size > 0) return knownTypes.has((item as Claim).type);
+      if (knownTypes.size > 0) return knownTypes.has((item).type);
       return true;
     });
     if (valid.length === 0) return DEFAULT_CREDENTIALS();

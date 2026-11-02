@@ -13,7 +13,7 @@ function CheckingForInternetConnectivity(props: any) {
     }, [internetStatus, navigate]);
     return internetStatus === "LOADING" ? (
         <LoaderWithBackdrop/>
-    ) : <></>;
+    ) : null;
 }
 
 export default CheckingForInternetConnectivity;

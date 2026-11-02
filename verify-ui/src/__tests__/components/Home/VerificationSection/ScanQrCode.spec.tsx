@@ -31,11 +31,11 @@ describe("Scan Qr Code", () => {
   });
 
   test("opens the scanner from a response code URL", () => {
-    window.history.pushState({}, "", "/scan?response_code=test");
+    globalThis.history.pushState({}, "", "/scan?response_code=test");
     localStorage.setItem("path", "/scan");
     render(<ScanQrCode />);
     expect(dispatch).toHaveBeenCalled();
-    window.history.pushState({}, "", "/");
+    globalThis.history.pushState({}, "", "/");
     localStorage.clear();
   });
 });

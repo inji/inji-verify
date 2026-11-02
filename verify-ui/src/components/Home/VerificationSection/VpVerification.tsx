@@ -258,7 +258,7 @@ const DisplayActiveStep = () => {
       </div>
     );
   } else {
-    return <></>;
+    return null;
   }
 };
 

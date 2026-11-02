@@ -22,7 +22,7 @@ jest.mock("react-i18next", () => ({ useTranslation: () => ({ t: (key: string) =>
 describe("VerificationMethodTabs", () => {
   beforeEach(() => {
     jest.clearAllMocks();
-    (window as any)._env_ = { DEFAULT_THEME: "orange" };
+    (globalThis as any)._env_ = { DEFAULT_THEME: "orange" };
     localStorage.clear();
   });
 

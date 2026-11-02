@@ -6,7 +6,7 @@ describe("misc utilities", () => {
     beforeEach(() => {
         jest.resetModules();
 
-        (window as any)._env_ = {
+        (globalThis as any)._env_ = {
             INTERNET_CONNECTIVITY_CHECK_ENDPOINT: "https://example.com",
             INTERNET_CONNECTIVITY_CHECK_TIMEOUT: "1000",
             DISPLAY_TIMEOUT: "1000",
@@ -129,35 +129,35 @@ describe("misc utilities", () => {
     });
 
     describe("checkInternetStatus", () => {
-        const originalFetch = global.fetch;
-        const originalOnLine = Object.getOwnPropertyDescriptor(window.navigator, "onLine");
+        const originalFetch = globalThis.fetch;
+        const originalOnLine = Object.getOwnPropertyDescriptor(globalThis.navigator, "onLine");
 
         beforeEach(() => {
-            global.fetch = jest.fn();
+            globalThis.fetch = jest.fn();
         });
 
         afterEach(() => {
-            global.fetch = originalFetch;
+            globalThis.fetch = originalFetch;
             if (originalOnLine) {
-                Object.defineProperty(window.navigator, "onLine", originalOnLine);
+                Object.defineProperty(globalThis.navigator, "onLine", originalOnLine);
             }
             jest.clearAllMocks();
         });
 
         test("returns false if navigator.onLine is false", async () => {
-            Object.defineProperty(window.navigator, "onLine", {value: false, configurable: true,});
+            Object.defineProperty(globalThis.navigator, "onLine", {value: false, configurable: true,});
             await expect(misc.checkInternetStatus()).resolves.toBe(false);
         });
 
         test("returns true if fetch succeeds", async () => {
-            Object.defineProperty(window.navigator, "onLine", {value: true, configurable: true,});
-            (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true });
+            Object.defineProperty(globalThis.navigator, "onLine", {value: true, configurable: true,});
+            (globalThis.fetch as jest.Mock).mockResolvedValueOnce({ ok: true });
             await expect(misc.checkInternetStatus()).resolves.toBe(true);
         });
 
         test("returns false if fetch fails", async () => {
-            Object.defineProperty(window.navigator, "onLine", {value: true, configurable: true,});
-            (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("Fail"));
+            Object.defineProperty(globalThis.navigator, "onLine", {value: true, configurable: true,});
+            (globalThis.fetch as jest.Mock).mockRejectedValueOnce(new Error("Fail"));
             await expect(misc.checkInternetStatus()).resolves.toBe(false);
         });
     });

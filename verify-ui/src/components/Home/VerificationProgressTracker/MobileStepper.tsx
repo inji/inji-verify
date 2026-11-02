@@ -31,7 +31,7 @@ function MobileStepper() {
   const isPartiallyShared = useVerifyFlowSelector((state) => state.isPartiallyShared);
   const activeScreen = (method === "VERIFY") ? VerifyActiveScreen : mainActiveScreen;
 
-  const [VerificationStepsContent, setVerificationStepsContent] = useState(() =>
+  const [verificationStepsContent, setVerificationStepsContent] = useState(() =>
     fetchVerificationSteps(
       method as VerificationMethod,
       isPartiallyShared,
@@ -59,7 +59,7 @@ function MobileStepper() {
   }, [method, isPartiallyShared, flow, activeScreen]);
 
   const theme = globalThis._env_.DEFAULT_THEME;
-  const activeStep = VerificationStepsContent.find((step) => step.isActive);
+  const activeStep = verificationStepsContent.find((step) => step.isActive);
   const label = activeStep?.label as string;
   const description = activeStep?.description as string;
 
@@ -69,14 +69,14 @@ function MobileStepper() {
         className="col-start-1 col-end-13 flex items-center mx-auto p-4"
         id="stepper"
       >
-        {VerificationStepsContent.map((step, index) => (
+        {verificationStepsContent.map((step, index) => (
           <div key={step.label} className="flex flex-column items-center">
             <Step
               stepNumber={step.stepNumber}
               isCompleted={step.isCompleted}
               isActive={step.isActive}
             />
-            {index < VerificationStepsContent.length - 1 && (
+            {index < verificationStepsContent.length - 1 && (
               <div className={`bg-${theme}-gradient p-[1px] w-[44px] h-[1px] ${ step.isCompleted ? "" : "opacity-20" }`} >
                 <div className="flex-grow border-t-2 border-transparent" />
               </div>

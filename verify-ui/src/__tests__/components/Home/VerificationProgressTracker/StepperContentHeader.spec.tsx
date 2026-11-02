@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import Header from "../../../../components/Home/Header";
-import configureMockStore from "redux-mock-store";
+import { configureStore } from "@reduxjs/toolkit";
 import { Provider } from "react-redux";
 import { MemoryRouter } from "react-router-dom";
 
@@ -9,8 +9,7 @@ jest.mock("iso-639-3", () => ({
     iso6393: [],
 }));
 
-const mockStore = configureMockStore();
-const store = mockStore({
+const store = configureStore({ reducer: () => ({
   verification: { method: "UPLOAD", activeScreen: 1 },
   verify: {
     isPartiallyShared: false,
@@ -18,7 +17,7 @@ const store = mockStore({
     activeScreen: 1,
   },
   common: { language: "en" },
-});
+}) });
 
 describe("Stepper Content Header", () => {
   test("renders verification heading", () => {

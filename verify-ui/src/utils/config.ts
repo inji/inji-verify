@@ -190,7 +190,7 @@ export const initializeClaims = async () => {
     }
     const data = await response.json();
     verifiableClaims = data.verifiableClaims as Claim[];
-    VCRenderOrders = data.VCRenderOrders as any;
+    VCRenderOrders = data.VCRenderOrders;
     webWallets = ((data.WebWallets as WebWallet[]) ?? [])
       .filter((wallet) => !!wallet.walletBaseUrl)
       .map((wallet) => ({

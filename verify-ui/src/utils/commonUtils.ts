@@ -245,25 +245,20 @@ const credentialTypesMatch = (submittedType: string, configuredType: string): bo
   );
 };
 
+const appendConfiguredTypes = (configuredTypes: string[], values: readonly unknown[]) => {
+  for (const value of values) {
+    if (typeof value === "string" && value) configuredTypes.push(value);
+  }
+};
+
 const getConfiguredTypeValuesFromClaim = (selectedClaim: Claim): string[] => {
   const configuredTypes: string[] = [];
-
-  for (const credentialDefinition of selectedClaim.dcqlQuery?.credentials ??
-    []) {
+  for (const credentialDefinition of selectedClaim.dcqlQuery?.credentials ?? []) {
     for (const typeGroup of credentialDefinition.meta?.type_values ?? []) {
-      for (const typeValue of typeGroup) {
-        if (typeof typeValue === "string" && typeValue) {
-          configuredTypes.push(typeValue);
-        }
-      }
+      appendConfiguredTypes(configuredTypes, typeGroup);
     }
-    for (const vctValue of credentialDefinition.meta?.vct_values ?? []) {
-      if (typeof vctValue === "string" && vctValue) {
-        configuredTypes.push(vctValue);
-      }
-    }
+    appendConfiguredTypes(configuredTypes, credentialDefinition.meta?.vct_values ?? []);
   }
-
   return configuredTypes;
 };
 

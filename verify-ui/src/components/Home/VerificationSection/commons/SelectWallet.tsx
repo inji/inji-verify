@@ -138,8 +138,8 @@ const SelectWalletContent: React.FC = () => {
                       src={wallet.iconUrl}
                       alt={wallet.name}
                       onError={(e) => {
-                        (e.currentTarget as HTMLImageElement).onerror = null;
-                        (e.currentTarget as HTMLImageElement).src = "/icons/default-wallet.svg";
+                        (e.currentTarget).onerror = null;
+                        (e.currentTarget).src = "/icons/default-wallet.svg";
                       }}
                       className="w-10 h-10 object-contain"
                     />

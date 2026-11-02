@@ -42,7 +42,7 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
           !Array.isArray(disclosedClaims);
 
         const isDisclosed = hasDisclosedClaims
-          ? Object.keys(disclosedClaims as Record<string, unknown>).some(
+          ? Object.keys(disclosedClaims).some(
               (key) => normalizeKey(key) === normalizeKey(label.key),
             )
           : false;

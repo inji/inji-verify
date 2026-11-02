@@ -22,7 +22,7 @@ describe("config utilities", () => {
     beforeEach(() => {
         jest.clearAllMocks();
         // Mock window._env_
-        (window as any)._env_ = {
+        (globalThis as any)._env_ = {
             INTERNET_CONNECTIVITY_CHECK_ENDPOINT: "https://dns.google/",
             INTERNET_CONNECTIVITY_CHECK_TIMEOUT: "3000",
             DISPLAY_TIMEOUT: "5000",
@@ -91,7 +91,7 @@ describe("config utilities", () => {
         const origin = "https://verify.example.org";
 
         beforeEach(() => {
-            Object.defineProperty(window, "location", {
+            Object.defineProperty(globalThis, "location", {
                 value: { origin },
                 writable: true,
             });
@@ -102,13 +102,13 @@ describe("config utilities", () => {
                 verifiableClaims: [{ id: "1" }],
                 VCRenderOrders: { "1": "order" }
             };
-            global.fetch = jest.fn().mockResolvedValueOnce({
+            globalThis.fetch = jest.fn().mockResolvedValueOnce({
                 ok: true,
                 json: () => Promise.resolve(mockData)
             });
 
             await initializeClaims();
-            expect(global.fetch).toHaveBeenCalledWith(window._env_.VERIFIABLE_CLAIMS_CONFIG_URL);
+            expect(globalThis.fetch).toHaveBeenCalledWith(globalThis._env_.VERIFIABLE_CLAIMS_CONFIG_URL);
         });
 
         test("resolves absolute wallet URLs unchanged", async () => {
@@ -119,7 +119,7 @@ describe("config utilities", () => {
                     { id: "w1", name: "External", iconUrl: "/icon.svg", walletBaseUrl: "https://injiweb.dev-int-inji.mosip.net" },
                 ],
             };
-            global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
+            globalThis.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
             await initializeClaims();
             expect(getWebWallets()[0].walletBaseUrl).toBe("https://injiweb.dev-int-inji.mosip.net");
         });
@@ -132,7 +132,7 @@ describe("config utilities", () => {
                     { id: "w2", name: "Same-env", iconUrl: "/icon.svg", walletBaseUrl: "/wallet/" },
                 ],
             };
-            global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
+            globalThis.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
             await initializeClaims();
             expect(getWebWallets()[0].walletBaseUrl).toBe("/wallet");
         });
@@ -146,7 +146,7 @@ describe("config utilities", () => {
                     { id: "w4", name: "Configured", iconUrl: "/icon.svg", walletBaseUrl: "https://wallet.example.org" },
                 ],
             };
-            global.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
+            globalThis.fetch = jest.fn().mockResolvedValueOnce({ ok: true, json: () => Promise.resolve(mockData) });
             await initializeClaims();
             const wallets = getWebWallets();
             expect(wallets).toHaveLength(1);
@@ -155,7 +155,7 @@ describe("config utilities", () => {
 
         test("handles fetch error", async () => {
             const consoleErrorSpy = jest.spyOn(console, "error").mockImplementation();
-            global.fetch = jest.fn().mockResolvedValueOnce({ ok: false, status: 500 });
+            globalThis.fetch = jest.fn().mockResolvedValueOnce({ ok: false, status: 500 });
             await initializeClaims();
             expect(consoleErrorSpy).toHaveBeenCalled();
             consoleErrorSpy.mockRestore();

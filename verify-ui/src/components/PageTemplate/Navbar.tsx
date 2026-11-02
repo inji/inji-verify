@@ -1,7 +1,6 @@
 import React, {useCallback, useEffect, useState, useRef} from 'react';
 import { Link } from "react-router-dom";
-import { MdArrowForwardIos } from "react-icons/md";
-import { MdExpandLess } from "react-icons/md";
+import { MdArrowForwardIos , MdExpandLess } from "react-icons/md";
 import {AlertMessages, Pages} from "../../utils/config";
 import { LanguageSelector } from '../commons/LanguageSelector';
 import { useTranslation } from 'react-i18next';

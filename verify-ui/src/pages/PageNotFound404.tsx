@@ -1,4 +1,4 @@
-import React, {useEffect} from 'react';
+import {useEffect} from 'react';
 import {useNavigate} from "react-router-dom";
 import {useAppDispatch} from "../redux/hooks";
 import {raiseAlert} from "../redux/features/alerts/alerts.slice";
@@ -13,9 +13,7 @@ function PageNotFound404(props: any) {
         dispatch(raiseAlert({...AlertMessages().pageNotFound}));
     }, [navigate, dispatch]);
 
-    return (
-        <></>
-    );
+    return null;
 }
 
 export default PageNotFound404;

@@ -10,8 +10,8 @@ import { fetchSvgTemplate, getTemplateUrl } from "../../utils/svg-template-utils
 
 describe("language helpers", () => {
   beforeEach(() => {
-    window.localStorage.clear();
-    window.sessionStorage.clear();
+    globalThis.localStorage.clear();
+    globalThis.sessionStorage.clear();
   });
 
   test.each([
@@ -35,12 +35,12 @@ describe("language helpers", () => {
 
   test("switches language for the current browser session only", async () => {
     await switchLanguage("fra");
-    expect(window.sessionStorage.getItem("selected_language")).toBe(JSON.stringify("fr"));
-    expect(window.localStorage.getItem("selected_language")).toBeNull();
+    expect(globalThis.sessionStorage.getItem("selected_language")).toBe(JSON.stringify("fr"));
+    expect(globalThis.localStorage.getItem("selected_language")).toBeNull();
   });
 
   test("ignores a language saved by an earlier browser session", () => {
-    window.localStorage.setItem("selected_language", JSON.stringify("fr"));
+    globalThis.localStorage.setItem("selected_language", JSON.stringify("fr"));
     let sessionLanguage = "";
 
     jest.isolateModules(() => {
@@ -52,7 +52,7 @@ describe("language helpers", () => {
   });
 
   test("uses the language saved in the current browser session", () => {
-    window.sessionStorage.setItem("selected_language", JSON.stringify("fr"));
+    globalThis.sessionStorage.setItem("selected_language", JSON.stringify("fr"));
     let sessionLanguage = "";
 
     jest.isolateModules(() => {
@@ -77,11 +77,11 @@ describe("SVG template helpers", () => {
   });
 
   test("returns response text and handles HTTP and network failures", async () => {
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, text: async () => "<svg />" });
+    (globalThis.fetch as jest.Mock).mockResolvedValueOnce({ ok: true, text: async () => "<svg />" });
     expect(await fetchSvgTemplate("/ok.svg")).toBe("<svg />");
-    (global.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, statusText: "Not Found" });
+    (globalThis.fetch as jest.Mock).mockResolvedValueOnce({ ok: false, statusText: "Not Found" });
     expect(await fetchSvgTemplate("/missing.svg")).toBe("");
-    (global.fetch as jest.Mock).mockRejectedValueOnce(new Error("offline"));
+    (globalThis.fetch as jest.Mock).mockRejectedValueOnce(new Error("offline"));
     expect(await fetchSvgTemplate("/offline.svg")).toBe("");
   });
 });

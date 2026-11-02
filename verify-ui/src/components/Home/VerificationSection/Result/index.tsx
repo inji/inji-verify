@@ -11,7 +11,7 @@ import {
   qrReadInit,
 } from "../../../../redux/features/verification/verification.slice";
 import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
-import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
+import { AnyVc, LdpVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
 import { extractMappedClaim, isCWT, uint8ArrayToHex } from "../../../../utils/cborUtils";
 import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
@@ -49,7 +49,7 @@ const Result = () => {
         }
         if (typeof vc === "string") {
           const decodedClaims = await decodeSdJwtToken(vc);
-          setClaims(decodedClaims as SdJwtVc);
+          setClaims(decodedClaims);
           setCredentialType(decodedClaims.regularClaims.vct);
           return;
         }
