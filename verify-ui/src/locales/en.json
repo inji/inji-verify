@@ -127,6 +127,8 @@
     "TIMEOUT": "The scan session has expired due to inactivity. Please initiate a new scan."
   },
   "AlertMessages": {
+    "svgTemplateLoadFailed": "Failed to load credential template",
+    "svgTemplateRenderFailed": "Failed to render credential template",
     "qrVerificationLimitReached": "This QR code has reached its verification limit. Please request a new one.",
     "qrUploadSuccess": "QR code uploaded successfully!",
     "qrScanSuccess": "QR code scanned successfully!",
