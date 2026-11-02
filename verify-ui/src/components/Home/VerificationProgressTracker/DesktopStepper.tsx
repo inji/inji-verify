@@ -55,11 +55,11 @@ const DesktopStepper: React.FC = () => {
           return (
             <div key={step.label}>
               <div className="flex items-center">
-                <div className={`bg-${window._env_.DEFAULT_THEME}-gradient rounded-full bg-no-repeat p-[2px] flex items-center justify-center`}>
+                <div className={`bg-${globalThis._env_.DEFAULT_THEME}-gradient rounded-full bg-no-repeat p-[2px] flex items-center justify-center`}>
                   <div
                     className={`text-center rounded-full w-6 h-6 flex items-center justify-center font-normal text-smallTextSize leading-5 bg-no-repeat  ${
                       isStepCompleted(index)
-                        ? `bg-${window._env_.DEFAULT_THEME}-gradient text-white border-1 border-transparent`
+                        ? `bg-${globalThis._env_.DEFAULT_THEME}-gradient text-white border-1 border-transparent`
                         : "bg-white text-primary border-[1px] border-transparent"
                     }`}
                   >
@@ -79,7 +79,7 @@ const DesktopStepper: React.FC = () => {
                 <div className="grid items-center m-0">
                   {!isLastStep(index) && (
                     <div className={`w-6 h-full col-end-2 ${isStepCompleted(index + 1) ? "" : "opacity-20"}`}>
-                      <div className={`bg-${window._env_.DEFAULT_THEME}-gradient mt-1 w-[1px] h-full m-auto`}>
+                      <div className={`bg-${globalThis._env_.DEFAULT_THEME}-gradient mt-1 w-[1px] h-full m-auto`}>
                         <div className="border-transparent border-l-transparent border-[1px]" />
                       </div>
                     </div>
@@ -108,7 +108,7 @@ const DesktopStepper: React.FC = () => {
                   </div>
                   {!isLastStep(index) && (
                     <div className={`col-end-2 ${isStepCompleted(index + 1) ? "" : "opacity-20"}`}>
-                      <div className={`bg-${window._env_.DEFAULT_THEME}-gradient w-[1px] h-8 m-auto`}>
+                      <div className={`bg-${globalThis._env_.DEFAULT_THEME}-gradient w-[1px] h-8 m-auto`}>
                         <div className="border-transparent border-l-primary border-[1px]" />
                       </div>
                     </div>

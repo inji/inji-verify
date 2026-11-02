@@ -46,11 +46,11 @@ const router = createBrowserRouter([
         loader: () => {
           if (initialHomeLoad) {
             initialHomeLoad = false;
-            const searchParams = new URLSearchParams(window.location.search);
+            const searchParams = new URLSearchParams(globalThis.location.search);
             const hashParams = new URLSearchParams(
-              window.location.hash.startsWith("#")
-                ? window.location.hash.slice(1)
-                : window.location.hash
+              globalThis.location.hash.startsWith("#")
+                ? globalThis.location.hash.slice(1)
+                : globalThis.location.hash
             );
             if (
               searchParams.has("response_code") ||
@@ -59,7 +59,7 @@ const router = createBrowserRouter([
               const storedPath = localStorage.getItem("path");
               if (storedPath && storedPath !== "/") {
                 return redirect(
-                  `${storedPath}${window.location.search}${window.location.hash}`
+                  `${storedPath}${globalThis.location.search}${globalThis.location.hash}`
                 );
               }
             }

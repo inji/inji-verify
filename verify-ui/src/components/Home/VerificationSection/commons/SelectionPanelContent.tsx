@@ -25,7 +25,7 @@ function SelectionPanelContent() {
   const [isAscending, setIsAscending] = useState(true);
   const dispatch = useAppDispatch();
   let language = useAppSelector((state: RootState) => state.common.language);
-  language = language ?? window._env_.DEFAULT_LANG;
+  language = language ?? globalThis._env_.DEFAULT_LANG;
   const rtl = isRTL(language);
   const selectedCredentials = useVerifyFlowSelector((state) => state.selectedCredentials);
   const dcqlQuery = useVerifyFlowSelector((state) => state.dcqlQuery);
@@ -175,7 +175,7 @@ function SelectionPanelContent() {
                   key={key}
                   className={`grid mb-2 ${
                     isSelectedClaim
-                      ? `bg-${window._env_.DEFAULT_THEME}-gradient bg-no-repeat rounded-[5px] p-px bg-opacity-95`
+                      ? `bg-${globalThis._env_.DEFAULT_THEME}-gradient bg-no-repeat rounded-[5px] p-px bg-opacity-95`
                       : ""
                   }`}
                 >
@@ -207,7 +207,7 @@ function SelectionPanelContent() {
                       <div
                         className={`w-5 h-5 ${
                           isSelectedClaim
-                            ? ` bg-${window._env_.DEFAULT_THEME}-gradient`
+                            ? ` bg-${globalThis._env_.DEFAULT_THEME}-gradient`
                             : "border-2 border-gray-300 bg-white"
                         } rounded-sm flex items-center justify-center p-px`}
                       >

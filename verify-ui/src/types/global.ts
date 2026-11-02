@@ -18,6 +18,7 @@ export interface RuntimeEnvironment {
 }
 
 declare global {
+    var _env_: RuntimeEnvironment;
     interface Window {
         encodeData: (data: string) => void;
         _env_: RuntimeEnvironment;
