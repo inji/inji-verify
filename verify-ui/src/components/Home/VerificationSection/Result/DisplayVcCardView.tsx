@@ -9,7 +9,7 @@ import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
 import {getCredentialType} from "../../../../utils/commonUtils";
 import { backgroundColorMapping, borderColorMapping, textColorMapping } from "../../../../utils/config";
 
-function DisplayVcCardView(ViewVc: VpSubmissionResultInt) {
+function DisplayVcCardView(ViewVc: Readonly<VpSubmissionResultInt>) {
   const { vc, vcStatus, view } = ViewVc;
   const [showDetailView, setShowDetailView] = useState(view);
   const [isModalOpen, setModalOpen] = useState(false);

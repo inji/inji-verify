@@ -50,17 +50,17 @@ export const fetchVerificationSteps = (
         const verifySteps = verificationContent.VERIFY;
         const stepMap = Object.fromEntries(verifySteps.map((step) => [step.label, step]));
 
-        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.InitiateVpRequest.label")]!);
+        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.InitiateVpRequest.label")]);
 
         if (isPartiallyShared) {
-            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.RequestMissingCredential.label")]!);
+            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.RequestMissingCredential.label")]);
         } else {
-            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.SelectCredential.label")]!);
+            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.SelectCredential.label")]);
         }
 
-        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label")]!);
+        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label")]);
 
-        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.DisplayResult.label")]!);
+        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.DisplayResult.label")]);
     }
 
     return selectedSteps

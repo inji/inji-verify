@@ -22,11 +22,11 @@ function DisplayVcDetailView({
   vc,
   onExpand,
   className,
-}: {
+}: Readonly<{
   vc: AnyVc;
   onExpand: any;
   className?: string;
-}) {
+}>) {
   const { t, i18n } = useTranslation("Verify");
   const currentLang = i18next.language;
   const templateUrl = getTemplateUrl(vc);
@@ -68,7 +68,7 @@ function DisplayVcDetailView({
             {showTemplate ? (
               <VcSvgTemplate
                 vc={vc}
-                templateUrl={templateUrl!}
+                templateUrl={templateUrl}
                 onError={onTemplateError}
               />
             ) : (

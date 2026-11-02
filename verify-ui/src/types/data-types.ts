@@ -45,7 +45,7 @@ export type ApplicationState = {
 export type VerificationState = {
   method: VerificationMethod;
   activeScreen: number; // Verification steps
-  qrReadResult?: QrReadResult | undefined;
+  qrReadResult?: QrReadResult;
   verificationResult?: VerificationResult;
   alert?: AlertInfo;
   ovp?: OvpFlowData;

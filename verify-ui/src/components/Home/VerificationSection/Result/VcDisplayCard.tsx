@@ -12,7 +12,7 @@ import {
   VectorOutline,
 } from "../../../../utils/theme-utils";
 
-function VcDisplayCard({ vc, onExpand }: { vc: any; onExpand: any }) {
+function VcDisplayCard({ vc, onExpand }: Readonly<{ vc: any; onExpand: any }>) {
   const desiredOrder = [
     "fullName",
     "gender",

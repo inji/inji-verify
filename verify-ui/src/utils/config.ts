@@ -2,7 +2,6 @@ import {
     AlertInfo,
     claim,
     VcStatus,
-    VerificationMethod,
     VerificationStep, VerificationStepsContentType,
     WebWallet,
 } from "../types/data-types";
@@ -146,7 +145,7 @@ export const getWalletErrorAlert = (errorCode?: string): AlertInfo | undefined =
     if (!i18nKey) {
         return undefined;
     }
-    return { message: i18next.t(i18nKey), severity: "error" } as AlertInfo;
+    return { message: i18next.t(i18nKey), severity: "error" };
 };
 
 export const UploadFileSizeLimits = {
@@ -254,7 +253,7 @@ export const EXCLUDE_KEYS_SD_JWT_VC = [
   "vct",
 ].map((key) => key.toLowerCase());
 
-export const getStepConfig = (method: VerificationMethod | string) => {
+export const getStepConfig = (method: string) => {
     switch (method) {
         case "SCAN":
             return VerificationSteps.SCAN;

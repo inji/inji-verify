@@ -9,10 +9,10 @@ import { raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
 import { getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
 
-function QrScanner({ onClose, scannerActive }: {
+function QrScanner({ onClose, scannerActive }: Readonly<{
   onClose: () => void;
   scannerActive: boolean;
-}) {
+}>) {
   const dispatch = useAppDispatch();
   const [isCameraBlocked, setIsCameraBlocked] = useState(false);
   const [isScanning, setIsScanning] = useState(false);
