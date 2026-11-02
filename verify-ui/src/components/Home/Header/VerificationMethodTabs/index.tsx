@@ -5,8 +5,7 @@ import { goToHomeScreen } from "../../../../redux/features/verification/verifica
 import { VerificationMethod } from "../../../../types/data-types";
 import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
 import { AlertMessages, Pages } from "../../../../utils/config";
-import { MdArrowForwardIos } from "react-icons/md";
-import { MdArrowBackIos } from "react-icons/md";
+import { MdArrowForwardIos, MdArrowBackIos } from "react-icons/md";
 import { useTranslation } from 'react-i18next';
 import { useNavigate } from "react-router-dom";
 import { resetVpRequest } from "../../../../redux/features/verify/vpVerificationState";
