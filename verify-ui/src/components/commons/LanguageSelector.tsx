@@ -30,12 +30,20 @@ export const LanguageSelector: React.FC = () => {
 
   useEffect(() => {
     if (isOpen) {
-      containerRef.current?.querySelector<HTMLButtonElement>('[role="menuitemradio"][aria-checked="true"]')?.focus();
+      const menu = containerRef.current;
+      const selectedOption = menu?.querySelector<HTMLButtonElement>('[role="menuitemradio"][aria-checked="true"]');
+      const firstOption = menu?.querySelector<HTMLButtonElement>('[role="menuitemradio"]');
+      (selectedOption ?? firstOption)?.focus();
     }
   }, [isOpen]);
 
   const handleMenuKeyDown = (event: React.KeyboardEvent<HTMLUListElement>) => {
+    if (event.key === "Tab") {
+      setIsOpen(false);
+      return;
+    }
     if (event.key === "Escape") {
+      event.preventDefault();
       setIsOpen(false);
       triggerRef.current?.focus();
       return;
@@ -43,6 +51,7 @@ export const LanguageSelector: React.FC = () => {
     if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
     event.preventDefault();
     const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]'));
+    if (buttons.length === 0) return;
     const currentIndex = buttons.indexOf(document.activeElement as HTMLButtonElement);
     let nextIndex = 0;
     if (event.key === "End") nextIndex = buttons.length - 1;
