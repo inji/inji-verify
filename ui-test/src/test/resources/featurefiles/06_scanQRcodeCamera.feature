@@ -110,7 +110,7 @@ Feature: Inji Verify scan qr code camera testing
     And verify click on back button
     Then verify scan qr code button
 
-  @smoke @verifyScanVcData @withoutBrowserstack @scan @qr_health_insurence @needsInsuranceArtifacts
+  @smoke @verifyScanVcData @withoutBrowserstack @scan @qr_health_insurance @needsInsuranceArtifacts
   Scenario: Verify VC data is displayed correctly after scanning a valid QR code
     And click on scan qr code button
     Then validate that QR code is scanned successfully

@@ -1,7 +1,7 @@
 Feature: Inji SVG qr code testing
 
 
-  @smoke @verifyUploadVcWithSvgTemplate @needsvginsurencecredetials
+  @smoke @verifyUploadVcWithSvgTemplate @needSvgInsuranceCredentials
   Scenario: Verify upload VC with SVG template
     Given User gets the title of the page
     Then Validate the title of the page
@@ -13,7 +13,7 @@ Feature: Inji SVG qr code testing
     And verify congratulations message on successful verification
     And Verify user is still on the upload QR code page
 
-  @smoke @verifySvgTemplateFetchFailureFallback @needsvginsurencecredetials @withoutBrowserstack
+  @smoke @verifySvgTemplateFetchFailureFallback @needSvgInsuranceCredentials @withoutBrowserstack
   Scenario: Verify fallback to details grid when SVG template fails to load
     Given User gets the title of the page
     Then Validate the title of the page
@@ -23,7 +23,7 @@ Feature: Inji SVG qr code testing
     And Verify failed to load credential template alert message is shown
     And Verify VC details grid is displayed instead of SVG template
 
-  @smoke @verifySvgTemplateUnderSlowNetwork @needsvginsurencecredetials @withoutBrowserstack
+  @smoke @verifySvgTemplateUnderSlowNetwork @needSvgInsuranceCredentials @withoutBrowserstack
   Scenario: Verify SVG template still renders under throttled network
     Given User gets the title of the page
     Then Validate the title of the page
@@ -32,7 +32,7 @@ Feature: Inji SVG qr code testing
     And Upload Farmer Credential PDF file
     And Verify SVG template is rendered successfully
 
-  @smoke @verifySvgTemplateVcVerificationApiCall @needsvginsurencecredetials @withoutBrowserstack
+  @smoke @verifySvgTemplateVcVerificationApiCall @needSvgInsuranceCredentials @withoutBrowserstack
   Scenario: Verify backend verification call for SVG-templated VC
     Given User gets the title of the page
     Then Validate the title of the page
@@ -41,7 +41,7 @@ Feature: Inji SVG qr code testing
     And Upload Farmer Credential PDF file
     And Verify vp-session-results api call in network tab with url
 
-  @smoke @verifySvgRenderedVcViaScan @needsvginsurencecredetials @withoutBrowserstack @scan @qr_svg
+  @smoke @verifySvgRenderedVcViaScan @needSvgInsuranceCredentials @withoutBrowserstack @scan @qr_svg
   Scenario: Verify SVG rendered VC via camera scan
     Given User gets the title of the page
     Then Validate the title of the page
@@ -49,7 +49,7 @@ Feature: Inji SVG qr code testing
     And click on scan qr code button
     Then validate that QR code is scanned successfully
 
-  @smoke @verifyConcurrentSvgUploadsInSeparateTabs @needsvginsurencecredetials
+  @smoke @verifyConcurrentSvgUploadsInSeparateTabs @needSvgInsuranceCredentials
   Scenario: Verify concurrent SVG VC uploads in separate tabs produce independent results
     Given User gets the title of the page
     Then Validate the title of the page

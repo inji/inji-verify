@@ -2637,7 +2637,7 @@ public class StepDef extends BaseSteps {
 	    }
 	}
 
-	@Before(value = "@needsvginsurencecredetials", order = 12500)
+	@Before(value = "@needSvgInsuranceCredentials", order = 12500)
 	public void prepareSvgCredentialArtifactsHook() throws Exception {
 	    ensureStepDependenciesInitialized();
 	    try {

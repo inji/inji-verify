@@ -404,8 +404,8 @@ public class BaseTestUtil {
         if (scenario.getSourceTagNames().contains("@browser_back_navigation")) {
             return createNavigationOnlyScanSourceImage().getAbsolutePath();
         }
-        if (scenario.getSourceTagNames().contains("@qr_health_insurence")) {
-            return "src/test/resources/QRCodes/health_insurence.png";
+        if (scenario.getSourceTagNames().contains("@qr_health_insurance")) {
+            return "src/test/resources/QRCodes/health_insurance.png";
         }
         if (scenario.getSourceTagNames().contains("@qr_svg")) {
             String farmerCredentialPng = BaseTest.getFarmerCredentialPngPath();

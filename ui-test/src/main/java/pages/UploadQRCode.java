@@ -277,11 +277,11 @@ public class UploadQRCode extends BasePage {
 	}
 
 	public void clickOnUploadSDJwtWithIncorrectDigestValue() {
-		uploadFileForStaticQr(driver, UploadQRCodeButton, "SDJWTwithIncorectDigestValue.PNG");
+		uploadFileForStaticQr(driver, UploadQRCodeButton, "SDJWTwithIncorrectDigestValue.PNG");
 	}
 
 	public void clickOnUploadSDJwtWithIncorrectDisclosureValue() {
-		uploadFileForStaticQr(driver, UploadQRCodeButton, "SDJWTwithIncorectDisclosureValue.PNG");
+		uploadFileForStaticQr(driver, UploadQRCodeButton, "SDJWTwithIncorrectDisclosureValue.PNG");
 	}
 
 	public void clickOnUploadSDJwtWithIncorrectSignature() {
@@ -301,7 +301,7 @@ public class UploadQRCode extends BasePage {
 	}
 
 	public void clickOnUploadSDJwtWithUnsupportedAlgorithm() {
-		uploadFileForStaticQr(driver, UploadQRCodeButton, "SDJWTwithUnsuportedAlgoritham.PNG");
+		uploadFileForStaticQr(driver, UploadQRCodeButton, "SDJWTwithUnsupportedAlgorithm.PNG");
 	}
 
 	public void clickOnUploadSDJwtWithMissingDigest() {
