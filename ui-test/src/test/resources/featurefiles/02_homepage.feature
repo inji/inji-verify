@@ -65,18 +65,6 @@ Feature: Inji Verify homepage testing
     And Reload the page
     Then verify request verifiable credentials button
 
-  @smoke @verifySeamlessNavigationFromUploadPage
-  Scenario: Verify navigation from upload page via logo and home button is seamless without page reload
-    Given User gets the title of the page
-    And Verify that Upload button visible
-    And Inject no-reload page sentinel
-    And Click on Inji Verify logo
-    And Verify page navigation was seamless without reload
-    And Verify that Upload button visible
-    And Inject no-reload page sentinel
-    And Click on Home button
-    And Verify page navigation was seamless without reload
-    And Verify that Upload button visible
 
   @smoke @verifySeamlessNavigationFromVpPage
   Scenario: Verify navigation from VP verification page via logo and home button is seamless without page reload

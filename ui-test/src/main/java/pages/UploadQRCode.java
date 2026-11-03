@@ -789,10 +789,15 @@ public class UploadQRCode extends BasePage {
 
 	public boolean isUploadButtonFocused() {
 		JavascriptExecutor js = (JavascriptExecutor) driver;
+		// Compare document.activeElement directly against the SDK drop-zone element so
+		// that a generic button elsewhere on the page cannot produce a false positive.
 		Boolean isFocused = (Boolean) js.executeScript(
-				"var el = document.activeElement;" +
-				"return el != null && el.getAttribute('role') === 'button' && el.getAttribute('tabindex') === '0' && el.classList.contains('cursor-pointer');");
+				"return document.activeElement === arguments[0];", UploadQRCodeDropZone);
 		return Boolean.TRUE.equals(isFocused);
+	}
+
+	public void activateUploadButtonWithKeyboard() {
+		new Actions(driver).sendKeys(Keys.ENTER).perform();
 	}
 
 	public void tabToUploadButton() {

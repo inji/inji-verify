@@ -3162,6 +3162,7 @@ public class StepDef extends BaseSteps {
 	@When("Upload QR code file JPEG via keyboard")
 	public void uploadQRCodeFileJpegViaKeyboard() {
 	    try {
+	        uploadqrcode.activateUploadButtonWithKeyboard();
 	        uploadqrcode.uploadJpegAndWaitForVerificationResult();
 	        test.log(Status.PASS, "Successfully uploaded QR code JPEG via keyboard-navigated upload control.");
 	    } catch (NoSuchElementException e) {
