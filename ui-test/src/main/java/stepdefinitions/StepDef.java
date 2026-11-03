@@ -80,6 +80,19 @@ public class StepDef extends BaseSteps {
         return ENGLISH_TO_DISPLAY_NAME.getOrDefault(englishName, englishName);
     }
 
+    private static final Map<String, String> CREDENTIAL_TEMPLATE_ERROR_BY_LANGUAGE = Map.of(
+            "English", UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE,
+            "French", UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_FRENCH,
+            "Arabic", UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_ARABIC,
+            "Spanish", UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_SPANISH,
+            "Tamil", UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_TAMIL);
+
+    private static final Map<String, String> BLUR_QR_CODE_ERROR_BY_LANGUAGE = Map.of(
+            "English", UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE,
+            "French", UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE_IN_FRENCH,
+            "Arabic", UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE_IN_ARABIC,
+            "Spanish", UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE_IN_SPANISH);
+
     private String uploadPageUrl;
     private String scanPageUrl;
     private String vpVerificationPageUrl;
@@ -792,24 +805,9 @@ public class StepDef extends BaseSteps {
     // a genuine regression target, and will start passing once the message is localized.
     @Then("Verify failed to load credential template alert message is shown in {string}")
     public void verifyFailedToLoadCredentialTemplateAlertMessageIsShownInLanguage(String language) {
-        String expectedMessage;
-        switch (language) {
-            case "French":
-                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_FRENCH;
-                break;
-            case "Arabic":
-                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_ARABIC;
-                break;
-            case "Spanish":
-                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_SPANISH;
-                break;
-            case "Tamil":
-                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_TAMIL;
-                break;
-            default:
-                expectedMessage = UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE;
-                break;
-        }
+        String expectedMessage = CREDENTIAL_TEMPLATE_ERROR_BY_LANGUAGE.getOrDefault(
+                language,
+                UiConstants.ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE);
         try {
             String actualMessage = uploadqrcode.getErrorMessageForSvgTemplateFailure();
             Assert.assertEquals(actualMessage, expectedMessage,
@@ -3651,40 +3649,30 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	    }
 	}
 
-	@Then("Verify small or blur alert message in {string}")
-	public void verifyMessageForBlurQrCodeInLanguage(String language) {
-	    String expectedMessage;
-	    switch (language) {
-	        case "French":
-	            expectedMessage = UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE_IN_FRENCH;
-	            break;
-	        case "Arabic":
-	            expectedMessage = UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE_IN_ARABIC;
-	            break;
-	        case "Spanish":
-	            expectedMessage = UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE_IN_SPANISH;
-	            break;
-	        default:
-	            expectedMessage = UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE;
-	            break;
-	    }
-	    try {
-	        Assert.assertEquals(uploadqrcode.getErrorMessageForBlurQRCode(), expectedMessage);
-	        test.log(Status.PASS, "Successfully verified Small/Blur alert message in " + language + ".");
-	    } catch (AssertionError e) {
-	        test.log(Status.FAIL, "Verification failed: Small/Blur alert message in " + language
-	                + " does not match the expected value.");
-	        logFailure(test, driver, "Verification failed: Small/Blur alert message in " + language
-	                + " does not match the expected value.", e);
-	        throw e;
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while verifying Small/Blur alert message in " + language, e);
-	        throw e;
-	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error occurred while verifying Small/Blur alert message in " + language, e);
-	        throw e;
-	    }
-	}
+    @Then("Verify small or blur alert message in {string}")
+    public void verifyMessageForBlurQrCodeInLanguage(String language) {
+        String expectedMessage = BLUR_QR_CODE_ERROR_BY_LANGUAGE.getOrDefault(
+                language,
+                UiConstants.ERROR_SMALL_OR_BLUR_QR_CODE);
+
+        try {
+            Assert.assertEquals(uploadqrcode.getErrorMessageForBlurQRCode(), expectedMessage);
+            test.log(Status.PASS, "Successfully verified Small/Blur alert message in " + language + ".");
+        } catch (AssertionError e) {
+            test.log(Status.FAIL, "Verification failed: Small/Blur alert message in " + language
+                    + " does not match the expected value.");
+            logFailure(test, driver, "Verification failed: Small/Blur alert message in " + language
+                    + " does not match the expected value.", e);
+            throw e;
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while verifying Small/Blur alert message in " + language, e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver,
+                    "Unexpected error occurred while verifying Small/Blur alert message in " + language, e);
+            throw e;
+        }
+    }
 
 	@Then("Upload blur QR code file")
 	public void uploadBlurQrCodeFile() {
