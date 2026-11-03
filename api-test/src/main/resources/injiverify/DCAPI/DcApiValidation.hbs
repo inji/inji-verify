@@ -1,0 +1,12 @@
+{
+  "requestId": "{{requestId}}"
+  {{#if vpToken}},
+  "vp_token": {{{vpToken}}}
+  {{/if}}
+  {{#if error}},
+  "error": "{{error}}"
+  {{/if}}
+  {{#if errorDescription}},
+  "error_description": "{{errorDescription}}"
+  {{/if}}
+}

@@ -1,0 +1,51 @@
+GetDcApiRequestJwt:
+  DC_10_DecodeDecentralizedIdentifierJwt:
+      endPoint: /v1/verify/v2/vp-request/{requestId}
+      description: Decode the DC API JWT created for a decentralized identifier client
+      uniqueIdentifier: TC_InjiVerify_GetDcApiRequestJwt_DecentralizedIdentifier_10
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/GetVpRequestWithDID/GetVpRequestWithDID
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "$ID:01_decentralized_identifier_vp_request_Sid_requestId$",
+      "acceptHeader": "*/*"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+
+  DC_11_DecodeX509SanDnsJwt:
+      endPoint: /v1/verify/v2/vp-request/{requestId}
+      description: Decode the DC API JWT created for an X.509 SAN DNS client
+      uniqueIdentifier: TC_InjiVerify_GetDcApiRequestJwt_X509SanDns_11
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/GetVpRequestWithDID/GetVpRequestWithDID
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "$ID:02_x509_san_dns_vp_request_requestId$",
+      "acceptHeader": "*/*"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+
+  DC_12_UnknownRequestId:
+      endPoint: /v1/verify/v2/vp-request/unknown-request-id
+      description: Reject a request with an unknown request identifier
+      uniqueIdentifier: TC_InjiVerify_GetDcApiRequestJwt_UnknownRequestId_12
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/GetVpRequestWithDID/GetVpRequestWithDID
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "unknown-request-id",
+      "acceptHeader": "*/*"
+      }'
+      output: '{
+      "responseCode": "404"
+}'

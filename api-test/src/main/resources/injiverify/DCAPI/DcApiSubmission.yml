@@ -1,0 +1,476 @@
+DcApiSubmission:
+  DC_13_ValidVpToken:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit a valid VP token to the DC API endpoint
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_13
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmissionDCQLSmoke
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": "$ID:13_ValidVpToken_Request_Sid_requestId$"
+      }'
+      output: '{
+        "responseCode": "200"
+}'
+
+  DC_14_AccessDenied:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit an access denied response from the wallet to the DC API endpoint
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_AccessDenied_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:14_AccessDenied_Request_Sid_requestId$",
+        "error": "access_denied",
+        "errorDescription": "User denied the request"
+      }'
+      output: '{
+        "responseCode": "200"
+}'
+
+  DC_14_InvalidScope:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit an invalid scope error from the wallet to the DC API endpoint
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_InvalidScope_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:14_InvalidScope_Request_Sid_requestId$",
+        "error": "invalid_scope",
+        "errorDescription": "Invalid scope"
+      }'
+      output: '{
+        "responseCode": "200"
+      }'
+
+  DC_14_InvalidRequest:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit an invalid request error from the wallet to the DC API endpoint
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_InvalidRequest_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:14_InvalidRequest_Request_Sid_requestId$",
+        "error": "invalid_request",
+        "errorDescription": "Invalid request"
+      }'
+      output: '{
+        "responseCode": "200"
+}'
+
+  DC_14_InvalidClient:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit an invalid client error from the wallet to the DC API endpoint
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_InvalidClient_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:14_InvalidClient_Request_Sid_requestId$",
+        "error": "invalid_client",
+        "errorDescription": "Invalid client"
+      }'
+      output: '{
+        "responseCode": "200"
+}'
+
+  DC_14_VpFormatsNotSupported:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit a VP formats not supported error from the wallet
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_VpFormatsNotSupported_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:14_VpFormatsNotSupported_Request_Sid_requestId$",
+        "error": "vp_formats_not_supported",
+        "errorDescription": "VP formats are not supported"
+      }'
+      output: '{
+        "responseCode": "200"
+      }'
+
+  DC_14_InvalidPresentationDefinitionUri:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit an invalid presentation definition URI error from the wallet
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_InvalidPresentationDefinitionUri_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:14_InvalidPresentationDefinitionUri_Request_Sid_requestId$",
+        "error": "invalid_presentation_definition_uri",
+        "errorDescription": "Invalid presentation definition URI"
+      }'
+      output: '{
+        "responseCode": "200"
+}'
+
+  DC_14_InvalidPresentationDefinitionReference:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit an invalid presentation definition reference error from the wallet
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_InvalidPresentationDefinitionReference_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:14_InvalidPresentationDefinitionReference_Request_Sid_requestId$",
+        "error": "invalid_presentation_definition_reference",
+        "errorDescription": "Invalid presentation definition reference"
+      }'
+      output: '{
+        "responseCode": "200"
+}'
+
+  DC_14_InvalidTransactionData:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit an invalid transaction data error from the wallet
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_InvalidTransactionData_14
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:14_InvalidTransactionData_Request_Sid_requestId$",
+        "error": "invalid_transaction_data",
+        "errorDescription": "Invalid transaction data"
+      }'
+      output: '{
+        "responseCode": "200"
+}'
+
+  DC_15_RefererInsteadOfOrigin:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit a VP response using Referer instead of Origin
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_RefererInsteadOfOrigin_15
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": "$ID:15_Referer_Request_Sid_requestId$"
+      }'
+      output: '{
+        "responseCode": "200"
+}'
+
+  DC_16_MissingRequestId:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a DC API submission with a missing request identifier
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_MissingRequestId_16
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": ""
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_17_BlankRequestId:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a DC API submission with a blank request identifier
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_BlankRequestId_17
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": ""
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_18_NeitherTokenNorError:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a submission without a VP token or wallet error
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_NeitherTokenNorError_18
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiRequestIdOnly
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:01_decentralized_identifier_vp_request_Sid_requestId$"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_19_BothTokenAndError:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a submission containing both a VP token and an error
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_BothTokenAndError_19
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:01_decentralized_identifier_vp_request_Sid_requestId$",
+        "vpToken": "{}",
+        "error": "access_denied"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_20_ErrorDescriptionWithVpToken:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a submission containing error description with a VP token
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_ErrorDescriptionWithVpToken_20
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:01_decentralized_identifier_vp_request_Sid_requestId$",
+        "vpToken": "{}",
+        "errorDescription": "User cancelled"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_21_ErrorDescriptionWithoutError:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a submission containing error description without an error
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_ErrorDescriptionWithoutError_21
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:01_decentralized_identifier_vp_request_Sid_requestId$",
+        "errorDescription": "User cancelled"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_22_UnknownRequestId:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a submission with an unknown request identifier
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_UnknownRequestId_22
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": "unknown-request-id"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_24_SecondSubmit:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a second submission for the same request identifier
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_SecondSubmit_24
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": "$ID:24_SecondSubmit_Request_Sid_requestId$"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_25_NoOriginOrReferer:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a submission without Origin or Referer headers
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_NoOriginOrReferer_25
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": "$ID:25_NoOrigin_Request_Sid_requestId$"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_26_OriginNotAllowed:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a submission with an unapproved Origin
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_OriginNotAllowed_26
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": "$ID:26_InvalidOrigin_Request_Sid_requestId$"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_27_FormBody:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a form-encoded DC API submission
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_FormBody_27
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": "$ID:27_Form_Request_Sid_requestId$"
+      }'
+      output: '{
+        "responseCode": "415"
+}'
+
+  DC_28_DirectPostRequestSubmittedToDcApi:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a direct post request submitted to the DC API endpoint
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_DirectPostRequest_28
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiDirectPostError
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "requestId": "$ID:09_response_mode_omitted_vp_request_requestId$",
+        "error": "access_denied",
+        "errorDescription": "User denied the request"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_29_DcApiSessionSubmittedToDirectPost:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Reject a DC API session submitted to the direct post endpoint
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_SessionToDirectPost_29
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": "$ID:01_DecentralizedIdentifier_Session_requestId$"
+      }'
+      output: '{
+        "responseCode": "400"
+}'
+
+  DC_30_VpTokenString:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a VP token represented as a string
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_VpTokenString_30
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "$ID:30_VpToken_Request_Sid_requestId$",
+      "vpToken": "\"not-an-object\""
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  DC_31_EmptyVpTokenObject:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject an empty VP token object
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_EmptyVpToken_31
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "$ID:31_EmptyVpToken_Request_Sid_requestId$",
+      "vpToken": "{}"
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  DC_32_VpTokenValueNotArray:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a VP token value that is not an array
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_VpTokenValueNotArray_32
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "$ID:32_VpTokenValue_Request_Sid_requestId$",
+      "vpToken": "{\"student_id_credential_query\":\"not-an-array\"}"
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  DC_33_EmptyPresentationArray:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject an empty VP presentation array
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_EmptyPresentationArray_33
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "$ID:33_EmptyArray_Request_Sid_requestId$",
+      "vpToken": "{\"student_id_credential_query\":[]}"
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  DC_34_UnknownCredentialId:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Reject a VP token containing an unknown credential identifier
+      uniqueIdentifier: TC_InjiVerify_DcApiSubmission_UnknownCredentialId_34
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DcApiValidation
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "$ID:34_UnknownCredential_Request_Sid_requestId$",
+      "vpToken": "{\"unknown_credential_id\":[\"invalid-value\"]}"
+      }'
+      output: '{
+      "responseCode": "400"
+}'

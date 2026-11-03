@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <!DOCTYPE suite SYSTEM "http://testng.org/testng-1.0.dtd">
-<suite name="Inji-Verify API Test">
+<suite name="Inji-Verify API Test"
+       parallel="false"
+       preserve-order="true">
 	<!-- Passing Group as parmeter unsing "testType" Possible Groups are: smoke 
 		regression smokeAndRegression -->
 	<test name="VpRequestWithvaliddata">
@@ -575,6 +577,82 @@
 
     <classes>
         <class name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParamAndHeader"/>
+    </classes>
+</test>
+
+<test name="DCAPI">
+    <parameter name="ymlFile"
+               value="injiverify/DCAPI/DCAPI.yml" />
+    <parameter name="idKeyName"
+               value="transactionId,requestId,requestUri" />
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdWithHeaders" />
+    </classes>
+</test>
+
+<test name="DCAPISession">
+    <parameter name="ymlFile"
+               value="injiverify/DCAPI/DCAPISession.yml" />
+    <parameter name="idKeyName"
+               value="transactionId,requestId,requestUri" />
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdWithHeaders" />
+    </classes>
+</test>
+
+<test name="DcApiSubmissionSetup">
+    <parameter name="ymlFile"
+               value="injiverify/DCAPI/DcApiSubmissionSetup.yml" />
+    <parameter name="idKeyName"
+               value="transactionId,requestId,requestUri" />
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdWithHeaders" />
+    </classes>
+</test>
+
+<test name="PostDcApiSubmission">
+    <parameter name="ymlFile"
+               value="injiverify/DCAPI/DcApiSubmission.yml" />
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.PostDcApiSubmission" />
+    </classes>
+</test>
+
+<test name="DcApiExpiredRequestSetup">
+    <parameter name="ymlFile"
+               value="injiverify/DCAPI/DcApiExpiredRequestSetup.yml" />
+    <parameter name="idKeyName"
+               value="transactionId,requestId,requestUri" />
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdWithHeaders" />
+    </classes>
+</test>
+
+<test name="DcApiExpiredSubmission">
+    <parameter name="ymlFile"
+               value="injiverify/DCAPI/DcApiExpiredSubmission.yml" />
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.PostDcApiSubmission" />
+    </classes>
+</test>
+
+<test name="GetDcApiRequestJwt">
+    <parameter name="ymlFile"
+               value="injiverify/DCAPI/GetDcApiRequestJwt.yml" />
+    <parameter name="pathParams"
+               value="requestId" />
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.GetDcApiRequestJwt" />
+    </classes>
+</test>
+
+<test name="VpResults">
+    <parameter name="ymlFile"
+               value="injiverify/DCAPI/VpResults.yml" />
+    <parameter name="pathParams"
+               value="transactionId" />
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
     </classes>
 </test>
 </suite>

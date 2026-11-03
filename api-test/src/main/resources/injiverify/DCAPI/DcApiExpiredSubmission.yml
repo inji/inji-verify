@@ -1,0 +1,16 @@
+DcApiExpiredSubmission:
+  DC_23_ExpiredRequest:
+      endPoint: /v1/verify/vp-submission/dc-api
+      description: Submit an expired DC API verification request
+      uniqueIdentifier: TC_InjiVerify_DcApiExpiredSubmission_23
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmission
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "state": "$ID:23_ExpiredRequest_Sid_requestId$"
+      }'
+      output: '{
+        "responseCode": "400"
+}'

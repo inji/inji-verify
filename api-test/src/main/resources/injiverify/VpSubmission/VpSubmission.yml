@@ -658,3 +658,19 @@ VpSubmission:
       "errorCode": "invalid_request",
       "errorMessage": "VP response has already been submitted."
 }'
+
+  InjiVerify_VpSubmission_Without_PresentationId:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: Submit VP authorization response without presentation ID
+      uniqueIdentifier: TC_InjiVerify_VpSubmission_Without_PresentationId_42
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpSubmission/VpSubmissionWithoutPresentationId
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:CreateVpRequest_ForWithoutPresentationId_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+}'

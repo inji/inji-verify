@@ -1,0 +1,64 @@
+VpResults:
+  DC_39_ResultAfterValidVpSubmission:
+      endPoint: /v1/verify/v2/vp-results/{transactionId}
+      description: Read the result after a valid VP token submission
+      uniqueIdentifier: TC_InjiVerify_VpResults_AfterValidVpSubmission_39
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/VpResults
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "$ID:13_ValidVpToken_Request_Sid_transactionId$"
+      }'
+      output: '{
+      "responseCode": "200"
+}'
+
+  DC_41_ResultAfterAccessDenied:
+      endPoint: /v1/verify/v2/vp-results/{transactionId}
+      description: Read the result after an access denied response
+      uniqueIdentifier: TC_InjiVerify_VpResults_AfterAccessDenied_41
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/VpResults
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "$ID:14_AccessDenied_Request_Sid_transactionId$"
+      }'
+      output: '{
+      "responseCode": "404"
+}'
+
+  DC_42_ResultBeforeSubmission:
+      endPoint: /v1/verify/v2/vp-results/{transactionId}
+      description: Read the result before VP submission
+      uniqueIdentifier: TC_InjiVerify_VpResults_BeforeSubmission_42
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/VpResults
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "$ID:01_decentralized_identifier_vp_request_Sid_transactionId$"
+      }'
+      output: '{
+      "responseCode": "404"
+}'
+
+  DC_43_ResultAfterOriginRejection:
+      endPoint: /v1/verify/v2/vp-results/{transactionId}
+      description: Read the result after Origin validation rejection
+      uniqueIdentifier: TC_InjiVerify_VpResults_AfterOriginRejection_43
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/VpResults
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "$ID:26_InvalidOrigin_Request_Sid_transactionId$"
+      }'
+      output: '{
+      "responseCode": "404"
+}'

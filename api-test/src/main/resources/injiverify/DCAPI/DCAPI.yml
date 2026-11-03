@@ -1,0 +1,169 @@
+DCAPI:
+  DC_01_decentralized_identifier_vp_request_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Create a DC API verification request using a decentralized identifier client
+      uniqueIdentifier: TC_InjiVerify_DcApiRequest_01
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DCAPI
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseMode": "dc_api",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "201"
+}'
+
+  DC_02_x509_san_dns_vp_request:
+      endPoint: /v1/verify/v2/vp-request
+      description: Create a DC API verification request using an X.509 SAN DNS client
+      uniqueIdentifier: TC_InjiVerify_DcApiRequest_02
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DCAPI
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "x509_san_dns:test.example.com",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseMode": "dc_api",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "201"
+}'
+
+  DC_03_referer_only_vp_request:
+      endPoint: /v1/verify/v2/vp-request
+      description: Create a DC API verification request using only the Referer header
+      uniqueIdentifier: TC_InjiVerify_DcApiRequest_03
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DCAPI
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseMode": "dc_api",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "201"
+}'
+
+  DC_04_preregistered_client_vp_request:
+      endPoint: /v1/verify/v2/vp-request
+      description: Reject a DC API verification request using a pre-registered client
+      uniqueIdentifier: TC_InjiVerify_DcApiRequest_04
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DCAPI
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "client123",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseMode": "dc_api",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "400"
+    }'
+
+  DC_05_redirect_uri_client_vp_request:
+    endPoint: /v1/verify/v2/vp-request
+    description: Reject a DC API verification request using a redirect URI client
+    uniqueIdentifier: TC_InjiVerify_DcApiRequest_05
+    role: noauth
+    restMethod: post
+    checkOnlyStatusCodeInResponse: true
+    inputTemplate: injiverify/DCAPI/DCAPI
+    outputTemplate: injiverify/responseCode
+    input: '{
+      "clientId": "redirect_uri:https://client.example.com/callback",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseMode": "dc_api",
+      "responseCodeValidationRequired": false
+    }'
+    output: '{
+      "responseCode": "400"
+}'
+
+  DC_06_response_code_requested_vp_request:
+      endPoint: /v1/verify/v2/vp-request
+      description: Reject a DC API request when response code validation is requested
+      uniqueIdentifier: TC_InjiVerify_DcApiRequest_06
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DCAPI
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseMode": "dc_api",
+      "responseCodeValidationRequired": true
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  DC_07_no_origin_or_referer_vp_request:
+      endPoint: /v1/verify/v2/vp-request
+      description: Reject a DC API request without Origin or Referer headers
+      uniqueIdentifier: TC_InjiVerify_DcApiRequest_07
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DCAPI
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseMode": "dc_api",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  DC_08_unknown_response_mode_vp_request:
+      endPoint: /v1/verify/v2/vp-request
+      description: Reject a DC API request with an unsupported response mode
+      uniqueIdentifier: TC_InjiVerify_DcApiRequest_08
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DCAPI
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseMode": "unknown",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "400"
+}'
+
+  DC_09_response_mode_omitted_vp_request:
+      endPoint: /v1/verify/v2/vp-request
+      description: Create a direct post verification request when response mode is omitted
+      uniqueIdentifier: TC_InjiVerify_DcApiRequest_09
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequest
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "201"
+}'

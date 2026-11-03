@@ -16,7 +16,7 @@ jest.mock("@mui/material", () => ({
 import QRCodeVerification from "../../../src/components/qrcode-verification/QRCodeVerification";
 import { scanFilesForQr } from "../../../src/utils/uploadQRCodeUtils";
 import { extractRedirectUrlFromQrData } from "../../../src/utils/dataProcessor";
-import { vpSessionRequest } from "../../../src/utils/api";
+import { vpSessionRequest, vpSessionResults } from "../../../src/utils/api";
 
 jest.mock("../../../src/utils/uploadQRCodeUtils", () => ({
   doFileChecks: jest.fn(() => true),
@@ -37,6 +37,7 @@ jest.mock("../../../src/utils/api", () => {
   return {
     ...actual,
     vpSessionRequest: jest.fn(),
+    vpSessionResults: jest.fn(),
   };
 });
 
@@ -193,7 +194,37 @@ describe("QRCodeVerification", () => {
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: "Each DCQL credential entry must contain meta.",
+          errorMessage: "Each DCQL credential entry must contain meta.",
+          errorCode: "dcql_query_meta_required",
+        })
+      );
+    });
+  });
+
+  test("passes the shared VC limit error to onError instead of a generic error", async () => {
+    const onError = jest.fn();
+    window.history.replaceState({}, "", "#response_code=limit-reached-code");
+    (vpSessionResults as jest.Mock).mockRejectedValue({
+      errorCode: "resource_not_found",
+      errorMessage: "The requested resource expired., resource_not_found",
+    });
+
+    render(
+      <QRCodeVerification
+        {...baseProps}
+        onError={onError}
+        scannerActive={false}
+        isEnableScan={false}
+        isEnableUpload={true}
+        isVPSubmissionSupported={true}
+      />
+    );
+
+    await waitFor(() => {
+      expect(onError).toHaveBeenCalledWith(
+        expect.objectContaining({
+          errorMessage: "The requested resource expired., resource_not_found",
+          errorCode: "resource_not_found",
         })
       );
     });

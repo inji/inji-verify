@@ -4,7 +4,7 @@ export class storage {
   static setItem = (key: string, value: any) => {
     switch (key) {
       case storage.SELECTED_LANGUAGE:
-        localStorage.setItem(key, JSON.stringify(value));
+        sessionStorage.setItem(key, JSON.stringify(value));
         break;
       case storage.ESSENTIAL_CLAIM:
         const storedClaims = JSON.parse(localStorage.getItem(key) || "[]");
@@ -19,7 +19,9 @@ export class storage {
   };
 
   static getItem = (key: string) => {
-    let data = localStorage.getItem(key);
+    let data = key === storage.SELECTED_LANGUAGE
+      ? sessionStorage.getItem(key)
+      : localStorage.getItem(key);
     if (data) {
       data = JSON.parse(data);
     }

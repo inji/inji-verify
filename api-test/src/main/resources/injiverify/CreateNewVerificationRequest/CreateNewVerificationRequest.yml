@@ -765,7 +765,7 @@ CreateNewVerificationRequest:
       "errorMessage": "credential_sets must contain at least one required entry."
 }'
 
-  Injiverify_CreateVpRequest_ForWithoutPresentationId:
+  Injiverify_CreateVpRequest_ForWithoutPresentationId_Sid:
       endPoint: /v1/verify/v2/vp-request
       description: Creating a fresh VP request for testing submission without presentation ID
       uniqueIdentifier: TC_InjiVerify_CreateNewVerificationRequest_49

@@ -1,0 +1,19 @@
+DcApiExpiredRequestSetup:
+  DC_23_ExpiredRequest_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: Create a DC API verification request for expiry validation
+      uniqueIdentifier: TC_InjiVerify_DcApiExpiredRequest_Setup_23
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/DCAPI/DCAPI
+      outputTemplate: injiverify/responseCode
+      input: '{
+        "clientId": "decentralized_identifier:did:web:mosip.github.io:inji-mock-services:openid4vp-service:docs",
+        "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+        "responseMode": "dc_api",
+        "responseCodeValidationRequired": false
+      }'
+      output: '{
+        "responseCode": "201"
+}'
