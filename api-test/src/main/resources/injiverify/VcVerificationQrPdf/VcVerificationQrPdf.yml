@@ -1,0 +1,51 @@
+VcVerificationQrPdf:
+  Injiverify_VcVerification_QrPdf_Mock_Smoke:
+      endPoint: /v1/verify/v2/vp-session-request
+      description: Read the data-share QR from the mock VC PDF and create a VP session request with its dcql_query
+      uniqueIdentifier: TC_InjiVerify_VcVerification_QrPdf_01
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationQrPdf/VcVerificationQrPdf
+      outputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequestResult
+      input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "qrPdf": "mock.pdf"
+      }'
+      output: '{
+      "responseType": "vp_token"
+}'
+
+  Injiverify_VcVerification_QrPdf_LifeInsurance_Smoke:
+      endPoint: /v1/verify/v2/vp-session-request
+      description: Read the data-share QR from the life insurance VC PDF and create a VP session request with its dcql_query
+      uniqueIdentifier: TC_InjiVerify_VcVerification_QrPdf_02
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationQrPdf/VcVerificationQrPdf
+      outputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequestResult
+      input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "qrPdf": "lifeinsurance.pdf"
+      }'
+      output: '{
+      "responseType": "vp_token"
+}'
+
+  Injiverify_VcVerification_QrPdf_LifeInsuranceSingleContext_Smoke:
+      endPoint: /v1/verify/v2/vp-session-request
+      description: Read the data-share QR from the single-context life insurance VC PDF and create a VP session request with its dcql_query
+      uniqueIdentifier: TC_InjiVerify_VcVerification_QrPdf_03
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationQrPdf/VcVerificationQrPdf
+      outputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequestResult
+      input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "qrPdf": "lifeinsurance-singlecontext.pdf"
+      }'
+      output: '{
+      "responseType": "vp_token"
+}'
