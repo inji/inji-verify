@@ -224,6 +224,14 @@ public class SimplePostForAutoGenIdWithHeaders
                             idKeyName,
                             sendEsignetToken);
         }
+        if (response != null && response.getStatusCode() == 201) {
+            cacheAuthorizationDetailsFromRequest(
+                    testCaseName,
+                    inputJson);
+            cacheRequestIdOwner(
+                    testCaseName,
+                    response);
+        }
 
         try {
             InjiVerifyUtil
