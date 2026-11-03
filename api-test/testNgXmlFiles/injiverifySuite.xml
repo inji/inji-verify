@@ -655,4 +655,11 @@
         <class name="io.inji.testrig.apirig.injiverify.testscripts.PostWithBodyAndPathParams" />
     </classes>
 </test>
+<test name="VcVerificationQrPdf">
+    <parameter name="ymlFile"
+               value="injiverify/VcVerificationQrPdf/VcVerificationQrPdf.yml" />
+    <classes>
+        <class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostWithQrPdf" />
+    </classes>
+</test>
 </suite>

@@ -194,7 +194,8 @@ describe("QRCodeVerification", () => {
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: "Each DCQL credential entry must contain meta.",
+          errorMessage: "Each DCQL credential entry must contain meta.",
+          errorCode: "dcql_query_meta_required",
         })
       );
     });
@@ -222,7 +223,8 @@ describe("QRCodeVerification", () => {
     await waitFor(() => {
       expect(onError).toHaveBeenCalledWith(
         expect.objectContaining({
-          message: "The requested resource expired., resource_not_found",
+          errorMessage: "The requested resource expired., resource_not_found",
+          errorCode: "resource_not_found",
         })
       );
     });

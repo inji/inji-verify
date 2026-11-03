@@ -1,4 +1,6 @@
-import {OverallVPStatus, VerificationStatus} from "../openid4vp-verification/OpenID4VPVerification.types";
+import {AppError, OverallVPStatus, VerificationStatus} from "../openid4vp-verification/OpenID4VPVerification.types";
+
+export type QRCodeVerificationError = Error | AppError;
 
 type ExclusiveCallbacks =
   /**
@@ -39,7 +41,7 @@ export type QRCodeVerificationProps = ExclusiveCallbacks & {
    * Callback triggered when an error occurs during the verification process.
    * This is a required field to ensure proper error handling.
    */
-  onError: (error: Error) => void;
+  onError: (error: QRCodeVerificationError) => void;
 
   /**
    * Upload button config.

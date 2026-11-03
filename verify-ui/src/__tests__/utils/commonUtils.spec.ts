@@ -6,7 +6,6 @@ import {
   getDetailsOrder,
   getDcqlCredentialQueryCount,
   getTotalCredentialCount,
-  getQrErrorMessage,
   isVPSubmissionSupported,
 } from "../../utils/commonUtils";
 import { claim, DcqlCredentialQuery, MatchingVc } from "../../types/data-types";
@@ -47,30 +46,6 @@ const matchingResult = (
 ): MatchingVc => ({ vc, vcStatus });
 
 describe("commonUtils credential matching", () => {
-  describe("getQrErrorMessage", () => {
-    test("maps the expired-resource error through the translation function", () => {
-      const t = jest.fn((key: string) => key);
-      expect(
-        getQrErrorMessage(
-          new Error("  The requested resource expired., resource_not_found  "),
-          t as any,
-        ),
-      ).toBe("AlertMessages:qrVerificationLimitReached");
-      expect(t).toHaveBeenCalledWith(
-        "AlertMessages:qrVerificationLimitReached",
-        expect.objectContaining({ defaultValue: expect.any(String) }),
-      );
-    });
-
-    test("returns an ordinary QR error unchanged", () => {
-      const t = jest.fn();
-      expect(getQrErrorMessage(new Error("camera unavailable"), t as any)).toBe(
-        "camera unavailable",
-      );
-      expect(t).not.toHaveBeenCalled();
-    });
-  });
-
   describe("getCredentialType", () => {
     test("returns non-VerifiableCredential type from ldp_vc type array", () => {
       expect(getCredentialType(ldpVc("InsuranceCredential"))).toBe(
