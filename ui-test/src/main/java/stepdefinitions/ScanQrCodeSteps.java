@@ -94,6 +94,11 @@ public class ScanQrCodeSteps extends BaseSteps {
         verifyScanQRCodeButton();
     }
 
+    @Then("verify scan qr code button is clickable")
+    public void verifyScanQRCodeButtonIsClickable() {
+        assertVisible(scanqrcode.isScanQRCodeButtonClickable(), "Scan QR Code button is not clickable.", "Scan QR Code button is clickable.");
+    }
+
     @When("Verify scan qr code step2 label after")
     public void verifyScanQRCodeStep2LabelAfter() {
         try {
@@ -124,6 +129,11 @@ public class ScanQrCodeSteps extends BaseSteps {
             logFailure(test, driver, "Unexpected error while clicking on the Okay button", e);
             throw e;
         }
+    }
+
+    @Then("verify back button is visible")
+    public void verifyBackButtonIsVisible() {
+        assertVisible(scanqrcode.isVisibleBackButton(), "Back button is not visible.", "Back button is visible.");
     }
 
     @When("verify click on back button")
@@ -206,6 +216,29 @@ public class ScanQrCodeSteps extends BaseSteps {
         } catch (Exception e) {
             logFailure(test, driver, "Unexpected error while clicking scan QR code button", e);
             throw e;
+        }
+    }
+
+    @And("wait for {int} seconds")
+    public void waitForSeconds(int seconds) {
+        // Send a keep-alive command every 60s so BrowserStack doesn't drop the session
+        // (BrowserStack default idle timeout is 90s; a plain Thread.sleep longer than that kills the session)
+        final int keepAliveIntervalMs = 60_000;
+        long remainingMs = (long) seconds * 1000L;
+        try {
+            while (remainingMs > 0) {
+                long sleepMs = Math.min(remainingMs, keepAliveIntervalMs);
+                Thread.sleep(sleepMs);
+                remainingMs -= sleepMs;
+                if (remainingMs > 0) {
+                    driver.getTitle();
+                }
+            }
+            test.log(Status.PASS, "Waited for " + seconds + " seconds.");
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            logFailure(test, driver, "Interrupted while waiting for " + seconds + " seconds", e);
+            throw new RuntimeException("Interrupted while waiting for " + seconds + " seconds", e);
         }
     }
 
@@ -425,6 +458,36 @@ public class ScanQrCodeSteps extends BaseSteps {
         }
     }
 
+    @Then("validate the error message for no internet connection in french")
+    public void validateTheErrorMessageForNoInternetConnectionInFrench() {
+        try {
+            assertEquals(homePage.getNoInternetTitle(), UiConstants.NO_INTERNET_TITLE_IN_FRENCH);
+            assertEquals(homePage.getNoInternetDescription(), UiConstants.NO_INTERNET_DESCRIPTION_IN_FRENCH);
+            test.log(Status.PASS, "Offline no-internet state validated successfully in French.");
+        } catch (AssertionError e) {
+            test.log(Status.FAIL, "French offline validation failed: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while validating offline state in French", e);
+            throw e;
+        }
+    }
+
+    @Then("validate that try again button text is in french")
+    public void validateThatTryAgainButtonTextIsInFrench() {
+        try {
+            String actualText = homePage.getTryAgainButtonText();
+            assertEquals(actualText, UiConstants.TRY_AGAIN_BUTTON_TEXT_IN_FRENCH);
+            test.log(Status.PASS, "'Try Again' button text in French validated: " + actualText);
+        } catch (AssertionError e) {
+            test.log(Status.FAIL, "French 'Try Again' button text validation failed: " + e.getMessage());
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while validating French 'Try Again' button text", e);
+            throw e;
+        }
+    }
+
     @When("click on try again button")
     public void clickOnTryAgainButton() {
         try {
@@ -557,6 +620,23 @@ public class ScanQrCodeSteps extends BaseSteps {
             throw e;
         } catch (Exception e) {
             logFailure(test, driver, "Unexpected error while validating generic scan failure state", e);
+            throw e;
+        }
+    }
+
+    @And("verify no VC result is visible on scan page")
+    public void verifyNoVcResultIsVisibleOnScanPage() {
+        try {
+            assertTrue(
+                    "VC result is still visible on scan page — expected a clean state with no result.",
+                    scanqrcode.isScanResultNotVisibleAfterIdle()
+            );
+            test.log(Status.PASS, "No VC result is visible on scan page as expected.");
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver, "VC result visibility check on scan page failed", e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error while verifying no VC result on scan page", e);
             throw e;
         }
     }

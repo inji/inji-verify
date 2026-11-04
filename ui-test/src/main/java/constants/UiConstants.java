@@ -30,9 +30,15 @@ public class UiConstants {
 	public static final String VP_VERIFICATION_QR_CODE_STEP4_DESCRIPTION = "Check the verification results for the verifiable credentials shared from the wallet.";
 	public static final String VERIFIABLE_VERIFICATION_PANNEL = "Verifiable Credential Selection Panel";
 	public static final String NAME_VALUE_IN_ARABIC = "جون دو";
-	public static final String NAME_VALUE_IN_FRENCH = "Jean Dupont";	
+	public static final String NAME_VALUE_IN_FRENCH = "Jean Dupont";
+	public static final String NAME_VALUE_IN_ENGLISH = "John Doe";
+	public static final String VERIFICATION_SUCCESS_MESSAGE_IN_FRENCH = "Félicitations, le titre donné est valide !";
+	public static final String VERIFICATION_SUCCESS_MESSAGE_IN_ARABIC = "تهانينا، بيانات الاعتماد المقدمة صالحة!";
+	public static final String VERIFICATION_SUCCESS_MESSAGE_IN_ENGLISH = "Congratulations, the given credential is valid!";
+	public static final String VERIFICATION_SUCCESS_MESSAGE_IN_SPANISH = "¡Felicitaciones, la credencial proporcionada es válida!";
 	public static final String GENDER_VALUE_IN_ARABIC = "ذكر";
 	public static final String GENDER_VALUE_IN_FRENCH = "Homme";
+	public static final String GENDER_VALUE_IN_ENGLISH = "Male";
 
 	public static final String SCAN_QR_CODE_STEP4_DESCRIPTION = "View the verification result.";
 	public static final String FILE_FORMAT_CONSTRAINTS_TEXT = "Allowed file formats: PNG/JPEG/JPG/PDF File Size - 10KB to 5MB";
@@ -46,10 +52,23 @@ public class UiConstants {
 	public static final String TRANSACTION_TERMINATED_MESSAGE = "Transaction Terminated";
 	public static final String ERROR_MESSAGE_INVALID_QR = "Unfortunately, the given credential is invalid!";
 	public static final String ERROR_MESSAGE_LARGEFILE_QR = "File size not supported. The file size should be between 10 KB and 5 MB.";
+	public static final String ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE = "Failed to load credential template";
+	// Expected localized translations of the above message. The product currently dispatches
+	// this alert as a raw, untranslated English Error.message (see DisplayVcDetailView.
+	// onTemplateError), so asserting these WILL fail today - that is intentional: this
+	// documents the real expected localized text so the test starts passing once the product
+	// routes this message through i18n, rather than asserting today's (incorrect) behavior.
+	public static final String ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_FRENCH = "Impossible de charger le modèle des informations d'identification";
+	public static final String ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_ARABIC = "تعذر تحميل قالب بيانات الاعتماد";
+	public static final String ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_SPANISH = "No se pudo cargar la plantilla de la credencial";
+	public static final String ERROR_FAILED_TO_LOAD_CREDENTIAL_TEMPLATE_IN_TAMIL = "நற்சான்றிதழ் டெம்ப்ளேட்டை ஏற்ற முடியவில்லை";
 	public static final String ERROR_MESSAGE_SCAN_TIMEOUT = "The scan session has expired due to inactivity. Please initiate a new scan.";
 	public static final String ERROR_MESSAGE_EXPIRED_QR = "The given credential is valid but expired!";
 	public static final String ERROR_UNSUPPORTED_FORMAT = "Unsupported file format. Allowed file formats are: png, jpeg, jpg, pdf.";
 	public static final String ERROR_SMALL_OR_BLUR_QR_CODE = "QR size too small/low quality, please retry with a clear QR";
+	public static final String ERROR_SMALL_OR_BLUR_QR_CODE_IN_FRENCH = "Impossible de détecter le code QR. Il est peut-être trop petit ou de mauvaise qualité. Veuillez réessayer avec un code QR clair";
+	public static final String ERROR_SMALL_OR_BLUR_QR_CODE_IN_ARABIC = "تعذر اكتشاف رمز QR. قد يكون صغيرًا جدًا أو منخفض الجودة. يرجى المحاولة مرة أخرى باستخدام رمز QR واضح";
+	public static final String ERROR_SMALL_OR_BLUR_QR_CODE_IN_SPANISH = "No se pudo detectar el código QR. Puede ser demasiado pequeño o de baja calidad. Inténtelo de nuevo con un código QR claro";
 	public static final String ERROR_MULTI_FORMAT = "No QR code found";
 	public static final String HALF_QRCODE_FAILURE_MESSAGE = "Couldn't read the QR code. Make sure the entire QR code is inside the frame and try again.";
 	public static final String ERROR_MULTIPLE_QR_CODES = "Multiple QR codes detected, please retry with an image containing a single QR code.";
@@ -60,6 +79,9 @@ public class UiConstants {
 	public static final String CLASS = "class";
 	public static final String NO_INTERNET_TITLE = "No Internet Connection!";
 	public static final String NO_INTERNET_DESCRIPTION = "Oops! We cant seem to connect. Check your internet connection and try again.";
+	public static final String NO_INTERNET_TITLE_IN_FRENCH = "Pas de connexion Internet !";
+	public static final String NO_INTERNET_DESCRIPTION_IN_FRENCH = "Oups ! Nous n'arrivons pas à nous connecter. Vérifiez votre connexion Internet et réessayez.";
+	public static final String TRY_AGAIN_BUTTON_TEXT_IN_FRENCH = "Veuillez réessayer";
 	public static final String CAMERA_ACCESS_DENIED_TITLE = "Camera Access Denied";
 	public static final String CAMERA_ACCESS_DENIED_DESCRIPTION = "We need your camera to scan the code. Go to your browser settings and allow camera access for this website.";
 	public static final String CAMERA_ACCESS_DENIED_OKAY_BUTTON = "Okay";
@@ -70,5 +92,17 @@ public class UiConstants {
 	public static final String DECLINED_TO_SHARE_ERROR = "The wallet declined the request or does not have the requested credentials. Please try again.";
 	public static final String MULTIPLE_VC_VERIFICATION_SUCCESS_MESSAGE = "Valid 2/2";
 
+	// Expected VC field values for data-verification tests (from the Static Test QR code)
+	public static final String EXPECTED_SDJWT_SELECTIVE_DISCLOSURE_FIRSTNAME = "John";
+	public static final String EXPECTED_VC_FULL_NAME = "virat";
+	public static final String EXPECTED_VC_POLICY_NUMBER = "1818";
+	public static final String EXPECTED_VC_POLICY_NAME = "virat";
+	public static final String EXPECTED_VC_POLICY_ISSUED_ON = "2026-05-19";
+	public static final String EXPECTED_VC_POLICY_EXPIRES_ON = "2035-04-20";
+	public static final String EXPECTED_VC_BENEFITS = "Critical Surgery, Full body checkup";
+	public static final String EXPECTED_VC_MOBILE = "0123456789";
+	public static final String EXPECTED_VC_EMAIL = "abcd@gmail.com";
+	public static final String EXPECTED_VC_GENDER = "Male";
+	public static final String EXPECTED_VC_DOB = "2026-07-01";
 
 }

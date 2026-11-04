@@ -40,6 +40,8 @@ public class InjiVerifyConfigManager extends ConfigManager{
 
 	public static String getIssuerSearchTextForSunbird() { return getproperty("issuerSearchTextforSunbird"); }
 
+	public static String getIssuerSearchTextForSVG() { return getproperty("issuerSearchTextforSVG"); }
+
 	public static String getInjiVerifyUiBaseUrl() {
 		String url = getproperty("injiverify");
 		String  temp =url.replaceFirst("https?://", "");

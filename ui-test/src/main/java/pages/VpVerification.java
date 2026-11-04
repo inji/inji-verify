@@ -41,7 +41,7 @@ public class VpVerification extends BasePage {
 	@FindBy(id = "camera-access-denied-okay-button")
 	WebElement generateQRCodeButton;
 
-	@FindBy(id = "request-credentials-button")
+	@FindBy(id = "stepper-request-credentials-button")
 	WebElement verifiableCredentialsButton;
 
 	@FindBy(xpath = "//*[name()='path' and contains(@fill,'#000000')]")
