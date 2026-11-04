@@ -19,13 +19,13 @@ const humanizeElementIdentifier = (identifier: string): string =>
 
 /**
  * mdoc claims (namespace → element identifier → value) as rows. The key stays
- * `<namespace>.<element>` so rows from different namespaces stay distinct; the label
- * is the element name, qualified by its namespace only when that name repeats.
+ * `<namespace>.<element>` so rows from different namespaces stay distinct; the label is
+ * the element name, because each namespace is shown as its own section.
  */
 export const getMdocDetailsOrder = (
   claims: MdocVc,
-): { key: string; value: unknown; label: string }[] => {
-  const rows = Object.entries(claims).flatMap(([namespace, namespaceClaims]) => {
+): { key: string; value: unknown; label: string; namespace: string }[] =>
+  Object.entries(claims).flatMap(([namespace, namespaceClaims]) => {
     if (
       typeof namespaceClaims !== "object" ||
       namespaceClaims === null ||
@@ -33,26 +33,34 @@ export const getMdocDetailsOrder = (
     ) {
       return [];
     }
-    return Object.entries(namespaceClaims).map(([element, value]) => ({ namespace, element, value }));
+    return Object.entries(namespaceClaims).map(([element, value]) => ({
+      key: `${namespace}.${element}`,
+      value,
+      label: humanizeElementIdentifier(element),
+      namespace,
+    }));
   });
-  const elementCounts = new Map<string, number>();
-  rows.forEach(({ element }) => elementCounts.set(element, (elementCounts.get(element) ?? 0) + 1));
-  return rows.map(({ namespace, element, value }) => ({
-    key: `${namespace}.${element}`,
-    value,
-    label:
-      (elementCounts.get(element) ?? 0) > 1
-        ? `${humanizeElementIdentifier(element)} (${namespace})`
-        : humanizeElementIdentifier(element),
-  }));
-};
 
-/** Puts the document title first; it is display data from the caller, not a claim. */
-export const withMdocDocTitle = <T extends { key: string; value: unknown }>(
-  details: T[],
-  docTitle?: string,
-): (T | { key: string; value: unknown })[] =>
-  docTitle ? [{ key: "docTitle", value: docTitle }, ...details] : details;
+/** One section per mdoc namespace: the namespace name, then its claims. */
+export const MdocDetailsSections: React.FC<{ claims: MdocVc; vc?: AnyVc }> = ({ claims, vc }) => {
+  const rows = getMdocDetailsOrder(claims);
+  const namespaces = Array.from(new Set(rows.map((row) => row.namespace)));
+  return (
+    <>
+      {namespaces.map((namespace) => (
+        <section key={namespace} className="pt-2">
+          <p
+            id={`${convertToId(namespace)}-namespace`}
+            className="font-semibold text-verySmallTextSize break-all text-[#666666] px-1"
+          >
+            {namespace}
+          </p>
+          <VcDetailsGrid orderedDetails={rows.filter((row) => row.namespace === namespace)} vc={vc} />
+        </section>
+      ))}
+    </>
+  );
+};
 
 const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   orderedDetails,

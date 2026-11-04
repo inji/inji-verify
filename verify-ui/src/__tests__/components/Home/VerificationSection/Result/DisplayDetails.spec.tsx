@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import VcDetailsGrid from "../../../../../components/Home/VerificationSection/Result/VcDetailsGrid";
-import { getMdocDetailsOrder, withMdocDocTitle } from "../../../../../components/Home/VerificationSection/Result/VcDetailsGrid";
+import { getMdocDetailsOrder, MdocDetailsSections } from "../../../../../components/Home/VerificationSection/Result/VcDetailsGrid";
 import DisplayVcDetailView from "../../../../../components/Home/VerificationSection/Result/DisplayVcDetailView";
 
 jest.mock("../../../../../utils/misc", () => ({
@@ -74,8 +74,8 @@ describe("credential details display", () => {
     });
 
     expect(orderedDetails).toEqual([
-      { key: "org.iso.18013.5.1.family_name", value: "Cooper", label: "Family Name" },
-      { key: "org.iso.18013.5.2.age_over_18", value: true, label: "Age Over 18" },
+      { key: "org.iso.18013.5.1.family_name", value: "Cooper", label: "Family Name", namespace: "org.iso.18013.5.1" },
+      { key: "org.iso.18013.5.2.age_over_18", value: true, label: "Age Over 18", namespace: "org.iso.18013.5.2" },
     ]);
 
     render(<VcDetailsGrid orderedDetails={orderedDetails} />);
@@ -87,34 +87,35 @@ describe("credential details display", () => {
     expect(screen.getByText("true")).toBeInTheDocument();
   });
 
-  test("qualifies an mdoc label with its namespace only when the element name repeats", () => {
-    expect(
-      getMdocDetailsOrder({
-        "org.iso.18013.5.1": { family_name: "Cooper", given_name: "Gorge" },
-        "org.example.custom": { family_name: "Second" },
-      }).map(({ label }) => label),
-    ).toEqual([
-      "Family Name (org.iso.18013.5.1)",
-      "Given Name",
-      "Family Name (org.example.custom)",
-    ]);
-  });
+  test("shows each mdoc namespace as a section holding its own claims", () => {
+    const { container } = render(
+      <MdocDetailsSections
+        claims={{
+          "org.iso.18013.5.1": { family_name: "Cooper", given_name: "Gorge" },
+          "org.example.custom": { family_name: "Second" },
+        }}
+      />,
+    );
 
-  test("puts the document title first only when one is given", () => {
-    const rows = [{ key: "org.iso.18013.5.1.family_name", value: "Cooper", label: "Family Name" }];
-    expect(withMdocDocTitle(rows, "Mobile Document")).toEqual([{ key: "docTitle", value: "Mobile Document" }, ...rows]);
-    expect(withMdocDocTitle(rows)).toEqual(rows);
+    const sections = Array.from(container.querySelectorAll("section"));
+    expect(sections.map((section) => section.querySelector("p")?.textContent)).toEqual([
+      "org.iso.18013.5.1",
+      "org.example.custom",
+    ]);
+    // The same element name in two namespaces stays under its own namespace heading.
+    expect(sections[0].textContent).toContain("Cooper");
+    expect(sections[0].textContent).toContain("Gorge");
+    expect(sections[1].textContent).toContain("Second");
+    expect(sections[1].textContent).not.toContain("Cooper");
   });
 
   test("lists mdoc claims by namespace only when the details view is flagged as mdoc", () => {
     const mdocClaims = { "org.iso.18013.5.1": { family_name: "Cooper" } } as any;
 
-    const { unmount } = render(
-      <DisplayVcDetailView vc={mdocClaims} isMdoc docTitle="Mobile Document" onExpand={jest.fn()} />,
-    );
+    const { unmount } = render(<DisplayVcDetailView vc={mdocClaims} isMdoc onExpand={jest.fn()} />);
     expect(screen.getByText("Family Name")).toBeInTheDocument();
-    expect(screen.getByText("docTitle")).toBeInTheDocument();
-    expect(screen.getByText("Mobile Document")).toBeInTheDocument();
+    // The card holds the namespace sections only; the title is in the result header.
+    expect(screen.queryByText("Mobile Document")).toBeNull();
     unmount();
 
     // Without the flag the same shape goes through the generic ordering.

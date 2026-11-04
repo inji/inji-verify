@@ -35,13 +35,12 @@ jest.mock(
         const React = require("react");
         return {
             __esModule: true,
-            default: ({ vc, isMdoc, docTitle }: { vc?: Record<string, any>; isMdoc?: boolean; docTitle?: string }) =>
+            default: ({ vc, isMdoc }: { vc?: Record<string, any>; isMdoc?: boolean }) =>
                 React.createElement("div", {
                     "data-testid": "vc-detail-view-mock",
                     "data-family-name": vc?.["org.iso.18013.5.1"]?.family_name,
                     "data-claim-keys": Object.keys(vc ?? {}).join(","),
                     "data-is-mdoc": String(Boolean(isMdoc)),
-                    "data-doc-title": docTitle,
                 }),
         };
     }
@@ -53,12 +52,11 @@ jest.mock(
         const React = require("react");
         return {
             __esModule: true,
-            default: ({ vcType, isMdoc, docTitle }: { vcType: string; isMdoc?: boolean; docTitle?: string }) =>
+            default: ({ vcType, isMdoc }: { vcType: string; isMdoc?: boolean }) =>
                 React.createElement("div", {
                     "data-testid": "vc-detail-modal-mock",
                     "data-vc-type": vcType,
                     "data-is-mdoc": String(Boolean(isMdoc)),
-                    "data-doc-title": docTitle,
                 }),
         };
     }
@@ -131,13 +129,10 @@ describe("Vc Result", () => {
     // No docType row: the claims hold namespaces only.
     expect(details).toHaveAttribute("data-claim-keys", "org.iso.18013.5.1");
     expect(details).toHaveAttribute("data-is-mdoc", "true");
-    // The translated document title is passed beside the claims, for its own row.
-    expect(details).toHaveAttribute("data-doc-title", "ResultSummary:mobileDocument");
     expect(container.querySelector("#vc-result-doc-type")?.textContent).toBe("ResultSummary:mobileDocument");
     const modal = container.querySelector("[data-testid='vc-detail-modal-mock']");
     expect(modal).toHaveAttribute("data-vc-type", "ResultSummary:mobileDocument");
     expect(modal).toHaveAttribute("data-is-mdoc", "true");
-    expect(modal).toHaveAttribute("data-doc-title", "ResultSummary:mobileDocument");
     expect(extractMdocDisplayClaims).toHaveBeenCalledWith("omppc3N1ZXJBdXRo");
   });
 

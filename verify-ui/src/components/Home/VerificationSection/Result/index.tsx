@@ -120,7 +120,6 @@ const Result = () => {
           <DisplayVcDetailView
             vc={claims}
             isMdoc={isMdoc}
-            docTitle={mdocTitle}
             onExpand={() => setModalOpen(true)}
             className={`h-auto rounded-t-0 rounded-b-lg overflow-y-auto mt-[-30px]`}
           />
@@ -139,7 +138,6 @@ const Result = () => {
           onClose={() => setModalOpen(false)}
           vc={claims}
           isMdoc={isMdoc}
-          docTitle={mdocTitle}
           status={vcStatus}
           vcType={mdocTitle ?? credentialType}
         />
