@@ -118,7 +118,7 @@ describe("Vc Result", () => {
 
     const details = container.querySelector("[data-testid='vc-detail-view-mock']");
     expect(details).toHaveAttribute("data-family-name", "Cooper");
-    expect(details).not.toHaveAttribute("data-doc-type");
+    expect(details).toHaveAttribute("data-doc-type", "Mobile Document");
     expect(container.querySelector("#vc-result-doc-type")?.textContent).toBe("Mobile Document");
     expect(container.querySelector("[data-testid='vc-detail-modal-mock']")).toHaveAttribute("data-vc-type", "Mobile Document");
     expect(extractMdocDisplayClaims).toHaveBeenCalledWith("omppc3N1ZXJBdXRo");

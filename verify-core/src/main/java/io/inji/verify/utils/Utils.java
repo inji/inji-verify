@@ -34,6 +34,7 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -418,7 +419,11 @@ public final class Utils {
                     @SuppressWarnings("unchecked")
                     Map<String, Object> namespaceClaims = (Map<String, Object>) claims.computeIfAbsent(
                             namespaceName, ignored -> new LinkedHashMap<>());
-                    namespaceClaims.put(item.get(Constants.KEY_ELEMENT_IDENTIFIER).AsString(),
+                    String elementIdentifier = item.get(Constants.KEY_ELEMENT_IDENTIFIER).AsString();
+                    if (namespaceClaims.containsKey(elementIdentifier)) {
+                        throw new InvalidCredentialException("Duplicate mdoc element identifier", null);
+                    }
+                    namespaceClaims.put(elementIdentifier,
                             mdocValueToJava(item.get(Constants.KEY_ELEMENT_VALUE), 0));
                 }
             }
@@ -490,6 +495,17 @@ public final class Utils {
         }
         if (value == null || value.isNull()) {
             return null;
+        }
+        if (value.HasMostOuterTag(4)) {
+            if (value.getType() != CBORType.Array
+                    || value.size() != 2
+                    || value.get(0).getType() != CBORType.Integer
+                    || value.get(1).getType() != CBORType.Integer) {
+                throw new IllegalArgumentException("Invalid CBOR decimal fraction");
+            }
+            int exponent = value.get(0).AsEIntegerValue().ToInt32Checked();
+            BigDecimal mantissa = new BigDecimal(value.get(1).AsEIntegerValue().toString());
+            return mantissa.scaleByPowerOfTen(exponent);
         }
         if (value.HasMostOuterTag(24) && value.getType() == CBORType.ByteString) {
             return mdocValueToJava(CBORObject.DecodeFromBytes(value.Untag().GetByteString()), depth + 1);
@@ -602,7 +618,8 @@ public final class Utils {
 
     /**
      * Removes configured mdoc meta elements. Each entry is {@code <namespace>.<element>}
-     * and is removed from that namespace only.
+     * and is removed from that namespace only. Namespaces and element identifiers can both
+     * contain dots, so every split point is tried against the namespaces actually present.
      */
     private static void excludeMdocMetaClaims(List<String> mdocMetaClaims, Map<String, Object> claims) {
         for (String metaClaim : Optional.ofNullable(mdocMetaClaims).orElseGet(List::of)) {
@@ -610,15 +627,14 @@ public final class Utils {
                 continue;
             }
             String trimmed = metaClaim.trim();
-            int separator = trimmed.lastIndexOf('.');
-            if (separator <= 0 || separator == trimmed.length() - 1) {
-                continue;
-            }
-            String namespace = trimmed.substring(0, separator);
-            String element = trimmed.substring(separator + 1);
-            Object namespaceClaims = claims.get(namespace);
-            if (namespaceClaims instanceof Map<?, ?> map) {
-                map.remove(element);
+            for (int separator = trimmed.indexOf('.'); separator >= 0; separator = trimmed.indexOf('.', separator + 1)) {
+                if (separator == 0 || separator == trimmed.length() - 1) {
+                    continue;
+                }
+                Object namespaceClaims = claims.get(trimmed.substring(0, separator));
+                if (namespaceClaims instanceof Map<?, ?> map) {
+                    map.remove(trimmed.substring(separator + 1));
+                }
             }
         }
     }
@@ -637,6 +653,16 @@ public final class Utils {
             return false;
         }
         byte[] encoded;
+        if (trimmed.length() > maxMdocBase64Length) {
+            // Oversized input is not parsed into a CBOR tree here. A linear scan of the whole
+            // payload still recognises an mdoc, so getCredentialFormat reports the size error.
+            try {
+                encoded = Base64.getUrlDecoder().decode(trimmed);
+            } catch (IllegalArgumentException invalidBase64) {
+                return false;
+            }
+            return hasMdocShapeKeys(encoded);
+        }
         try {
             encoded = Base64.getUrlDecoder().decode(trimmed);
             // Read the first CBOR item only. DecodeFromBytes rejects a buffer that
@@ -650,15 +676,18 @@ public final class Utils {
                     || (root.ContainsKey(Constants.KEY_ISSUER_AUTH) && root.ContainsKey(Constants.KEY_NAMESPACES));
         } catch (Exception ignored) {
             try {
-                encoded = Base64.getUrlDecoder().decode(trimmed);
-                return containsMdocShapeKey(encoded, Constants.KEY_DOCUMENTS)
-                        || containsMdocShapeKey(encoded, Constants.KEY_ISSUER_SIGNED)
-                        || (containsMdocShapeKey(encoded, Constants.KEY_ISSUER_AUTH)
-                        && containsMdocShapeKey(encoded, Constants.KEY_NAMESPACES));
+                return hasMdocShapeKeys(Base64.getUrlDecoder().decode(trimmed));
             } catch (IllegalArgumentException invalidBase64) {
                 return false;
             }
         }
+    }
+
+    private static boolean hasMdocShapeKeys(byte[] encoded) {
+        return containsMdocShapeKey(encoded, Constants.KEY_DOCUMENTS)
+                || containsMdocShapeKey(encoded, Constants.KEY_ISSUER_SIGNED)
+                || (containsMdocShapeKey(encoded, Constants.KEY_ISSUER_AUTH)
+                && containsMdocShapeKey(encoded, Constants.KEY_NAMESPACES));
     }
 
     private static boolean containsMdocShapeKey(byte[] encoded, String key) {

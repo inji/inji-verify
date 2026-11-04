@@ -30,13 +30,30 @@ export const getMdocDetailsOrder = (
     : details;
 };
 
+const isPlainObject = (value: unknown): value is Record<string, unknown> =>
+  typeof value === "object" && value !== null && !Array.isArray(value);
+
+const ISO_MDL_NAMESPACE = "org.iso.18013.5.1";
+
+/**
+ * mdoc result claims: one or more namespace objects keyed by element identifier.
+ * The UI adds a string docType; backend results carry namespaces only, so the
+ * ISO mDL namespace is also accepted as a marker. Every other entry must be a
+ * namespace object, which keeps flat LDP / SD-JWT claims out.
+ */
 export const hasMdocNamespace = (
   claims: unknown,
-): claims is MdocVc =>
-  typeof claims === "object" &&
-  claims !== null &&
-  !Array.isArray(claims) &&
-  Object.prototype.hasOwnProperty.call(claims, "org.iso.18013.5.1");
+): claims is MdocVc => {
+  if (
+    !isPlainObject(claims) ||
+    (typeof claims.docType !== "string" &&
+      !Object.prototype.hasOwnProperty.call(claims, ISO_MDL_NAMESPACE))
+  ) {
+    return false;
+  }
+  const namespaces = Object.entries(claims).filter(([key]) => key !== "docType");
+  return namespaces.length > 0 && namespaces.every(([, value]) => isPlainObject(value));
+};
 
 const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   orderedDetails,
@@ -80,8 +97,7 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
 
           const faceData = Array.isArray(label.value) && label.value.length > 0 ? label.value[0] : label.value;
           const imageSrc =
-            typeof faceData === "string" &&
-            (faceData.startsWith("data:") || faceData.startsWith("http"))
+            typeof faceData === "string" && /^data:image\//i.test(faceData)
               ? faceData
               : null;
 

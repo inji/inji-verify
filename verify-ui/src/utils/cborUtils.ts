@@ -1,4 +1,4 @@
-import { decodeMultiple, decode } from "cbor-x";
+import { decodeMultiple, decode, Tag } from "cbor-x";
 import { decodeMappedData } from "@injistack/pixelpass";
 
 export function uint8ArrayToHex(uint8Array: Uint8Array): string {
@@ -126,14 +126,9 @@ function bytesToBase64(value: Uint8Array): string {
   return btoa(binary);
 }
 
-function isCborTag(value: unknown): value is { tag: number; value: unknown } {
-  return (
-    typeof value === "object" &&
-    value !== null &&
-    "tag" in value &&
-    "value" in value &&
-    typeof (value as { tag: unknown }).tag === "number"
-  );
+/** Only cbor-x's decoded Tag instances count; plain maps with tag/value keys are claim data. */
+function isCborTag(value: unknown): value is Tag {
+  return value instanceof Tag;
 }
 
 function containsCborTextKey(bytes: Uint8Array, key: string): boolean {
@@ -274,6 +269,9 @@ export function extractMdocDisplayClaims(
         throw new Error("Invalid mdoc issuer-signed item");
       }
       const elementIdentifier = decoded[MDOC_KEY_ELEMENT_IDENTIFIER] as string;
+      if (Object.prototype.hasOwnProperty.call(namespaceClaims, elementIdentifier)) {
+        throw new Error(`Duplicate mdoc element identifier: ${namespace}.${elementIdentifier}`);
+      }
       namespaceClaims[elementIdentifier] = renderMdocValue(
         decoded[MDOC_KEY_ELEMENT_VALUE],
         elementIdentifier,

@@ -53,7 +53,7 @@ Strings longer than 1 MiB are rejected as mdocs.
 |---|---|---|
 | Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | Algorithm comes from the `issuerAuth` COSE `alg` header, subject to verifier support. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
 | Data-element integrity | MSO digests | Performed by the verification library |
-| MSO validity | `validFrom` and `validUntil` | A future `validFrom` fails verification; an expired `validUntil` is reported in `expiryCheck` |
+| MSO validity | `validFrom` and `validUntil` | An expired `validUntil` is reported in `expiryCheck`; a future `validFrom` is currently not rejected (see [Limitations](#limitations)) |
 | Revocation | — | Not supported; `statusCheck` is empty |
 | Holder / device binding | — | Not applicable on scan and upload |
 
@@ -97,7 +97,7 @@ When `includeClaims` is `true`, `claims` contains:
 - issuer-signed data elements grouped by namespace and keyed by `elementIdentifier`
 
 The service returns namespace data elements only; it does not read or return `docType` from the document or signed MSO. Each namespace has a nested claim object, so elements with the same identifier remain separate without renaming.
-Claims are extracted from the parsed credential returned by `vc-verifier` after verification, rather than decoding the original mdoc again.
+Claims are extracted by decoding the submitted credential string again (`Utils.extractClaims`), separately from the `vc-verifier` verification call.
 
 ---
 

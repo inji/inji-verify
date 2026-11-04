@@ -11,8 +11,10 @@ const backgroundColorMapping: any = {
 
 const ResultSummary = ({
   status,
+  docType,
 }: {
   status: "SUCCESS" | "EXPIRED" | "INVALID" | "TIMEOUT" | "REVOKED";
+  docType?: string;
 }) => {
   const bgColor = backgroundColorMapping[status];
   const { t } = useTranslation("ResultSummary");
@@ -27,6 +29,14 @@ const ResultSummary = ({
           <VerificationFailedIcon />
         )}
       </div>
+      {docType ? (
+        <p
+          id="vc-result-doc-type"
+          className="font-bold text-lgNormalTextSize text-center text-white mb-1"
+        >
+          {docType}
+        </p>
+      ) : null}
       <div className={`rounded-xl p-1`}>
         <p
           id="vc-result-display-message"

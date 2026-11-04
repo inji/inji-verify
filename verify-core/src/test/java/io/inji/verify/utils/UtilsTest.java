@@ -34,6 +34,7 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.math.BigDecimal;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.interfaces.ECPrivateKey;
@@ -382,6 +383,70 @@ public class UtilsTest {
 
         assertEquals("18446744073709551615",
                 ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("large_number"));
+    }
+
+    @Test
+    void shouldConvertMdocDecimalFractionToNumericValue() {
+        CBORObject decimalFraction = CBORObject.NewArray()
+                .Add(-1)
+                .Add(15)
+                .WithTag(4);
+        CBORObject item = CBORObject.NewMap()
+                .Add("elementIdentifier", "decimal_claim")
+                .Add("elementValue", decimalFraction);
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray().Add(CBORObject.FromObject(item.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("docType", "org.iso.18013.5.1.mDL")
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document));
+
+        assertEquals(new BigDecimal("1.5"),
+                ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("decimal_claim"));
+    }
+
+    @Test
+    void shouldExcludeMdocMetaClaimWithDottedElementIdentifier() {
+        CBORObject dotted = CBORObject.NewMap()
+                .Add("elementIdentifier", "age.over18")
+                .Add("elementValue", true);
+        CBORObject plain = CBORObject.NewMap()
+                .Add("elementIdentifier", "family_name")
+                .Add("elementValue", "Doe");
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(dotted.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(plain.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("docType", "org.iso.18013.5.1.mDL")
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document),
+                List.of("org.iso.18013.5.1.age.over18"));
+
+        Map<?, ?> namespaceClaims = (Map<?, ?>) claims.get("org.iso.18013.5.1");
+        assertFalse(namespaceClaims.containsKey("age.over18"));
+        assertEquals("Doe", namespaceClaims.get("family_name"));
+    }
+
+    @Test
+    void shouldRejectDuplicateMdocElementIdentifierInNamespace() {
+        CBORObject first = CBORObject.NewMap().Add("elementIdentifier", "family_name").Add("elementValue", "Doe");
+        CBORObject second = CBORObject.NewMap().Add("elementIdentifier", "family_name").Add("elementValue", "Roe");
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(first.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(second.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        InvalidCredentialException error = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(encodeMdoc(document)));
+        assertEquals("Duplicate mdoc element identifier", error.getMessage());
     }
 
     @Test

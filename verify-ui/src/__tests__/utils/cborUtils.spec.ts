@@ -1,10 +1,13 @@
-import { decode, decodeMultiple } from "cbor-x";
+import { decode, decodeMultiple, Tag } from "cbor-x";
 import { decodeMappedData } from "@injistack/pixelpass";
 import { extractMappedClaim, extractMdocDisplayClaims, isCWT, isMsoMdoc, uint8ArrayToHex } from "../../utils/cborUtils";
 
 jest.mock("cbor-x", () => ({
   decode: jest.fn(),
   decodeMultiple: jest.fn(),
+  Tag: class Tag {
+    constructor(public value: unknown, public tag: number) {}
+  },
 }));
 
 jest.mock("@injistack/pixelpass", () => ({
@@ -42,7 +45,7 @@ describe("cborUtils", () => {
         nameSpaces: {
           "org.iso.18013.5.1": [
             { elementIdentifier: "family_name", elementValue: "Cooper" },
-            { elementIdentifier: "birth_date", elementValue: { tag: 1004, value: "1985-04-29" } },
+            { elementIdentifier: "birth_date", elementValue: new Tag("1985-04-29", 1004) },
           ],
         },
       },
@@ -58,6 +61,35 @@ describe("cborUtils", () => {
     });
     expect(mockDecode).toHaveBeenCalledTimes(1);
     expect(isMsoMdoc("header.payload.signature")).toBe(false);
+  });
+
+  it("keeps plain map values with tag and value keys and rejects duplicate identifiers", () => {
+    mockDecode.mockReturnValue({
+      issuerSigned: {
+        nameSpaces: {
+          "org.iso.18013.5.1": [
+            { elementIdentifier: "note", elementValue: { tag: 1, value: "x", label: "important" } },
+          ],
+        },
+      },
+    } as never);
+    expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
+      "org.iso.18013.5.1": { note: { tag: 1, value: "x", label: "important" } },
+    });
+
+    mockDecode.mockReturnValue({
+      issuerSigned: {
+        nameSpaces: {
+          "org.iso.18013.5.1": [
+            { elementIdentifier: "family_name", elementValue: "Cooper" },
+            { elementIdentifier: "family_name", elementValue: "Smith" },
+          ],
+        },
+      },
+    } as never);
+    expect(() => extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toThrow(
+      "Duplicate mdoc element identifier: org.iso.18013.5.1.family_name",
+    );
   });
 
   it("recognizes a corrupt mdoc and reports an mdoc decoding error", () => {

@@ -110,7 +110,10 @@ const Result = () => {
   return (
     <div id="result-section" className="relative mb-[100px]">
       <div className={`text-whiteText`}>
-        <ResultSummary status={vcStatus} />
+        <ResultSummary
+          status={vcStatus}
+          docType={credentialType === "Mobile Document" ? credentialType : undefined}
+        />
       </div>
       <div>
         <div className={`h-[3px] border-b-2 border-b-transparent`} />

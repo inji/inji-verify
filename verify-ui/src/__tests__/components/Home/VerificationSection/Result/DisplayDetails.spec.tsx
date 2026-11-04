@@ -50,6 +50,15 @@ describe("credential details display", () => {
   test("detects mdoc claims by their namespace", () => {
     expect(hasMdocNamespace({ "org.iso.18013.5.1": { family_name: "Cooper" } })).toBe(true);
     expect(hasMdocNamespace({ family_name: "Cooper" })).toBe(false);
+    expect(hasMdocNamespace({ docType: "Mobile Document", "org.example.ns": { member_id: "42" } })).toBe(true);
+    expect(hasMdocNamespace({ docType: "Mobile Document", name: "flat" })).toBe(false);
+  });
+
+  test("does not load remote URLs as biometric images", () => {
+    const { container } = render(
+      <VcDetailsGrid orderedDetails={[{ key: "portrait", value: "https://tracker.example/p.png" }]} />
+    );
+    expect(container.querySelector("img")).toBeNull();
   });
 
   test("renders disclosed claims and biometric values", () => {
