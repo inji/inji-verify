@@ -29,15 +29,39 @@ final class MdocTestCredentialFactory {
     private static final String NAMESPACE = "org.iso.18013.5.1";
     private static final String DOC_TYPE = "org.iso.18013.5.1.mDL";
 
+    /** COSE ECDSA algorithms: COSE id, curve, JCA signature name and the size of r and s in bytes. */
+    enum Algorithm {
+        ES256(-7, "secp256r1", "SHA256withECDSA", 32),
+        ES384(-35, "secp384r1", "SHA384withECDSA", 48),
+        ES512(-36, "secp521r1", "SHA512withECDSA", 66);
+
+        final int coseId;
+        final String curve;
+        final String jcaSignature;
+        final int coordinateBytes;
+
+        Algorithm(int coseId, String curve, String jcaSignature, int coordinateBytes) {
+            this.coseId = coseId;
+            this.curve = curve;
+            this.jcaSignature = jcaSignature;
+            this.coordinateBytes = coordinateBytes;
+        }
+    }
+
     private MdocTestCredentialFactory() {
     }
 
     static String create(Instant signed, Instant validFrom, Instant validUntil, String printedExpiry)
             throws Exception {
+        return create(Algorithm.ES256, signed, validFrom, validUntil, printedExpiry);
+    }
+
+    static String create(Algorithm algorithm, Instant signed, Instant validFrom, Instant validUntil,
+                         String printedExpiry) throws Exception {
         KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
-        keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"));
+        keyPairGenerator.initialize(new ECGenParameterSpec(algorithm.curve));
         KeyPair keyPair = keyPairGenerator.generateKeyPair();
-        X509Certificate certificate = createCertificate(keyPair);
+        X509Certificate certificate = createCertificate(keyPair, algorithm);
 
         CBORObject issuerSignedItem = CBORObject.FromObjectAndTag(
                 CBORObject.NewMap()
@@ -63,8 +87,8 @@ final class MdocTestCredentialFactory {
                 .Add("docType", DOC_TYPE)
                 .Add("validityInfo", validityInfo);
         byte[] payload = CBORObject.FromObjectAndTag(mso.EncodeToBytes(), 24).EncodeToBytes();
-        byte[] protectedHeader = CBORObject.NewMap().Add(1, -7).EncodeToBytes();
-        byte[] signature = signCosePayload(keyPair, protectedHeader, payload);
+        byte[] protectedHeader = CBORObject.NewMap().Add(1, algorithm.coseId).EncodeToBytes();
+        byte[] signature = signCosePayload(keyPair, algorithm, protectedHeader, payload);
         CBORObject issuerAuth = CBORObject.NewArray()
                 .Add(protectedHeader)
                 .Add(CBORObject.NewMap().Add(33, certificate.getEncoded()))
@@ -109,7 +133,7 @@ final class MdocTestCredentialFactory {
         return CBORObject.FromObjectAndTag(instant.toString(), 0);
     }
 
-    private static X509Certificate createCertificate(KeyPair keyPair) throws Exception {
+    private static X509Certificate createCertificate(KeyPair keyPair, Algorithm algorithm) throws Exception {
         Instant now = Instant.now();
         X500Principal principal = new X500Principal("CN=mdoc-test-issuer,C=US");
         JcaX509v3CertificateBuilder builder = new JcaX509v3CertificateBuilder(
@@ -119,12 +143,12 @@ final class MdocTestCredentialFactory {
                 Date.from(now.plusSeconds(86400)),
                 principal,
                 keyPair.getPublic());
-        ContentSigner signer = new JcaContentSignerBuilder("SHA256withECDSA").build(keyPair.getPrivate());
+        ContentSigner signer = new JcaContentSignerBuilder(algorithm.jcaSignature).build(keyPair.getPrivate());
         X509CertificateHolder certificateHolder = builder.build(signer);
         return new JcaX509CertificateConverter().getCertificate(certificateHolder);
     }
 
-    private static byte[] signCosePayload(KeyPair keyPair, byte[] protectedHeader, byte[] payload)
+    private static byte[] signCosePayload(KeyPair keyPair, Algorithm algorithm, byte[] protectedHeader, byte[] payload)
             throws GeneralSecurityException, IOException {
         byte[] signatureStructure = CBORObject.NewArray()
                 .Add("Signature1")
@@ -132,24 +156,25 @@ final class MdocTestCredentialFactory {
                 .Add(new byte[0])
                 .Add(payload)
                 .EncodeToBytes();
-        Signature signer = Signature.getInstance("SHA256withECDSA");
+        Signature signer = Signature.getInstance(algorithm.jcaSignature);
         signer.initSign(keyPair.getPrivate());
         signer.update(signatureStructure);
-        return derToCoseSignature(signer.sign());
+        return derToCoseSignature(signer.sign(), algorithm.coordinateBytes);
     }
 
-    private static byte[] derToCoseSignature(byte[] derSignature) throws IOException {
+    /** DER ECDSA signature to the COSE form: r then s, each left-padded to the curve size. */
+    private static byte[] derToCoseSignature(byte[] derSignature, int coordinateBytes) throws IOException {
         ASN1Sequence sequence = ASN1Sequence.getInstance(ASN1Primitive.fromByteArray(derSignature));
-        byte[] rawSignature = new byte[64];
-        copyInteger(ASN1Integer.getInstance(sequence.getObjectAt(0)).getValue(), rawSignature, 0);
-        copyInteger(ASN1Integer.getInstance(sequence.getObjectAt(1)).getValue(), rawSignature, 32);
+        byte[] rawSignature = new byte[2 * coordinateBytes];
+        copyInteger(ASN1Integer.getInstance(sequence.getObjectAt(0)).getValue(), rawSignature, 0, coordinateBytes);
+        copyInteger(ASN1Integer.getInstance(sequence.getObjectAt(1)).getValue(), rawSignature, coordinateBytes, coordinateBytes);
         return rawSignature;
     }
 
-    private static void copyInteger(BigInteger value, byte[] destination, int offset) {
+    private static void copyInteger(BigInteger value, byte[] destination, int offset, int coordinateBytes) {
         byte[] encoded = value.toByteArray();
-        int sourceOffset = encoded.length > 32 && encoded[0] == 0 ? 1 : 0;
+        int sourceOffset = encoded.length > coordinateBytes && encoded[0] == 0 ? 1 : 0;
         int length = encoded.length - sourceOffset;
-        System.arraycopy(encoded, sourceOffset, destination, offset + 32 - length, length);
+        System.arraycopy(encoded, sourceOffset, destination, offset + coordinateBytes - length, length);
     }
 }

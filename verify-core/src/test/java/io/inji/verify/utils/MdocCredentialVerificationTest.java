@@ -7,6 +7,8 @@ import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import io.mosip.vercred.vcverifier.utils.Util;
 import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
+import org.junit.jupiter.params.ParameterizedTest;
+import org.junit.jupiter.params.provider.EnumSource;
 
 import java.time.Instant;
 import java.time.ZoneOffset;
@@ -23,11 +25,12 @@ class MdocCredentialVerificationTest {
 
     /**
      * These tests expect vc-verifier to report an authentic expired or not-yet-valid mdoc as
-     * ERR_VC_EXPIRED after checking its signature and digests. No published vcverifier-jar has that
-     * fix yet; remove the annotation when vcverifier-jar.version is bumped to a release that does.
+     * ERR_VC_EXPIRED after checking its signature and digests. That is inji/vc-verifier#300
+     * (checks 5 and 13), implemented in inji/vc-verifier#304. Remove the annotation when
+     * vcverifier-jar.version is bumped to a release that includes it.
      */
     private static final String AWAITS_LIBRARY_VALIDITY_FIX =
-            "Needs the vc-verifier mdoc validity fix (validFrom check, ERR_VC_EXPIRED after signature checks)";
+            "Blocked on inji/vc-verifier#300 (mdoc validFrom check and ERR_VC_EXPIRED for an expired mdoc)";
 
     private final CredentialsVerifier credentialsVerifier = new CredentialsVerifier();
 
@@ -126,6 +129,29 @@ class MdocCredentialVerificationTest {
         assertTrue(Utils.populateExpiryCheck(result).isValid());
         Map<?, ?> claims = (Map<?, ?>) Utils.extractMdocClaims(credential, List.of()).get("org.iso.18013.5.1");
         assertEquals(printedExpiry.toString(), claims.get("expiry_date"));
+    }
+
+    @ParameterizedTest
+    @EnumSource(MdocTestCredentialFactory.Algorithm.class)
+    void verifiesMdocSignedWithEachSupportedAlgorithm(MdocTestCredentialFactory.Algorithm algorithm) throws Exception {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        String credential = MdocTestCredentialFactory.create(
+                algorithm, now, now, now.plus(2, ChronoUnit.DAYS), printedExpiryFiveYearsFrom(now));
+
+        VerificationResult result = verify(credential);
+
+        assertTrue(result.getVerificationStatus(), algorithm + ": " + result.getVerificationMessage());
+        assertEquals(VerificationStatus.SUCCESS, Util.INSTANCE.getVerificationStatus(result));
+    }
+
+    @ParameterizedTest
+    @EnumSource(MdocTestCredentialFactory.Algorithm.class)
+    void rejectsTamperedMdocSignedWithEachSupportedAlgorithm(MdocTestCredentialFactory.Algorithm algorithm) throws Exception {
+        Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
+        String credential = MdocTestCredentialFactory.tamperFirstElement(MdocTestCredentialFactory.create(
+                algorithm, now, now, now.plus(2, ChronoUnit.DAYS), printedExpiryFiveYearsFrom(now)));
+
+        assertFalse(verify(credential).getVerificationStatus(), algorithm.name());
     }
 
     private VerificationResult verify(String credential) {
