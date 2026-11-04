@@ -182,7 +182,7 @@ public class UtilsTest {
         document.Add("nameSpaces", namespaces);
         String mdl = Base64.getUrlEncoder().withoutPadding().encodeToString(document.EncodeToBytes());
 
-        Map<String, Object> claims = Utils.extractMdocClaims(mdl);
+        Map<String, Object> claims = Utils.extractMdocClaims(mdl, List.of());
 
         assertEquals("Cooper", ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("family_name"));
         assertFalse(claims.containsKey("docType"));
@@ -192,7 +192,7 @@ public class UtilsTest {
     void shouldExtractMdocClaimsFromIssuerSignedNamespaces() {
         String mdl = encodeMdoc(documentWithNamespaces(issuerSignedNamespaces("Doe"), false));
 
-        Map<String, Object> claims = Utils.extractMdocClaims(mdl);
+        Map<String, Object> claims = Utils.extractMdocClaims(mdl, List.of());
 
         assertEquals("Doe", ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("family_name"));
     }
@@ -203,7 +203,7 @@ public class UtilsTest {
         CBORObject documents = CBORObject.NewArray().Add(document);
         CBORObject root = CBORObject.NewMap().Add("documents", documents);
 
-        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(root));
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(root), List.of());
 
         assertEquals("Ada", ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("family_name"));
     }
@@ -218,7 +218,7 @@ public class UtilsTest {
                 .Add("issuerAuth", CBORObject.NewArray())
                 .Add("nameSpaces", namespacesWithFamilyName("Unverified direct"));
 
-        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(root));
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(root), List.of());
 
         assertEquals("Verified", ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("family_name"));
         assertFalse(claims.containsKey("docType"));
@@ -236,14 +236,14 @@ public class UtilsTest {
                 .Add("issuerAuth", CBORObject.NewArray())
                 .Add("nameSpaces", namespaces);
 
-        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document));
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document), List.of());
 
         assertEquals("Gorge", ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("given_name"));
     }
 
     @Test
     void shouldRejectMalformedMdocClaims() {
-        assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims("%%%"));
+        assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims("%%%", List.of()));
     }
 
     @Test
@@ -251,7 +251,7 @@ public class UtilsTest {
         String oversized = "a".repeat(1_398_104);
 
         assertFalse(Utils.isMsoMdoc(oversized));
-        InvalidCredentialException error = assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims(oversized));
+        InvalidCredentialException error = assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims(oversized, List.of()));
         assertEquals("Credential exceeds the maximum supported size", error.getMessage());
     }
 
@@ -277,7 +277,7 @@ public class UtilsTest {
                 () -> Utils.getCredentialFormat(emptyDocuments));
         assertEquals("mdoc contains no documents", formatError.getMessage());
         InvalidCredentialException claimsError = assertThrows(InvalidCredentialException.class,
-                () -> Utils.extractMdocClaims(emptyDocuments));
+                () -> Utils.extractMdocClaims(emptyDocuments, List.of()));
         assertEquals("mdoc contains no documents", claimsError.getMessage());
     }
 
@@ -333,7 +333,7 @@ public class UtilsTest {
         assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(issuerSignedShape));
         assertEquals(CredentialFormat.DC_SD_JWT, Utils.getCredentialFormat(sdJwt));
         assertEquals(CredentialFormat.LDP_VC, Utils.getCredentialFormat(ldp));
-        assertEquals("Direct", ((Map<?, ?>) Utils.extractMdocClaims(issuerAuthShape).get("org.iso.18013.5.1")).get("family_name"));
+        assertEquals("Direct", ((Map<?, ?>) Utils.extractMdocClaims(issuerAuthShape, List.of()).get("org.iso.18013.5.1")).get("family_name"));
     }
 
     @Test
@@ -357,7 +357,7 @@ public class UtilsTest {
                 .Add("issuerAuth", CBORObject.NewArray())
                 .Add("nameSpaces", namespaces);
 
-        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document));
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document), List.of());
 
         Map<?, ?> firstNamespace = (Map<?, ?>) claims.get("org.iso.18013.5.1");
         Map<?, ?> secondNamespace = (Map<?, ?>) claims.get("org.iso.18013.5.1.custom");
@@ -379,7 +379,7 @@ public class UtilsTest {
                 .Add("issuerAuth", CBORObject.NewArray())
                 .Add("nameSpaces", namespaces);
 
-        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document));
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document), List.of());
 
         assertEquals("18446744073709551615",
                 ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("large_number"));
@@ -401,7 +401,7 @@ public class UtilsTest {
                 .Add("issuerAuth", CBORObject.NewArray())
                 .Add("nameSpaces", namespaces);
 
-        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document));
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document), List.of());
 
         assertEquals(new BigDecimal("1.5"),
                 ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("decimal_claim"));
@@ -445,7 +445,7 @@ public class UtilsTest {
                 .Add("nameSpaces", namespaces);
 
         InvalidCredentialException error = assertThrows(InvalidCredentialException.class,
-                () -> Utils.extractMdocClaims(encodeMdoc(document)));
+                () -> Utils.extractMdocClaims(encodeMdoc(document), List.of()));
         assertEquals("Duplicate mdoc element identifier", error.getMessage());
     }
 
@@ -461,7 +461,7 @@ public class UtilsTest {
     }
 
     private static Object mdocElementValue(String mdoc) {
-        return ((Map<?, ?>) Utils.extractMdocClaims(mdoc).get("org.iso.18013.5.1")).get("value");
+        return ((Map<?, ?>) Utils.extractMdocClaims(mdoc, List.of()).get("org.iso.18013.5.1")).get("value");
     }
 
     @Test
@@ -491,7 +491,7 @@ public class UtilsTest {
                 .Add("issuerAuth", CBORObject.NewArray())
                 .Add("nameSpaces", CBORObject.NewMap().Add("org.example", CBORObject.NewMap())));
         InvalidCredentialException namespaceError = assertThrows(InvalidCredentialException.class,
-                () -> Utils.extractMdocClaims(mapNamespace));
+                () -> Utils.extractMdocClaims(mapNamespace, List.of()));
         assertEquals("Invalid mdoc namespace: expected an item array", namespaceError.getMessage());
 
         CBORObject noValue = CBORObject.NewMap().Add("elementIdentifier", "family_name");
@@ -500,7 +500,7 @@ public class UtilsTest {
                 .Add("nameSpaces", CBORObject.NewMap().Add("org.iso.18013.5.1",
                         CBORObject.NewArray().Add(CBORObject.FromObject(noValue.EncodeToBytes())))));
         InvalidCredentialException itemError = assertThrows(InvalidCredentialException.class,
-                () -> Utils.extractMdocClaims(missingValue));
+                () -> Utils.extractMdocClaims(missingValue, List.of()));
         assertEquals("Invalid mdoc issuer-signed item", itemError.getMessage());
 
         // Integer key 1 and text key "1" both render as the namespace name "1".
@@ -510,7 +510,7 @@ public class UtilsTest {
                         .Add(CBORObject.FromObject(1), CBORObject.NewArray())
                         .Add(CBORObject.FromObject("1"), CBORObject.NewArray())));
         InvalidCredentialException duplicateError = assertThrows(InvalidCredentialException.class,
-                () -> Utils.extractMdocClaims(collidingNamespaces));
+                () -> Utils.extractMdocClaims(collidingNamespaces, List.of()));
         assertEquals("Duplicate mdoc namespace", duplicateError.getMessage());
     }
 
@@ -527,6 +527,16 @@ public class UtilsTest {
         } finally {
             new Utils().setMaxMdocSizeBytes(1_048_576);
         }
+    }
+
+    @Test
+    void shouldRejectNonPositiveMdocSizeLimit() {
+        Utils utils = new Utils();
+        assertThrows(IllegalArgumentException.class, () -> utils.setMaxMdocSizeBytes(0));
+        assertThrows(IllegalArgumentException.class, () -> utils.setMaxMdocSizeBytes(-1));
+        // The previous limit is kept, not replaced by a default.
+        String mdl = encodeMdoc(documentWithNamespaces(issuerSignedNamespaces("Ada"), true));
+        assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(mdl));
     }
 
     @Test

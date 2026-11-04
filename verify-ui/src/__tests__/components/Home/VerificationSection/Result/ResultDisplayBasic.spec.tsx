@@ -12,7 +12,6 @@ jest.mock("../../../../../components/Home/VerificationSection/Result/VcDetailsGr
   __esModule: true,
   default: () => <div data-testid="vc-details-grid" />,
   getMdocDetailsOrder: jest.fn(() => []),
-  hasMdocNamespace: jest.fn(() => false),
 }));
 
 jest.mock("../../../../../components/Home/VerificationSection/Result/VcSvgTemplate", () => () => (

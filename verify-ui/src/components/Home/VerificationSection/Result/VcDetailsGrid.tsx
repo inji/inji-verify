@@ -8,10 +8,11 @@ interface VcDetailsGridProps {
   vc?: AnyVc;
 }
 
+/** mdoc claims (namespace → element identifier → value) as rows keyed `<namespace>.<element>`. */
 export const getMdocDetailsOrder = (
   claims: MdocVc,
-): { key: string; value: unknown }[] => {
-  const details = Object.entries(claims).flatMap(([namespace, namespaceClaims]) => {
+): { key: string; value: unknown }[] =>
+  Object.entries(claims).flatMap(([namespace, namespaceClaims]) => {
     if (
       typeof namespaceClaims !== "object" ||
       namespaceClaims === null ||
@@ -24,36 +25,6 @@ export const getMdocDetailsOrder = (
       value,
     }));
   });
-  const docType = (claims as { docType?: unknown }).docType;
-  return typeof docType === "string"
-    ? [{ key: "docType", value: docType }, ...details]
-    : details;
-};
-
-const isPlainObject = (value: unknown): value is Record<string, unknown> =>
-  typeof value === "object" && value !== null && !Array.isArray(value);
-
-const ISO_MDL_NAMESPACE = "org.iso.18013.5.1";
-
-/**
- * mdoc result claims: one or more namespace objects keyed by element identifier.
- * The UI adds a string docType; backend results carry namespaces only, so the
- * ISO mDL namespace is also accepted as a marker. Every other entry must be a
- * namespace object, which keeps flat LDP / SD-JWT claims out.
- */
-export const hasMdocNamespace = (
-  claims: unknown,
-): claims is MdocVc => {
-  if (
-    !isPlainObject(claims) ||
-    (typeof claims.docType !== "string" &&
-      !Object.prototype.hasOwnProperty.call(claims, ISO_MDL_NAMESPACE))
-  ) {
-    return false;
-  }
-  const namespaces = Object.entries(claims).filter(([key]) => key !== "docType");
-  return namespaces.length > 0 && namespaces.every(([, value]) => isPlainObject(value));
-};
 
 const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   orderedDetails,

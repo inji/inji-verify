@@ -1,9 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import VcDetailsGrid from "../../../../../components/Home/VerificationSection/Result/VcDetailsGrid";
-import {
-  getMdocDetailsOrder,
-  hasMdocNamespace,
-} from "../../../../../components/Home/VerificationSection/Result/VcDetailsGrid";
+import { getMdocDetailsOrder } from "../../../../../components/Home/VerificationSection/Result/VcDetailsGrid";
 import DisplayVcDetailView from "../../../../../components/Home/VerificationSection/Result/DisplayVcDetailView";
 
 jest.mock("../../../../../utils/misc", () => ({
@@ -47,13 +44,6 @@ jest.mock("../../../../../redux/hooks", () => ({
 }));
 
 describe("credential details display", () => {
-  test("detects mdoc claims by their namespace", () => {
-    expect(hasMdocNamespace({ "org.iso.18013.5.1": { family_name: "Cooper" } })).toBe(true);
-    expect(hasMdocNamespace({ family_name: "Cooper" })).toBe(false);
-    expect(hasMdocNamespace({ docType: "Mobile Document", "org.example.ns": { member_id: "42" } })).toBe(true);
-    expect(hasMdocNamespace({ docType: "Mobile Document", name: "flat" })).toBe(false);
-  });
-
   test("does not load remote URLs as biometric images", () => {
     const { container } = render(
       <VcDetailsGrid orderedDetails={[{ key: "portrait", value: "https://tracker.example/p.png" }]} />
@@ -87,21 +77,25 @@ describe("credential details display", () => {
       { key: "org.iso.18013.5.1.family_name", value: "Cooper" },
       { key: "org.iso.18013.5.2.age_over_18", value: true },
     ]);
-    expect(
-      getMdocDetailsOrder({
-        docType: "Mobile Document",
-        "org.iso.18013.5.1": { family_name: "Cooper" },
-      } as any),
-    ).toEqual([
-      { key: "docType", value: "Mobile Document" },
-      { key: "org.iso.18013.5.1.family_name", value: "Cooper" },
-    ]);
 
     render(<VcDetailsGrid orderedDetails={orderedDetails} />);
     expect(screen.getByText("org.iso.18013.5.1.family_name")).toBeInTheDocument();
     expect(screen.getByText("Cooper")).toBeInTheDocument();
     expect(screen.getByText("org.iso.18013.5.2.age_over_18")).toBeInTheDocument();
     expect(screen.getByText("true")).toBeInTheDocument();
+  });
+
+  test("lists mdoc claims by namespace only when the details view is flagged as mdoc", () => {
+    const mdocClaims = { "org.iso.18013.5.1": { family_name: "Cooper" } } as any;
+
+    const { unmount } = render(<DisplayVcDetailView vc={mdocClaims} isMdoc onExpand={jest.fn()} />);
+    expect(screen.getByText("org.iso.18013.5.1.family_name")).toBeInTheDocument();
+    unmount();
+
+    // Without the flag the same shape goes through the generic ordering.
+    render(<DisplayVcDetailView vc={mdocClaims} onExpand={jest.fn()} />);
+    expect(screen.queryByText("org.iso.18013.5.1.family_name")).toBeNull();
+    expect(screen.getByText("org.iso.18013.5.1")).toBeInTheDocument();
   });
 
   test("renders details view and invokes expand/download actions", () => {

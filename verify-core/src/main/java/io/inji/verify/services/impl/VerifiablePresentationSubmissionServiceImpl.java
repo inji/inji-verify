@@ -1076,7 +1076,6 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         }
         CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList, validateKbJwt);
         VerificationResult verificationResult = credentialVerificationSummary.getVerificationResult();
-        Utils.reportMdocValidityThroughExpiry(vc, credentialFormat, verificationResult);
         if (!verificationResult.getVerificationStatus()) {
             log.error("VC Verification Failed");
             log.error("VC verification result errors : {} {}", verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());

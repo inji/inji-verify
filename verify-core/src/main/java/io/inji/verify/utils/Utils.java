@@ -21,9 +21,6 @@ import io.inji.verify.exception.InvalidCredentialException;
 import io.inji.verify.shared.Constants;
 import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
-import io.mosip.vercred.vcverifier.constants.CredentialValidatorConstants;
-import io.mosip.vercred.vcverifier.constants.CredentialVerifierConstants;
-import io.mosip.vercred.vcverifier.credentialverifier.types.msomdoc.MsoMdocVerifiableCredential;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
@@ -338,116 +335,6 @@ public final class Utils {
                 : null;
     }
 
-    /** Clock tolerance the library applies to MSO validity dates. */
-    private static final long MDOC_VALIDITY_TOLERANCE_MILLIS = 3000;
-
-    /**
-     * Reports the MSO validity window ({@code validFrom} / {@code validUntil}) through
-     * {@code expiryCheck}, as for every other format. vc-verifier gets two cases wrong:
-     * <ol>
-     *   <li><b>Not yet valid.</b> The library does not check {@code validFrom} against the current
-     *       time. A verified mdoc whose {@code validFrom} is in the future is rewritten as the
-     *       library's "expired" outcome (verified, {@code ERR_VC_EXPIRED}).</li>
-     *   <li><b>Expired.</b> The library stops at an expired {@code validUntil} and never checks the
-     *       issuer signature, the element digests or the remaining validity rule ({@code validUntil}
-     *       after {@code validFrom}). Those checks run here: a signature or digest failure becomes
-     *       the library's generic verification failure, an inconsistent window its invalid-date
-     *       failure, and otherwise the result becomes the "expired" outcome.</li>
-     * </ol>
-     * Call it after every {@code CredentialsVerifier} call whose format may be mdoc; it is a no-op
-     * otherwise. It belongs in vc-verifier and can be removed once the library handles both cases.
-     */
-    public static void reportMdocValidityThroughExpiry(String credential, CredentialFormat format, VerificationResult verificationResult) {
-        if (format != CredentialFormat.MSO_MDOC || verificationResult == null) {
-            return;
-        }
-        if (verificationResult.getVerificationStatus()) {
-            reportNotYetValidMdocAsExpiry(credential, verificationResult);
-            return;
-        }
-        if (!CredentialValidatorConstants.ERROR_CODE_INVALID_VALID_UNTIL_MSO.equals(verificationResult.getVerificationErrorCode())) {
-            return;
-        }
-        boolean signatureAndDigestsValid;
-        try {
-            signatureAndDigestsValid = new MsoMdocVerifiableCredential().verify(credential);
-        } catch (Exception e) {
-            // Class name only: the message can carry digest IDs or certificate details.
-            log.warn("Expired mdoc failed signature or digest verification: {}", e.getClass().getSimpleName());
-            signatureAndDigestsValid = false;
-        }
-        if (!signatureAndDigestsValid) {
-            verificationResult.setVerificationMessage(CredentialVerifierConstants.ERROR_MESSAGE_VERIFICATION_FAILED);
-            verificationResult.setVerificationErrorCode(CredentialVerifierConstants.ERROR_CODE_VERIFICATION_FAILED);
-            return;
-        }
-        MdocValidityWindow window = mdocValidityWindow(credential);
-        // Fails closed: an unreadable window is treated as inconsistent.
-        if (window == null || !window.validUntil().isAfter(window.validFrom())) {
-            verificationResult.setVerificationMessage(CredentialValidatorConstants.ERROR_MESSAGE_INVALID_DATE_MSO);
-            verificationResult.setVerificationErrorCode(CredentialValidatorConstants.ERROR_CODE_INVALID_DATE_MSO);
-            return;
-        }
-        markMdocExpiryFailed(verificationResult, CredentialValidatorConstants.ERROR_MESSAGE_VC_EXPIRED);
-    }
-
-    private static void reportNotYetValidMdocAsExpiry(String credential, VerificationResult verificationResult) {
-        if (CredentialValidatorConstants.ERROR_CODE_VC_EXPIRED.equals(verificationResult.getVerificationErrorCode())) {
-            return;
-        }
-        MdocValidityWindow window = mdocValidityWindow(credential);
-        if (window == null) {
-            // The library already read this window to verify the document, so this is not expected.
-            log.warn("Could not read the validity window of a verified mdoc; validFrom was not checked");
-            return;
-        }
-        if (window.validFrom().isAfter(Instant.now().plusMillis(MDOC_VALIDITY_TOLERANCE_MILLIS))) {
-            markMdocExpiryFailed(verificationResult, Constants.ERROR_MESSAGE_MDOC_NOT_YET_VALID);
-        }
-    }
-
-    /** The library's "expired" outcome: signature verified, {@code ERR_VC_EXPIRED}, read by {@code populateExpiryCheck}. */
-    private static void markMdocExpiryFailed(VerificationResult verificationResult, String message) {
-        verificationResult.setVerificationStatus(true);
-        verificationResult.setVerificationMessage(message);
-        verificationResult.setVerificationErrorCode(CredentialValidatorConstants.ERROR_CODE_VC_EXPIRED);
-    }
-
-    private record MdocValidityWindow(Instant validFrom, Instant validUntil) {
-    }
-
-    /**
-     * {@code validityInfo} from the MSO of the same document the library verifies, or
-     * {@code null} when it cannot be read.
-     */
-    private static MdocValidityWindow mdocValidityWindow(String credential) {
-        try {
-            CBORObject issuerAuth = mdocIssuerAuth(readMdocRoot(credential.trim()));
-            CBORObject mso = issuerAuth.get(2);
-            for (int attempt = 0; attempt < 3 && (mso.HasMostOuterTag(24) || mso.getType() == CBORType.ByteString); attempt++) {
-                mso = mso.HasMostOuterTag(24) ? mso.Untag() : CBORObject.DecodeFromBytes(mso.GetByteString());
-            }
-            CBORObject validityInfo = mso.get("validityInfo");
-            return new MdocValidityWindow(
-                    OffsetDateTime.parse(validityInfo.get("validFrom").AsString()).toInstant(),
-                    OffsetDateTime.parse(validityInfo.get("validUntil").AsString()).toInstant());
-        } catch (Exception e) {
-            // Class name only: the message can carry digest IDs or certificate details.
-            log.warn("Could not read the mdoc validity window: {}", e.getClass().getSimpleName());
-            return null;
-        }
-    }
-
-    private static CBORObject mdocIssuerAuth(CBORObject root) {
-        if (root.ContainsKey(Constants.KEY_DOCUMENTS)) {
-            return root.get(Constants.KEY_DOCUMENTS).get(0).get(Constants.KEY_ISSUER_SIGNED).get(Constants.KEY_ISSUER_AUTH);
-        }
-        if (root.ContainsKey(Constants.KEY_ISSUER_SIGNED)) {
-            return root.get(Constants.KEY_ISSUER_SIGNED).get(Constants.KEY_ISSUER_AUTH);
-        }
-        return root.get(Constants.KEY_ISSUER_AUTH);
-    }
-
     public static SchemaAndSignatureCheckDto populateSchemaAndSignature(VerificationResult verificationResult) {
         boolean isValid = verificationResult.getVerificationStatus();
         ErrorDto error = isValid ? null : new ErrorDto(verificationResult.getVerificationErrorCode(), verificationResult.getVerificationMessage());
@@ -491,24 +378,26 @@ public final class Utils {
         };
     }
 
-    private static final int DEFAULT_MAX_MDOC_SIZE_BYTES = 1_048_576;
-    private static volatile int maxMdocSizeBytes = DEFAULT_MAX_MDOC_SIZE_BYTES;
+    private static volatile int maxMdocSizeBytes = 1_048_576;
     private static final int MAX_MDOC_DEPTH = 32;
 
-    /** Maximum decoded mdoc size in bytes (not base64 characters). */
+    /**
+     * Maximum decoded mdoc size in bytes (not base64 characters). A value of zero or less is a
+     * misconfiguration and fails startup rather than silently using a default.
+     */
     @Value("${inji.verify.mso-mdoc.max-size:1048576}")
     public void setMaxMdocSizeBytes(int maxMdocSizeBytes) {
-        Utils.maxMdocSizeBytes = maxMdocSizeBytes > 0 ? maxMdocSizeBytes : DEFAULT_MAX_MDOC_SIZE_BYTES;
+        if (maxMdocSizeBytes <= 0) {
+            throw new IllegalArgumentException(
+                    "inji.verify.mso-mdoc.max-size must be greater than zero, but was " + maxMdocSizeBytes);
+        }
+        Utils.maxMdocSizeBytes = maxMdocSizeBytes;
     }
 
     /**
-     * Data elements from an ISO mdoc, grouped by namespace then element identifier.
-     * The verifier only returns whether the signature and digests matched.
+     * Data elements from an ISO mdoc, grouped by namespace then element identifier, without the
+     * configured meta elements. The verifier only returns whether the signature and digests matched.
      */
-    public static Map<String, Object> extractMdocClaims(String credential) {
-        return extractMdocClaims(credential, List.of());
-    }
-
     public static Map<String, Object> extractMdocClaims(String credential, List<String> mdocMetaClaims) {
         try {
             String trimmed = credential.trim();

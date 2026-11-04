@@ -66,7 +66,6 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         // Plain VC verification endpoint — no VP session context, KB-JWT validation not applicable.
         CredentialVerificationSummary credentialVerificationSummary
                 = credentialsVerifier.verifyAndGetCredentialStatus(vc, format, statusPurposeList, false);
-        Utils.reportMdocValidityThroughExpiry(vc, format, credentialVerificationSummary.getVerificationResult());
         log.debug("CredentialVerificationResult: {}", credentialVerificationSummary.getVerificationResult());
         return new VCVerificationStatusDto(Utils.getVcVerificationStatus(credentialVerificationSummary));
     }
@@ -93,7 +92,6 @@ public class VCVerificationServiceImpl implements VCVerificationService {
             verificationResult = credentialVerificationSummary.getVerificationResult();
             credentialStatus = credentialVerificationSummary.getCredentialStatus();
         }
-        Utils.reportMdocValidityThroughExpiry(verifiableCredential, format, verificationResult);
 
         SchemaAndSignatureCheckDto schemaAndSignatureCheck = populateSchemaAndSignature(verificationResult);
         if (schemaAndSignatureCheck.isValid()) {

@@ -10,6 +10,7 @@ import org.junit.jupiter.api.Test;
 import java.time.Instant;
 import java.time.ZoneOffset;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.Locale;
 import java.util.Map;
 
@@ -36,33 +37,17 @@ class MdocCredentialVerificationTest {
     }
 
     @Test
-    void rejectsExpiredMdoc() throws Exception {
-        Instant signed = Instant.now().minus(2, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);
-        Instant validFrom = signed;
-        Instant validUntil = signed.plus(1, ChronoUnit.DAYS);
-        assertTrue(validUntil.isBefore(Instant.now()));
-        String credential = MdocTestCredentialFactory.create(
-                signed, validFrom, validUntil, printedExpiryFiveYearsFrom(signed));
-
-        VerificationResult result = verify(credential);
-
-        assertFalse(result.getVerificationStatus(), result.getVerificationMessage());
-        assertTrue(result.getVerificationMessage().toLowerCase(Locale.ROOT).contains("validuntil"),
-                result.getVerificationMessage());
-    }
-
-    @Test
     void reportsExpiredButAuthenticMdocThroughExpiryCheck() throws Exception {
         Instant signed = Instant.now().minus(2, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);
         String credential = MdocTestCredentialFactory.create(
                 signed, signed, signed.plus(1, ChronoUnit.DAYS), printedExpiryFiveYearsFrom(signed));
 
         VerificationResult result = verify(credential);
-        Utils.reportMdocValidityThroughExpiry(credential, CredentialFormat.MSO_MDOC, result);
 
         assertTrue(Utils.populateSchemaAndSignature(result).isValid(), result.getVerificationMessage());
         assertFalse(Utils.populateExpiryCheck(result).isValid());
         assertEquals(VerificationStatus.EXPIRED, Util.INSTANCE.getVerificationStatus(result));
+        assertEquals("ERR_VC_EXPIRED", result.getVerificationErrorCode());
     }
 
     @Test
@@ -72,7 +57,6 @@ class MdocCredentialVerificationTest {
                 signed, signed, signed.plus(1, ChronoUnit.DAYS), printedExpiryFiveYearsFrom(signed)));
 
         VerificationResult result = verify(credential);
-        Utils.reportMdocValidityThroughExpiry(credential, CredentialFormat.MSO_MDOC, result);
 
         assertFalse(Utils.populateSchemaAndSignature(result).isValid());
         assertEquals(VerificationStatus.INVALID, Util.INSTANCE.getVerificationStatus(result));
@@ -89,7 +73,6 @@ class MdocCredentialVerificationTest {
                 signed, validFrom, validUntil, printedExpiryFiveYearsFrom(now));
 
         VerificationResult result = verify(credential);
-        Utils.reportMdocValidityThroughExpiry(credential, CredentialFormat.MSO_MDOC, result);
 
         assertFalse(Utils.populateSchemaAndSignature(result).isValid());
         assertEquals("ERR_INVALID_DATE_MSO", result.getVerificationErrorCode());
@@ -105,15 +88,11 @@ class MdocCredentialVerificationTest {
 
         VerificationResult result = verify(credential);
 
-        // The library itself does not check validFrom against the current time.
-        assertTrue(result.getVerificationStatus(), result.getVerificationMessage());
-
-        Utils.reportMdocValidityThroughExpiry(credential, CredentialFormat.MSO_MDOC, result);
 
         assertTrue(Utils.populateSchemaAndSignature(result).isValid(), result.getVerificationMessage());
         assertFalse(Utils.populateExpiryCheck(result).isValid());
         assertEquals(VerificationStatus.EXPIRED, Util.INSTANCE.getVerificationStatus(result));
-        assertEquals("mdoc is not yet valid: validFrom in the MSO is in the future", result.getVerificationMessage());
+        assertEquals("ERR_VC_EXPIRED", result.getVerificationErrorCode());
     }
 
     @Test
@@ -126,14 +105,13 @@ class MdocCredentialVerificationTest {
                 now, now, validUntil, printedExpiry.toString());
 
         VerificationResult result = verify(credential);
-        Utils.reportMdocValidityThroughExpiry(credential, CredentialFormat.MSO_MDOC, result);
 
         // AC-6: expiry follows the MSO window (still valid), not the later printed date,
         // and the printed date is returned as a data element.
         assertTrue(result.getVerificationStatus(), result.getVerificationMessage());
         assertEquals(VerificationStatus.SUCCESS, Util.INSTANCE.getVerificationStatus(result));
         assertTrue(Utils.populateExpiryCheck(result).isValid());
-        Map<?, ?> claims = (Map<?, ?>) Utils.extractMdocClaims(credential).get("org.iso.18013.5.1");
+        Map<?, ?> claims = (Map<?, ?>) Utils.extractMdocClaims(credential, List.of()).get("org.iso.18013.5.1");
         assertEquals(printedExpiry.toString(), claims.get("expiry_date"));
     }
 

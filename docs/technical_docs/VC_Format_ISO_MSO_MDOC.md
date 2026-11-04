@@ -49,7 +49,7 @@ An mdoc whose decoded size is larger than `inji.verify.mso-mdoc.max-size` (bytes
 
 | Property | Env variable | Default | Meaning |
 |---|---|---|---|
-| `inji.verify.mso-mdoc.max-size` | `INJI_VERIFY_MSO_MDOC_MAX_SIZE` | `1048576` | Maximum decoded mdoc size in bytes |
+| `inji.verify.mso-mdoc.max-size` | `INJI_VERIFY_MSO_MDOC_MAX_SIZE` | `1048576` | Maximum decoded mdoc size in bytes; must be greater than zero, otherwise the service fails to start |
 | `inji.verify.mso-mdoc.claims-with-meta-data` | `INJI_VERIFY_MSO_MDOC_CLAIMS_WITH_META_DATA` | empty | Comma-separated `<namespace>.<element>` entries removed from `claims`; each entry removes that element from that namespace only. Element identifiers may contain dots. |
 
 ---
@@ -58,9 +58,9 @@ An mdoc whose decoded size is larger than `inji.verify.mso-mdoc.max-size` (bytes
 
 | Check | Source | Notes |
 |---|---|---|
-| Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | Algorithm comes from the `issuerAuth` COSE `alg` header, subject to verifier support. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
+| Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | ES256, ES384 or ES512, as given by the `issuerAuth` COSE `alg` header; other algorithms are rejected. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
 | Data-element integrity | MSO digests | Performed by the verification library |
-| MSO validity | `validFrom` and `validUntil` | The library stops at an expired `validUntil` without checking the signature, so the service runs the signature, digest and `validUntil` > `validFrom` checks itself. If they pass, the result has `schemaAndSignatureCheck.valid: true` and `expiryCheck.valid: false` (status `EXPIRED`). A signature or digest failure is `INVALID` with `ERR_SIGNATURE_VERIFICATION_FAILED`; an inconsistent window is `INVALID` with `ERR_INVALID_DATE_MSO`. An mdoc whose `validFrom` is in the future (beyond the library's 3-second clock tolerance) is reported the same way: `schemaAndSignatureCheck.valid: true`, `expiryCheck.valid: false`. |
+| MSO validity | `validFrom` and `validUntil` | Checked by the verification library. An authentic mdoc whose `validUntil` has passed, or whose `validFrom` is still in the future, has `schemaAndSignatureCheck.valid: true` and `expiryCheck.valid: false` (status `EXPIRED`, `ERR_VC_EXPIRED`). A signature or digest failure is `INVALID` with `ERR_SIGNATURE_VERIFICATION_FAILED`; an inconsistent window is `INVALID` with `ERR_INVALID_DATE_MSO`. |
 | Revocation | — | Not supported; `statusCheck` is empty |
 | Holder / device binding | — | Not applicable on scan and upload |
 
@@ -135,11 +135,10 @@ The UI decodes the credential into a namespace-grouped claim map matching the ba
 
 | Topic | Behaviour |
 |---|---|
-| Signature algorithm | ES256 only |
+| Signature algorithm | ES256, ES384 or ES512 (from the COSE `alg` header) |
 | OpenID4VP | Not supported for `mso_mdoc` |
 | Issuer trust | Not enforced; certificate-chain validation is out of scope until IACA trust-anchor support ships. Even an mdoc signed by a self-signed certificate can show as verified. |
 | Multi-document submissions | Only `documents[0]` is verified and used for displayed claims, matching the library; all remaining documents are ignored. |
 | Revocation | Not checked; `statusCheck` is `[]` |
 | Device check | Not performed on scan and upload |
 | Oversized input | Documents larger than `inji.verify.mso-mdoc.max-size` decoded bytes (default 1 MiB) are rejected |
-| Validity window in the service | vc-verifier stops at an expired `validUntil` without checking the signature, and does not check `validFrom` against the current time. Until both are fixed in the library, the service applies these rules itself (`Utils.reportMdocValidityThroughExpiry`). |
