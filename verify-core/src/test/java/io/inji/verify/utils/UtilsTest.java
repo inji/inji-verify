@@ -479,6 +479,13 @@ public class UtilsTest {
     }
 
     @Test
+    void shouldKeepNonIntegralMdocNumbersExact() {
+        // Plain floats are FloatingPoint, never truncated to an integer.
+        assertEquals(1.5, mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1.5))));
+        assertEquals(-0.25, mdocElementValue(mdocWithElementValue(CBORObject.FromObject(-0.25))));
+    }
+
+    @Test
     void shouldRejectMalformedMdocNamespacesAndItems() {
         String mapNamespace = encodeMdoc(CBORObject.NewMap()
                 .Add("issuerAuth", CBORObject.NewArray())

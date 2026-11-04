@@ -655,7 +655,8 @@ public final class Utils {
             case TextString -> value.AsString();
             case Integer, Number -> {
                 var number = value.AsNumber();
-                yield number.CanTruncatedIntFitInInt64() ? (Object) number.ToInt64Checked() : number.toString();
+                // CanFitInInt64 is false for non-integral values, so nothing is truncated.
+                yield number.CanFitInInt64() ? (Object) number.ToInt64Checked() : number.toString();
             }
             case Boolean -> value.AsBoolean();
             case ByteString -> Base64.getEncoder().encodeToString(value.GetByteString());
