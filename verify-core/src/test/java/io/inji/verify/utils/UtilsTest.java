@@ -54,6 +54,7 @@ public class UtilsTest {
         Executable exec = () -> constructor.newInstance();
         assertDoesNotThrow(exec);
     }
+
     @Test
     void isCwt_shouldReturnFalse_whenCredentialContainsDot() {
         assertFalse(Utils.isCwt("abc.def"));
@@ -515,6 +516,17 @@ public class UtilsTest {
     }
 
     @Test
+    void shouldKeepSubMillisecondDigitsOfFloatingPointMdocEpochs() {
+        // Previously rounded to whole milliseconds (.123Z); the raw double fraction would give .123456001Z.
+        assertEquals("2024-05-03T08:00:00.123456Z",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1714723200.123456).WithTag(1))));
+        assertEquals("1969-12-31T23:59:58.500Z",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(-1.5).WithTag(1))));
+        assertEquals("NaN",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(Double.NaN).WithTag(1))));
+    }
+
+    @Test
     void shouldKeepNonIntegralMdocNumbersExact() {
         // Plain floats are FloatingPoint, never truncated to an integer.
         assertEquals(1.5, mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1.5))));
@@ -548,6 +560,37 @@ public class UtilsTest {
         InvalidCredentialException duplicateError = assertThrows(InvalidCredentialException.class,
                 () -> Utils.extractMdocClaims(collidingNamespaces, List.of()));
         assertEquals("Duplicate mdoc namespace", duplicateError.getMessage());
+    }
+
+    @Test
+    void shouldDetectOversizedMdocWhoseKeysUseLongerLengthHeaders() {
+        // {"issuerAuth": [], "nameSpaces": {}} with each key's length in every non-shortest form.
+        byte[][] lengthHeaders = {
+                {0x78, 10},
+                {0x79, 0, 10},
+                {0x7a, 0, 0, 0, 10},
+                {0x7b, 0, 0, 0, 0, 0, 0, 0, 10},
+        };
+        for (byte[] header : lengthHeaders) {
+            java.io.ByteArrayOutputStream cbor = new java.io.ByteArrayOutputStream();
+            cbor.write(0xa2);
+            cbor.writeBytes(header);
+            cbor.writeBytes("issuerAuth".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+            cbor.write(0x80);
+            cbor.writeBytes(header);
+            cbor.writeBytes("nameSpaces".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+            cbor.write(0xa0);
+            byte[] bytes = cbor.toByteArray();
+            String mdoc = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+            try {
+                new Utils().setMaxMdocSizeBytes(bytes.length - 1);
+                InvalidCredentialException error = assertThrows(InvalidCredentialException.class,
+                        () -> Utils.getCredentialFormat(mdoc), "header 0x" + Integer.toHexString(header[0] & 0xff));
+                assertEquals("Credential exceeds the maximum supported size", error.getMessage());
+            } finally {
+                new Utils().setMaxMdocSizeBytes(1_048_576);
+            }
+        }
     }
 
     @Test

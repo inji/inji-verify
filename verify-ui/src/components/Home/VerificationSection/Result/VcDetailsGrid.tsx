@@ -44,7 +44,13 @@ export const getMdocDetailsOrder = (
 /** One section per mdoc namespace: the namespace name, then its claims. */
 export const MdocDetailsSections: React.FC<{ claims: MdocVc; vc?: AnyVc }> = ({ claims, vc }) => {
   const rows = getMdocDetailsOrder(claims);
-  const namespaces = Array.from(new Set(rows.map((row) => row.namespace)));
+  // From the claims, not the rows, so a namespace with no elements still gets its section.
+  const namespaces = Object.entries(claims)
+    .filter(
+      ([, namespaceClaims]) =>
+        typeof namespaceClaims === "object" && namespaceClaims !== null && !Array.isArray(namespaceClaims),
+    )
+    .map(([namespace]) => namespace);
   return (
     <>
       {namespaces.map((namespace) => (

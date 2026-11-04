@@ -60,7 +60,7 @@ An mdoc whose decoded size is larger than `inji.verify.mso-mdoc.max-size` (bytes
 |---|---|---|
 | Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | ES256, ES384 or ES512, as given by the `issuerAuth` COSE `alg` header; other algorithms are rejected. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
 | Data-element integrity | MSO digests | Performed by the verification library |
-| MSO validity | `validFrom` and `validUntil` | Checked by the verification library. An authentic mdoc whose `validUntil` has passed, or whose `validFrom` is still in the future, has `schemaAndSignatureCheck.valid: true` and `expiryCheck.valid: false` (status `EXPIRED`, `ERR_VC_EXPIRED`). A signature or digest failure is `INVALID` with `ERR_SIGNATURE_VERIFICATION_FAILED`; an inconsistent window is `INVALID` with `ERR_INVALID_DATE_MSO`. |
+| MSO validity | `validFrom` and `validUntil` | Checked by the verification library |
 | Revocation | — | Not supported; `statusCheck` is empty |
 | Holder / device binding | — | Not applicable on scan and upload |
 
@@ -118,8 +118,8 @@ Claims are extracted by decoding the submitted credential string again (`Utils.e
 1. The user scans or uploads a QR that embeds the base64url mdoc.
 2. The SDK posts the credential string to `POST /v2/vc-verification`.
 3. The backend verifies it as `mso_mdoc` and returns the check outcomes.
-4. The UI requests the full verification response, including server-extracted claims.
-5. The result screen shows a fixed **Mobile Document** title and the namespace-grouped claims decoded for display (same shape as the backend `claims` map).
+4. The UI requests the verification response with `includeClaims: true`. The result screen does not read its `claims` field.
+5. The result screen shows a translated **Mobile Document** title in the result header and namespace-grouped claims decoded locally from the credential. The `inji.verify.mso-mdoc.claims-with-meta-data` setting does not remove entries from this display.
 
 See [VC_Verification.md](./VC_Verification.md) for the shared scan and upload flow.
 

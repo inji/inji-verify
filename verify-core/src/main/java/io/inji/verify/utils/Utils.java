@@ -35,6 +35,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.ByteArrayInputStream;
 import java.math.BigDecimal;
+import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
@@ -533,10 +534,10 @@ public final class Utils {
         }
         if (value.HasMostOuterTag(1) && (value.getType() == CBORType.Integer || value.getType() == CBORType.FloatingPoint)) {
             CBORObject epoch = value.UntagOne();
-            Instant instant = epoch.getType() == CBORType.Integer
-                    ? Instant.ofEpochSecond(epoch.AsNumber().ToInt64Checked())
-                    : Instant.ofEpochMilli(Math.round(epoch.AsDouble() * 1000));
-            return instant.toString();
+            if (epoch.getType() == CBORType.Integer) {
+                return Instant.ofEpochSecond(epoch.AsNumber().ToInt64Checked()).toString();
+            }
+            return mdocFloatingEpoch(epoch.AsDouble());
         }
         if (value.HasMostOuterTag(24) && value.getType() == CBORType.ByteString) {
             return mdocValueToJava(CBORObject.DecodeFromBytes(value.Untag().GetByteString()), depth + 1);
@@ -661,6 +662,22 @@ public final class Utils {
      * tdate (tag 0) as an ISO-8601 UTC instant, the same text the UI shows. Unparseable text is
      * returned unchanged rather than failing claim extraction.
      */
+    /**
+     * Floating-point epoch (tag 1) as an ISO-8601 UTC instant, keeping sub-millisecond digits.
+     * {@link BigDecimal#valueOf(double)} uses the shortest decimal text of the double, so
+     * 1714723200.123456 gives .123456 rather than the binary noise of the raw fraction
+     * (.123456001...). NaN and infinities are returned as text, like an unparseable tdate.
+     */
+    private static String mdocFloatingEpoch(double epochSeconds) {
+        if (!Double.isFinite(epochSeconds)) {
+            return Double.toString(epochSeconds);
+        }
+        BigDecimal exact = BigDecimal.valueOf(epochSeconds);
+        BigDecimal seconds = exact.setScale(0, RoundingMode.FLOOR);
+        long nanos = exact.subtract(seconds).movePointRight(9).setScale(0, RoundingMode.HALF_EVEN).longValueExact();
+        return Instant.ofEpochSecond(seconds.longValueExact(), nanos).toString();
+    }
+
     private static String normalizeMdocDateTime(String text) {
         try {
             return OffsetDateTime.parse(text).toInstant().toString();
@@ -749,22 +766,51 @@ public final class Utils {
                 && containsMdocShapeKey(encoded, Constants.KEY_NAMESPACES));
     }
 
+    /**
+     * Whether {@code key} appears as a definite-length CBOR text string. A decoder accepts the
+     * length in any of the five header forms, not only the shortest one, so each is matched:
+     * {@code 0x60|n}, {@code 0x78 n}, {@code 0x79 00 n}, {@code 0x7a 00 00 00 n} and
+     * {@code 0x7b} with seven zero bytes then {@code n}. Indefinite-length (chunked) strings are
+     * not matched; the chunks can split the key anywhere.
+     */
     private static boolean containsMdocShapeKey(byte[] encoded, String key) {
         byte[] keyBytes = key.getBytes(StandardCharsets.US_ASCII);
-        int cborTextHeader = 0x60 | keyBytes.length;
-        for (int start = 0; start <= encoded.length - keyBytes.length - 1; start++) {
-            if ((encoded[start] & 0xff) != cborTextHeader) {
-                continue;
-            }
-            int offset = 1;
-            while (offset <= keyBytes.length && encoded[start + offset] == keyBytes[offset - 1]) {
-                offset++;
-            }
-            if (offset > keyBytes.length) {
+        for (byte[] header : cborTextHeaders(keyBytes.length)) {
+            if (indexOf(encoded, header, keyBytes) >= 0) {
                 return true;
             }
         }
         return false;
+    }
+
+    /** Every definite-length text-string header for a length below 24. */
+    private static List<byte[]> cborTextHeaders(int length) {
+        List<byte[]> headers = new ArrayList<>();
+        headers.add(new byte[]{(byte) (0x60 | length)});
+        int[][] longForms = {{0x78, 1}, {0x79, 2}, {0x7a, 4}, {0x7b, 8}};
+        for (int[] form : longForms) {
+            byte[] header = new byte[1 + form[1]];
+            header[0] = (byte) form[0];
+            header[form[1]] = (byte) length;
+            headers.add(header);
+        }
+        return headers;
+    }
+
+    /** First index where {@code header} immediately followed by {@code body} starts, or -1. */
+    private static int indexOf(byte[] data, byte[] header, byte[] body) {
+        int patternLength = header.length + body.length;
+        for (int start = 0; start <= data.length - patternLength; start++) {
+            int offset = 0;
+            while (offset < patternLength
+                    && data[start + offset] == (offset < header.length ? header[offset] : body[offset - header.length])) {
+                offset++;
+            }
+            if (offset == patternLength) {
+                return start;
+            }
+        }
+        return -1;
     }
 
     public static CredentialFormat getCredentialFormat(String verifiableCredential) {

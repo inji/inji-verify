@@ -109,6 +109,22 @@ describe("credential details display", () => {
     expect(sections[1].textContent).not.toContain("Cooper");
   });
 
+  test("keeps a section for an mdoc namespace with no elements", () => {
+    const { container } = render(
+      <MdocDetailsSections
+        claims={{
+          "org.iso.18013.5.1": { family_name: "Cooper" },
+          "org.example.empty": {},
+        }}
+      />,
+    );
+
+    const headings = Array.from(container.querySelectorAll("section")).map(
+      (section) => section.querySelector("p")?.textContent,
+    );
+    expect(headings).toEqual(["org.iso.18013.5.1", "org.example.empty"]);
+  });
+
   test("lists mdoc claims by namespace only when the details view is flagged as mdoc", () => {
     const mdocClaims = { "org.iso.18013.5.1": { family_name: "Cooper" } } as any;
 
