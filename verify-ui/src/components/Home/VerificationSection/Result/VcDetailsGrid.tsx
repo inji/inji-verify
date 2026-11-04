@@ -4,15 +4,28 @@ import { SharableLink } from "../../../../utils/theme-utils";
 import { AnyVc, MdocVc } from "../../../../types/data-types";
 
 interface VcDetailsGridProps {
-  orderedDetails: { key: string; value: any }[];
+  /** `label`, when set, is shown instead of the title-cased `key`. */
+  orderedDetails: { key: string; value: any; label?: string }[];
   vc?: AnyVc;
 }
 
-/** mdoc claims (namespace → element identifier → value) as rows keyed `<namespace>.<element>`. */
+/** "family_name" → "Family Name". */
+const humanizeElementIdentifier = (identifier: string): string =>
+  identifier
+    .split("_")
+    .filter(Boolean)
+    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+    .join(" ");
+
+/**
+ * mdoc claims (namespace → element identifier → value) as rows. The key stays
+ * `<namespace>.<element>` so rows from different namespaces stay distinct; the label
+ * is the element name, qualified by its namespace only when that name repeats.
+ */
 export const getMdocDetailsOrder = (
   claims: MdocVc,
-): { key: string; value: unknown }[] =>
-  Object.entries(claims).flatMap(([namespace, namespaceClaims]) => {
+): { key: string; value: unknown; label: string }[] => {
+  const rows = Object.entries(claims).flatMap(([namespace, namespaceClaims]) => {
     if (
       typeof namespaceClaims !== "object" ||
       namespaceClaims === null ||
@@ -20,11 +33,26 @@ export const getMdocDetailsOrder = (
     ) {
       return [];
     }
-    return Object.entries(namespaceClaims).map(([key, value]) => ({
-      key: `${namespace}.${key}`,
-      value,
-    }));
+    return Object.entries(namespaceClaims).map(([element, value]) => ({ namespace, element, value }));
   });
+  const elementCounts = new Map<string, number>();
+  rows.forEach(({ element }) => elementCounts.set(element, (elementCounts.get(element) ?? 0) + 1));
+  return rows.map(({ namespace, element, value }) => ({
+    key: `${namespace}.${element}`,
+    value,
+    label:
+      (elementCounts.get(element) ?? 0) > 1
+        ? `${humanizeElementIdentifier(element)} (${namespace})`
+        : humanizeElementIdentifier(element),
+  }));
+};
+
+/** Puts the document title first; it is display data from the caller, not a claim. */
+export const withMdocDocTitle = <T extends { key: string; value: unknown }>(
+  details: T[],
+  docTitle?: string,
+): (T | { key: string; value: unknown })[] =>
+  docTitle ? [{ key: "docTitle", value: docTitle }, ...details] : details;
 
 const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   orderedDetails,
@@ -84,7 +112,7 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
             {isImage && imageSrc ? (
               <img
                 src={imageSrc}
-                alt={label.key}
+                alt={label.label ?? label.key}
                 style={{
                   width: 80,
                   height: 80,
@@ -98,7 +126,7 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
                   id={convertToId(label.key)}
                   className="font-normal text-verySmallTextSize break-all text-[#666666] flex items-center gap-1"
                 >
-                  {convertToTitleCase(label.key)}
+                  {label.label ?? convertToTitleCase(label.key)}
                   {isDisclosed && <SharableLink />}
                 </p>
                 <p

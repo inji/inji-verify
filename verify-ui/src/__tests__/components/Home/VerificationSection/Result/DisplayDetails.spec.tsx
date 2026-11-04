@@ -1,6 +1,6 @@
 import { fireEvent, render, screen } from "@testing-library/react";
 import VcDetailsGrid from "../../../../../components/Home/VerificationSection/Result/VcDetailsGrid";
-import { getMdocDetailsOrder } from "../../../../../components/Home/VerificationSection/Result/VcDetailsGrid";
+import { getMdocDetailsOrder, withMdocDocTitle } from "../../../../../components/Home/VerificationSection/Result/VcDetailsGrid";
 import DisplayVcDetailView from "../../../../../components/Home/VerificationSection/Result/DisplayVcDetailView";
 
 jest.mock("../../../../../utils/misc", () => ({
@@ -74,22 +74,47 @@ describe("credential details display", () => {
     });
 
     expect(orderedDetails).toEqual([
-      { key: "org.iso.18013.5.1.family_name", value: "Cooper" },
-      { key: "org.iso.18013.5.2.age_over_18", value: true },
+      { key: "org.iso.18013.5.1.family_name", value: "Cooper", label: "Family Name" },
+      { key: "org.iso.18013.5.2.age_over_18", value: true, label: "Age Over 18" },
     ]);
 
     render(<VcDetailsGrid orderedDetails={orderedDetails} />);
-    expect(screen.getByText("org.iso.18013.5.1.family_name")).toBeInTheDocument();
+    // Labels show the element name, not the namespace-qualified key.
+    expect(screen.getByText("Family Name")).toBeInTheDocument();
+    expect(screen.queryByText("org.iso.18013.5.1.family_name")).toBeNull();
     expect(screen.getByText("Cooper")).toBeInTheDocument();
-    expect(screen.getByText("org.iso.18013.5.2.age_over_18")).toBeInTheDocument();
+    expect(screen.getByText("Age Over 18")).toBeInTheDocument();
     expect(screen.getByText("true")).toBeInTheDocument();
+  });
+
+  test("qualifies an mdoc label with its namespace only when the element name repeats", () => {
+    expect(
+      getMdocDetailsOrder({
+        "org.iso.18013.5.1": { family_name: "Cooper", given_name: "Gorge" },
+        "org.example.custom": { family_name: "Second" },
+      }).map(({ label }) => label),
+    ).toEqual([
+      "Family Name (org.iso.18013.5.1)",
+      "Given Name",
+      "Family Name (org.example.custom)",
+    ]);
+  });
+
+  test("puts the document title first only when one is given", () => {
+    const rows = [{ key: "org.iso.18013.5.1.family_name", value: "Cooper", label: "Family Name" }];
+    expect(withMdocDocTitle(rows, "Mobile Document")).toEqual([{ key: "docTitle", value: "Mobile Document" }, ...rows]);
+    expect(withMdocDocTitle(rows)).toEqual(rows);
   });
 
   test("lists mdoc claims by namespace only when the details view is flagged as mdoc", () => {
     const mdocClaims = { "org.iso.18013.5.1": { family_name: "Cooper" } } as any;
 
-    const { unmount } = render(<DisplayVcDetailView vc={mdocClaims} isMdoc onExpand={jest.fn()} />);
-    expect(screen.getByText("org.iso.18013.5.1.family_name")).toBeInTheDocument();
+    const { unmount } = render(
+      <DisplayVcDetailView vc={mdocClaims} isMdoc docTitle="Mobile Document" onExpand={jest.fn()} />,
+    );
+    expect(screen.getByText("Family Name")).toBeInTheDocument();
+    expect(screen.getByText("docTitle")).toBeInTheDocument();
+    expect(screen.getByText("Mobile Document")).toBeInTheDocument();
     unmount();
 
     // Without the flag the same shape goes through the generic ordering.

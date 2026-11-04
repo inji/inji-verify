@@ -10,7 +10,7 @@ import {
   borderColorMapping,
   textColorMapping,
 } from "../../../../utils/config";
-import VcDetailsGrid, { getMdocDetailsOrder } from "./VcDetailsGrid";
+import VcDetailsGrid, { getMdocDetailsOrder, withMdocDocTitle } from "./VcDetailsGrid";
 import i18next from "i18next";
 import VcSvgTemplate from "./VcSvgTemplate";
 import { getTemplateUrl } from "../../../../utils/svg-template-utils";
@@ -21,6 +21,8 @@ interface ModalProps {
   vc: AnyVc;
   /** True when vc holds mdoc claims grouped by namespace. */
   isMdoc?: boolean;
+  /** Shown as the first row for an mdoc; not part of the claims. */
+  docTitle?: string;
   status: VcStatus;
   vcType: string;
   logo?: { url: any; alt: string };
@@ -31,6 +33,7 @@ const DisplayVcDetailsModal: React.FC<ModalProps> = ({
   onClose,
   vc,
   isMdoc = false,
+  docTitle,
   status,
   vcType,
   logo,
@@ -38,7 +41,7 @@ const DisplayVcDetailsModal: React.FC<ModalProps> = ({
   const { t } = useTranslation("Verify");
   const currentLang = i18next.language;
   const orderedDetails = isMdoc
-    ? getMdocDetailsOrder(vc as MdocVc)
+    ? withMdocDocTitle(getMdocDetailsOrder(vc as MdocVc), docTitle)
     : vc && getDetailsOrder(vc, currentLang);
   const templateUrl = getTemplateUrl(vc);
 
