@@ -53,7 +53,7 @@ const handleOnVCProcessed = (data: any[]) => {
           isEnableUpload={false}
           onVCProcessed={handleOnVCProcessed}
           onClose={onClose}
-          onError={(error) => {
+          onError={(error: Error | { errorCode?: string; errorMessage?: string }) => {
             if (error instanceof Error && error.name === "NotAllowedError") {
               setIsCameraBlocked(true);
             } else {

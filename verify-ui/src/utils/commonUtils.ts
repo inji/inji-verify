@@ -367,7 +367,7 @@ export const vcVerificationV2Request = {
     includeClaims: true
 };
 
-/** Status for the result banner when the SDK returns the full verification body. */
+/** Derives status from the shared verification response contract, regardless of credential format. */
 export const vcStatusFromVerificationResponse = (verificationResponse: any): VcStatus | undefined => {
   if (!verificationResponse || typeof verificationResponse !== "object") {
     return undefined;
@@ -390,7 +390,9 @@ export const vcStatusFromVerificationResponse = (verificationResponse: any): VcS
   if (verificationResponse.expiryCheck?.valid === false) {
     return "EXPIRED";
   }
-  const statusCheck = Array.isArray(verificationResponse.statusCheck) ? verificationResponse.statusCheck : [];
+  const statusCheck = Array.isArray(verificationResponse.statusCheck) ? verificationResponse.statusCheck : Array.isArray(verificationResponse.statusChecks)
+                      ? verificationResponse.statusChecks
+                      : [];
   for (const status of statusCheck) {
     if (status?.purpose === "revocation" && status.valid === false && status.error == null) {
       return "REVOKED";

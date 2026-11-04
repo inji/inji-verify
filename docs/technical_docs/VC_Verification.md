@@ -111,9 +111,9 @@ Passed via the `vcVerificationV2Request` prop on `QRCodeVerification`:
 
 Scan and upload accept an ISO 18013-5 mdoc, including an mDL (`docType` `org.iso.18013.5.1.mDL`). This path does not cover OpenID4VP presentation.
 
-The backend detects the credential before the CWT and JSON-LD checks: a base64url string whose first CBOR map contains `issuerAuth` and `nameSpaces`, `issuerSigned`, or `documents`. It verifies that credential as `mso_mdoc`. Revocation is not checked, so `statusCheck` is empty.
+The backend detects the credential before the CWT and JSON-LD checks: a base64url string whose first CBOR map contains `documents`, `issuerSigned`, or both `issuerAuth` and `nameSpaces`. Claims extraction prefers that same order. It verifies that credential as `mso_mdoc`. Revocation is not checked, so `statusCheck` is empty.
 
-The result screen follows the same display path as SD-JWT and CWT. `summariseResults` stays at its default, so `onVCProcessed` still receives only `verificationStatus` plus the original credential in `vc`. The UI decodes that base64url string and shows `docType` together with the issuer-signed data elements (`family_name`, `given_name`, and the rest). `POST /v2/vc-verification` also returns those claims when `includeClaims` is `true`; the scan and upload screen does not read that field.
+For mdoc on scan and upload, the result screen decodes issuer-signed data elements locally into the same namespace-grouped shape the backend returns (for example, `org.iso.18013.5.1` contains `family_name` and `given_name`). `docType` is not read from the credential; the result screen shows **Mobile Document** as the displayed `docType`.
 
 Format-specific details: [VC_Format_W3C_LDP_VC.md](./VC_Format_W3C_LDP_VC.md), [VC_Format_IETF_SD_JWT.md](./VC_Format_IETF_SD_JWT.md), [VC_Format_Claim_169.md](./VC_Format_Claim_169.md), and [VC_Format_ISO_MSO_MDOC.md](./VC_Format_ISO_MSO_MDOC.md).
 

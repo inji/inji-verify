@@ -11,7 +11,7 @@ import {
   qrReadInit,
 } from "../../../../redux/features/verification/verification.slice";
 import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
-import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
+import { AnyVc, LdpVc, MdocVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
 import { extractMappedClaim, extractMdocDisplayClaims, isCWT, isMsoMdoc, uint8ArrayToHex } from "../../../../utils/cborUtils";
 import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
@@ -57,9 +57,11 @@ const Result = () => {
         }
       } else if (typeof vc === "string" && isMsoMdoc(vc)) {
         try {
-          const claims = extractMdocDisplayClaims(vc);
-          setClaims(claims as LdpVc);
-          setCredentialType(typeof claims.docType === "string" ? claims.docType : "mDL");
+          setClaims({
+            docType: "Mobile Document",
+            ...extractMdocDisplayClaims(vc),
+          } as unknown as MdocVc);
+          setCredentialType("Mobile Document");
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
           dispatch(raiseAlert({ message, severity: "error", open: true }));

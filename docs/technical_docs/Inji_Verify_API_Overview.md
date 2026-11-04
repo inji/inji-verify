@@ -47,7 +47,7 @@ There are two endpoints. Use **v2** for all new integrations.
 
 ### POST /v2/vc-verification (recommended)
 
-Verify a single Verifiable Credential server-side. Accepts JSON-LD, SD-JWT, CWT, or ISO mdoc (`mso_mdoc`, including mDL) credentials. Format is auto-detected. An mdoc is recognised before CWT and JSON-LD: it is a base64url string whose first CBOR map contains `issuerAuth` and `nameSpaces`, `issuerSigned`, or `documents`. Scan and upload use this endpoint for an mDL. OpenID4VP presentation does not. When `includeClaims` is `true`, mdoc `claims` contain `docType` and the issuer-signed data elements keyed by element identifier. Revocation is not checked for `mso_mdoc`, so `statusCheck` is empty.
+Verify a single Verifiable Credential server-side. Accepts JSON-LD, SD-JWT, CWT, or ISO mdoc (`mso_mdoc`, including mDL) credentials. Format is auto-detected. An mdoc is recognised before CWT and JSON-LD: it is a base64url string whose first CBOR map contains `documents`, `issuerSigned`, or both `issuerAuth` and `nameSpaces` (checked in that order when extracting claims). Scan and upload use this endpoint for an mDL. OpenID4VP presentation does not. When `includeClaims` is `true`, mdoc `claims` contain issuer-signed data elements grouped by namespace and keyed by element identifier; `docType` is not read or returned. Revocation is not checked for `mso_mdoc`, so `statusCheck` is empty.
 
 **Request**
 ```json

@@ -35,7 +35,7 @@ describe("cborUtils", () => {
     expect(isCWT("A0ff")).toBe(true);
   });
 
-  it("flattens mdoc data elements from the credential", () => {
+  it("groups mdoc data elements by namespace for the result screen", () => {
     mockDecode.mockReturnValue({
       docType: "org.iso.18013.5.1.mDL",
       issuerSigned: {
@@ -49,18 +49,68 @@ describe("cborUtils", () => {
     } as never);
 
     expect(isMsoMdoc("omppc3N1ZXJBdXRo")).toBe(true);
+    mockDecode.mockClear();
     expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
-      docType: "org.iso.18013.5.1.mDL",
-      family_name: "Cooper",
-      birth_date: "1985-04-29",
+      "org.iso.18013.5.1": {
+        family_name: "Cooper",
+        birth_date: "1985-04-29",
+      },
     });
+    expect(mockDecode).toHaveBeenCalledTimes(1);
     expect(isMsoMdoc("header.payload.signature")).toBe(false);
+  });
+
+  it("recognizes a corrupt mdoc and reports an mdoc decoding error", () => {
+    const raw = new Uint8Array([
+      0xa1,
+      0x6c,
+      ...Array.from("issuerSigned", (character) => character.charCodeAt(0)),
+    ]);
+    const corruptMdoc = btoa(String.fromCharCode(...raw))
+      .replace(/\+/g, "-")
+      .replace(/\//g, "_")
+      .replace(/=+$/, "");
+    mockDecode.mockImplementation(() => {
+      throw new Error("Invalid CBOR");
+    });
+
+    expect(isMsoMdoc(corruptMdoc)).toBe(true);
+    expect(() => extractMdocDisplayClaims(corruptMdoc)).toThrow(
+      "Failed to decode mdoc credential",
+    );
+  });
+
+  it("uses document claims before issuerSigned and direct namespaces in mixed input", () => {
+    mockDecode.mockReturnValue({
+      documents: [{
+        docType: "verified-document",
+        issuerSigned: {
+          nameSpaces: {
+            verified: [{ elementIdentifier: "family_name", elementValue: "Verified" }],
+          },
+        },
+      }],
+      issuerSigned: {
+        nameSpaces: {
+          unverified: [{ elementIdentifier: "family_name", elementValue: "Unverified issuerSigned" }],
+        },
+      },
+      issuerAuth: [],
+      nameSpaces: {
+        unverified: [{ elementIdentifier: "family_name", elementValue: "Unverified direct" }],
+      },
+    } as never);
+
+    expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
+      verified: { family_name: "Verified" },
+    });
   });
 
   it("renders a decoded CBOR date instead of an empty object", () => {
     const birth = new Date("1985-04-29T00:00:00.000Z");
     mockDecode.mockReturnValue({
       docType: "org.iso.18013.5.1.mDL",
+      issuerAuth: [],
       nameSpaces: {
         "org.iso.18013.5.1": [
           { elementIdentifier: "birth_date", elementValue: birth },
@@ -68,34 +118,56 @@ describe("cborUtils", () => {
       },
     } as never);
 
-    expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo").birth_date).toBe(birth.toISOString());
+    expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")["org.iso.18013.5.1"].birth_date).toBe(
+      birth.toISOString(),
+    );
   });
 
-  it("qualifies colliding namespace claims and keeps docType metadata", () => {
+  it("keeps colliding element identifiers in separate namespaces and omits docType", () => {
     mockDecode.mockReturnValue({
       docType: "org.iso.18013.5.1.mDL",
+      issuerAuth: [],
       nameSpaces: {
         "org.iso.18013.5.1": [
           { elementIdentifier: "family_name", elementValue: "First" },
         ],
         "org.iso.18013.5.1.custom": [
           { elementIdentifier: "family_name", elementValue: "Second" },
-          { elementIdentifier: "docType", elementValue: "element-doc-type" },
         ],
       },
     } as never);
 
     expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
-      docType: "org.iso.18013.5.1.mDL",
-      "org.iso.18013.5.1.family_name": "First",
-      "org.iso.18013.5.1.custom.family_name": "Second",
-      "org.iso.18013.5.1.custom.docType": "element-doc-type",
+      "org.iso.18013.5.1": { family_name: "First" },
+      "org.iso.18013.5.1.custom": { family_name: "Second" },
+    });
+  });
+
+  it("encodes binary values as Base64 and labels only image fields", () => {
+    mockDecode.mockReturnValue({
+      issuerAuth: [],
+      nameSpaces: {
+        "org.iso.18013.5.1": [
+          { elementIdentifier: "portrait", elementValue: new Uint8Array([1, 2, 3]) },
+          { elementIdentifier: "signature_usual_mark", elementValue: new Uint8Array([4, 5]) },
+          { elementIdentifier: "other_bytes", elementValue: new Uint8Array([6, 7, 8]) },
+        ],
+      },
+    } as never);
+
+    expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
+      "org.iso.18013.5.1": {
+        portrait: "image (3 bytes)",
+        signature_usual_mark: "image (2 bytes)",
+        other_bytes: btoa(String.fromCharCode(6, 7, 8)),
+      },
     });
   });
 
   it("rejects malformed mdoc namespaces and items", () => {
     mockDecode.mockReturnValue({
       docType: "org.iso.18013.5.1.mDL",
+      issuerAuth: [],
       nameSpaces: {
         "org.iso.18013.5.1": { not: "an-array" },
       },
@@ -106,6 +178,7 @@ describe("cborUtils", () => {
 
     mockDecode.mockReturnValue({
       docType: "org.iso.18013.5.1.mDL",
+      issuerAuth: [],
       nameSpaces: {
         "org.iso.18013.5.1": [{ elementValue: "missing-identifier" }],
       },

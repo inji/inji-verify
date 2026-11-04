@@ -28,14 +28,26 @@ jest.mock("../../../../../components/Home/VerificationSection/Result/DisplayVcDe
 
 describe("DisplayVcCardView", () => {
   test("expands a credential card and renders its details", async () => {
-    render(<DisplayVcCardView vc={{ type: "HealthInsurance" } as any} vcStatus="SUCCESS" view={false} />);
+    render(
+      <DisplayVcCardView
+        vc={{ family_name: "Server-verified" }}
+        vcStatus="SUCCESS"
+        view={false}
+      />,
+    );
     await waitFor(() => expect(screen.getByText("HealthInsurance")).toBeInTheDocument());
     fireEvent.click(screen.getByRole("button"));
     expect(screen.getByTestId("detail-view")).toBeInTheDocument();
   });
 
   test("renders an already-open card without a toggle icon", async () => {
-    render(<DisplayVcCardView vc={{ type: "HealthInsurance" } as any} vcStatus="SUCCESS" view={true} />);
+    render(
+      <DisplayVcCardView
+        vc={{ family_name: "Server-verified" }}
+        vcStatus="SUCCESS"
+        view={true}
+      />,
+    );
     await waitFor(() => expect(screen.getByTestId("detail-view")).toBeInTheDocument());
     expect(screen.queryByTestId("down")).not.toBeInTheDocument();
   });

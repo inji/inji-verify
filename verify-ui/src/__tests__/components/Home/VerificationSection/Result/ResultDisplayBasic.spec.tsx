@@ -8,9 +8,12 @@ jest.mock("../../../../../utils/theme-utils", () => ({
   VectorDownload: () => <span data-testid="download-icon" />,
 }));
 
-jest.mock("../../../../../components/Home/VerificationSection/Result/VcDetailsGrid", () => () => (
-  <div data-testid="vc-details-grid" />
-));
+jest.mock("../../../../../components/Home/VerificationSection/Result/VcDetailsGrid", () => ({
+  __esModule: true,
+  default: () => <div data-testid="vc-details-grid" />,
+  getMdocDetailsOrder: jest.fn(() => []),
+  hasMdocNamespace: jest.fn(() => false),
+}));
 
 jest.mock("../../../../../components/Home/VerificationSection/Result/VcSvgTemplate", () => () => (
   <div data-testid="vc-svg-template" />

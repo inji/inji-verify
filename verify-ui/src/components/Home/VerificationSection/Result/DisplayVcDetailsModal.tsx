@@ -10,7 +10,7 @@ import {
   borderColorMapping,
   textColorMapping,
 } from "../../../../utils/config";
-import VcDetailsGrid from "./VcDetailsGrid";
+import VcDetailsGrid, { getMdocDetailsOrder, hasMdocNamespace } from "./VcDetailsGrid";
 import i18next from "i18next";
 import VcSvgTemplate from "./VcSvgTemplate";
 import { getTemplateUrl } from "../../../../utils/svg-template-utils";
@@ -34,7 +34,9 @@ const DisplayVcDetailsModal: React.FC<ModalProps> = ({
 }) => {
   const { t } = useTranslation("Verify");
   const currentLang = i18next.language;
-  const orderedDetails = vc && getDetailsOrder(vc, currentLang);
+  const orderedDetails = hasMdocNamespace(vc)
+    ? getMdocDetailsOrder(vc)
+    : vc && getDetailsOrder(vc, currentLang);
   const templateUrl = getTemplateUrl(vc);
 
   if (!isOpen) return null;

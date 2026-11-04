@@ -751,11 +751,11 @@
                       "    pm.expect(body.schemaAndSignatureCheck.error).to.eql(null);",
                       "    pm.expect(body.expiryCheck.valid).to.eql(true);",
                       "    pm.expect(body.statusCheck).to.eql([]);",
-                      "    pm.expect(body.claims.docType).to.eql(\"org.iso.18013.5.1.mDL\");",
-                      "    pm.expect(body.claims.family_name).to.eql(\"Cooper\");",
-                      "    pm.expect(body.claims.given_name).to.eql(\"Gorge\");",
-                      "    pm.expect(body.claims.birth_date).to.eql(\"1985-04-29\");",
-                      "    pm.expect(body.claims.document_number).to.eql(\"DL2154189532\");",
+                      "    pm.expect(body.claims).not.to.have.property(\"docType\");",
+                      "    pm.expect(body.claims[\"org.iso.18013.5.1\"].family_name).to.eql(\"Cooper\");",
+                      "    pm.expect(body.claims[\"org.iso.18013.5.1\"].given_name).to.eql(\"Gorge\");",
+                      "    pm.expect(body.claims[\"org.iso.18013.5.1\"].birth_date).to.eql(\"1985-04-29\");",
+                      "    pm.expect(body.claims[\"org.iso.18013.5.1\"].document_number).to.eql(\"DL2154189532\");",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -805,7 +805,7 @@
                     }
                   ],
                   "cookie": [],
-                  "body": "{\n  \"allChecksSuccessful\": true,\n  \"schemaAndSignatureCheck\": {\n    \"valid\": true,\n    \"error\": null\n  },\n  \"expiryCheck\": {\n    \"valid\": true\n  },\n  \"statusCheck\": [],\n  \"claims\": {\n    \"docType\": \"org.iso.18013.5.1.mDL\",\n    \"family_name\": \"Cooper\",\n    \"given_name\": \"Gorge\",\n    \"birth_date\": \"1985-04-29\",\n    \"document_number\": \"DL2154189532\"\n  }\n}"
+                  "body": "{\n  \"allChecksSuccessful\": true,\n  \"schemaAndSignatureCheck\": {\n    \"valid\": true,\n    \"error\": null\n  },\n  \"expiryCheck\": {\n    \"valid\": true\n  },\n  \"statusCheck\": [],\n  \"claims\": {\n    \"org.iso.18013.5.1\": {\n      \"family_name\": \"Cooper\",\n      \"given_name\": \"Gorge\",\n      \"birth_date\": \"1985-04-29\",\n      \"document_number\": \"DL2154189532\"\n    }\n  }\n}"
                 }
               ]
             }

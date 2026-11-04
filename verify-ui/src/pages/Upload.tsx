@@ -9,7 +9,7 @@ import {
 import { raiseAlert } from "../redux/features/alerts/alerts.slice";
 import { useAppDispatch } from "../redux/hooks";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import { getClientId, isVPSubmissionSupported, vcVerificationV2Request,} from "../utils/commonUtils";
+import { getClientId, isVPSubmissionSupported, vcStatusFromVerificationResponse, vcVerificationV2Request,} from "../utils/commonUtils";
 import {checkInternetStatus} from "../utils/misc";
 import {updateInternetConnectionStatus} from "../redux/features/application-state/application-state.slice";
 
@@ -34,9 +34,7 @@ export const Upload = () => {
 const handleOnVCProcessed = (data: any[]) => {
         const vc = data[0].vc;
         const verificationResponse = data[0].verificationResponse;
-    const vcStatus = verificationResponse.verificationStatus ??
-                  verificationResponse.vcResults?.[0]?.vcStatus ??
-                   verificationResponse.vpResultStatus;
+        const vcStatus = vcStatusFromVerificationResponse(verificationResponse);
         dispatch(verificationComplete({verificationResult: {
                     vc,
                     vcStatus,
@@ -60,7 +58,7 @@ return (
                     onVCProcessed={handleOnVCProcessed}
                     uploadButtonId={"upload-qr"}
                     uploadButtonStyle="hidden"
-                    onError={async (error) => {
+                    onError={async (error: Error | { errorCode?: string; errorMessage?: string }) => {
                         let isOnline = await checkInternetStatus();
                         dispatch(
                             updateInternetConnectionStatus({

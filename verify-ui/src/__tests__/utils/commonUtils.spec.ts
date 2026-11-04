@@ -746,7 +746,7 @@ describe("commonUtils credential matching", () => {
           schemaAndSignatureCheck: { valid: true, error: null },
           expiryCheck: { valid: true },
           statusCheck: [],
-          claims: { docType: "org.iso.18013.5.1.mDL" },
+          claims: { "org.iso.18013.5.1": { family_name: "Cooper" } },
         }),
       ).toBe("SUCCESS");
       expect(
@@ -772,6 +772,44 @@ describe("commonUtils credential matching", () => {
         }),
       ).toBe("REVOKED");
     });
+
+    test.each(["ldp_vc", "cwt_vc", "vc+sd-jwt", "dc+sd-jwt", "mso_mdoc"])(
+      "derives full-body statuses for %s credentials",
+      () => {
+        expect(
+          vcStatusFromVerificationResponse({
+            allChecksSuccessful: true,
+            schemaAndSignatureCheck: { valid: true },
+            expiryCheck: { valid: true },
+            statusCheck: [],
+          }),
+        ).toBe("SUCCESS");
+
+        expect(
+          vcStatusFromVerificationResponse({
+            allChecksSuccessful: false,
+            schemaAndSignatureCheck: { valid: false },
+          }),
+        ).toBe("INVALID");
+
+        expect(
+          vcStatusFromVerificationResponse({
+            allChecksSuccessful: false,
+            schemaAndSignatureCheck: { valid: true },
+            expiryCheck: { valid: false },
+          }),
+        ).toBe("EXPIRED");
+
+        expect(
+          vcStatusFromVerificationResponse({
+            allChecksSuccessful: false,
+            schemaAndSignatureCheck: { valid: true },
+            expiryCheck: { valid: true },
+            statusCheck: [{ purpose: "revocation", valid: false, error: null }],
+          }),
+        ).toBe("REVOKED");
+      },
+    );
 
     test("extracts credential types from object and fallback forms", () => {
       expect(

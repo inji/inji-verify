@@ -1,24 +1,55 @@
 import React from "react";
 import { convertToId, convertToTitleCase, getDisplayValue } from "../../../../utils/misc";
 import { SharableLink } from "../../../../utils/theme-utils";
-import { AnyVc } from "../../../../types/data-types";
+import { AnyVc, MdocVc } from "../../../../types/data-types";
 
 interface VcDetailsGridProps {
   orderedDetails: { key: string; value: any }[];
   vc?: AnyVc;
 }
 
+export const getMdocDetailsOrder = (
+  claims: MdocVc,
+): { key: string; value: unknown }[] => {
+  const details = Object.entries(claims).flatMap(([namespace, namespaceClaims]) => {
+    if (
+      typeof namespaceClaims !== "object" ||
+      namespaceClaims === null ||
+      Array.isArray(namespaceClaims)
+    ) {
+      return [];
+    }
+    return Object.entries(namespaceClaims).map(([key, value]) => ({
+      key: `${namespace}.${key}`,
+      value,
+    }));
+  });
+  const docType = (claims as { docType?: unknown }).docType;
+  return typeof docType === "string"
+    ? [{ key: "docType", value: docType }, ...details]
+    : details;
+};
+
+export const hasMdocNamespace = (
+  claims: unknown,
+): claims is MdocVc =>
+  typeof claims === "object" &&
+  claims !== null &&
+  !Array.isArray(claims) &&
+  Object.prototype.hasOwnProperty.call(claims, "org.iso.18013.5.1");
+
 const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   orderedDetails,
   vc
 }) => {
   const BIOMETRIC_KEYS = ["face", "portrait", "signature_usual_mark"].map((key) => key.toLowerCase());
+  const detailKey = (key: string) => key.split(".").pop()?.toLocaleLowerCase() ?? key.toLocaleLowerCase();
 
   const biometricItems = orderedDetails.filter((item) =>
-    BIOMETRIC_KEYS.includes(item.key.toLocaleLowerCase())
+    BIOMETRIC_KEYS.includes(detailKey(item.key))
   );
   const otherItems = orderedDetails.filter(
-    (item) => !BIOMETRIC_KEYS.includes(item.key.toLocaleLowerCase())
+    (item) => !BIOMETRIC_KEYS.includes(detailKey(item.key))
   );
 
   const renderingItems = [...biometricItems, ...otherItems];
@@ -26,7 +57,7 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
   return (
     <div className="grid relative lg:grid-cols-12 lg:gap-y-4">
       {renderingItems.map((label, index) => {
-        const isImage = BIOMETRIC_KEYS.includes(label.key.toLocaleLowerCase());
+        const isImage = BIOMETRIC_KEYS.includes(detailKey(label.key));
         const isEven = index % 2 === 0;
         const normalizeKey = (key: string) => key.toLowerCase().trim();
         const disclosedClaims =
@@ -48,6 +79,11 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
           : false;
 
           const faceData = Array.isArray(label.value) && label.value.length > 0 ? label.value[0] : label.value;
+          const imageSrc =
+            typeof faceData === "string" &&
+            (faceData.startsWith("data:") || faceData.startsWith("http"))
+              ? faceData
+              : null;
 
         return (
           <div
@@ -58,9 +94,9 @@ const VcDetailsGrid: React.FC<VcDetailsGridProps> = ({
                 : "lg:col-start-8 lg:col-end-13"
             }`}
           >
-            {isImage ? (
+            {isImage && imageSrc ? (
               <img
-                src={faceData}
+                src={imageSrc}
                 alt={label.key}
                 style={{
                   width: 80,

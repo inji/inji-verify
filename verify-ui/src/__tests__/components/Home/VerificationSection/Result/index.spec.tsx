@@ -22,7 +22,7 @@ jest.mock("../../../../../utils/cborUtils", () => ({
     isMsoMdoc: jest.fn(() => false),
     extractMdocDisplayClaims: jest.fn(() => ({})),
     uint8ArrayToHex: () => "",
-    extractMappedClaim: () => ({}),
+    extractMappedClaim: jest.fn(() => ({})),
 }));
 
 jest.mock(
@@ -31,10 +31,10 @@ jest.mock(
         const React = require("react");
         return {
             __esModule: true,
-            default: ({ vc }: { vc?: { docType?: string; family_name?: string } }) =>
+            default: ({ vc }: { vc?: Record<string, any> }) =>
                 React.createElement("div", {
                     "data-testid": "vc-detail-view-mock",
-                    "data-family-name": vc?.family_name,
+                    "data-family-name": vc?.["org.iso.18013.5.1"]?.family_name,
                     "data-doc-type": vc?.docType,
                 }),
         };
@@ -47,9 +47,10 @@ jest.mock(
         const React = require("react");
         return {
             __esModule: true,
-            default: () =>
+            default: ({ vcType }: { vcType: string }) =>
                 React.createElement("div", {
                     "data-testid": "vc-detail-modal-mock",
+                    "data-vc-type": vcType,
                 }),
         };
     }
@@ -103,23 +104,24 @@ describe("Vc Result", () => {
     expect(message?.textContent).toBeTruthy();
   });
 
-  test("shows mDL claims decoded from the credential", () => {
+  test("shows mDL claims decoded from the credential with a fixed Mobile Document title", () => {
     (isMsoMdoc as jest.Mock).mockReturnValue(true);
     (extractMdocDisplayClaims as jest.Mock).mockReturnValue({
-      docType: "org.iso.18013.5.1.mDL",
-      family_name: "Cooper",
+      "org.iso.18013.5.1": { family_name: "Cooper" },
     });
     mockVerificationSelector({
       vc: "omppc3N1ZXJBdXRo",
       vcStatus: "SUCCESS",
-      verificationResponse: { verificationStatus: "SUCCESS" },
     });
 
     const { container } = render(<Result />);
 
     const details = container.querySelector("[data-testid='vc-detail-view-mock']");
     expect(details).toHaveAttribute("data-family-name", "Cooper");
-    expect(details).toHaveAttribute("data-doc-type", "org.iso.18013.5.1.mDL");
+    expect(details).not.toHaveAttribute("data-doc-type");
+    expect(container.querySelector("#vc-result-doc-type")?.textContent).toBe("Mobile Document");
+    expect(container.querySelector("[data-testid='vc-detail-modal-mock']")).toHaveAttribute("data-vc-type", "Mobile Document");
+    expect(extractMdocDisplayClaims).toHaveBeenCalledWith("omppc3N1ZXJBdXRo");
   });
 
   test("VC Verification Failure", () => {

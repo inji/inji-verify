@@ -31,7 +31,7 @@ An mdoc is a CBOR credential. Claims are grouped into named namespaces, and inte
 
 For an mDL, `docType` is typically `org.iso.18013.5.1.mDL` and the standard namespace is `org.iso.18013.5.1`.
 
-Inji Verify accepts the credential as a **base64url-encoded CBOR** string. That string may encode a bare document (`issuerSigned` / `issuerAuth` + `nameSpaces`) or a presentation with a `documents` array. Only the first document is read today.
+Inji Verify accepts the credential as a **base64url-encoded CBOR** string. That string may encode a bare document (`issuerSigned` / `issuerAuth` + `nameSpaces`) or a presentation with a `documents` array. For a `documents` array, only `documents[0]` is verified and used for claims; all subsequent documents are ignored, matching the verification library's behavior.
 
 ---
 
@@ -51,9 +51,9 @@ Strings longer than 1 MiB are rejected as mdocs.
 
 | Check | Source | Notes |
 |---|---|---|
-| Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | Algorithm comes from the `issuerAuth` COSE `alg` header, subject to verifier support |
+| Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | Algorithm comes from the `issuerAuth` COSE `alg` header, subject to verifier support. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
 | Data-element integrity | MSO digests | Performed by the verification library |
-| Expiry | MSO `validityInfo` | Reported in `expiryCheck` |
+| MSO validity | `validFrom` and `validUntil` | A future `validFrom` fails verification; an expired `validUntil` is reported in `expiryCheck` |
 | Revocation | — | Not supported; `statusCheck` is empty |
 | Holder / device binding | — | Not applicable on scan and upload |
 
@@ -82,21 +82,22 @@ Example success response:
   "expiryCheck": { "valid": true },
   "statusCheck": [],
   "claims": {
-    "docType": "org.iso.18013.5.1.mDL",
-    "family_name": "Cooper",
-    "given_name": "Gorge",
-    "birth_date": "1985-04-29",
-    "document_number": "DL2154189532"
+    "org.iso.18013.5.1": {
+      "family_name": "Cooper",
+      "given_name": "Gorge",
+      "birth_date": "1985-04-29",
+      "document_number": "DL2154189532"
+    }
   }
 }
 ```
 
 When `includeClaims` is `true`, `claims` contains:
 
-- `docType` from the document or the MSO
-- issuer-signed data elements keyed by `elementIdentifier`
+- issuer-signed data elements grouped by namespace and keyed by `elementIdentifier`
 
-If the same identifier appears in more than one namespace, both values are kept under namespace-qualified keys (for example `org.iso.18013.5.1.family_name`). An element literally named `docType` is always stored under a namespace-qualified key so it cannot overwrite the document type.
+The service returns namespace data elements only; it does not read or return `docType` from the document or signed MSO. Each namespace has a nested claim object, so elements with the same identifier remain separate without renaming.
+Claims are extracted from the parsed credential returned by `vc-verifier` after verification, rather than decoding the original mdoc again.
 
 ---
 
@@ -105,8 +106,8 @@ If the same identifier appears in more than one namespace, both values are kept 
 1. The user scans or uploads a QR that embeds the base64url mdoc.
 2. The SDK posts the credential string to `POST /v2/vc-verification`.
 3. The backend verifies it as `mso_mdoc` and returns the check outcomes.
-4. With the SDK default `summariseResults=true`, `onVCProcessed` receives `{ verificationStatus }` plus the original credential in `vc`.
-5. The result screen decodes `vc` locally and displays the claims.
+4. The UI requests the full verification response, including server-extracted claims.
+5. The result screen shows a fixed **Mobile Document** title and the namespace-grouped claims decoded for display (same shape as the backend `claims` map).
 
 See [VC_Verification.md](./VC_Verification.md) for the shared scan and upload flow.
 
@@ -114,9 +115,7 @@ See [VC_Verification.md](./VC_Verification.md) for the shared scan and upload fl
 
 ## UI Decoding
 
-The UI mirrors the backend claim shape. It reads `docType` and flattens issuer-signed items from `nameSpaces`, `issuerSigned.nameSpaces`, or `documents[0].issuerSigned.nameSpaces`. Tag-24 byte strings are unwrapped. CBOR date values render as ISO strings.
-
-This is the same pattern used for SD-JWT (`decodeSdJwtToken`) and CWT (`extractMappedClaim`): claims for display come from the credential string, not from the summarised verification response.
+The UI decodes the credential into a namespace-grouped claim map matching the backend (for example `{ "org.iso.18013.5.1": { "family_name": "..." } }`). It does not read `docType` from the credential; the result screen shows **Mobile Document** as the displayed `docType`. Shape preference matches the library: `documents`, then `issuerSigned`, then `issuerAuth` + `nameSpaces`. When `documents` is present, only the first document is used; later documents are ignored. The result card and expanded view reuse the existing details grid, displaying element identifiers qualified by their namespace.
 
 ---
 
@@ -124,9 +123,11 @@ This is the same pattern used for SD-JWT (`decodeSdJwtToken`) and CWT (`extractM
 
 | Topic | Behaviour |
 |---|---|
+| Signature algorithm | ES256 only |
 | OpenID4VP | Not supported for `mso_mdoc` |
-| Trust anchors / certificate chain | Not enforced by Inji Verify in this release; the library chain check remains a stub |
-| Multi-document submissions | Only the first document is verified and displayed |
-| Revocation / status | Not checked; `statusCheck` is `[]` |
-| Device / holder binding | Not checked on scan and upload |
+| Issuer trust | Not enforced; certificate-chain validation is out of scope until IACA trust-anchor support ships. Even an mdoc signed by a self-signed certificate can show as verified. |
+| Multi-document submissions | Only `documents[0]` is verified and used for displayed claims, matching the library; all remaining documents are ignored. |
+| Revocation | Not checked; `statusCheck` is `[]` |
+| Device check | Not performed on scan and upload |
+| Not-yet-valid documents | The verifier checks `validUntil` but currently does not reject an mdoc before its `validFrom` date. |
 | Oversized input | Base64url strings longer than 1 MiB are rejected |
