@@ -197,8 +197,11 @@ describe("cborUtils", () => {
   });
 
   it("renders JPEG and PNG image fields as data URIs", () => {
-    const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);
-    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+    const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0xff, 0xd9]);
+    const png = new Uint8Array([
+      0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a,
+      0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82,
+    ]);
     mockDecode.mockReturnValue({
       issuerAuth: [],
       nameSpaces: {
@@ -213,6 +216,28 @@ describe("cborUtils", () => {
       "org.iso.18013.5.1": {
         portrait: `data:image/jpeg;base64,${btoa(String.fromCharCode(...jpeg))}`,
         signature_usual_mark: `data:image/png;base64,${btoa(String.fromCharCode(...png))}`,
+      },
+    });
+  });
+
+  it("labels truncated JPEG and PNG image fields instead of returning a data URI", () => {
+    // Valid magic bytes, but no JPEG end marker or PNG IEND chunk.
+    const truncatedJpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0, 0x00, 0x10]);
+    const truncatedPng = new Uint8Array([0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a, 0x00]);
+    mockDecode.mockReturnValue({
+      issuerAuth: [],
+      nameSpaces: {
+        "org.iso.18013.5.1": [
+          { elementIdentifier: "portrait", elementValue: truncatedJpeg },
+          { elementIdentifier: "signature_usual_mark", elementValue: truncatedPng },
+        ],
+      },
+    } as never);
+
+    expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
+      "org.iso.18013.5.1": {
+        portrait: "image (6 bytes)",
+        signature_usual_mark: "image (9 bytes)",
       },
     });
   });

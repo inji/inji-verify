@@ -176,21 +176,47 @@ export function isMsoMdoc(value: unknown): boolean {
   }
 }
 
-/** Browser-displayable image types by magic bytes; JPEG 2000 and others fall back to a label. */
+const JPEG_START = [0xff, 0xd8, 0xff];
+/** JPEG end-of-image marker. */
+const JPEG_END = [0xff, 0xd9];
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+/** Empty IEND chunk: zero length, type "IEND", fixed CRC. */
+const PNG_IEND = [0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82];
+
+function bytesMatchAt(bytes: Uint8Array, expected: number[], offset: number): boolean {
+  return offset >= 0 && expected.every((byte, index) => bytes[offset + index] === byte);
+}
+
+/**
+ * Browser-displayable image types, recognized only when both the start and the end of the image
+ * are present, so a truncated image falls back to a label instead of a broken <img>.
+ * JPEG 2000 and other types also fall back to a label.
+ */
 function imageMimeType(bytes: Uint8Array): string | null {
-  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+  if (
+    bytes.length >= JPEG_START.length + JPEG_END.length &&
+    bytesMatchAt(bytes, JPEG_START, 0) &&
+    bytesMatchAt(bytes, JPEG_END, bytes.length - JPEG_END.length)
+  ) {
     return "image/jpeg";
   }
-  if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+  if (
+    bytes.length >= PNG_SIGNATURE.length + PNG_IEND.length &&
+    bytesMatchAt(bytes, PNG_SIGNATURE, 0) &&
+    bytesMatchAt(bytes, PNG_IEND, bytes.length - PNG_IEND.length)
+  ) {
     return "image/png";
   }
   return null;
 }
 
 /**
- * Same text as the backend: an ISO-8601 UTC instant, without ".000" for whole seconds.
- * cbor-x has already turned tag 0/1 into a Date, so an unparseable tdate cannot be shown as
- * its original text; it is shown as "Invalid Date" instead of failing the whole claim set.
+ * An ISO-8601 UTC instant, without ".000" for whole seconds. cbor-x has already turned tag 0/1
+ * into a Date, which holds milliseconds only: sub-millisecond digits are dropped, so
+ * 2024-05-03T08:00:00.123456Z is shown as 2024-05-03T08:00:00.123Z while the backend keeps
+ * .123456. Dates with millisecond precision or less read the same as the backend. An
+ * unparseable tdate cannot be shown as its original text either; it is shown as "Invalid Date"
+ * instead of failing the whole claim set.
  */
 function renderMdocDate(value: Date): string {
   if (Number.isNaN(value.getTime())) {
