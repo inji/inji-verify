@@ -92,6 +92,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
             verificationResult = credentialVerificationSummary.getVerificationResult();
             credentialStatus = credentialVerificationSummary.getCredentialStatus();
         }
+        Utils.reportExpiredMdocAsExpiry(verifiableCredential, format, verificationResult);
 
         SchemaAndSignatureCheckDto schemaAndSignatureCheck = populateSchemaAndSignature(verificationResult);
         if (schemaAndSignatureCheck.isValid()) {

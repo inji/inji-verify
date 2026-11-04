@@ -53,7 +53,7 @@ Strings longer than 1 MiB are rejected as mdocs.
 |---|---|---|
 | Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | Algorithm comes from the `issuerAuth` COSE `alg` header, subject to verifier support. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
 | Data-element integrity | MSO digests | Performed by the verification library |
-| MSO validity | `validFrom` and `validUntil` | An expired `validUntil` is reported in `expiryCheck`; a future `validFrom` is currently not rejected (see [Limitations](#limitations)) |
+| MSO validity | `validFrom` and `validUntil` | The library stops at an expired `validUntil` without checking the signature, so the service runs the signature and digest check itself. If it passes, the result has `schemaAndSignatureCheck.valid: true` and `expiryCheck.valid: false` (status `EXPIRED`); if it fails, the result is `INVALID`. A future `validFrom` is currently not rejected (see [Limitations](#limitations)) |
 | Revocation | — | Not supported; `statusCheck` is empty |
 | Holder / device binding | — | Not applicable on scan and upload |
 

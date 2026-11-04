@@ -21,6 +21,8 @@ import io.inji.verify.exception.InvalidCredentialException;
 import io.inji.verify.shared.Constants;
 import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
+import io.mosip.vercred.vcverifier.constants.CredentialValidatorConstants;
+import io.mosip.vercred.vcverifier.credentialverifier.types.msomdoc.MsoMdocVerifiableCredential;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
@@ -332,6 +334,35 @@ public final class Utils {
         return res.getError() != null
                 ? new ErrorDto(res.getError().getErrorCode().toString(), res.getError().getErrorMessage())
                 : null;
+    }
+
+    /**
+     * For an mdoc whose MSO {@code validUntil} has passed, the library stops at validation and
+     * never checks the issuer signature or the element digests, so the failure surfaces as an
+     * invalid signature. This runs that signature and digest check. If it passes, the result is
+     * rewritten in place as the library's own "expired" outcome (verified, {@code ERR_VC_EXPIRED}),
+     * so it is reported through {@code expiryCheck} like every other format. If it fails or cannot
+     * run, the result is left as the library returned it.
+     */
+    public static void reportExpiredMdocAsExpiry(String credential, CredentialFormat format, VerificationResult verificationResult) {
+        if (format != CredentialFormat.MSO_MDOC
+                || verificationResult == null
+                || verificationResult.getVerificationStatus()
+                || !CredentialValidatorConstants.ERROR_CODE_INVALID_VALID_UNTIL_MSO.equals(verificationResult.getVerificationErrorCode())) {
+            return;
+        }
+        boolean signatureAndDigestsValid;
+        try {
+            signatureAndDigestsValid = new MsoMdocVerifiableCredential().verify(credential);
+        } catch (Exception e) {
+            log.warn("Expired mdoc failed signature verification: {}", e.getClass().getSimpleName());
+            return;
+        }
+        if (signatureAndDigestsValid) {
+            verificationResult.setVerificationStatus(true);
+            verificationResult.setVerificationMessage(CredentialValidatorConstants.ERROR_MESSAGE_VC_EXPIRED);
+            verificationResult.setVerificationErrorCode(CredentialValidatorConstants.ERROR_CODE_VC_EXPIRED);
+        }
     }
 
     public static SchemaAndSignatureCheckDto populateSchemaAndSignature(VerificationResult verificationResult) {
