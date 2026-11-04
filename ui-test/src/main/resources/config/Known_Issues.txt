@@ -1,3 +1,6 @@
 #Add the Known Issue scenario with its bug id here
 #Ex:bugId------scenario
 #INJIVER-1234------Verify the VP verification panel
+https://github.com/inji/inji-verify/issues/2464------Verify SVG template fetch-failure alert message is localized across languages
+https://github.com/inji/inji-verify/issues/1851------Verify upload of one time valid qr code
+https://github.com/inji/inji-verify/issues/2462------Verify SD-JWT QR code with expired certificate shows invalid credential message

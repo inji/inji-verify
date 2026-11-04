@@ -90,20 +90,18 @@ Feature: Inji SVG qr code testing
     And Verify that Upload button visible
     And Upload SVG rendered VC
     And Verify failed to load credential template alert message is shown in "Tamil"
-#    And Verify click on language dropdown
-#    And Verify select language "French"
-#    And Verify that Upload button visible
-#    And Upload SVG rendered VC
-#    And Verify failed to load credential template alert message is shown in "French"
-#    And Verify click on language dropdown
-#    And Verify select language "Arabic"
-#    And Verify that Upload button visible
-#    And Upload SVG rendered VC
-#    And Verify failed to load credential template alert message is shown in "Arabic"
-#    And Verify click on language dropdown
-#    And Verify select language "Spanish"
-#    And Verify that Upload button visible
-#    And Upload SVG rendered VC
-#    And Verify failed to load credential template alert message is shown in "Spanish"
-
-# above methods are commented because it is failing will be uncommented after the fix.
+    And Verify click on language dropdown
+    And Verify select language "French"
+    And Verify that Upload button visible
+    And Upload SVG rendered VC
+    And Verify failed to load credential template alert message is shown in "French"
+    And Verify click on language dropdown
+    And Verify select language "Arabic"
+    And Verify that Upload button visible
+    And Upload SVG rendered VC
+    And Verify failed to load credential template alert message is shown in "Arabic"
+    And Verify click on language dropdown
+    And Verify select language "Spanish"
+    And Verify that Upload button visible
+    And Upload SVG rendered VC
+    And Verify failed to load credential template alert message is shown in "Spanish"
