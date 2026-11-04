@@ -49,7 +49,7 @@ public class VCSubmissionServiceImpl implements VCSubmissionService {
             statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
             // Plain VC flow — no VP session context, KB-JWT validation not applicable.
             CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList, false);
-            Utils.reportExpiredMdocAsExpiry(vc, credentialFormat, credentialVerificationSummary.getVerificationResult());
+            Utils.reportMdocValidityThroughExpiry(vc, credentialFormat, credentialVerificationSummary.getVerificationResult());
             VerificationStatus vcVerificationStatus = Utils.getVcVerificationStatus(credentialVerificationSummary);
 
             return new VCSubmissionVerificationStatusDto(vc, vcVerificationStatus);

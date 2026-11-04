@@ -248,23 +248,23 @@ public class UtilsTest {
 
     @Test
     void shouldRejectOversizedMdocCredentials() {
-        String oversized = "a".repeat(1_048_577);
+        String oversized = "a".repeat(1_398_104);
 
         assertFalse(Utils.isMsoMdoc(oversized));
         InvalidCredentialException error = assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims(oversized));
-        assertEquals("mdoc credential exceeds maximum size", error.getMessage());
+        assertEquals("Credential exceeds the maximum supported size", error.getMessage());
     }
 
     @Test
     void shouldDetectOversizedMdocThenRefuseIt() {
         String mdl = encodeMdoc(documentWithNamespaces(issuerSignedNamespaces("Ada"), true));
-        new Utils().setMaxMdocBase64Length(Math.max(1, mdl.length() - 1));
+        new Utils().setMaxMdocSizeBytes(Math.max(1, Base64.getUrlDecoder().decode(mdl).length - 1));
         try {
             assertTrue(Utils.isMsoMdoc(mdl));
             InvalidCredentialException error = assertThrows(InvalidCredentialException.class, () -> Utils.getCredentialFormat(mdl));
-            assertEquals("mdoc credential exceeds maximum size", error.getMessage());
+            assertEquals("Credential exceeds the maximum supported size", error.getMessage());
         } finally {
-            new Utils().setMaxMdocBase64Length(1_048_576);
+            new Utils().setMaxMdocSizeBytes(1_048_576);
         }
     }
 
@@ -447,6 +447,69 @@ public class UtilsTest {
         InvalidCredentialException error = assertThrows(InvalidCredentialException.class,
                 () -> Utils.extractMdocClaims(encodeMdoc(document)));
         assertEquals("Duplicate mdoc element identifier", error.getMessage());
+    }
+
+    private static String mdocWithElementValue(CBORObject elementValue) {
+        CBORObject item = CBORObject.NewMap()
+                .Add("elementIdentifier", "value")
+                .Add("elementValue", elementValue);
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray().Add(CBORObject.FromObject(item.EncodeToBytes())));
+        return encodeMdoc(CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces));
+    }
+
+    private static Object mdocElementValue(String mdoc) {
+        return ((Map<?, ?>) Utils.extractMdocClaims(mdoc).get("org.iso.18013.5.1")).get("value");
+    }
+
+    @Test
+    void shouldRenderMdocDatesAsIsoInstants() {
+        assertEquals("2024-05-03T08:00:00Z",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1714723200L).WithTag(1))));
+        assertEquals("2024-05-03T08:00:00.500Z",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1714723200.5).WithTag(1))));
+        assertEquals("2023-12-31T18:30:00Z",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject("2024-01-01T00:00:00+05:30").WithTag(0))));
+        assertEquals("not-a-date",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject("not-a-date").WithTag(0))));
+        assertEquals("1985-04-29",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject("1985-04-29").WithTag(1004))));
+    }
+
+    @Test
+    void shouldRejectMalformedMdocNamespacesAndItems() {
+        String mapNamespace = encodeMdoc(CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", CBORObject.NewMap().Add("org.example", CBORObject.NewMap())));
+        InvalidCredentialException namespaceError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(mapNamespace));
+        assertEquals("Invalid mdoc namespace: expected an item array", namespaceError.getMessage());
+
+        CBORObject noValue = CBORObject.NewMap().Add("elementIdentifier", "family_name");
+        String missingValue = encodeMdoc(CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", CBORObject.NewMap().Add("org.iso.18013.5.1",
+                        CBORObject.NewArray().Add(CBORObject.FromObject(noValue.EncodeToBytes())))));
+        InvalidCredentialException itemError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(missingValue));
+        assertEquals("Invalid mdoc issuer-signed item", itemError.getMessage());
+    }
+
+    @Test
+    void shouldApplyMdocSizeLimitToDecodedBytes() {
+        String mdl = encodeMdoc(documentWithNamespaces(issuerSignedNamespaces("Ada"), true));
+        int decodedBytes = Base64.getUrlDecoder().decode(mdl).length;
+        try {
+            new Utils().setMaxMdocSizeBytes(decodedBytes);
+            assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(mdl));
+            new Utils().setMaxMdocSizeBytes(decodedBytes - 1);
+            InvalidCredentialException error = assertThrows(InvalidCredentialException.class, () -> Utils.getCredentialFormat(mdl));
+            assertEquals("Credential exceeds the maximum supported size", error.getMessage());
+        } finally {
+            new Utils().setMaxMdocSizeBytes(1_048_576);
+        }
     }
 
     @Test

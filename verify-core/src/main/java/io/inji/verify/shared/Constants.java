@@ -85,6 +85,7 @@ public final class Constants {
     public static final String KEY_DOCUMENTS = "documents";
     public static final String KEY_ELEMENT_IDENTIFIER = "elementIdentifier";
     public static final String KEY_ELEMENT_VALUE = "elementValue";
+    public static final String ERROR_MESSAGE_MDOC_NOT_YET_VALID = "mdoc is not yet valid: validFrom in the MSO is in the future";
 
     // STATUS PURPOSE
     public static final String STATUS_PURPOSE_REVOKED = "revocation";

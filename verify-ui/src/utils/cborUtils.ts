@@ -176,13 +176,39 @@ export function isMsoMdoc(value: unknown): boolean {
   }
 }
 
+/** Browser-displayable image types by magic bytes; JPEG 2000 and others fall back to a label. */
+function imageMimeType(bytes: Uint8Array): string | null {
+  if (bytes.length >= 3 && bytes[0] === 0xff && bytes[1] === 0xd8 && bytes[2] === 0xff) {
+    return "image/jpeg";
+  }
+  if (bytes.length >= 4 && bytes[0] === 0x89 && bytes[1] === 0x50 && bytes[2] === 0x4e && bytes[3] === 0x47) {
+    return "image/png";
+  }
+  return null;
+}
+
+/**
+ * Same text as the backend: an ISO-8601 UTC instant, without ".000" for whole seconds.
+ * cbor-x has already turned tag 0/1 into a Date, so an unparseable tdate cannot be shown as
+ * its original text; it is shown as "Invalid Date" instead of failing the whole claim set.
+ */
+function renderMdocDate(value: Date): string {
+  if (Number.isNaN(value.getTime())) {
+    return "Invalid Date";
+  }
+  return value.toISOString().replace(".000Z", "Z");
+}
+
 function renderMdocValue(value: unknown, elementIdentifier?: string): unknown {
   if (value == null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
     return value;
   }
   if (value instanceof Uint8Array) {
     if (elementIdentifier && MDOC_IMAGE_ELEMENTS.has(elementIdentifier)) {
-      return `image (${value.length} bytes)`;
+      const mimeType = imageMimeType(value);
+      return mimeType
+        ? `data:${mimeType};base64,${bytesToBase64(value)}`
+        : `image (${value.length} bytes)`;
     }
     return bytesToBase64(value);
   }
@@ -193,7 +219,7 @@ function renderMdocValue(value: unknown, elementIdentifier?: string): unknown {
     return value.map((entry) => renderMdocValue(entry, elementIdentifier));
   }
   if (value instanceof Date) {
-    return value.toISOString();
+    return renderMdocDate(value);
   }
   if (typeof value === "object") {
     return Object.fromEntries(

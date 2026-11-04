@@ -22,6 +22,7 @@ import io.inji.verify.shared.Constants;
 import io.mosip.pixelpass.PixelPass;
 import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.constants.CredentialValidatorConstants;
+import io.mosip.vercred.vcverifier.constants.CredentialVerifierConstants;
 import io.mosip.vercred.vcverifier.credentialverifier.types.msomdoc.MsoMdocVerifiableCredential;
 import io.mosip.vercred.vcverifier.data.CredentialStatusResult;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
@@ -40,6 +41,7 @@ import java.math.BigDecimal;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
+import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -336,33 +338,112 @@ public final class Utils {
                 : null;
     }
 
+    /** Clock tolerance the library applies to MSO validity dates. */
+    private static final long MDOC_VALIDITY_TOLERANCE_MILLIS = 3000;
+
     /**
-     * For an mdoc whose MSO {@code validUntil} has passed, the library stops at validation and
-     * never checks the issuer signature or the element digests, so the failure surfaces as an
-     * invalid signature. This runs that signature and digest check. If it passes, the result is
-     * rewritten in place as the library's own "expired" outcome (verified, {@code ERR_VC_EXPIRED}),
-     * so it is reported through {@code expiryCheck} like every other format. If it fails or cannot
-     * run, the result is left as the library returned it.
+     * Reports the MSO validity window ({@code validFrom} / {@code validUntil}) through
+     * {@code expiryCheck}, as for every other format. vc-verifier gets two cases wrong:
+     * <ol>
+     *   <li><b>Not yet valid.</b> The library does not check {@code validFrom} against the current
+     *       time. A verified mdoc whose {@code validFrom} is in the future is rewritten as the
+     *       library's "expired" outcome (verified, {@code ERR_VC_EXPIRED}).</li>
+     *   <li><b>Expired.</b> The library stops at an expired {@code validUntil} and never checks the
+     *       issuer signature, the element digests or the remaining validity rule ({@code validUntil}
+     *       after {@code validFrom}). Those checks run here: a signature or digest failure becomes
+     *       the library's generic verification failure, an inconsistent window its invalid-date
+     *       failure, and otherwise the result becomes the "expired" outcome.</li>
+     * </ol>
+     * Call it after every {@code CredentialsVerifier} call whose format may be mdoc; it is a no-op
+     * otherwise. It belongs in vc-verifier and can be removed once the library handles both cases.
      */
-    public static void reportExpiredMdocAsExpiry(String credential, CredentialFormat format, VerificationResult verificationResult) {
-        if (format != CredentialFormat.MSO_MDOC
-                || verificationResult == null
-                || verificationResult.getVerificationStatus()
-                || !CredentialValidatorConstants.ERROR_CODE_INVALID_VALID_UNTIL_MSO.equals(verificationResult.getVerificationErrorCode())) {
+    public static void reportMdocValidityThroughExpiry(String credential, CredentialFormat format, VerificationResult verificationResult) {
+        if (format != CredentialFormat.MSO_MDOC || verificationResult == null) {
+            return;
+        }
+        if (verificationResult.getVerificationStatus()) {
+            reportNotYetValidMdocAsExpiry(credential, verificationResult);
+            return;
+        }
+        if (!CredentialValidatorConstants.ERROR_CODE_INVALID_VALID_UNTIL_MSO.equals(verificationResult.getVerificationErrorCode())) {
             return;
         }
         boolean signatureAndDigestsValid;
         try {
             signatureAndDigestsValid = new MsoMdocVerifiableCredential().verify(credential);
         } catch (Exception e) {
-            log.warn("Expired mdoc failed signature verification: {}", e.getClass().getSimpleName());
+            // Class name only: the message can carry digest IDs or certificate details.
+            log.warn("Expired mdoc failed signature or digest verification: {}", e.getClass().getSimpleName());
+            signatureAndDigestsValid = false;
+        }
+        if (!signatureAndDigestsValid) {
+            verificationResult.setVerificationMessage(CredentialVerifierConstants.ERROR_MESSAGE_VERIFICATION_FAILED);
+            verificationResult.setVerificationErrorCode(CredentialVerifierConstants.ERROR_CODE_VERIFICATION_FAILED);
             return;
         }
-        if (signatureAndDigestsValid) {
-            verificationResult.setVerificationStatus(true);
-            verificationResult.setVerificationMessage(CredentialValidatorConstants.ERROR_MESSAGE_VC_EXPIRED);
-            verificationResult.setVerificationErrorCode(CredentialValidatorConstants.ERROR_CODE_VC_EXPIRED);
+        MdocValidityWindow window = mdocValidityWindow(credential);
+        // Fails closed: an unreadable window is treated as inconsistent.
+        if (window == null || !window.validUntil().isAfter(window.validFrom())) {
+            verificationResult.setVerificationMessage(CredentialValidatorConstants.ERROR_MESSAGE_INVALID_DATE_MSO);
+            verificationResult.setVerificationErrorCode(CredentialValidatorConstants.ERROR_CODE_INVALID_DATE_MSO);
+            return;
         }
+        markMdocExpiryFailed(verificationResult, CredentialValidatorConstants.ERROR_MESSAGE_VC_EXPIRED);
+    }
+
+    private static void reportNotYetValidMdocAsExpiry(String credential, VerificationResult verificationResult) {
+        if (CredentialValidatorConstants.ERROR_CODE_VC_EXPIRED.equals(verificationResult.getVerificationErrorCode())) {
+            return;
+        }
+        MdocValidityWindow window = mdocValidityWindow(credential);
+        if (window == null) {
+            // The library already read this window to verify the document, so this is not expected.
+            log.warn("Could not read the validity window of a verified mdoc; validFrom was not checked");
+            return;
+        }
+        if (window.validFrom().isAfter(Instant.now().plusMillis(MDOC_VALIDITY_TOLERANCE_MILLIS))) {
+            markMdocExpiryFailed(verificationResult, Constants.ERROR_MESSAGE_MDOC_NOT_YET_VALID);
+        }
+    }
+
+    /** The library's "expired" outcome: signature verified, {@code ERR_VC_EXPIRED}, read by {@code populateExpiryCheck}. */
+    private static void markMdocExpiryFailed(VerificationResult verificationResult, String message) {
+        verificationResult.setVerificationStatus(true);
+        verificationResult.setVerificationMessage(message);
+        verificationResult.setVerificationErrorCode(CredentialValidatorConstants.ERROR_CODE_VC_EXPIRED);
+    }
+
+    private record MdocValidityWindow(Instant validFrom, Instant validUntil) {
+    }
+
+    /**
+     * {@code validityInfo} from the MSO of the same document the library verifies, or
+     * {@code null} when it cannot be read.
+     */
+    private static MdocValidityWindow mdocValidityWindow(String credential) {
+        try {
+            CBORObject issuerAuth = mdocIssuerAuth(readMdocRoot(credential.trim()));
+            CBORObject mso = issuerAuth.get(2);
+            for (int attempt = 0; attempt < 3 && (mso.HasMostOuterTag(24) || mso.getType() == CBORType.ByteString); attempt++) {
+                mso = mso.HasMostOuterTag(24) ? mso.Untag() : CBORObject.DecodeFromBytes(mso.GetByteString());
+            }
+            CBORObject validityInfo = mso.get("validityInfo");
+            return new MdocValidityWindow(
+                    OffsetDateTime.parse(validityInfo.get("validFrom").AsString()).toInstant(),
+                    OffsetDateTime.parse(validityInfo.get("validUntil").AsString()).toInstant());
+        } catch (Exception e) {
+            return null;
+        }
+    }
+
+    private static CBORObject mdocIssuerAuth(CBORObject root) {
+        if (root.ContainsKey(Constants.KEY_DOCUMENTS)) {
+            return root.get(Constants.KEY_DOCUMENTS).get(0).get(Constants.KEY_ISSUER_SIGNED).get(Constants.KEY_ISSUER_AUTH);
+        }
+        if (root.ContainsKey(Constants.KEY_ISSUER_SIGNED)) {
+            return root.get(Constants.KEY_ISSUER_SIGNED).get(Constants.KEY_ISSUER_AUTH);
+        }
+        return root.get(Constants.KEY_ISSUER_AUTH);
     }
 
     public static SchemaAndSignatureCheckDto populateSchemaAndSignature(VerificationResult verificationResult) {
@@ -408,13 +489,14 @@ public final class Utils {
         };
     }
 
-    private static final int DEFAULT_MAX_MDOC_BASE64_LENGTH = 1_048_576;
-    private static volatile int maxMdocBase64Length = DEFAULT_MAX_MDOC_BASE64_LENGTH;
+    private static final int DEFAULT_MAX_MDOC_SIZE_BYTES = 1_048_576;
+    private static volatile int maxMdocSizeBytes = DEFAULT_MAX_MDOC_SIZE_BYTES;
     private static final int MAX_MDOC_DEPTH = 32;
 
-    @Value("${inji.verify.mso-mdoc.max-size-bytes:1048576}")
-    public void setMaxMdocBase64Length(int maxMdocBase64Length) {
-        Utils.maxMdocBase64Length = maxMdocBase64Length > 0 ? maxMdocBase64Length : DEFAULT_MAX_MDOC_BASE64_LENGTH;
+    /** Maximum decoded mdoc size in bytes (not base64 characters). */
+    @Value("${inji.verify.mso-mdoc.max-size:1048576}")
+    public void setMaxMdocSizeBytes(int maxMdocSizeBytes) {
+        Utils.maxMdocSizeBytes = maxMdocSizeBytes > 0 ? maxMdocSizeBytes : DEFAULT_MAX_MDOC_SIZE_BYTES;
     }
 
     /**
@@ -429,9 +511,7 @@ public final class Utils {
         try {
             String trimmed = credential.trim();
             ensureMdocSize(trimmed);
-            byte[] encoded = Base64.getUrlDecoder().decode(trimmed);
-            CBORObject root = CBORObject.Read(new ByteArrayInputStream(encoded));
-            CBORObject namespaces = mdocNamespaces(root);
+            CBORObject namespaces = mdocNamespaces(readMdocRoot(trimmed));
             if (namespaces == null || namespaces.getType() != CBORType.Map) {
                 throw new InvalidCredentialException("Failed to extract mdoc claims", null);
             }
@@ -440,17 +520,19 @@ public final class Utils {
                 String namespaceName = namespace.getType() == CBORType.TextString ? namespace.AsString() : namespace.toString();
                 CBORObject items = namespaces.get(namespace);
                 if (items.getType() != CBORType.Array) {
-                    continue;
+                    throw new InvalidCredentialException("Invalid mdoc namespace: expected an item array", null);
                 }
+                Map<String, Object> namespaceClaims = new LinkedHashMap<>();
+                claims.put(namespaceName, namespaceClaims);
                 for (int index = 0; index < items.size(); index++) {
                     CBORObject item = unwrapMdocItem(items.get(index));
-                    if (item == null || !item.ContainsKey(Constants.KEY_ELEMENT_IDENTIFIER)) {
-                        continue;
+                    CBORObject identifier = item == null ? null : item.get(Constants.KEY_ELEMENT_IDENTIFIER);
+                    if (identifier == null
+                            || identifier.getType() != CBORType.TextString
+                            || !item.ContainsKey(Constants.KEY_ELEMENT_VALUE)) {
+                        throw new InvalidCredentialException("Invalid mdoc issuer-signed item", null);
                     }
-                    @SuppressWarnings("unchecked")
-                    Map<String, Object> namespaceClaims = (Map<String, Object>) claims.computeIfAbsent(
-                            namespaceName, ignored -> new LinkedHashMap<>());
-                    String elementIdentifier = item.get(Constants.KEY_ELEMENT_IDENTIFIER).AsString();
+                    String elementIdentifier = identifier.AsString();
                     if (namespaceClaims.containsKey(elementIdentifier)) {
                         throw new InvalidCredentialException("Duplicate mdoc element identifier", null);
                     }
@@ -468,14 +550,27 @@ public final class Utils {
     }
 
     private static void ensureMdocSize(String credential) {
-        if (credential.length() > maxMdocBase64Length) {
-            throw new InvalidCredentialException("mdoc credential exceeds maximum size", null);
+        if (decodedBase64Length(credential) > maxMdocSizeBytes) {
+            throw new InvalidCredentialException("Credential exceeds the maximum supported size", null);
         }
     }
 
-    private static void ensureMdocHasDocument(String credential) {
-        byte[] encoded = Base64.getUrlDecoder().decode(credential);
-        CBORObject root = CBORObject.Read(new ByteArrayInputStream(encoded));
+    /** Decoded length of a base64 / base64url string, computed without decoding it. */
+    private static long decodedBase64Length(String encoded) {
+        int length = encoded.length();
+        int padding = 0;
+        while (padding < 2 && length - padding > 0 && encoded.charAt(length - padding - 1) == '=') {
+            padding++;
+        }
+        return ((long) (length - padding) * 3) / 4;
+    }
+
+    /** Reads the first CBOR item only; DecodeFromBytes rejects a buffer that continues past it. */
+    private static CBORObject readMdocRoot(String trimmed) {
+        return CBORObject.Read(new ByteArrayInputStream(Base64.getUrlDecoder().decode(trimmed)));
+    }
+
+    private static void ensureMdocHasDocument(CBORObject root) {
         if (root.ContainsKey(Constants.KEY_DOCUMENTS)) {
             CBORObject documents = root.get(Constants.KEY_DOCUMENTS);
             if (documents.getType() != CBORType.Array || documents.size() == 0) {
@@ -538,8 +633,23 @@ public final class Utils {
             BigDecimal mantissa = new BigDecimal(value.get(1).AsEIntegerValue().toString());
             return mantissa.scaleByPowerOfTen(exponent);
         }
+        if (value.HasMostOuterTag(0) && value.getType() == CBORType.TextString) {
+            return normalizeMdocDateTime(value.AsString());
+        }
+        if (value.HasMostOuterTag(1) && (value.getType() == CBORType.Integer || value.getType() == CBORType.FloatingPoint)) {
+            CBORObject epoch = value.UntagOne();
+            Instant instant = epoch.getType() == CBORType.Integer
+                    ? Instant.ofEpochSecond(epoch.AsNumber().ToInt64Checked())
+                    : Instant.ofEpochMilli(Math.round(epoch.AsDouble() * 1000));
+            return instant.toString();
+        }
         if (value.HasMostOuterTag(24) && value.getType() == CBORType.ByteString) {
             return mdocValueToJava(CBORObject.DecodeFromBytes(value.Untag().GetByteString()), depth + 1);
+        }
+        if (value.isTagged() && !value.HasMostOuterTag(2) && !value.HasMostOuterTag(3)) {
+            // Other tags (e.g. 1004 full-date) are not interpreted: use the tagged content, as the UI does.
+            // Bignums (tags 2 and 3) are kept tagged so they still read as integers.
+            return mdocValueToJava(value.UntagOne(), depth + 1);
         }
         return switch (value.getType()) {
             case TextString -> value.AsString();
@@ -648,6 +758,18 @@ public final class Utils {
     }
 
     /**
+     * tdate (tag 0) as an ISO-8601 UTC instant, the same text the UI shows. Unparseable text is
+     * returned unchanged rather than failing claim extraction.
+     */
+    private static String normalizeMdocDateTime(String text) {
+        try {
+            return OffsetDateTime.parse(text).toInstant().toString();
+        } catch (Exception e) {
+            return text;
+        }
+    }
+
+    /**
      * Removes configured mdoc meta elements. Each entry is {@code <namespace>.<element>}
      * and is removed from that namespace only. Namespaces and element identifiers can both
      * contain dots, so every split point is tried against the namespaces actually present.
@@ -676,41 +798,42 @@ public final class Utils {
      * Size is not part of detection: an oversized mdoc is still an mdoc and is refused later.
      */
     public static boolean isMsoMdoc(String credential) {
+        return detectMdoc(credential).isMdoc();
+    }
+
+    /** Detection result; {@code root} is the parsed CBOR when it could be read within the size limit. */
+    private record MdocDetection(boolean isMdoc, CBORObject root) {
+        private static final MdocDetection NOT_MDOC = new MdocDetection(false, null);
+    }
+
+    private static MdocDetection detectMdoc(String credential) {
         if (credential == null) {
-            return false;
+            return MdocDetection.NOT_MDOC;
         }
         String trimmed = credential.trim();
         if (trimmed.isEmpty() || trimmed.indexOf('.') >= 0 || trimmed.charAt(0) == '{' || trimmed.charAt(0) == '[') {
-            return false;
+            return MdocDetection.NOT_MDOC;
         }
         byte[] encoded;
-        if (trimmed.length() > maxMdocBase64Length) {
-            // Oversized input is not parsed into a CBOR tree here. A linear scan of the whole
-            // payload still recognises an mdoc, so getCredentialFormat reports the size error.
-            try {
-                encoded = Base64.getUrlDecoder().decode(trimmed);
-            } catch (IllegalArgumentException invalidBase64) {
-                return false;
-            }
-            return hasMdocShapeKeys(encoded);
-        }
         try {
             encoded = Base64.getUrlDecoder().decode(trimmed);
-            // Read the first CBOR item only. DecodeFromBytes rejects a buffer that
-            // continues past that item, which was sending these credentials to JSON-LD.
+        } catch (IllegalArgumentException invalidBase64) {
+            return MdocDetection.NOT_MDOC;
+        }
+        if (encoded.length > maxMdocSizeBytes) {
+            // Oversized input is not parsed into a CBOR tree. A linear scan of the whole
+            // payload still recognises an mdoc, so getCredentialFormat reports the size error.
+            return new MdocDetection(hasMdocShapeKeys(encoded), null);
+        }
+        try {
             CBORObject root = CBORObject.Read(new ByteArrayInputStream(encoded));
-            if (root.getType() != CBORType.Map) {
-                return false;
-            }
-            return root.ContainsKey(Constants.KEY_DOCUMENTS)
+            boolean isMdoc = root.getType() == CBORType.Map
+                    && (root.ContainsKey(Constants.KEY_DOCUMENTS)
                     || root.ContainsKey(Constants.KEY_ISSUER_SIGNED)
-                    || (root.ContainsKey(Constants.KEY_ISSUER_AUTH) && root.ContainsKey(Constants.KEY_NAMESPACES));
-        } catch (Exception ignored) {
-            try {
-                return hasMdocShapeKeys(Base64.getUrlDecoder().decode(trimmed));
-            } catch (IllegalArgumentException invalidBase64) {
-                return false;
-            }
+                    || (root.ContainsKey(Constants.KEY_ISSUER_AUTH) && root.ContainsKey(Constants.KEY_NAMESPACES)));
+            return isMdoc ? new MdocDetection(true, root) : MdocDetection.NOT_MDOC;
+        } catch (Exception corrupt) {
+            return new MdocDetection(hasMdocShapeKeys(encoded), null);
         }
     }
 
@@ -741,11 +864,14 @@ public final class Utils {
 
     public static CredentialFormat getCredentialFormat(String verifiableCredential) {
         try {
-            if (Utils.isMsoMdoc(verifiableCredential)) {
-                String trimmed = verifiableCredential.trim();
-                ensureMdocSize(trimmed);
+            MdocDetection mdoc = detectMdoc(verifiableCredential);
+            if (mdoc.isMdoc()) {
+                ensureMdocSize(verifiableCredential.trim());
+                if (mdoc.root() == null) {
+                    throw new InvalidCredentialException("Failed to decode mdoc credential", null);
+                }
                 try {
-                    ensureMdocHasDocument(trimmed);
+                    ensureMdocHasDocument(mdoc.root());
                 } catch (InvalidCredentialException e) {
                     throw e;
                 } catch (Exception e) {

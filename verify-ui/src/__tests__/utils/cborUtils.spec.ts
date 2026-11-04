@@ -151,8 +151,29 @@ describe("cborUtils", () => {
     } as never);
 
     expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")["org.iso.18013.5.1"].birth_date).toBe(
-      birth.toISOString(),
+      "1985-04-29T00:00:00Z",
     );
+  });
+
+  it("renders dates as the backend does and does not fail on an invalid date", () => {
+    mockDecode.mockReturnValue({
+      issuerAuth: [],
+      nameSpaces: {
+        "org.iso.18013.5.1": [
+          { elementIdentifier: "issue_date", elementValue: new Date("2024-05-03T08:00:00.500Z") },
+          { elementIdentifier: "expiry_date", elementValue: new Date("2024-13-45T00:00:00Z") },
+          { elementIdentifier: "family_name", elementValue: "Cooper" },
+        ],
+      },
+    } as never);
+
+    expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
+      "org.iso.18013.5.1": {
+        issue_date: "2024-05-03T08:00:00.500Z",
+        expiry_date: "Invalid Date",
+        family_name: "Cooper",
+      },
+    });
   });
 
   it("keeps colliding element identifiers in separate namespaces and omits docType", () => {
@@ -172,6 +193,27 @@ describe("cborUtils", () => {
     expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
       "org.iso.18013.5.1": { family_name: "First" },
       "org.iso.18013.5.1.custom": { family_name: "Second" },
+    });
+  });
+
+  it("renders JPEG and PNG image fields as data URIs", () => {
+    const jpeg = new Uint8Array([0xff, 0xd8, 0xff, 0xe0]);
+    const png = new Uint8Array([0x89, 0x50, 0x4e, 0x47]);
+    mockDecode.mockReturnValue({
+      issuerAuth: [],
+      nameSpaces: {
+        "org.iso.18013.5.1": [
+          { elementIdentifier: "portrait", elementValue: jpeg },
+          { elementIdentifier: "signature_usual_mark", elementValue: png },
+        ],
+      },
+    } as never);
+
+    expect(extractMdocDisplayClaims("omppc3N1ZXJBdXRo")).toEqual({
+      "org.iso.18013.5.1": {
+        portrait: `data:image/jpeg;base64,${btoa(String.fromCharCode(...jpeg))}`,
+        signature_usual_mark: `data:image/png;base64,${btoa(String.fromCharCode(...png))}`,
+      },
     });
   });
 

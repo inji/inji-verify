@@ -43,7 +43,14 @@ Inji Verify accepts the credential as a **base64url-encoded CBOR** string. That 
 2. base64url decoding succeeds
 3. the first CBOR item is a map that contains `documents`, `issuerSigned`, or both `issuerAuth` and `nameSpaces`
 
-Strings longer than 1 MiB are rejected as mdocs.
+An mdoc whose decoded size is larger than `inji.verify.mso-mdoc.max-size` (bytes, default `1048576`; env `INJI_VERIFY_MSO_MDOC_MAX_SIZE`) is still detected as an mdoc, then refused with `Credential exceeds the maximum supported size`. The size is the decoded byte length, not the number of base64url characters.
+
+### Configuration
+
+| Property | Env variable | Default | Meaning |
+|---|---|---|---|
+| `inji.verify.mso-mdoc.max-size` | `INJI_VERIFY_MSO_MDOC_MAX_SIZE` | `1048576` | Maximum decoded mdoc size in bytes |
+| `inji.verify.mso-mdoc.claims-with-meta-data` | `INJI_VERIFY_MSO_MDOC_CLAIMS_WITH_META_DATA` | empty | Comma-separated `<namespace>.<element>` entries removed from `claims`; each entry removes that element from that namespace only. Element identifiers may contain dots. |
 
 ---
 
@@ -53,7 +60,7 @@ Strings longer than 1 MiB are rejected as mdocs.
 |---|---|---|
 | Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | Algorithm comes from the `issuerAuth` COSE `alg` header, subject to verifier support. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
 | Data-element integrity | MSO digests | Performed by the verification library |
-| MSO validity | `validFrom` and `validUntil` | The library stops at an expired `validUntil` without checking the signature, so the service runs the signature and digest check itself. If it passes, the result has `schemaAndSignatureCheck.valid: true` and `expiryCheck.valid: false` (status `EXPIRED`); if it fails, the result is `INVALID`. A future `validFrom` is currently not rejected (see [Limitations](#limitations)) |
+| MSO validity | `validFrom` and `validUntil` | The library stops at an expired `validUntil` without checking the signature, so the service runs the signature, digest and `validUntil` > `validFrom` checks itself. If they pass, the result has `schemaAndSignatureCheck.valid: true` and `expiryCheck.valid: false` (status `EXPIRED`). A signature or digest failure is `INVALID` with `ERR_SIGNATURE_VERIFICATION_FAILED`; an inconsistent window is `INVALID` with `ERR_INVALID_DATE_MSO`. An mdoc whose `validFrom` is in the future (beyond the library's 3-second clock tolerance) is reported the same way: `schemaAndSignatureCheck.valid: true`, `expiryCheck.valid: false`. |
 | Revocation | — | Not supported; `statusCheck` is empty |
 | Holder / device binding | — | Not applicable on scan and upload |
 
@@ -95,6 +102,11 @@ Example success response:
 When `includeClaims` is `true`, `claims` contains:
 
 - issuer-signed data elements grouped by namespace and keyed by `elementIdentifier`
+- dates as text: `tdate` (tag 0) and epoch dates (tag 1) as ISO-8601 UTC instants (for example `2024-05-03T08:00:00Z`); `full-date` (tag 1004) unchanged (for example `1985-04-29`); an unparseable `tdate` is returned as its original text
+- binary values, including `portrait`, as standard Base64
+- decimal fractions (tag 4) as numbers
+
+A namespace that is not an item array, an item without a text `elementIdentifier` or without `elementValue`, or a repeated `elementIdentifier` within one namespace is rejected as an invalid credential.
 
 The service returns namespace data elements only; it does not read or return `docType` from the document or signed MSO. Each namespace has a nested claim object, so elements with the same identifier remain separate without renaming.
 Claims are extracted by decoding the submitted credential string again (`Utils.extractClaims`), separately from the `vc-verifier` verification call.
@@ -115,7 +127,7 @@ See [VC_Verification.md](./VC_Verification.md) for the shared scan and upload fl
 
 ## UI Decoding
 
-The UI decodes the credential into a namespace-grouped claim map matching the backend (for example `{ "org.iso.18013.5.1": { "family_name": "..." } }`). It does not read `docType` from the credential; the result screen shows **Mobile Document** as the displayed `docType`. Shape preference matches the library: `documents`, then `issuerSigned`, then `issuerAuth` + `nameSpaces`. When `documents` is present, only the first document is used; later documents are ignored. The result card and expanded view reuse the existing details grid, displaying element identifiers qualified by their namespace.
+The UI decodes the credential into a namespace-grouped claim map matching the backend (for example `{ "org.iso.18013.5.1": { "family_name": "..." } }`). It does not read `docType` from the credential; the result screen shows **Mobile Document** as the displayed `docType`. Shape preference matches the library: `documents`, then `issuerSigned`, then `issuerAuth` + `nameSpaces`. When `documents` is present, only the first document is used; later documents are ignored. The result card and expanded view reuse the existing details grid, displaying element identifiers qualified by their namespace. Dates use the same ISO-8601 text as the backend; an unparseable `tdate` is shown as `Invalid Date`. JPEG and PNG `portrait` / `signature_usual_mark` values are shown as images; other image encodings (such as JPEG 2000) are shown as `image (N bytes)`.
 
 ---
 
@@ -129,5 +141,5 @@ The UI decodes the credential into a namespace-grouped claim map matching the ba
 | Multi-document submissions | Only `documents[0]` is verified and used for displayed claims, matching the library; all remaining documents are ignored. |
 | Revocation | Not checked; `statusCheck` is `[]` |
 | Device check | Not performed on scan and upload |
-| Not-yet-valid documents | The verifier checks `validUntil` but currently does not reject an mdoc before its `validFrom` date. |
-| Oversized input | Base64url strings longer than 1 MiB are rejected |
+| Oversized input | Documents larger than `inji.verify.mso-mdoc.max-size` decoded bytes (default 1 MiB) are rejected |
+| Validity window in the service | vc-verifier stops at an expired `validUntil` without checking the signature, and does not check `validFrom` against the current time. Until both are fixed in the library, the service applies these rules itself (`Utils.reportMdocValidityThroughExpiry`). |

@@ -282,7 +282,7 @@ extraEnv:
     value: "test.example.com"
   - name: INJI_VERIFY_MSO_MDOC_CLAIMS_WITH_META_DATA
     value: ""
-  - name: INJI_VERIFY_MSO_MDOC_MAX_SIZE_BYTES
+  - name: INJI_VERIFY_MSO_MDOC_MAX_SIZE
     value: "1048576"
 
 ## ConfigMap with extra environment variables that used
