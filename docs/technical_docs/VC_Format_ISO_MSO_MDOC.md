@@ -106,7 +106,7 @@ When `includeClaims` is `true`, `claims` contains:
 - binary values, including `portrait`, as standard Base64
 - decimal fractions (tag 4) as numbers
 
-A namespace that is not an item array, an item without a text `elementIdentifier` or without `elementValue`, or a repeated `elementIdentifier` within one namespace is rejected as an invalid credential.
+A namespace that is not an item array, an item without a text `elementIdentifier` or without `elementValue`, a repeated `elementIdentifier` within one namespace, or two namespace keys with the same name (for example `1` and `"1"`) is rejected as an invalid credential.
 
 The service returns namespace data elements only; it does not read or return `docType` from the document or signed MSO. Each namespace has a nested claim object, so elements with the same identifier remain separate without renaming.
 Claims are extracted by decoding the submitted credential string again (`Utils.extractClaims`), separately from the `vc-verifier` verification call.

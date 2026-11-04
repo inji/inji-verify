@@ -502,6 +502,16 @@ public class UtilsTest {
         InvalidCredentialException itemError = assertThrows(InvalidCredentialException.class,
                 () -> Utils.extractMdocClaims(missingValue));
         assertEquals("Invalid mdoc issuer-signed item", itemError.getMessage());
+
+        // Integer key 1 and text key "1" both render as the namespace name "1".
+        String collidingNamespaces = encodeMdoc(CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", CBORObject.NewMap()
+                        .Add(CBORObject.FromObject(1), CBORObject.NewArray())
+                        .Add(CBORObject.FromObject("1"), CBORObject.NewArray())));
+        InvalidCredentialException duplicateError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(collidingNamespaces));
+        assertEquals("Duplicate mdoc namespace", duplicateError.getMessage());
     }
 
     @Test

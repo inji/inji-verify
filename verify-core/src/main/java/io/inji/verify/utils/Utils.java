@@ -432,6 +432,8 @@ public final class Utils {
                     OffsetDateTime.parse(validityInfo.get("validFrom").AsString()).toInstant(),
                     OffsetDateTime.parse(validityInfo.get("validUntil").AsString()).toInstant());
         } catch (Exception e) {
+            // Class name only: the message can carry digest IDs or certificate details.
+            log.warn("Could not read the mdoc validity window: {}", e.getClass().getSimpleName());
             return null;
         }
     }
@@ -521,6 +523,10 @@ public final class Utils {
                 CBORObject items = namespaces.get(namespace);
                 if (items.getType() != CBORType.Array) {
                     throw new InvalidCredentialException("Invalid mdoc namespace: expected an item array", null);
+                }
+                // A non-text key can render to the same name as a text key, e.g. 1 and "1".
+                if (claims.containsKey(namespaceName)) {
+                    throw new InvalidCredentialException("Duplicate mdoc namespace", null);
                 }
                 Map<String, Object> namespaceClaims = new LinkedHashMap<>();
                 claims.put(namespaceName, namespaceClaims);
@@ -766,6 +772,8 @@ public final class Utils {
         try {
             return OffsetDateTime.parse(text).toInstant().toString();
         } catch (Exception e) {
+            // Class name only: the date text is claim data.
+            log.warn("Unparseable mdoc tdate; returning the original text: {}", e.getClass().getSimpleName());
             return text;
         }
     }
