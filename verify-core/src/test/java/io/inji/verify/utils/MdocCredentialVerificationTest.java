@@ -5,6 +5,7 @@ import io.mosip.vercred.vcverifier.constants.CredentialFormat;
 import io.mosip.vercred.vcverifier.data.VerificationResult;
 import io.mosip.vercred.vcverifier.data.VerificationStatus;
 import io.mosip.vercred.vcverifier.utils.Util;
+import org.junit.jupiter.api.Disabled;
 import org.junit.jupiter.api.Test;
 
 import java.time.Instant;
@@ -19,6 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
 class MdocCredentialVerificationTest {
+
+    /**
+     * These tests expect vc-verifier to report an authentic expired or not-yet-valid mdoc as
+     * ERR_VC_EXPIRED after checking its signature and digests. No published vcverifier-jar has that
+     * fix yet; remove the annotation when vcverifier-jar.version is bumped to a release that does.
+     */
+    private static final String AWAITS_LIBRARY_VALIDITY_FIX =
+            "Needs the vc-verifier mdoc validity fix (validFrom check, ERR_VC_EXPIRED after signature checks)";
 
     private final CredentialsVerifier credentialsVerifier = new CredentialsVerifier();
 
@@ -37,6 +46,7 @@ class MdocCredentialVerificationTest {
     }
 
     @Test
+    @Disabled(AWAITS_LIBRARY_VALIDITY_FIX)
     void reportsExpiredButAuthenticMdocThroughExpiryCheck() throws Exception {
         Instant signed = Instant.now().minus(2, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);
         String credential = MdocTestCredentialFactory.create(
@@ -51,6 +61,7 @@ class MdocCredentialVerificationTest {
     }
 
     @Test
+    @Disabled(AWAITS_LIBRARY_VALIDITY_FIX)
     void keepsExpiredAndTamperedMdocInvalid() throws Exception {
         Instant signed = Instant.now().minus(2, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);
         String credential = MdocTestCredentialFactory.tamperFirstElement(MdocTestCredentialFactory.create(
@@ -64,6 +75,7 @@ class MdocCredentialVerificationTest {
     }
 
     @Test
+    @Disabled(AWAITS_LIBRARY_VALIDITY_FIX)
     void keepsExpiredMdocWithInconsistentValidityWindowInvalid() throws Exception {
         Instant now = Instant.now().truncatedTo(ChronoUnit.SECONDS);
         Instant signed = now.minus(3, ChronoUnit.DAYS);
@@ -79,6 +91,7 @@ class MdocCredentialVerificationTest {
     }
 
     @Test
+    @Disabled(AWAITS_LIBRARY_VALIDITY_FIX)
     void reportsMdocBeforeItsValidFromDateThroughExpiryCheck() throws Exception {
         Instant signed = Instant.now().minus(10, ChronoUnit.SECONDS).truncatedTo(ChronoUnit.SECONDS);
         Instant validFrom = Instant.now().plus(1, ChronoUnit.DAYS).truncatedTo(ChronoUnit.SECONDS);

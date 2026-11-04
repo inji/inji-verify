@@ -50,7 +50,7 @@ An mdoc whose decoded size is larger than `inji.verify.mso-mdoc.max-size` (bytes
 | Property | Env variable | Default | Meaning |
 |---|---|---|---|
 | `inji.verify.mso-mdoc.max-size` | `INJI_VERIFY_MSO_MDOC_MAX_SIZE` | `1048576` | Maximum decoded mdoc size in bytes; must be greater than zero, otherwise the service fails to start |
-| `inji.verify.mso-mdoc.claims-with-meta-data` | `INJI_VERIFY_MSO_MDOC_CLAIMS_WITH_META_DATA` | empty | Comma-separated `<namespace>.<element>` entries removed from `claims`; each entry removes that element from that namespace only. Element identifiers may contain dots. |
+| `inji.verify.mso-mdoc.claims-with-meta-data` | `INJI_VERIFY_MSO_MDOC_CLAIMS_WITH_META_DATA` | empty | Comma-separated `<namespace>.<element>` entries removed from `claims`; each entry removes that element from that namespace only. Namespaces and element identifiers may contain dots, so every split of an entry is tried against the namespaces in the credential. If more than one split matches (for example namespaces `org.iso` and `org.iso.18013.5.1` with elements `18013.5.1.age` and `age`), every matching element is removed. |
 
 ---
 

@@ -433,6 +433,42 @@ public class UtilsTest {
     }
 
     @Test
+    void shouldExcludeEveryMdocMetaClaimSplitThatMatches() {
+        // "org.iso.18013.5.1.age" names both org.iso / 18013.5.1.age and org.iso.18013.5.1 / age.
+        CBORObject shortNamespaceItem = CBORObject.NewMap().Add("elementIdentifier", "18013.5.1.age").Add("elementValue", 1);
+        CBORObject shortNamespaceOther = CBORObject.NewMap().Add("elementIdentifier", "kept").Add("elementValue", 2);
+        CBORObject longNamespaceItem = CBORObject.NewMap().Add("elementIdentifier", "age").Add("elementValue", 3);
+        CBORObject longNamespaceOther = CBORObject.NewMap().Add("elementIdentifier", "family_name").Add("elementValue", "Doe");
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(shortNamespaceItem.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(shortNamespaceOther.EncodeToBytes())))
+                .Add("org.iso.18013.5.1", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(longNamespaceItem.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(longNamespaceOther.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document), List.of("org.iso.18013.5.1.age"));
+
+        assertEquals(Map.of("kept", 2L), claims.get("org.iso"));
+        assertEquals(Map.of("family_name", "Doe"), claims.get("org.iso.18013.5.1"));
+    }
+
+    @Test
+    void shouldRejectCollidingKeysInNestedMdocMap() {
+        // Integer key 1 and text key "1" both render as "1" inside an element value.
+        CBORObject value = CBORObject.NewMap()
+                .Add(CBORObject.FromObject(1), "first")
+                .Add(CBORObject.FromObject("1"), "second");
+
+        InvalidCredentialException error = assertThrows(InvalidCredentialException.class,
+                () -> mdocElementValue(mdocWithElementValue(value)));
+        assertEquals("Failed to extract mdoc claims", error.getMessage());
+    }
+
+    @Test
     void shouldRejectDuplicateMdocElementIdentifierInNamespace() {
         CBORObject first = CBORObject.NewMap().Add("elementIdentifier", "family_name").Add("elementValue", "Doe");
         CBORObject second = CBORObject.NewMap().Add("elementIdentifier", "family_name").Add("elementValue", "Roe");

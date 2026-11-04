@@ -567,6 +567,10 @@ public final class Utils {
                 Map<String, Object> values = new LinkedHashMap<>();
                 for (CBORObject key : value.getKeys()) {
                     String name = key.getType() == CBORType.TextString ? key.AsString() : key.toString();
+                    // As for namespaces: 1 and "1" would otherwise overwrite one signed value.
+                    if (values.containsKey(name)) {
+                        throw new IllegalArgumentException("Duplicate mdoc nested map key");
+                    }
                     values.put(name, mdocValueToJava(value.get(key), depth + 1));
                 }
                 yield values;
@@ -671,6 +675,9 @@ public final class Utils {
      * Removes configured mdoc meta elements. Each entry is {@code <namespace>.<element>}
      * and is removed from that namespace only. Namespaces and element identifiers can both
      * contain dots, so every split point is tried against the namespaces actually present.
+     * When more than one split matches (namespaces {@code a} and {@code a.b} with elements
+     * {@code b.c} and {@code c}), every matching element is removed: this list hides data, so
+     * hiding both is the safe outcome, and which split was meant cannot be known from the entry.
      */
     private static void excludeMdocMetaClaims(List<String> mdocMetaClaims, Map<String, Object> claims) {
         for (String metaClaim : Optional.ofNullable(mdocMetaClaims).orElseGet(List::of)) {
