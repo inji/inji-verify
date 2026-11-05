@@ -552,7 +552,7 @@ VpSubmission:
       outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_WrongNonce_Valid_Sid_requestId$",
-      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.c2ln~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFUzI1NiJ9.eyJub25jZSI6Indyb25nLW5vbmNlIiwiYXVkIjoiY2xpZW50MTIzIiwiaWF0IjoxNzg2MzYyODI0fQ.a2JzaWc"
+      "mode": "WRONG_NONCE"
       }'
       output: '{
       "errorCode": "invalid_request",
@@ -569,7 +569,7 @@ VpSubmission:
       outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_WrongAud_Valid_Sid_requestId$",
-      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.c2ln~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFUzI1NiJ9.eyJub25jZSI6Ik5rZEhKa0JJYmRPZFFhQWpXbThncEEiLCJhdWQiOiJodHRwczovL3dyb25nLmV4YW1wbGUuY29tIiwiaWF0IjoxNzg2MzYyODI0fQ.a2JzaWc"
+      "mode": "WRONG_DOMAIN"
       }'
       output: '{
       "errorCode": "invalid_request",
@@ -586,7 +586,7 @@ VpSubmission:
       outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_MissingNonce_Valid_Sid_requestId$",
-      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.c2ln~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFUzI1NiJ9.eyJhdWQiOiJjbGllbnQxMjMiLCJpYXQiOjE3ODYzNjI4MjR9.a2JzaWc"
+      "mode": "MISSING_NONCE"
       }'
       output: '{
       "errorCode": "invalid_request",
@@ -603,7 +603,7 @@ VpSubmission:
       outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_MissingAud_Valid_Sid_requestId$",
-      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.c2ln~eyJ0eXAiOiJrYitqd3QiLCJhbGciOiJFUzI1NiJ9.eyJub25jZSI6Ik5rZEhKa0JJYmRPZFFhQWpXbThncEEiLCJpYXQiOjE3ODYzNjI4MjR9.a2JzaWc"
+      "mode": "MISSING_AUD"
       }'
       output: '{
       "errorCode": "invalid_request",
@@ -620,7 +620,7 @@ VpSubmission:
       outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "state": "$ID:CreateNewVerificationRequest_ForSdJwtKbJwtNeg_MissingKeyBinding_Valid_Sid_requestId$",
-      "sd_jwt": "eyJ0eXAiOiJkYytzZC1qd3QiLCJhbGciOiJFUzI1NiJ9.eyJzdWIiOiIxMjMiLCJjbmYiOnsia2lkIjoiazEifSwidmN0IjoiZXUuZXVyb3BhLmVjLmV1ZGkucGlkLjEifQ.c2ln~"
+      "mode": "MISSING_KB"
       }'
       output: '{
       "errorCode": "invalid_request",

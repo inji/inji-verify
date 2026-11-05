@@ -99,6 +99,7 @@ public class SimplePostForAutoGenId extends InjiVerifyUtil implements ITest {
 		String inputJson = getJsonFromTemplate(testCaseDTO.getInput(), testCaseDTO.getInputTemplate());
 
 		inputJson = inputJsonModuleKeyWordHandler(inputJson, testCaseName);
+		
 		inputJson = InjiVerifyUtil.replaceVpSessionInputPlaceholders(inputJson);
 		boolean sendCookieAsHeader = false;
 		String cookieValue = null;
@@ -147,6 +148,15 @@ public class SimplePostForAutoGenId extends InjiVerifyUtil implements ITest {
 					sendEsignetToken
 			);
 		}
+		if (response != null && response.getStatusCode() == 201) {
+		    cacheAuthorizationDetailsFromRequest(
+		            testCaseName,
+		            inputJson);
+		    cacheRequestIdOwner(
+		            testCaseName,
+		            response);
+		}
+
 
 		try {
 			InjiVerifyUtil.captureTransactionCookieFromVpSessionRequestResponse(
