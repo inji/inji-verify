@@ -12,7 +12,6 @@ import io.inji.verify.utils.SubmissionOriginExtractor;
 import io.swagger.v3.oas.annotations.Operation;
 import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -65,14 +64,12 @@ public class VPSubmissionController {
      * @return
      */
     @Operation(summary = "Submit Verifiable Presentation (VP) in response to a VP request. Validates the submission and processes it according to the VP request details.")
-    @ApiResponses({
-            @ApiResponse(
-                    responseCode = "200",
-                    description = "VP submission processed successfully. If a response code was generated, the response will include a redirect_uri for the client to be redirected to."
-            )
-    })
+    @ApiResponse(
+            responseCode = "200",
+            description = "VP submission processed successfully. If a response code was generated, the response will include a redirect_uri for the client to be redirected to."
+    )
     @PostMapping(path = VP_DIRECT_POST_SUBMISSION_URI, consumes = MediaType.APPLICATION_FORM_URLENCODED_VALUE)
-    public ResponseEntity<?> submitVP(
+    public ResponseEntity<Object> submitVP(
             @Parameter(description = "The vp_token containing the Verifiable Presentation data. This parameter is optional but either this or the error parameter must be provided. If provided, it must be a valid JSON object with specific structure rules.")
             @RequestParam(value = "vp_token", required = false) String vpToken,
             @Parameter(description = "The state parameter from the request, which is required and must not be empty.")
@@ -106,11 +103,9 @@ public class VPSubmissionController {
     }
 
     @Operation(summary = "Submit Verifiable Presentation via Digital Credentials API (JSON). Correlates with requestId; no response_code/redirect_uri.")
-    @ApiResponses({
-            @ApiResponse(responseCode = "200", description = "VP submission accepted (empty body).")
-    })
+    @ApiResponse(responseCode = "200", description = "VP submission accepted (empty body).")
     @PostMapping(path = VP_DC_API_SUBMISSION_URI, consumes = MediaType.APPLICATION_JSON_VALUE)
-    public ResponseEntity<?> submitVpDcApi(
+    public ResponseEntity<Object> submitVpDcApi(
             @Valid @RequestBody DcApiVpSubmissionRequestDto body,
             HttpServletRequest request) {
         if (body == null || !StringUtils.hasText(body.getRequestId())) {
@@ -149,7 +144,7 @@ public class VPSubmissionController {
         }
     }
 
-    private ResponseEntity<?> toErrorResponse(Exception e, String correlationId) {
+    private ResponseEntity<Object> toErrorResponse(Exception e, String correlationId) {
         if (e instanceof VPRequestValidationException ex) {
             log.error("VP submission validation error: {}", ex.getMessage());
             return badRequest(ex.getErrorCode(), ex.getMessage());
@@ -168,7 +163,7 @@ public class VPSubmissionController {
                 .body(new ErrorDto(ErrorCode.REDIRECT_URI_NOT_FOUND));
     }
 
-    private static ResponseEntity<?> badRequest(ErrorCode errorCode, String message) {
+    private static ResponseEntity<Object> badRequest(ErrorCode errorCode, String message) {
         ErrorDto body = message != null
                 ? new ErrorDto(errorCode.getErrorCode(), message)
                 : new ErrorDto(errorCode);
