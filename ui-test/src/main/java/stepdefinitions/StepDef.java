@@ -45,6 +45,7 @@ import org.openqa.selenium.logging.LogEntry;
 import org.openqa.selenium.logging.LogType;
 import org.openqa.selenium.JavascriptExecutor;
 import api.InjiVerifyConfigManager;
+import exceptions.UnknownCredentialException;
 
 
 import com.aventstack.extentreports.Status;
@@ -4102,7 +4103,7 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
             String searchText;
             try {
                 searchText = api.VerifiableClaimsConfigManager.resolveCredentialName(credentialType);
-            } catch (RuntimeException e) {
+            } catch (UnknownCredentialException e) {
                 searchText = credentialType;
             }
             vpverification.enterCredentialType(searchText);
