@@ -114,7 +114,7 @@ Claims are extracted by decoding the submitted credential string again (`Utils.e
 
 A credential that cannot be decoded is rejected with HTTP 400 and Spring Boot's default error body, as for the other formats: a corrupt mdoc, an mdoc with an empty `documents` array, or an mdoc larger than `inji.verify.mso-mdoc.max-size`.
 
-Fixed test samples (valid, shapes B and C, tampered, bad signature, empty `documents`, corrupt CBOR, oversized, expired, not yet valid) are in [`docs/postman_collection/mdl-samples`](../postman_collection/mdl-samples/README.md), with their `validUntil` dates. The Postman collection also has an Inji Certify-issued mDL for interop (valid until 2028-10-14).
+Fixed test samples (valid, shapes B and C, tampered, bad signature, empty `documents`, corrupt CBOR, expired, not yet valid) are in [`verify-core/src/test/resources/mdl-samples`](../../verify-core/src/test/resources/mdl-samples/README.md), with their `validUntil` dates. The Postman collection also has an Inji Certify-issued mDL for interop (valid until 2028-10-14).
 
 ---
 

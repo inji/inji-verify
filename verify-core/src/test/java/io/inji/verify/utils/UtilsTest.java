@@ -32,8 +32,6 @@ import java.lang.reflect.Method;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
-import java.nio.file.Files;
-import java.nio.file.Path;
 import java.math.BigDecimal;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
@@ -135,7 +133,7 @@ public class UtilsTest {
 
     }
 
-    // mdoc tests below use the fixed samples in docs/postman_collection/mdl-samples (see its README).
+    // mdoc tests below use the fixed samples in src/test/resources/mdl-samples (see its README).
     // Tests further down that build CBOR by hand cover decoder edge cases, not credentials.
 
     private static final String MDL_NAMESPACE = "org.iso.18013.5.1";
@@ -241,7 +239,10 @@ public class UtilsTest {
 
     @Test
     void shouldDetectOversizedMdocThenRefuseIt() throws Exception {
-        String oversized = mdlSample("mdl-oversized.txt");
+        // The valid sample padded past the default 1 MiB limit, as the Postman pre-request script does.
+        CBORObject padded = mdlSampleCbor("mdl-valid.txt").Add("padBytes", new byte[1_048_576]);
+        String oversized = encodeMdoc(padded);
+        assertTrue(Base64.getUrlDecoder().decode(oversized).length > 1_048_576);
 
         assertTrue(Utils.isMsoMdoc(oversized));
         InvalidCredentialException formatError = assertThrows(InvalidCredentialException.class,
@@ -590,34 +591,29 @@ public class UtilsTest {
         return Base64.getUrlEncoder().withoutPadding().encodeToString(document.EncodeToBytes());
     }
 
-    /** A fixed sample from docs/postman_collection/mdl-samples, as the base64url string sent to the API. */
+    /** A fixed mDL sample from test resources (mdl-samples/README.md), as the base64url string sent to the API. */
     static String mdlSample(String fileName) throws Exception {
-        return Files.readString(repositoryFile("docs/postman_collection/mdl-samples/" + fileName)).trim();
+        return testResource("mdl-samples/" + fileName);
     }
 
     private static CBORObject mdlSampleCbor(String fileName) throws Exception {
         return CBORObject.DecodeFromBytes(Base64.getUrlDecoder().decode(mdlSample(fileName)));
     }
 
-    private static Path repositoryFile(String relativePath) {
-        Path current = Path.of(System.getProperty("user.dir")).toAbsolutePath();
-        while (current != null) {
-            Path candidate = current.resolve(relativePath);
-            if (Files.isRegularFile(candidate)) {
-                return candidate;
-            }
-            current = current.getParent();
+    private static String testResource(String path) throws Exception {
+        try (var stream = UtilsTest.class.getClassLoader().getResourceAsStream(path)) {
+            assertNotNull(stream, "Test resource not found: " + path);
+            return new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).trim();
         }
-        fail("File must be available from the repository root: " + relativePath);
-        return null;
     }
 
     @Test
-    void shouldDetectCredentialFormatsFromPostmanAndSignedSdJwtSamples() throws Exception {
-        String ldp = postmanCredential("ldp_vc valid");
-        String vcSdJwt = postmanCredential("sd-jwt valid");
-        String cwt = postmanCredential("cwt valid");
-        String mdoc = postmanCredential("mso_mdoc valid");
+    void shouldDetectCredentialFormatsFromFixedAndSignedSdJwtSamples() throws Exception {
+        // The same credentials as the Postman "ldp_vc valid", "sd-jwt valid", "cwt valid" and "mso_mdoc valid" requests.
+        String ldp = testResource("format-samples/ldp-vc-valid.json");
+        String vcSdJwt = testResource("format-samples/vc-sd-jwt-valid.txt");
+        String cwt = testResource("format-samples/cwt-valid.txt");
+        String mdoc = mdlSample("mdl-valid.txt");
 
         assertEquals(CredentialFormat.LDP_VC, Utils.getCredentialFormat(ldp));
         assertEquals(CredentialFormat.VC_SD_JWT, Utils.getCredentialFormat(vcSdJwt));
@@ -634,40 +630,6 @@ public class UtilsTest {
         String sdJwt = "eyJ0eXAiOiJkYytzZC1qd3QifQ.payload.signature~disclosure";
         CredentialFormat format = Utils.getCredentialFormat(sdJwt);
         assertEquals(CredentialFormat.DC_SD_JWT, format);
-    }
-
-    private static String postmanCredential(String requestName) throws Exception {
-        Path collectionPath = repositoryFile("docs/postman_collection/Inji_Verify_Postman_Collection.json");
-
-        ObjectMapper mapper = new ObjectMapper();
-        JsonNode collection = mapper.readTree(collectionPath.toFile());
-        JsonNode request = findNamedRequest(collection, requestName);
-        assertNotNull(request, "Postman request not found: " + requestName);
-        JsonNode body = mapper.readTree(request.path("request").path("body").path("raw").asText());
-        return body.path("verifiableCredential").asText();
-    }
-
-    private static JsonNode findNamedRequest(JsonNode node, String requestName) {
-        if (node.isArray()) {
-            for (JsonNode child : node) {
-                JsonNode request = findNamedRequest(child, requestName);
-                if (request != null) {
-                    return request;
-                }
-            }
-        } else if (node.isObject()) {
-            if (requestName.equals(node.path("name").asText()) && node.has("request")) {
-                return node;
-            }
-            var fields = node.fields();
-            while (fields.hasNext()) {
-                JsonNode request = findNamedRequest(fields.next().getValue(), requestName);
-                if (request != null) {
-                    return request;
-                }
-            }
-        }
-        return null;
     }
 
     private static String createSignedDcSdJwt() throws Exception {

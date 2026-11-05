@@ -19,7 +19,7 @@ class MdocSmokeTest {
                 .verify(UtilsTest.mdlSample("mdl-valid.txt"), CredentialFormat.MSO_MDOC, false);
 
         // The sample's validUntil is 2031-11-05T05:05:21Z; regenerate the set before then
-        // (docs/postman_collection/mdl-samples/README.md).
+        // (src/test/resources/mdl-samples/README.md).
         assertTrue(result.getVerificationStatus(), result.getVerificationMessage());
         assertTrue(Utils.populateSchemaAndSignature(result).isValid());
         assertTrue(Utils.populateExpiryCheck(result).isValid());

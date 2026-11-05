@@ -800,7 +800,7 @@
                     "vc-verification"
                   ]
                 },
-                "description": "Shape A `{ issuerAuth, nameSpaces }`. Fixed test sample: ES256 (P-256), SHA-256 digests, mandatory ISO 18013-5 mDL elements only, fictional data. Signed by the self-signed \"Inji Verify TEST Document Signer - NOT FOR PRODUCTION\" certificate (C=IN, EKU 1.0.18013.5.1.2). Same string as docs/postman_collection/mdl-samples/mdl-valid.txt. **validUntil: 2031-11-05T05:05:21Z** \u2014 after this date the expiry check fails and the sample must be regenerated."
+                "description": "Shape A `{ issuerAuth, nameSpaces }`. Fixed test sample: ES256 (P-256), SHA-256 digests, mandatory ISO 18013-5 mDL elements only, fictional data. Signed by the self-signed \"Inji Verify TEST Document Signer - NOT FOR PRODUCTION\" certificate (C=IN, EKU 1.0.18013.5.1.2). Same string as verify-core/src/test/resources/mdl-samples/mdl-valid.txt. **validUntil: 2031-11-05T05:05:21Z** \u2014 after this date the expiry check fails and the sample must be regenerated."
               },
               "response": [
                 {
