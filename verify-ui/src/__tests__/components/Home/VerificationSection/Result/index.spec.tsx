@@ -3,6 +3,7 @@ import { render } from "@testing-library/react";
 import Result from "../../../../../components/Home/VerificationSection/Result";
 import { useVerificationFlowSelector } from "../../../../../redux/features/verification/verification.selector";
 import { VerificationResult } from "../../../../../types/data-types";
+import { extractMdocDisplayClaims, isMsoMdoc } from "../../../../../utils/cborUtils";
 
 jest.mock("iso-639-3", () => ({
     iso6393: [],
@@ -12,14 +13,20 @@ jest.mock("../../../../../redux/hooks", () => ({
     useAppDispatch: jest.fn(),
 }));
 
+jest.mock("react-i18next", () => ({
+    useTranslation: () => ({ t: (key: string) => key, i18n: { language: "en" } }),
+}));
+
 jest.mock("../../../../../redux/features/verification/verification.selector", () => ({
         useVerificationFlowSelector: jest.fn(),
     }));
 
 jest.mock("../../../../../utils/cborUtils", () => ({
     isCWT: () => false,
+    isMsoMdoc: jest.fn(() => false),
+    extractMdocDisplayClaims: jest.fn(() => ({})),
     uint8ArrayToHex: () => "",
-    extractMappedClaim: () => ({}),
+    extractMappedClaim: jest.fn(() => ({})),
 }));
 
 jest.mock(
@@ -28,9 +35,12 @@ jest.mock(
         const React = require("react");
         return {
             __esModule: true,
-            default: () =>
+            default: ({ vc, isMdoc }: { vc?: Record<string, any>; isMdoc?: boolean }) =>
                 React.createElement("div", {
                     "data-testid": "vc-detail-view-mock",
+                    "data-family-name": vc?.["org.iso.18013.5.1"]?.family_name,
+                    "data-claim-keys": Object.keys(vc ?? {}).join(","),
+                    "data-is-mdoc": String(Boolean(isMdoc)),
                 }),
         };
     }
@@ -42,9 +52,11 @@ jest.mock(
         const React = require("react");
         return {
             __esModule: true,
-            default: () =>
+            default: ({ vcType, isMdoc }: { vcType: string; isMdoc?: boolean }) =>
                 React.createElement("div", {
                     "data-testid": "vc-detail-modal-mock",
+                    "data-vc-type": vcType,
+                    "data-is-mdoc": String(Boolean(isMdoc)),
                 }),
         };
     }
@@ -96,6 +108,32 @@ describe("Vc Result", () => {
     const message = container.querySelector("#vc-result-display-message");
     expect(message).toBeInTheDocument();
     expect(message?.textContent).toBeTruthy();
+    expect(container.querySelector("[data-testid='vc-detail-view-mock']")).toHaveAttribute("data-is-mdoc", "false");
+    expect(container.querySelector("#vc-result-doc-type")).toBeNull();
+  });
+
+  test("shows mDL namespaces only, flagged as mdoc, with a translated title", () => {
+    (isMsoMdoc as jest.Mock).mockReturnValue(true);
+    (extractMdocDisplayClaims as jest.Mock).mockReturnValue({
+      "org.iso.18013.5.1": { family_name: "Cooper" },
+    });
+    mockVerificationSelector({
+      vc: "omppc3N1ZXJBdXRo",
+      vcStatus: "SUCCESS",
+    });
+
+    const { container } = render(<Result />);
+
+    const details = container.querySelector("[data-testid='vc-detail-view-mock']");
+    expect(details).toHaveAttribute("data-family-name", "Cooper");
+    // No docType row: the claims hold namespaces only.
+    expect(details).toHaveAttribute("data-claim-keys", "org.iso.18013.5.1");
+    expect(details).toHaveAttribute("data-is-mdoc", "true");
+    expect(container.querySelector("#vc-result-doc-type")?.textContent).toBe("ResultSummary:mobileDocument");
+    const modal = container.querySelector("[data-testid='vc-detail-modal-mock']");
+    expect(modal).toHaveAttribute("data-vc-type", "ResultSummary:mobileDocument");
+    expect(modal).toHaveAttribute("data-is-mdoc", "true");
+    expect(extractMdocDisplayClaims).toHaveBeenCalledWith("omppc3N1ZXJBdXRo");
   });
 
   test("VC Verification Failure", () => {

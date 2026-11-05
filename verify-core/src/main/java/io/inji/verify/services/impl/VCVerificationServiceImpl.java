@@ -35,6 +35,9 @@ public class VCVerificationServiceImpl implements VCVerificationService {
     @Value("${inji.verify.claims-with-meta-data}")
     List<String> claimsWithMetaData;
 
+    @Value("${inji.verify.mso-mdoc.claims-with-meta-data:#{T(java.util.List).of()}}")
+    List<String> mdocClaimsWithMetaData;
+
     private final CredentialsVerifier credentialsVerifier;
     private final PixelPass pixelPass;
 
@@ -61,8 +64,8 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         List<String> statusPurposeList = new ArrayList<>();
         statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
         // Plain VC verification endpoint — no VP session context, KB-JWT validation not applicable.
-        CredentialVerificationSummary credentialVerificationSummary =
-                credentialsVerifier.verifyAndGetCredentialStatus(vc, format, statusPurposeList, false);
+        CredentialVerificationSummary credentialVerificationSummary
+                = credentialsVerifier.verifyAndGetCredentialStatus(vc, format, statusPurposeList, false);
         log.debug("CredentialVerificationResult: {}", credentialVerificationSummary.getVerificationResult());
         return new VCVerificationStatusDto(Utils.getVcVerificationStatus(credentialVerificationSummary));
     }
@@ -72,6 +75,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         log.debug("Processing verification request with skipStatusChecks: {}, filters: {}, validateKeyBindingJwt: {}", request.isSkipStatusChecks(), request.getStatusCheckFilters(), validateKeyBindingJwt);
         String verifiableCredential = request.getVerifiableCredential();
         CredentialFormat format = Utils.getCredentialFormat(verifiableCredential);
+        log.info("Detected credential format for v2 verification: {}", format);
         VerificationResult verificationResult;
         Map<String, CredentialStatusResult> credentialStatus = null;
         ExpiryCheckDto expiryCheck = null;
@@ -83,8 +87,8 @@ public class VCVerificationServiceImpl implements VCVerificationService {
             verificationResult = credentialsVerifier.verify(verifiableCredential, format, validateKeyBindingJwt);
         } else {
             List<String> statusCheckFilters = request.getStatusCheckFilters();
-            CredentialVerificationSummary credentialVerificationSummary =
-                    credentialsVerifier.verifyAndGetCredentialStatus(verifiableCredential, format, statusCheckFilters, validateKeyBindingJwt);
+            CredentialVerificationSummary credentialVerificationSummary
+                    = credentialsVerifier.verifyAndGetCredentialStatus(verifiableCredential, format, statusCheckFilters, validateKeyBindingJwt);
             verificationResult = credentialVerificationSummary.getVerificationResult();
             credentialStatus = credentialVerificationSummary.getCredentialStatus();
         }
@@ -93,7 +97,9 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         if (schemaAndSignatureCheck.isValid()) {
             expiryCheck = populateExpiryCheck(verificationResult);
             statusCheck = (!skipStatusChecks) ? populateStatusCheckDtoList(credentialStatus) : List.of();
-            claims = request.isIncludeClaims() ? extractClaims(verifiableCredential, format, claimsWithMetaData, pixelPass) : Map.of();
+            claims = request.isIncludeClaims()
+                    ? extractClaims(verifiableCredential, format, claimsWithMetaData, pixelPass, mdocClaimsWithMetaData)
+                    : Map.of();
         }
 
         boolean allChecksSuccessful = populateAllChecksSuccessful(schemaAndSignatureCheck, expiryCheck, statusCheck, null);

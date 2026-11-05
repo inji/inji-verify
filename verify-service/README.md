@@ -14,6 +14,7 @@ service.
 > For features, supported VC formats, OpenID4VP standards, and endpoint details see:
 > - [docs/technical_docs/Inji_Verify_API_Overview.md](../docs/technical_docs/Inji_Verify_API_Overview.md)
 > - [docs/technical_docs/VC_Verification.md](../docs/technical_docs/VC_Verification.md)
+> - [docs/technical_docs/VC_Format_ISO_MSO_MDOC.md](../docs/technical_docs/VC_Format_ISO_MSO_MDOC.md) — ISO mdoc / mDL on scan and upload
 > - [docs/technical_docs/OpenID4VP-1.0.0.md](../docs/technical_docs/OpenID4VP-1.0.0.md)
 
 ##### Setup Guide

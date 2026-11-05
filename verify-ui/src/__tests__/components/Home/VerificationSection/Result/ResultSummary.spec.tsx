@@ -11,6 +11,12 @@ describe("Result Summary", () => {
     expect(message?.textContent).toBeTruthy();
   });
 
+  test("shows the mobile document type above the status message", () => {
+    const { container } = render(<ResultSummary status="SUCCESS" docType="Mobile Document" />);
+
+    expect(container.querySelector("#vc-result-doc-type")?.textContent).toBe("Mobile Document");
+  });
+
   test("renders non-empty message for INVALID status", () => {
     const { container } = render(<ResultSummary status="INVALID" />);
 

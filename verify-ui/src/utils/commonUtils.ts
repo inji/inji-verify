@@ -366,6 +366,41 @@ export const vcVerificationV2Request = {
     statusCheckFilters: ["revocation"],
     includeClaims: true
 };
+
+/** Derives status from the shared verification response contract, regardless of credential format. */
+export const vcStatusFromVerificationResponse = (verificationResponse: any): VcStatus | undefined => {
+  if (!verificationResponse || typeof verificationResponse !== "object") {
+    return undefined;
+  }
+  if (verificationResponse.verificationStatus) {
+    return verificationResponse.verificationStatus;
+  }
+  if (verificationResponse.vcResults?.[0]?.vcStatus) {
+    return verificationResponse.vcResults[0].vcStatus;
+  }
+  if (verificationResponse.vpResultStatus) {
+    return verificationResponse.vpResultStatus;
+  }
+  if (!verificationResponse.schemaAndSignatureCheck) {
+    return undefined;
+  }
+  if (!verificationResponse.schemaAndSignatureCheck.valid) {
+    return "INVALID";
+  }
+  if (verificationResponse.expiryCheck?.valid === false) {
+    return "EXPIRED";
+  }
+  const statusCheck = Array.isArray(verificationResponse.statusCheck) ? verificationResponse.statusCheck : Array.isArray(verificationResponse.statusChecks)
+                      ? verificationResponse.statusChecks
+                      : [];
+  for (const status of statusCheck) {
+    if (status?.purpose === "revocation" && status.valid === false && status.error == null) {
+      return "REVOKED";
+    }
+  }
+  return verificationResponse.allChecksSuccessful ? "SUCCESS" : "INVALID";
+};
+
 export const vpVerificationRequest = {
     skipStatusChecks: false,
     statusCheckFilters: ["revocation"],

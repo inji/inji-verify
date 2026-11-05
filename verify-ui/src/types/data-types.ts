@@ -180,7 +180,25 @@ export type SdJwtVc = {
   disclosedClaims: Record<string, any>;
 };
 
-export type AnyVc = LdpVc | SdJwtVc;
+export type CredentialClaimValue =
+  | string
+  | number
+  | boolean
+  | null
+  | CredentialClaimValue[]
+  | { [key: string]: CredentialClaimValue };
+
+export type CwtVc = { [claimName: string]: CredentialClaimValue };
+
+export type MdocNamespaceClaims = {
+  [elementIdentifier: string]: CredentialClaimValue;
+};
+
+export type MdocVc = {
+  [namespace: string]: MdocNamespaceClaims;
+};
+
+export type AnyVc = LdpVc | SdJwtVc | CwtVc | MdocVc;
 export type credentialSubject = {
   benefits: string[];
   gender: string;

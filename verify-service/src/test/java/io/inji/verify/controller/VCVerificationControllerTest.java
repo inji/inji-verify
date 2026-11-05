@@ -2,6 +2,7 @@ package io.inji.verify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.verification.VCVerificationStatusDto;
+import io.inji.verify.exception.InvalidCredentialException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -74,6 +75,17 @@ public class VCVerificationControllerTest {
         mockMvc.perform(post("/vc-verification")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
+                .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testVerifyV2ReturnsDefaultBadRequestForInvalidCredential() throws Exception {
+        when(VCVerificationService.verifyV2(any(), eq(false)))
+                .thenThrow(new InvalidCredentialException("Failed to decode mdoc credential", null));
+
+        mockMvc.perform(post("/v2/vc-verification")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"verifiableCredential\":\"o2ppc3N1ZXJBdXRo\"}"))
                 .andExpect(status().isBadRequest());
     }
 

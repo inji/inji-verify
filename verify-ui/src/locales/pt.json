@@ -124,7 +124,8 @@
     "INVALID": "Infelizmente, a credencial fornecida é inválida!",
     "EXPIRED": "A credencial fornecida é válida, mas expirou!",
     "REVOKED": "Infelizmente, a credencial fornecida foi revogada!",
-    "TIMEOUT": "A sessão de verificação expirou devido à inatividade. Inicie uma nova verificação."
+    "TIMEOUT": "A sessão de verificação expirou devido à inatividade. Inicie uma nova verificação.",
+    "mobileDocument": "Documento móvel"
   },
   "AlertMessages": {
     "qrVerificationLimitReached": "Este código QR atingiu o limite de verificações. Solicite um novo.",

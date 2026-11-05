@@ -124,7 +124,8 @@
     "INVALID": "Malheureusement, les informations d'identification fournies ne sont pas valides !",
     "EXPIRED": "L'identifiant donné est valide mais expiré !",
     "REVOKED": "Malheureusement, les informations d'identification fournies ont été révoquées !",
-    "TIMEOUT": "La session d'analyse a expiré en raison d'une inactivité. Veuillez lancer une nouvelle analyse."
+    "TIMEOUT": "La session d'analyse a expiré en raison d'une inactivité. Veuillez lancer une nouvelle analyse.",
+    "mobileDocument": "Document mobile"
   },
   "AlertMessages": {
     "qrVerificationLimitReached": "Ce code QR a atteint sa limite de vérifications. Veuillez en demander un nouveau.",

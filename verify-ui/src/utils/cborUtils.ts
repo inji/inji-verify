@@ -1,5 +1,20 @@
-import { decodeMultiple, decode } from "cbor-x";
+import { addExtension, decodeMultiple, decode, Tag } from "cbor-x";
 import { decodeMappedData } from "@injistack/pixelpass";
+
+/** A tdate (CBOR tag 0) kept as its original text. */
+class TdateText {
+  constructor(readonly value: string) {}
+}
+
+// cbor-x turns tag 0 into a Date, which is shown in UTC and can move the calendar date by a
+// day (2024-05-03T23:30:00-05:00 would read 2024-05-04T04:30:00Z). Keep the text as sent,
+// as the backend does. Tested with the cbor-x version pinned in package.json.
+addExtension<TdateText | string, string>({
+  Class: TdateText,
+  tag: 0,
+  encode: (tdate, encode) => encode(typeof tdate === "string" ? tdate : tdate.value),
+  decode: (text) => text,
+});
 
 export function uint8ArrayToHex(uint8Array: Uint8Array): string {
   return Array.from(uint8Array)
@@ -97,4 +112,238 @@ export function extractMappedClaim(
   const decodedMappedData = decodeMappedData(claimHex);
 
   return decodedMappedData;
+}
+
+const MDOC_KEY_ISSUER_AUTH = "issuerAuth";
+const MDOC_KEY_NAMESPACES = "nameSpaces";
+const MDOC_KEY_ISSUER_SIGNED = "issuerSigned";
+const MDOC_KEY_DOCUMENTS = "documents";
+const MDOC_KEY_ELEMENT_IDENTIFIER = "elementIdentifier";
+const MDOC_KEY_ELEMENT_VALUE = "elementValue";
+const MDOC_IMAGE_ELEMENTS = new Set(["portrait", "signature_usual_mark"]);
+
+function base64UrlToBytes(value: string): Uint8Array {
+  const padded = value.replace(/-/g, "+").replace(/_/g, "/");
+  const padLength = (4 - (padded.length % 4)) % 4;
+  const binary = atob(padded + "=".repeat(padLength));
+  const bytes = new Uint8Array(binary.length);
+  for (let i = 0; i < binary.length; i++) {
+    bytes[i] = binary.charCodeAt(i);
+  }
+  return bytes;
+}
+
+function bytesToBase64(value: Uint8Array): string {
+  let binary = "";
+  value.forEach((byte) => {
+    binary += String.fromCharCode(byte);
+  });
+  return btoa(binary);
+}
+
+/** Only cbor-x's decoded Tag instances count; plain maps with tag/value keys are claim data. */
+function isCborTag(value: unknown): value is Tag {
+  return value instanceof Tag;
+}
+
+function containsCborTextKey(bytes: Uint8Array, key: string): boolean {
+  const keyBytes = Uint8Array.from(key, (character) => character.charCodeAt(0));
+  const header = 0x60 | keyBytes.length;
+  for (let start = 0; start <= bytes.length - keyBytes.length - 1; start++) {
+    if (bytes[start] !== header) continue;
+    let offset = 0;
+    while (offset < keyBytes.length && bytes[start + offset + 1] === keyBytes[offset]) {
+      offset++;
+    }
+    if (offset === keyBytes.length) return true;
+  }
+  return false;
+}
+
+function containsMdocShapeKey(bytes: Uint8Array): boolean {
+  return (
+    containsCborTextKey(bytes, MDOC_KEY_DOCUMENTS) ||
+    containsCborTextKey(bytes, MDOC_KEY_ISSUER_SIGNED) ||
+    (containsCborTextKey(bytes, MDOC_KEY_ISSUER_AUTH) &&
+      containsCborTextKey(bytes, MDOC_KEY_NAMESPACES))
+  );
+}
+
+/** An ISO mdoc is base64url CBOR with an issuer signature, not a JWT. */
+export function isMsoMdoc(value: unknown): boolean {
+  if (typeof value !== "string" || value.length === 0 || value.includes(".") || value.startsWith("{") || value.startsWith("[")) {
+    return false;
+  }
+  try {
+    const root = decode(base64UrlToBytes(value)) as Record<string, unknown>;
+    return Boolean(
+      root &&
+        (root[MDOC_KEY_DOCUMENTS] ||
+          root[MDOC_KEY_ISSUER_SIGNED] ||
+          (root[MDOC_KEY_ISSUER_AUTH] && root[MDOC_KEY_NAMESPACES])),
+    );
+  } catch {
+    try {
+      return containsMdocShapeKey(base64UrlToBytes(value));
+    } catch {
+      return false;
+    }
+  }
+}
+
+const JPEG_START = [0xff, 0xd8, 0xff];
+/** JPEG end-of-image marker. */
+const JPEG_END = [0xff, 0xd9];
+const PNG_SIGNATURE = [0x89, 0x50, 0x4e, 0x47, 0x0d, 0x0a, 0x1a, 0x0a];
+/** Empty IEND chunk: zero length, type "IEND", fixed CRC. */
+const PNG_IEND = [0x00, 0x00, 0x00, 0x00, 0x49, 0x45, 0x4e, 0x44, 0xae, 0x42, 0x60, 0x82];
+
+function bytesMatchAt(bytes: Uint8Array, expected: number[], offset: number): boolean {
+  return offset >= 0 && expected.every((byte, index) => bytes[offset + index] === byte);
+}
+
+/**
+ * Browser-displayable image types, recognized only when both the start and the end of the image
+ * are present, so a truncated image falls back to a label instead of a broken <img>.
+ * JPEG 2000 and other types also fall back to a label.
+ */
+function imageMimeType(bytes: Uint8Array): string | null {
+  if (
+    bytes.length >= JPEG_START.length + JPEG_END.length &&
+    bytesMatchAt(bytes, JPEG_START, 0) &&
+    bytesMatchAt(bytes, JPEG_END, bytes.length - JPEG_END.length)
+  ) {
+    return "image/jpeg";
+  }
+  if (
+    bytes.length >= PNG_SIGNATURE.length + PNG_IEND.length &&
+    bytesMatchAt(bytes, PNG_SIGNATURE, 0) &&
+    bytesMatchAt(bytes, PNG_IEND, bytes.length - PNG_IEND.length)
+  ) {
+    return "image/png";
+  }
+  return null;
+}
+
+/**
+ * An epoch date (tag 1) as an ISO-8601 UTC instant, without ".000" for whole seconds. cbor-x has
+ * already turned it into a Date, which holds milliseconds only: sub-millisecond digits are
+ * dropped, so 2024-05-03T08:00:00.123456Z is shown as 2024-05-03T08:00:00.123Z while the backend
+ * keeps .123456. A non-finite epoch is shown as "Invalid Date" instead of failing the whole
+ * claim set. Tag 0 never reaches here: it stays text (see TdateText).
+ */
+function renderMdocDate(value: Date): string {
+  if (Number.isNaN(value.getTime())) {
+    return "Invalid Date";
+  }
+  return value.toISOString().replace(".000Z", "Z");
+}
+
+function renderMdocValue(value: unknown, elementIdentifier?: string): unknown {
+  if (value == null || typeof value === "string" || typeof value === "number" || typeof value === "boolean") {
+    return value;
+  }
+  if (value instanceof Uint8Array) {
+    if (elementIdentifier && MDOC_IMAGE_ELEMENTS.has(elementIdentifier)) {
+      const mimeType = imageMimeType(value);
+      return mimeType
+        ? `data:${mimeType};base64,${bytesToBase64(value)}`
+        : `image (${value.length} bytes)`;
+    }
+    return bytesToBase64(value);
+  }
+  if (isCborTag(value)) {
+    return renderMdocValue(value.value, elementIdentifier);
+  }
+  if (Array.isArray(value)) {
+    return value.map((entry) => renderMdocValue(entry, elementIdentifier));
+  }
+  if (value instanceof Date) {
+    return renderMdocDate(value);
+  }
+  if (typeof value === "object") {
+    return Object.fromEntries(
+      Object.entries(value as Record<string, unknown>).map(([key, entry]) => [key, renderMdocValue(entry)])
+    );
+  }
+  return String(value);
+}
+
+function unwrapMdocItem(item: unknown): Record<string, unknown> | null {
+  let current = item;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    if (current instanceof Uint8Array) {
+      current = decode(current);
+      continue;
+    }
+    if (isCborTag(current) && current.tag === 24) {
+      current = current.value instanceof Uint8Array ? decode(current.value) : current.value;
+      continue;
+    }
+    break;
+  }
+  if (current && typeof current === "object" && MDOC_KEY_ELEMENT_IDENTIFIER in (current as object)) {
+    return current as Record<string, unknown>;
+  }
+  return null;
+}
+
+function getMdocNamespaces(root: Record<string, any>): Record<string, unknown> {
+  if (Object.prototype.hasOwnProperty.call(root, MDOC_KEY_DOCUMENTS)) {
+    if (!Array.isArray(root[MDOC_KEY_DOCUMENTS]) || root[MDOC_KEY_DOCUMENTS].length === 0) {
+      throw new Error("mdoc contains no documents");
+    }
+    const namespaces = root[MDOC_KEY_DOCUMENTS][0]?.[MDOC_KEY_ISSUER_SIGNED]?.[MDOC_KEY_NAMESPACES];
+    if (!namespaces) {
+      throw new Error("Failed to extract mdoc claims");
+    }
+    return namespaces;
+  }
+  if (root[MDOC_KEY_ISSUER_SIGNED]?.[MDOC_KEY_NAMESPACES]) {
+    return root[MDOC_KEY_ISSUER_SIGNED][MDOC_KEY_NAMESPACES];
+  }
+  if (root[MDOC_KEY_ISSUER_AUTH] && root[MDOC_KEY_NAMESPACES]) {
+    return root[MDOC_KEY_NAMESPACES];
+  }
+  throw new Error("Failed to extract mdoc claims");
+}
+
+/**
+ * Issuer-signed mdoc data elements for the result screen, grouped by namespace.
+ * Shape matches the backend: `{ "org.iso.18013.5.1": { family_name: "..." } }`.
+ * docType is not included; the UI uses a fixed title.
+ */
+export function extractMdocDisplayClaims(
+  mdoc: string,
+): Record<string, Record<string, unknown>> {
+  let root: Record<string, any>;
+  try {
+    root = decode(base64UrlToBytes(mdoc)) as Record<string, any>;
+  } catch {
+    throw new Error("Failed to decode mdoc credential");
+  }
+  const namespaces = getMdocNamespaces(root);
+  const claims: Record<string, Record<string, unknown>> = {};
+  Object.entries(namespaces).forEach(([namespace, items]) => {
+    if (!Array.isArray(items)) {
+      throw new Error("Invalid mdoc namespace: expected an item array");
+    }
+    const namespaceClaims: Record<string, unknown> = {};
+    items.forEach((item) => {
+      const decoded = unwrapMdocItem(item);
+      if (!decoded || typeof decoded[MDOC_KEY_ELEMENT_IDENTIFIER] !== "string" || !(MDOC_KEY_ELEMENT_VALUE in decoded)) {
+        throw new Error("Invalid mdoc issuer-signed item");
+      }
+      const elementIdentifier = decoded[MDOC_KEY_ELEMENT_IDENTIFIER] as string;
+      if (Object.prototype.hasOwnProperty.call(namespaceClaims, elementIdentifier)) {
+        throw new Error(`Duplicate mdoc element identifier: ${namespace}.${elementIdentifier}`);
+      }
+      namespaceClaims[elementIdentifier] = renderMdocValue(
+        decoded[MDOC_KEY_ELEMENT_VALUE],
+        elementIdentifier,
+      );
+    });
+    claims[namespace] = namespaceClaims;
+  });
+  return claims;
 }

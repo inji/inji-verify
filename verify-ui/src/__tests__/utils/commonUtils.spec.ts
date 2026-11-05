@@ -7,6 +7,7 @@ import {
   getDcqlCredentialQueryCount,
   getTotalCredentialCount,
   isVPSubmissionSupported,
+  vcStatusFromVerificationResponse,
 } from "../../utils/commonUtils";
 import { claim, DcqlCredentialQuery, MatchingVc } from "../../types/data-types";
 
@@ -736,6 +737,94 @@ describe("commonUtils credential matching", () => {
       delete (window as any)._env_;
       expect(getClientId()).toBeUndefined();
       expect(isVPSubmissionSupported()).toBe(false);
+    });
+
+    test("derives the result status from a full verification body", () => {
+      expect(
+        vcStatusFromVerificationResponse({
+          allChecksSuccessful: true,
+          schemaAndSignatureCheck: { valid: true, error: null },
+          expiryCheck: { valid: true },
+          statusCheck: [],
+          claims: { "org.iso.18013.5.1": { family_name: "Cooper" } },
+        }),
+      ).toBe("SUCCESS");
+      expect(
+        vcStatusFromVerificationResponse({
+          verificationStatus: "EXPIRED",
+        }),
+      ).toBe("EXPIRED");
+      expect(
+        vcStatusFromVerificationResponse({
+          schemaAndSignatureCheck: { valid: false },
+        }),
+      ).toBe("INVALID");
+      expect(
+        vcStatusFromVerificationResponse({
+          schemaAndSignatureCheck: { valid: true },
+          expiryCheck: { valid: false },
+        }),
+      ).toBe("EXPIRED");
+      expect(
+        vcStatusFromVerificationResponse({
+          schemaAndSignatureCheck: { valid: true },
+          statusCheck: [{ purpose: "revocation", valid: false, error: null }],
+        }),
+      ).toBe("REVOKED");
+    });
+
+    // One row per format and outcome, each shaped like the /v2/vc-verification body that
+    // format actually produces (claims shape, status entries, expiry handling).
+    const signatureFailure = { valid: false, error: { errorCode: "ERR_SIGNATURE_VERIFICATION_FAILED", errorMessage: "Verification Failed" } };
+    test.each([
+      ["ldp_vc", "SUCCESS", {
+        allChecksSuccessful: true, schemaAndSignatureCheck: { valid: true, error: null }, expiryCheck: { valid: true },
+        statusCheck: [{ purpose: "revocation", valid: true, error: null }],
+        claims: { credentialSubject: { email: "a@b.c" } },
+      }],
+      ["ldp_vc", "REVOKED", {
+        allChecksSuccessful: false, schemaAndSignatureCheck: { valid: true, error: null }, expiryCheck: { valid: true },
+        statusCheck: [{ purpose: "revocation", valid: false, error: null }],
+        claims: { credentialSubject: { email: "a@b.c" } },
+      }],
+      ["ldp_vc", "INVALID", {
+        allChecksSuccessful: false, schemaAndSignatureCheck: { valid: true, error: null }, expiryCheck: { valid: true },
+        statusCheck: [{ purpose: "revocation", valid: false, error: { errorCode: "ERR_STATUS_RETRIEVAL", errorMessage: "status list unreachable" } }],
+        claims: {},
+      }],
+      ["vc+sd-jwt", "EXPIRED", {
+        allChecksSuccessful: false, schemaAndSignatureCheck: { valid: true, error: null }, expiryCheck: { valid: false },
+        statusCheck: [], claims: { vct: "IdentityCredential", given_name: "Ada" },
+      }],
+      ["dc+sd-jwt", "SUCCESS", {
+        allChecksSuccessful: true, schemaAndSignatureCheck: { valid: true, error: null }, expiryCheck: { valid: true },
+        statusCheck: [], claims: { vct: "IdentityCredential", given_name: "Ada" },
+      }],
+      ["dc+sd-jwt", "INVALID", {
+        allChecksSuccessful: false, schemaAndSignatureCheck: signatureFailure, expiryCheck: null, statusCheck: [], claims: {},
+      }],
+      ["cwt_vc", "SUCCESS", {
+        allChecksSuccessful: true, schemaAndSignatureCheck: { valid: true, error: null }, expiryCheck: { valid: true },
+        statusCheck: [], claims: { "1": "Ada", "4": "1985-04-29" },
+      }],
+      ["cwt_vc", "INVALID", {
+        allChecksSuccessful: false, schemaAndSignatureCheck: signatureFailure, expiryCheck: null, statusCheck: [], claims: {},
+      }],
+      ["mso_mdoc", "SUCCESS", {
+        allChecksSuccessful: true, schemaAndSignatureCheck: { valid: true, error: null }, expiryCheck: { valid: true },
+        statusCheck: [], claims: { "org.iso.18013.5.1": { family_name: "Cooper" } },
+      }],
+      ["mso_mdoc", "EXPIRED", {
+        allChecksSuccessful: false, schemaAndSignatureCheck: { valid: true, error: null }, expiryCheck: { valid: false },
+        statusCheck: [], claims: { "org.iso.18013.5.1": { family_name: "Cooper" } },
+      }],
+      ["mso_mdoc", "INVALID", {
+        allChecksSuccessful: false,
+        schemaAndSignatureCheck: { valid: false, error: { errorCode: "ERR_INVALID_DATE_MSO", errorMessage: "invalid validUntil / validFrom in the MSO of the credential" } },
+        expiryCheck: null, statusCheck: [], claims: {},
+      }],
+    ])("derives %s status %s from its verification body", (_format, expected, body) => {
+      expect(vcStatusFromVerificationResponse(body)).toBe(expected);
     });
 
     test("extracts credential types from object and fallback forms", () => {

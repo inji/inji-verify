@@ -124,7 +124,8 @@
     "INVALID": "Unfortunately, the given credential is invalid!",
     "EXPIRED": "The given credential is valid but expired!",
     "REVOKED": "Unfortunately, the given credential is revoked!",
-    "TIMEOUT": "The scan session has expired due to inactivity. Please initiate a new scan."
+    "TIMEOUT": "The scan session has expired due to inactivity. Please initiate a new scan.",
+    "mobileDocument": "Mobile Document"
   },
   "AlertMessages": {
     "qrVerificationLimitReached": "This QR code has reached its verification limit. Please request a new one.",

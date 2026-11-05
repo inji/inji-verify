@@ -95,7 +95,7 @@ All paths below are relative to the server's context path, `/v1/verify` by defau
   4. Wallet scans QR, fetches request JWT from `GET /v2/vp-request/{requestId}`, POSTs `vp_token` to `/v2/vp-submission/direct-post`
   5. Backend resolves the pending request and notifies the frontend
   6. Frontend POSTs to `/vp-session-results` to fetch the final result
-- **Supported VC formats**: `ldp_vc`, `dc+sd-jwt`, `vc+sd-jwt`.
+- **Supported VC formats**: `ldp_vc`, `dc+sd-jwt`, `vc+sd-jwt`, `cwt_vc` (Claim 169), `mso_mdoc` (ISO mdoc / mDL on scan and upload).
 - **Database**: PostgreSQL in production (schema/migrations in `db_scripts/`, `db_upgrade_script/`); HSQLDB in-memory for local/default runs.
 - **SDK (inji-verify-sdk)**: React component library (`@injistack/react-inji-verify-sdk`) wrapping the verification UX for embedding in other apps; consumed by `verify-ui` itself.
 - **Local full-stack setup**: `docker-compose/` runs the whole stack together; note that OpenID4VP requires the backend to be reachable from a wallet on a separate device (publicly accessible URL or tunnel).

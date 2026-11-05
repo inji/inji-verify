@@ -11,9 +11,9 @@ import {
   qrReadInit,
 } from "../../../../redux/features/verification/verification.slice";
 import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
-import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
+import { AnyVc, LdpVc, MdocVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
-import { extractMappedClaim, isCWT, uint8ArrayToHex } from "../../../../utils/cborUtils";
+import { extractMappedClaim, extractMdocDisplayClaims, isCWT, isMsoMdoc, uint8ArrayToHex } from "../../../../utils/cborUtils";
 import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
 
 const Result = () => {
@@ -22,6 +22,7 @@ const Result = () => {
   const [isModalOpen, setModalOpen] = useState(false);
   const [claims, setClaims] = useState<AnyVc | null>(null);
   const [credentialType, setCredentialType] = useState<string>("");
+  const [isMdoc, setIsMdoc] = useState(false);
   const { t } = useTranslation();
   const dispatch = useAppDispatch();
   const timerRef = useRef<NodeJS.Timeout | null>(null);
@@ -39,6 +40,7 @@ const Result = () => {
 
   useEffect(() => {
     const fetchDecodedClaims = async () => {
+      setIsMdoc(false);
       if (isCWT(vc)) {
         try {
           const cwtHex =
@@ -54,6 +56,15 @@ const Result = () => {
           const message = err instanceof Error ? err.message : String(err);
           dispatch(raiseAlert({ message, severity: "error", open: true }));
 
+        }
+      } else if (typeof vc === "string" && isMsoMdoc(vc)) {
+        try {
+          // Claims hold namespaces only; the title is shown separately.
+          setClaims(extractMdocDisplayClaims(vc) as MdocVc);
+          setIsMdoc(true);
+        } catch (err) {
+          const message = err instanceof Error ? err.message : String(err);
+          dispatch(raiseAlert({ message, severity: "error", open: true }));
         }
       } else if (typeof vc === "string") {
         try {
@@ -96,16 +107,19 @@ const Result = () => {
     return () => clearTimer();
   }, [dispatch]);
 
+  const mdocTitle = isMdoc ? t("ResultSummary:mobileDocument") : undefined;
+
   return (
     <div id="result-section" className="relative mb-[100px]">
       <div className={`text-whiteText`}>
-        <ResultSummary status={vcStatus} />
+        <ResultSummary status={vcStatus} docType={mdocTitle} />
       </div>
       <div>
         <div className={`h-[3px] border-b-2 border-b-transparent`} />
         {claims && (
           <DisplayVcDetailView
             vc={claims}
+            isMdoc={isMdoc}
             onExpand={() => setModalOpen(true)}
             className={`h-auto rounded-t-0 rounded-b-lg overflow-y-auto mt-[-30px]`}
           />
@@ -123,8 +137,9 @@ const Result = () => {
           isOpen={isModalOpen}
           onClose={() => setModalOpen(false)}
           vc={claims}
+          isMdoc={isMdoc}
           status={vcStatus}
-          vcType={credentialType}
+          vcType={mdocTitle ?? credentialType}
         />
       )}
     </div>

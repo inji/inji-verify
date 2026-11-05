@@ -7,7 +7,7 @@ import {
 } from "../../../redux/features/verification/verification.slice";
 import { raiseAlert } from "../../../redux/features/alerts/alerts.slice";
 import { QRCodeVerification } from "@injistack/react-inji-verify-sdk";
-import { getClientId, isVPSubmissionSupported, vcVerificationV2Request} from "../../../utils/commonUtils";
+import { getClientId, isVPSubmissionSupported, vcStatusFromVerificationResponse, vcVerificationV2Request} from "../../../utils/commonUtils";
 
 function QrScanner({ onClose, scannerActive }: {
   onClose: () => void;
@@ -24,9 +24,7 @@ function QrScanner({ onClose, scannerActive }: {
 const handleOnVCProcessed = (data: any[]) => {
         const vc = data[0].vc;
         const verificationResponse = data[0].verificationResponse;
-    const vcStatus = verificationResponse.verificationStatus ??
-        verificationResponse.vcResults?.[0]?.vcStatus ??
-        verificationResponse.vpResultStatus;
+        const vcStatus = vcStatusFromVerificationResponse(verificationResponse);
 
         dispatch(verificationComplete({verificationResult: {
                     vc,
@@ -55,7 +53,7 @@ const handleOnVCProcessed = (data: any[]) => {
           isEnableUpload={false}
           onVCProcessed={handleOnVCProcessed}
           onClose={onClose}
-          onError={(error) => {
+          onError={(error: Error | { errorCode?: string; errorMessage?: string }) => {
             if (error instanceof Error && error.name === "NotAllowedError") {
               setIsCameraBlocked(true);
             } else {

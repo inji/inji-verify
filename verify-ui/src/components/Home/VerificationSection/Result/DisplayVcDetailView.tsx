@@ -10,8 +10,8 @@ import ActionButton from "../commons/ActionButton";
 import { useTranslation } from "react-i18next";
 import { getDetailsOrder } from "../../../../utils/commonUtils";
 import { isRTL } from "../../../../utils/i18n";
-import { AnyVc } from "../../../../types/data-types";
-import VcDetailsGrid from "./VcDetailsGrid";
+import { AnyVc, MdocVc } from "../../../../types/data-types";
+import VcDetailsGrid, { MdocDetailsSections } from "./VcDetailsGrid";
 import i18next from "i18next";
 import { getTemplateUrl } from "../../../../utils/svg-template-utils";
 import VcSvgTemplate from "./VcSvgTemplate";
@@ -20,17 +20,20 @@ import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
 
 function DisplayVcDetailView({
   vc,
+  isMdoc = false,
   onExpand,
   className,
 }: {
   vc: AnyVc;
+  /** True when vc holds mdoc claims grouped by namespace. */
+  isMdoc?: boolean;
   onExpand: any;
   className?: string;
 }) {
   const { t, i18n } = useTranslation("Verify");
   const currentLang = i18next.language;
   const templateUrl = getTemplateUrl(vc);
-  const orderedDetails = vc && getDetailsOrder(vc, currentLang);
+  const orderedDetails = isMdoc ? [] : vc && getDetailsOrder(vc, currentLang);
   const isRtl = isRTL(i18n.language);
   const [templateError, setTemplateError] = useState(false);
 
@@ -71,6 +74,8 @@ function DisplayVcDetailView({
                 templateUrl={templateUrl!}
                 onError={onTemplateError}
               />
+            ) : isMdoc ? (
+              <MdocDetailsSections claims={vc as MdocVc} vc={vc} />
             ) : (
               <VcDetailsGrid orderedDetails={orderedDetails} vc={vc} />
             )}

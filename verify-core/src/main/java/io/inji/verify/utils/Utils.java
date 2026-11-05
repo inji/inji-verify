@@ -6,6 +6,7 @@ import com.authlete.cbor.CBORItem;
 import com.authlete.cbor.CBORTaggedItem;
 import com.upokecenter.cbor.CBOREncodeOptions;
 import com.upokecenter.cbor.CBORObject;
+import com.upokecenter.cbor.CBORType;
 import com.authlete.sd.Disclosure;
 import com.authlete.sd.SDJWT;
 import com.authlete.sd.SDObjectDecoder;
@@ -32,6 +33,10 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Component;
 
+import java.io.ByteArrayInputStream;
+import java.math.BigDecimal;
+import java.math.RoundingMode;
+import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
 import java.util.*;
@@ -360,11 +365,223 @@ public final class Utils {
     }
 
     public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format, List<String> metaClaims, PixelPass pixelPass) {
+        return extractClaims(verifiableCredential, format, metaClaims, pixelPass, List.of());
+    }
+
+    public static Map<String, Object> extractClaims(String verifiableCredential, CredentialFormat format, List<String> metaClaims, PixelPass pixelPass, List<String> mdocMetaClaims) {
         return switch (format) {
             case VC_SD_JWT, DC_SD_JWT -> extractSdJwtClaims(verifiableCredential, metaClaims);
             case LDP_VC -> extractLdpClaims(verifiableCredential);
             case CWT_VC -> extractCwtClaims(verifiableCredential, pixelPass, metaClaims);
-            default -> null;
+            case MSO_MDOC -> extractMdocClaims(verifiableCredential, mdocMetaClaims);
+            case JWT_VC_JSON -> Map.of();
+        };
+    }
+
+    private static volatile int maxMdocSizeBytes = 1_048_576;
+    private static final int MAX_MDOC_DEPTH = 32;
+
+    /**
+     * Maximum decoded mdoc size in bytes (not base64 characters). A value of zero or less is a
+     * misconfiguration and fails startup rather than silently using a default.
+     */
+    @Value("${inji.verify.mso-mdoc.max-size:1048576}")
+    public void setMaxMdocSizeBytes(int maxMdocSizeBytes) {
+        if (maxMdocSizeBytes <= 0) {
+            throw new IllegalArgumentException(
+                    "inji.verify.mso-mdoc.max-size must be greater than zero, but was " + maxMdocSizeBytes);
+        }
+        Utils.maxMdocSizeBytes = maxMdocSizeBytes;
+    }
+
+    /**
+     * Data elements from an ISO mdoc, grouped by namespace then element identifier, without the
+     * configured meta elements. The verifier only returns whether the signature and digests matched.
+     */
+    public static Map<String, Object> extractMdocClaims(String credential, List<String> mdocMetaClaims) {
+        try {
+            String trimmed = credential.trim();
+            ensureMdocSize(trimmed);
+            CBORObject namespaces = getMdocNamespaces(readMdocRoot(trimmed));
+            if (namespaces == null || namespaces.getType() != CBORType.Map) {
+                throw new InvalidCredentialException("Failed to extract mdoc claims", null);
+            }
+            Map<String, Object> claims = new LinkedHashMap<>();
+            for (CBORObject namespace : namespaces.getKeys()) {
+                String namespaceName = namespace.getType() == CBORType.TextString ? namespace.AsString() : namespace.toString();
+                CBORObject items = namespaces.get(namespace);
+                if (items.getType() != CBORType.Array) {
+                    throw new InvalidCredentialException("Invalid mdoc namespace: expected an item array", null);
+                }
+                // A non-text key can render to the same name as a text key, e.g. 1 and "1".
+                if (claims.containsKey(namespaceName)) {
+                    throw new InvalidCredentialException("Duplicate mdoc namespace", null);
+                }
+                Map<String, Object> namespaceClaims = new LinkedHashMap<>();
+                claims.put(namespaceName, namespaceClaims);
+                for (int index = 0; index < items.size(); index++) {
+                    CBORObject item = unwrapMdocItem(items.get(index));
+                    CBORObject identifier = item == null ? null : item.get(Constants.KEY_ELEMENT_IDENTIFIER);
+                    if (identifier == null
+                            || identifier.getType() != CBORType.TextString
+                            || !item.ContainsKey(Constants.KEY_ELEMENT_VALUE)) {
+                        throw new InvalidCredentialException("Invalid mdoc issuer-signed item", null);
+                    }
+                    String elementIdentifier = identifier.AsString();
+                    if (namespaceClaims.containsKey(elementIdentifier)) {
+                        throw new InvalidCredentialException("Duplicate mdoc element identifier", null);
+                    }
+                    namespaceClaims.put(elementIdentifier,
+                            mdocValueToJava(item.get(Constants.KEY_ELEMENT_VALUE), 0));
+                }
+            }
+            excludeMdocMetaClaims(mdocMetaClaims, claims);
+            return claims;
+        } catch (InvalidCredentialException e) {
+            throw e;
+        } catch (Exception e) {
+            throw new InvalidCredentialException("Failed to extract mdoc claims", e);
+        }
+    }
+
+    private static void ensureMdocSize(String credential) {
+        if (decodedBase64Length(credential) > maxMdocSizeBytes) {
+            throw new InvalidCredentialException("Credential exceeds the maximum supported size", null);
+        }
+    }
+
+    /** Decoded length of a base64 / base64url string, computed without decoding it. */
+    private static long decodedBase64Length(String encoded) {
+        int length = encoded.length();
+        int padding = 0;
+        while (padding < 2 && length - padding > 0 && encoded.charAt(length - padding - 1) == '=') {
+            padding++;
+        }
+        return ((long) (length - padding) * 3) / 4;
+    }
+
+    /** Reads the first CBOR item only; DecodeFromBytes rejects a buffer that continues past it. */
+    private static CBORObject readMdocRoot(String trimmed) {
+        return CBORObject.Read(new ByteArrayInputStream(Base64.getUrlDecoder().decode(trimmed)));
+    }
+
+    private static void ensureMdocHasDocument(CBORObject root) {
+        if (root.ContainsKey(Constants.KEY_DOCUMENTS)) {
+            CBORObject documents = root.get(Constants.KEY_DOCUMENTS);
+            if (documents.getType() != CBORType.Array || documents.size() == 0) {
+                throw new InvalidCredentialException("mdoc contains no documents", null);
+            }
+        }
+    }
+
+    private static CBORObject getMdocNamespaces(CBORObject root) {
+        if (root.ContainsKey(Constants.KEY_DOCUMENTS)) {
+            CBORObject documents = root.get(Constants.KEY_DOCUMENTS);
+            if (documents.getType() != CBORType.Array || documents.size() == 0) {
+                throw new InvalidCredentialException("mdoc contains no documents", null);
+            }
+            CBORObject issuerSigned = documents.get(0).get(Constants.KEY_ISSUER_SIGNED);
+            if (issuerSigned != null && issuerSigned.ContainsKey(Constants.KEY_NAMESPACES)) {
+                return issuerSigned.get(Constants.KEY_NAMESPACES);
+            }
+            throw new InvalidCredentialException("Failed to extract mdoc claims", null);
+        }
+        if (root.ContainsKey(Constants.KEY_ISSUER_SIGNED) && root.get(Constants.KEY_ISSUER_SIGNED).ContainsKey(Constants.KEY_NAMESPACES)) {
+            return root.get(Constants.KEY_ISSUER_SIGNED).get(Constants.KEY_NAMESPACES);
+        }
+        if (root.ContainsKey(Constants.KEY_ISSUER_AUTH) && root.ContainsKey(Constants.KEY_NAMESPACES)) {
+            return root.get(Constants.KEY_NAMESPACES);
+        }
+        throw new InvalidCredentialException("Failed to extract mdoc claims", null);
+    }
+
+    private static CBORObject unwrapMdocItem(CBORObject item) {
+        CBORObject current = item;
+        for (int attempt = 0; attempt < 3; attempt++) {
+            if (current.HasMostOuterTag(24)) {
+                current = current.Untag();
+            }
+            if (current.getType() == CBORType.ByteString) {
+                current = CBORObject.DecodeFromBytes(current.GetByteString());
+                continue;
+            }
+            break;
+        }
+        return current.getType() == CBORType.Map ? current : null;
+    }
+
+    private static Object mdocValueToJava(CBORObject value, int depth) {
+        if (depth > MAX_MDOC_DEPTH) {
+            throw new IllegalArgumentException("mdoc claim nesting is too deep");
+        }
+        if (value == null || value.isNull() || value.isUndefined()) {
+            return null;
+        }
+        if (value.HasMostOuterTag(4)) {
+            if (value.getType() != CBORType.Array
+                    || value.size() != 2
+                    || value.get(0).getType() != CBORType.Integer
+                    || value.get(1).getType() != CBORType.Integer) {
+                throw new IllegalArgumentException("Invalid CBOR decimal fraction");
+            }
+            int exponent = value.get(0).AsEIntegerValue().ToInt32Checked();
+            BigDecimal mantissa = new BigDecimal(value.get(1).AsEIntegerValue().toString());
+            return mantissa.scaleByPowerOfTen(exponent);
+        }
+        if (value.HasMostOuterTag(0) && value.getType() == CBORType.TextString) {
+            // tdate is kept as sent: converting to UTC could move the calendar date by a day.
+            return value.AsString();
+        }
+        if (value.HasMostOuterTag(1) && (value.getType() == CBORType.Integer || value.getType() == CBORType.FloatingPoint)) {
+            CBORObject epoch = value.UntagOne();
+            try {
+                if (epoch.getType() == CBORType.Integer) {
+                    return Instant.ofEpochSecond(epoch.AsNumber().ToInt64Checked()).toString();
+                }
+                return mdocFloatingEpoch(epoch.AsDouble());
+            } catch (ArithmeticException | java.time.DateTimeException outOfRange) {
+                // Not representable as an Instant: keep the signed value as text.
+                return epoch.AsNumber().toString();
+            }
+        }
+        if (value.HasMostOuterTag(24) && value.getType() == CBORType.ByteString) {
+            return mdocValueToJava(CBORObject.DecodeFromBytes(value.Untag().GetByteString()), depth + 1);
+        }
+        if (value.isTagged() && !value.HasMostOuterTag(2) && !value.HasMostOuterTag(3)) {
+            // Other tags (e.g. 1004 full-date) are not interpreted: use the tagged content, as the UI does.
+            // Bignums (tags 2 and 3) are kept tagged so they still read as integers.
+            return mdocValueToJava(value.UntagOne(), depth + 1);
+        }
+        return switch (value.getType()) {
+            case TextString -> value.AsString();
+            case Integer, Number -> {
+                var number = value.AsNumber();
+                // CanFitInInt64 is false for non-integral values, so nothing is truncated.
+                yield number.CanFitInInt64() ? (Object) number.ToInt64Checked() : number.toString();
+            }
+            case Boolean -> value.AsBoolean();
+            case ByteString -> Base64.getEncoder().encodeToString(value.GetByteString());
+            case FloatingPoint -> value.AsDouble();
+            case Array -> {
+                List<Object> values = new ArrayList<>();
+                for (int index = 0; index < value.size(); index++) {
+                    values.add(mdocValueToJava(value.get(index), depth + 1));
+                }
+                yield values;
+            }
+            case Map -> {
+                Map<String, Object> values = new LinkedHashMap<>();
+                for (CBORObject key : value.getKeys()) {
+                    String name = key.getType() == CBORType.TextString ? key.AsString() : key.toString();
+                    // As for namespaces: 1 and "1" would otherwise overwrite one signed value.
+                    if (values.containsKey(name)) {
+                        throw new IllegalArgumentException("Duplicate mdoc nested map key");
+                    }
+                    values.put(name, mdocValueToJava(value.get(key), depth + 1));
+                }
+                yield values;
+            }
+            default -> value.toString();
         };
     }
 
@@ -446,8 +663,165 @@ public final class Utils {
         }
     }
 
+    /**
+     * Floating-point epoch (tag 1) as an ISO-8601 UTC instant, keeping sub-millisecond digits.
+     * {@link BigDecimal#valueOf(double)} uses the shortest decimal text of the double, so
+     * 1714723200.123456 gives .123456 rather than the binary noise of the raw fraction
+     * (.123456001...). NaN and infinities are returned as text.
+     */
+    private static String mdocFloatingEpoch(double epochSeconds) {
+        if (!Double.isFinite(epochSeconds)) {
+            return Double.toString(epochSeconds);
+        }
+        BigDecimal exact = BigDecimal.valueOf(epochSeconds);
+        BigDecimal seconds = exact.setScale(0, RoundingMode.FLOOR);
+        long nanos = exact.subtract(seconds).movePointRight(9).setScale(0, RoundingMode.HALF_EVEN).longValueExact();
+        return Instant.ofEpochSecond(seconds.longValueExact(), nanos).toString();
+    }
+
+    /**
+     * Removes configured mdoc meta elements. Each entry is {@code <namespace>.<element>}
+     * and is removed from that namespace only. Namespaces and element identifiers can both
+     * contain dots, so every split point is tried against the namespaces actually present.
+     * When more than one split matches (namespaces {@code a} and {@code a.b} with elements
+     * {@code b.c} and {@code c}), every matching element is removed: this list hides data, so
+     * hiding both is the safe outcome, and which split was meant cannot be known from the entry.
+     */
+    private static void excludeMdocMetaClaims(List<String> mdocMetaClaims, Map<String, Object> claims) {
+        for (String metaClaim : Optional.ofNullable(mdocMetaClaims).orElseGet(List::of)) {
+            if (metaClaim == null) {
+                continue;
+            }
+            String trimmed = metaClaim.trim();
+            for (int separator = trimmed.indexOf('.'); separator >= 0; separator = trimmed.indexOf('.', separator + 1)) {
+                if (separator == 0 || separator == trimmed.length() - 1) {
+                    continue;
+                }
+                Object namespaceClaims = claims.get(trimmed.substring(0, separator));
+                if (namespaceClaims instanceof Map<?, ?> map) {
+                    map.remove(trimmed.substring(separator + 1));
+                }
+            }
+        }
+    }
+
+    /**
+     * An ISO mdoc is base64url CBOR. It is not a CWT and not JSON, so it has to be
+     * recognised before those checks or it is sent to the JSON-LD verifier.
+     * Size is not part of detection: an oversized mdoc is still an mdoc and is refused later.
+     */
+    public static boolean isMsoMdoc(String credential) {
+        return detectMdoc(credential).isMdoc();
+    }
+
+    /** Detection result; {@code root} is the parsed CBOR when it could be read within the size limit. */
+    private record MdocDetection(boolean isMdoc, CBORObject root) {
+        private static final MdocDetection NOT_MDOC = new MdocDetection(false, null);
+    }
+
+    private static MdocDetection detectMdoc(String credential) {
+        if (credential == null) {
+            return MdocDetection.NOT_MDOC;
+        }
+        String trimmed = credential.trim();
+        if (trimmed.isEmpty() || trimmed.indexOf('.') >= 0 || trimmed.charAt(0) == '{' || trimmed.charAt(0) == '[') {
+            return MdocDetection.NOT_MDOC;
+        }
+        byte[] encoded;
+        try {
+            encoded = Base64.getUrlDecoder().decode(trimmed);
+        } catch (IllegalArgumentException invalidBase64) {
+            return MdocDetection.NOT_MDOC;
+        }
+        if (encoded.length > maxMdocSizeBytes) {
+            // Oversized input is not parsed into a CBOR tree. A linear scan of the whole
+            // payload still recognises an mdoc, so getCredentialFormat reports the size error.
+            return new MdocDetection(hasMdocShapeKeys(encoded), null);
+        }
+        try {
+            CBORObject root = CBORObject.Read(new ByteArrayInputStream(encoded));
+            boolean isMdoc = root.getType() == CBORType.Map
+                    && (root.ContainsKey(Constants.KEY_DOCUMENTS)
+                    || root.ContainsKey(Constants.KEY_ISSUER_SIGNED)
+                    || (root.ContainsKey(Constants.KEY_ISSUER_AUTH) && root.ContainsKey(Constants.KEY_NAMESPACES)));
+            return isMdoc ? new MdocDetection(true, root) : MdocDetection.NOT_MDOC;
+        } catch (Exception corrupt) {
+            return new MdocDetection(hasMdocShapeKeys(encoded), null);
+        }
+    }
+
+    private static boolean hasMdocShapeKeys(byte[] encoded) {
+        return containsMdocShapeKey(encoded, Constants.KEY_DOCUMENTS)
+                || containsMdocShapeKey(encoded, Constants.KEY_ISSUER_SIGNED)
+                || (containsMdocShapeKey(encoded, Constants.KEY_ISSUER_AUTH)
+                && containsMdocShapeKey(encoded, Constants.KEY_NAMESPACES));
+    }
+
+    /**
+     * Whether {@code key} appears as a definite-length CBOR text string. A decoder accepts the
+     * length in any of the five header forms, not only the shortest one, so each is matched:
+     * {@code 0x60|n}, {@code 0x78 n}, {@code 0x79 00 n}, {@code 0x7a 00 00 00 n} and
+     * {@code 0x7b} with seven zero bytes then {@code n}. Indefinite-length (chunked) strings are
+     * not matched; the chunks can split the key anywhere.
+     */
+    private static boolean containsMdocShapeKey(byte[] encoded, String key) {
+        byte[] keyBytes = key.getBytes(StandardCharsets.US_ASCII);
+        for (byte[] header : cborTextHeaders(keyBytes.length)) {
+            if (indexOf(encoded, header, keyBytes) >= 0) {
+                return true;
+            }
+        }
+        return false;
+    }
+
+    /** Every definite-length text-string header for a length below 24. */
+    private static List<byte[]> cborTextHeaders(int length) {
+        List<byte[]> headers = new ArrayList<>();
+        headers.add(new byte[]{(byte) (0x60 | length)});
+        int[][] longForms = {{0x78, 1}, {0x79, 2}, {0x7a, 4}, {0x7b, 8}};
+        for (int[] form : longForms) {
+            byte[] header = new byte[1 + form[1]];
+            header[0] = (byte) form[0];
+            header[form[1]] = (byte) length;
+            headers.add(header);
+        }
+        return headers;
+    }
+
+    /** First index where {@code header} immediately followed by {@code body} starts, or -1. */
+    private static int indexOf(byte[] data, byte[] header, byte[] body) {
+        int patternLength = header.length + body.length;
+        for (int start = 0; start <= data.length - patternLength; start++) {
+            int offset = 0;
+            while (offset < patternLength
+                    && data[start + offset] == (offset < header.length ? header[offset] : body[offset - header.length])) {
+                offset++;
+            }
+            if (offset == patternLength) {
+                return start;
+            }
+        }
+        return -1;
+    }
+
     public static CredentialFormat getCredentialFormat(String verifiableCredential) {
         try {
+            MdocDetection mdoc = detectMdoc(verifiableCredential);
+            if (mdoc.isMdoc()) {
+                ensureMdocSize(verifiableCredential.trim());
+                if (mdoc.root() == null) {
+                    throw new InvalidCredentialException("Failed to decode mdoc credential", null);
+                }
+                try {
+                    ensureMdocHasDocument(mdoc.root());
+                } catch (InvalidCredentialException e) {
+                    throw e;
+                } catch (Exception e) {
+                    throw new InvalidCredentialException("Failed to decode mdoc credential", e);
+                }
+                return CredentialFormat.MSO_MDOC;
+            }
+
             if (Utils.isCwt(verifiableCredential)) {
                 return CredentialFormat.CWT_VC;
             }
@@ -460,6 +834,8 @@ public final class Utils {
 
             return CredentialFormat.LDP_VC;
 
+        } catch (InvalidCredentialException e) {
+            throw e;
         } catch (Exception e) {
             throw new InvalidCredentialException("Failed to determine credential type.", e);
         }
@@ -494,7 +870,7 @@ public final class Utils {
             excludeMetaClaims(metaClaims, finalClaimsMap);
             return finalClaimsMap;
         } catch (Exception e) {
-            throw new InvalidCredentialException("Failed to determine credential type.", e);
+            throw new InvalidCredentialException("Failed to extract CWT claims", e);
         }
     }
 

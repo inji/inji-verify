@@ -79,6 +79,12 @@ public final class Constants {
     public static final String KEY_VERIFIABLE_CREDENTIAL = "verifiableCredential";
     public static final String KEY_CREDENTIAL = "credential";
     public static final String KEY_CREDENTIAL_SUBJECT = "credentialSubject";
+    public static final String KEY_ISSUER_AUTH = "issuerAuth";
+    public static final String KEY_NAMESPACES = "nameSpaces";
+    public static final String KEY_ISSUER_SIGNED = "issuerSigned";
+    public static final String KEY_DOCUMENTS = "documents";
+    public static final String KEY_ELEMENT_IDENTIFIER = "elementIdentifier";
+    public static final String KEY_ELEMENT_VALUE = "elementValue";
 
     // STATUS PURPOSE
     public static final String STATUS_PURPOSE_REVOKED = "revocation";

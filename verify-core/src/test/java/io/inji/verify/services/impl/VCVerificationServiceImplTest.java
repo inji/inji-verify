@@ -342,12 +342,43 @@ public class VCVerificationServiceImplTest {
                 utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(true, null));
                 utilsMock.when(() -> Utils.populateExpiryCheck(any())).thenReturn(new ExpiryCheckDto(true));
                 utilsMock.when(() -> Utils.populateAllChecksSuccessful(any(), any(), any(), any())).thenCallRealMethod();
-                utilsMock.when(() -> Utils.extractClaims(anyString(), any(), any(),any())).thenReturn(expectedClaims);
+                utilsMock.when(() -> Utils.extractClaims(anyString(), any(), any(), any(), any())).thenReturn(expectedClaims);
 
                 VCVerificationResultDto result = service.verifyV2(request, false);
 
                 assertFalse(result.getClaims().isEmpty());
                 assertEquals(9876543210L, result.getClaims().get("VID"));
+            }
+        }
+
+        @Test
+        void verifyV2_mdocClaims_shouldExtractFromCredentialAfterSuccessfulVerification() {
+            service.mdocClaimsWithMetaData = List.of();
+            String mdoc = "encoded-mdoc";
+            VCVerificationRequestDto request = new VCVerificationRequestDto(mdoc);
+            request.setSkipStatusChecks(true);
+            request.setIncludeClaims(true);
+            Map<String, Object> expectedClaims = Map.of(
+                    "org.iso.18013.5.1",
+                    Map.of("family_name", "Cooper"));
+
+            VerificationResult verificationResult = mock(VerificationResult.class);
+            when(verificationResult.getVerificationStatus()).thenReturn(true);
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean()))
+                    .thenReturn(verificationResult);
+
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+                utilsMock.when(() -> Utils.getCredentialFormat(mdoc)).thenReturn(CredentialFormat.MSO_MDOC);
+                utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(true, null));
+                utilsMock.when(() -> Utils.populateExpiryCheck(any())).thenReturn(new ExpiryCheckDto(true));
+                utilsMock.when(() -> Utils.populateAllChecksSuccessful(any(), any(), any(), any())).thenCallRealMethod();
+                utilsMock.when(() -> Utils.extractClaims(mdoc, CredentialFormat.MSO_MDOC, service.claimsWithMetaData, mockPixelPass, List.of()))
+                        .thenReturn(expectedClaims);
+
+                VCVerificationResultDto result = service.verifyV2(request, false);
+
+                assertEquals(expectedClaims, result.getClaims());
+                utilsMock.verify(() -> Utils.extractClaims(mdoc, CredentialFormat.MSO_MDOC, service.claimsWithMetaData, mockPixelPass, List.of()));
             }
         }
 
@@ -367,7 +398,7 @@ public class VCVerificationServiceImplTest {
                 utilsMock.when(() -> Utils.getCredentialFormat(TEST_SDJWT_VC_STRING)).thenReturn(CredentialFormat.VC_SD_JWT);
                 utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(true, null));
                 utilsMock.when(() -> Utils.populateExpiryCheck(any())).thenReturn(new ExpiryCheckDto(true));
-                utilsMock.when(() -> Utils.extractClaims(anyString(), any(), any(),any())).thenReturn(expectedClaims);
+                utilsMock.when(() -> Utils.extractClaims(anyString(), any(), any(), any(), any())).thenReturn(expectedClaims);
 
                 VCVerificationResultDto result = service.verifyV2(request, false);
 
@@ -424,7 +455,7 @@ public class VCVerificationServiceImplTest {
                         .thenCallRealMethod();
 
                 utilsMock.when(() ->
-                                Utils.extractClaims(anyString(), any(), any(), any()))
+                                Utils.extractClaims(anyString(), any(), any(), any(), any()))
                         .thenReturn(expectedClaims);
 
                 VCVerificationResultDto result = service.verifyV2(request, false);

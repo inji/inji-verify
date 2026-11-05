@@ -124,7 +124,8 @@
     "INVALID": "Lamentablemente, la credencial proporcionada no es válida!",
     "EXPIRED": "¡La credencial proporcionada es válida pero caducada!",
     "REVOKED": "Lamentablemente, la credencial proporcionada ha sido revocada!",
-    "TIMEOUT": "La sesión de escaneo ha expirado debido a inactividad. Inicie un nuevo escaneo."
+    "TIMEOUT": "La sesión de escaneo ha expirado debido a inactividad. Inicie un nuevo escaneo.",
+    "mobileDocument": "Documento móvil"
   },
   "AlertMessages": {
     "qrVerificationLimitReached": "Este código QR ha alcanzado su límite de verificaciones. Solicita uno nuevo.",

@@ -1588,7 +1588,7 @@ paths:
         3. **Credential Status Checks** (Optional) — revocation/suspension. Skipped when `skipStatusChecks=true`.
         4. **Claims Extraction** (Optional) — when `includeClaims=true` and stage 1 passes.
 
-        **Supported formats:** JSON-LD, SD-JWT (`dc+sd-jwt`, `vc+sd-jwt`), CWT.
+        **Supported formats:** JSON-LD, SD-JWT (`dc+sd-jwt`, `vc+sd-jwt`), CWT, ISO mdoc / mDL (`mso_mdoc`, base64url CBOR).
 
         Runtime exceptions are propagated as HTTP 500.
       operationId: verifyVCV2
@@ -1609,7 +1609,7 @@ paths:
                 $ref: '#/components/schemas/VcVerificationResponse'
         '400':
           description: |-
-            Invalid request payload — `verifiableCredential` field is null or missing.
+            Invalid request payload — `verifiableCredential` field is null or missing — or a credential that cannot be decoded (for example a corrupt mdoc, an mdoc with an empty `documents` array, or an mdoc larger than `inji.verify.mso-mdoc.max-size`). The body is Spring Boot's default error body.
         '500':
           description: Internal server error during verification or credential status check.
           content:
@@ -2312,7 +2312,7 @@ components:
       properties:
         verifiableCredential:
           type: string
-          description: 'Verifiable Credential to verify (JSON-LD, SD-JWT (`dc+sd-jwt` or `vc+sd-jwt`), or CWT as HEX value of CBOR).'
+          description: 'Verifiable Credential to verify (JSON-LD, SD-JWT (`dc+sd-jwt` or `vc+sd-jwt`), CWT as HEX value of CBOR, or ISO mdoc / mDL as base64url CBOR).'
         skipStatusChecks:
           type: boolean
           default: false

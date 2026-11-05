@@ -23,6 +23,7 @@ Inji Verify supports VC verification by scanning a QR code with the device camer
 | W3C JSON-LD | `ldp_vc` | JSON object embedded in QR |
 | IETF SD-JWT VC | `dc+sd-jwt` / `vc+sd-jwt` | Compact string embedded in QR |
 | Claim 169 / CWT | auto-detected | Base45 + zlib/Brotli compressed in QR |
+| ISO mdoc / mDL | `mso_mdoc` | Base64url CBOR string embedded in QR |
 | Data-share URL | `INJI_OVP://` prefix | Redirect URL to Online VC Provider |
 
 The component detects the format automatically after decoding.
@@ -33,7 +34,7 @@ The component detects the format automatically after decoding.
 
 ![Scan / Upload verification flow](images/vc-verification-flow.svg)
 
-### Embedded VC (JSON-LD, SD-JWT, CWT)
+### Embedded VC (JSON-LD, SD-JWT, CWT, mDL)
 
 1. User scans or uploads a file containing an embedded VC.
 2. SDK decodes the QR using [PixelPass](https://github.com/inji/pixelpass) / `zxing-wasm`.
@@ -106,8 +107,15 @@ Passed via the `vcVerificationV2Request` prop on `QRCodeVerification`:
 | `ldp_vc` | JSON-LD proof | `expirationDate` / `validUntil` | BitstringStatusList | VP proof |
 | `dc+sd-jwt` / `vc+sd-jwt` | JWT signature + disclosures | `exp` claim | Not applicable | KB-JWT (aud, nonce, iat, sd_hash, signature) |
 | CWT (Claim 169) | COSE signature | CWT `exp` claim | Not applicable | Not applicable |
+| `mso_mdoc` | COSE `issuerAuth` | MSO `validityInfo` | Not supported | Not applicable |
 
-See the format-specific docs for full details: [VC_Format_W3C_LDP_VC.md](./VC_Format_W3C_LDP_VC.md), [VC_Format_IETF_SD_JWT.md](./VC_Format_IETF_SD_JWT.md), [VC_Format_Claim_169.md](./VC_Format_Claim_169.md).
+Scan and upload accept an ISO 18013-5 mdoc, including an mDL (`docType` `org.iso.18013.5.1.mDL`). This path does not cover OpenID4VP presentation.
+
+The backend detects the credential before the CWT and JSON-LD checks: a base64url string whose first CBOR map contains `documents`, `issuerSigned`, or both `issuerAuth` and `nameSpaces`. Claims extraction prefers that same order. It verifies that credential as `mso_mdoc`. Revocation is not checked, so `statusCheck` is empty.
+
+For mdoc on scan and upload, the result screen decodes issuer-signed data elements locally into the same namespace-grouped shape the backend returns (for example, `org.iso.18013.5.1` contains `family_name` and `given_name`). `docType` is not read from the credential; the result screen shows **Mobile Document** as the displayed `docType`.
+
+Format-specific details: [VC_Format_W3C_LDP_VC.md](./VC_Format_W3C_LDP_VC.md), [VC_Format_IETF_SD_JWT.md](./VC_Format_IETF_SD_JWT.md), [VC_Format_Claim_169.md](./VC_Format_Claim_169.md), and [VC_Format_ISO_MSO_MDOC.md](./VC_Format_ISO_MSO_MDOC.md).
 
 ---
 

@@ -4,13 +4,13 @@ import { convertToTitleCase, saveData } from "../../../../utils/misc";
 import ActionButton from "../commons/ActionButton";
 import { useTranslation } from "react-i18next";
 import { getDetailsOrder } from "../../../../utils/commonUtils";
-import { AnyVc, VcStatus } from "../../../../types/data-types";
+import { AnyVc, MdocVc, VcStatus } from "../../../../types/data-types";
 import {
   backgroundColorMapping,
   borderColorMapping,
   textColorMapping,
 } from "../../../../utils/config";
-import VcDetailsGrid from "./VcDetailsGrid";
+import VcDetailsGrid, { MdocDetailsSections } from "./VcDetailsGrid";
 import i18next from "i18next";
 import VcSvgTemplate from "./VcSvgTemplate";
 import { getTemplateUrl } from "../../../../utils/svg-template-utils";
@@ -19,6 +19,8 @@ interface ModalProps {
   isOpen: boolean;
   onClose: () => void;
   vc: AnyVc;
+  /** True when vc holds mdoc claims grouped by namespace. */
+  isMdoc?: boolean;
   status: VcStatus;
   vcType: string;
   logo?: { url: any; alt: string };
@@ -28,13 +30,14 @@ const DisplayVcDetailsModal: React.FC<ModalProps> = ({
   isOpen,
   onClose,
   vc,
+  isMdoc = false,
   status,
   vcType,
   logo,
 }) => {
   const { t } = useTranslation("Verify");
   const currentLang = i18next.language;
-  const orderedDetails = vc && getDetailsOrder(vc, currentLang);
+  const orderedDetails = isMdoc ? [] : vc && getDetailsOrder(vc, currentLang);
   const templateUrl = getTemplateUrl(vc);
 
   if (!isOpen) return null;
@@ -77,6 +80,8 @@ const DisplayVcDetailsModal: React.FC<ModalProps> = ({
         <div className="space-y-4">
           {templateUrl ? (
             <VcSvgTemplate vc={vc} templateUrl={templateUrl} />
+          ) : isMdoc ? (
+            <MdocDetailsSections claims={vc as MdocVc} vc={vc} />
           ) : (
             <VcDetailsGrid orderedDetails={orderedDetails} vc={vc} />
           )}

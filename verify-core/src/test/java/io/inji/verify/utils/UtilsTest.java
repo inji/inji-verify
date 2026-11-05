@@ -3,6 +3,12 @@ package io.inji.verify.utils;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.upokecenter.cbor.CBORObject;
+import com.nimbusds.jose.JOSEObjectType;
+import com.nimbusds.jose.JWSAlgorithm;
+import com.nimbusds.jose.JWSHeader;
+import com.nimbusds.jose.crypto.ECDSASigner;
+import com.nimbusds.jwt.JWTClaimsSet;
+import com.nimbusds.jwt.SignedJWT;
 import io.inji.verify.dto.core.CredentialStatusErrorDto;
 import io.inji.verify.dto.core.ErrorDto;
 import io.inji.verify.dto.result.HolderProofCheckDto;
@@ -26,7 +32,13 @@ import java.lang.reflect.Method;
 import org.junit.jupiter.api.function.Executable;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.junit.jupiter.MockitoExtension;
+import java.math.BigDecimal;
+import java.security.KeyPair;
+import java.security.KeyPairGenerator;
+import java.security.interfaces.ECPrivateKey;
+import java.security.spec.ECGenParameterSpec;
 import java.util.*;
+import java.util.HexFormat;
 import static org.junit.jupiter.api.Assertions.*;
 import static org.mockito.Mockito.*;
 
@@ -40,6 +52,7 @@ public class UtilsTest {
         Executable exec = () -> constructor.newInstance();
         assertDoesNotThrow(exec);
     }
+
     @Test
     void isCwt_shouldReturnFalse_whenCredentialContainsDot() {
         assertFalse(Utils.isCwt("abc.def"));
@@ -120,14 +133,495 @@ public class UtilsTest {
 
     }
 
-    @Test
-    void shouldReturnCwtFormatByMocking() {
-        try (var mockedUtils = mockStatic(Utils.class)) {
-            mockedUtils.when(() -> Utils.isCwt("abcabcabcbabc")).thenReturn(true);
-            mockedUtils.when(() -> Utils.getCredentialFormat("abcabcabcbabc")).thenCallRealMethod();
+    // mdoc tests below use the fixed samples in src/test/resources/mdl-samples (see its README).
+    // Tests further down that build CBOR by hand cover decoder edge cases, not credentials.
 
-            assertEquals(CredentialFormat.CWT_VC, Utils.getCredentialFormat("abcabcabcbabc"));
+    private static final String MDL_NAMESPACE = "org.iso.18013.5.1";
+
+    @Test
+    void shouldDetectFixedMdlSampleAsMsoMdocBeforeCwt() throws Exception {
+        String mdl = mdlSample("mdl-valid.txt");
+
+        assertTrue(Utils.isMsoMdoc(mdl));
+        assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(mdl));
+        assertFalse(Utils.isMsoMdoc("{\"type\":[\"VerifiableCredential\"]}"));
+        assertFalse(Utils.isMsoMdoc("eyJ0eXAiOiJkYytzZC1qd3QifQ.payload.signature"));
+
+        byte[] decoded = Base64.getUrlDecoder().decode(mdl);
+        String withTrailingBytes = Base64.getUrlEncoder().withoutPadding()
+                .encodeToString(Arrays.copyOf(decoded, decoded.length + 8));
+        assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(withTrailingBytes));
+    }
+
+    @Test
+    void shouldIdentifyCorruptMdocAndReportMdocDecodeError() throws Exception {
+        String corruptMdoc = mdlSample("mdl-corrupt-cbor.txt");
+
+        assertTrue(Utils.isMsoMdoc(corruptMdoc));
+        InvalidCredentialException error = assertThrows(
+                InvalidCredentialException.class, () -> Utils.getCredentialFormat(corruptMdoc));
+        assertEquals("Failed to decode mdoc credential", error.getMessage());
+    }
+
+    @Test
+    void shouldExtractMandatoryMdlElementsFromFixedSample() throws Exception {
+        Map<String, Object> claims = Utils.extractMdocClaims(mdlSample("mdl-valid.txt"), List.of());
+
+        assertEquals(Set.of(MDL_NAMESPACE), claims.keySet());
+        Map<?, ?> mdl = (Map<?, ?>) claims.get(MDL_NAMESPACE);
+        assertEquals(Set.of("family_name", "given_name", "birth_date", "issue_date", "expiry_date",
+                "issuing_country", "issuing_authority", "document_number", "portrait",
+                "driving_privileges", "un_distinguishing_sign"), mdl.keySet());
+        assertEquals("Doe", mdl.get("family_name"));
+        assertEquals("Jane", mdl.get("given_name"));
+        // full-date (tag 1004) is kept as its text.
+        assertEquals("1990-01-15", mdl.get("birth_date"));
+        assertEquals("2026-11-05", mdl.get("issue_date"));
+        assertEquals("2031-11-05", mdl.get("expiry_date"));
+        assertEquals("IN", mdl.get("issuing_country"));
+        assertEquals("Inji Verify Test Authority", mdl.get("issuing_authority"));
+        assertEquals("TEST-DL-0000001", mdl.get("document_number"));
+        assertEquals("IND", mdl.get("un_distinguishing_sign"));
+        assertEquals(List.of(Map.of("vehicle_category_code", "B", "issue_date", "2026-11-05", "expiry_date", "2031-11-05")),
+                mdl.get("driving_privileges"));
+        // portrait is a JPEG, returned as standard Base64.
+        byte[] portrait = Base64.getDecoder().decode((String) mdl.get("portrait"));
+        assertArrayEquals(new byte[]{(byte) 0xff, (byte) 0xd8, (byte) 0xff}, Arrays.copyOf(portrait, 3));
+        assertFalse(claims.containsKey("docType"));
+    }
+
+    @Test
+    void shouldExtractSameClaimsFromAllThreeMdocShapes() throws Exception {
+        Map<String, Object> shapeA = Utils.extractMdocClaims(mdlSample("mdl-valid.txt"), List.of());
+
+        assertEquals(shapeA, Utils.extractMdocClaims(mdlSample("mdl-shape-b.txt"), List.of()));
+        assertEquals(shapeA, Utils.extractMdocClaims(mdlSample("mdl-shape-c.txt"), List.of()));
+    }
+
+    @Test
+    void shouldDetectAllThreeMdocShapesAlongsideOtherFormats() throws Exception {
+        for (String sample : List.of("mdl-valid.txt", "mdl-shape-b.txt", "mdl-shape-c.txt")) {
+            String mdl = mdlSample(sample);
+            assertTrue(Utils.isMsoMdoc(mdl), sample);
+            assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(mdl), sample);
         }
+        assertEquals(CredentialFormat.DC_SD_JWT,
+                Utils.getCredentialFormat("eyJ0eXAiOiJkYytzZC1qd3QifQ.payload.signature~disclosure"));
+        assertEquals(CredentialFormat.LDP_VC, Utils.getCredentialFormat("{\"type\":[\"VerifiableCredential\"]}"));
+    }
+
+    @Test
+    void shouldPreferDocumentClaimsWhenMdocShapesAreMixed() throws Exception {
+        // Shape C (family_name "Doe") with the tampered shape A fields (family_name "Smith") added alongside.
+        CBORObject root = mdlSampleCbor("mdl-shape-c.txt");
+        CBORObject tampered = mdlSampleCbor("mdl-tampered-element.txt");
+        root.Add("issuerAuth", tampered.get("issuerAuth"));
+        root.Add("nameSpaces", tampered.get("nameSpaces"));
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(root), List.of());
+
+        assertEquals("Doe", ((Map<?, ?>) claims.get(MDL_NAMESPACE)).get("family_name"));
+    }
+
+    @Test
+    void shouldRejectMalformedMdocClaims() {
+        assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims("%%%", List.of()));
+    }
+
+    @Test
+    void shouldRejectOversizedNonMdocInput() {
+        String oversized = "a".repeat(1_398_104);
+
+        assertFalse(Utils.isMsoMdoc(oversized));
+        InvalidCredentialException error = assertThrows(InvalidCredentialException.class, () -> Utils.extractMdocClaims(oversized, List.of()));
+        assertEquals("Credential exceeds the maximum supported size", error.getMessage());
+    }
+
+    @Test
+    void shouldDetectOversizedMdocThenRefuseIt() throws Exception {
+        // The valid sample padded past the default 1 MiB limit, as the Postman pre-request script does.
+        CBORObject padded = mdlSampleCbor("mdl-valid.txt").Add("padBytes", new byte[1_048_576]);
+        String oversized = encodeMdoc(padded);
+        assertTrue(Base64.getUrlDecoder().decode(oversized).length > 1_048_576);
+
+        assertTrue(Utils.isMsoMdoc(oversized));
+        InvalidCredentialException formatError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.getCredentialFormat(oversized));
+        assertEquals("Credential exceeds the maximum supported size", formatError.getMessage());
+        InvalidCredentialException claimsError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(oversized, List.of()));
+        assertEquals("Credential exceeds the maximum supported size", claimsError.getMessage());
+    }
+
+    @Test
+    void shouldRejectEmptyMdocDocuments() throws Exception {
+        String emptyDocuments = mdlSample("mdl-empty-documents.txt");
+
+        assertTrue(Utils.isMsoMdoc(emptyDocuments));
+        InvalidCredentialException formatError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.getCredentialFormat(emptyDocuments));
+        assertEquals("mdoc contains no documents", formatError.getMessage());
+        InvalidCredentialException claimsError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(emptyDocuments, List.of()));
+        assertEquals("mdoc contains no documents", claimsError.getMessage());
+    }
+
+    @Test
+    void shouldRemoveConfiguredMdocMetaElementsFromThatNamespaceOnly() throws Exception {
+        Map<String, Object> claims = Utils.extractMdocClaims(mdlSample("mdl-valid.txt"), Arrays.asList(
+                "org.iso.18013.5.1.portrait",
+                // Same element in a namespace the sample does not have: nothing else is removed.
+                "org.iso.18013.5.1.aamva.family_name",
+                "", null));
+
+        Map<?, ?> mdl = (Map<?, ?>) claims.get(MDL_NAMESPACE);
+        assertFalse(mdl.containsKey("portrait"));
+        assertEquals("Doe", mdl.get("family_name"));
+        assertEquals(10, mdl.size());
+    }
+
+    @Test
+    void shouldGroupMdocClaimsByNamespaceWhenIdentifiersCollide() {
+        CBORObject first = CBORObject.NewMap()
+                .Add("elementIdentifier", "family_name")
+                .Add("elementValue", "First");
+        CBORObject second = CBORObject.NewMap()
+                .Add("elementIdentifier", "family_name")
+                .Add("elementValue", "Second");
+        CBORObject docTypeItem = CBORObject.NewMap()
+                .Add("elementIdentifier", "docType")
+                .Add("elementValue", "element-doc-type");
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray().Add(CBORObject.FromObject(first.EncodeToBytes())))
+                .Add("org.iso.18013.5.1.custom", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(second.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(docTypeItem.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("docType", "org.iso.18013.5.1.mDL")
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document), List.of());
+
+        Map<?, ?> firstNamespace = (Map<?, ?>) claims.get("org.iso.18013.5.1");
+        Map<?, ?> secondNamespace = (Map<?, ?>) claims.get("org.iso.18013.5.1.custom");
+        assertEquals("First", firstNamespace.get("family_name"));
+        assertEquals("Second", secondNamespace.get("family_name"));
+        assertEquals("element-doc-type", secondNamespace.get("docType"));
+        assertFalse(firstNamespace.containsKey("org.iso.18013.5.1.custom.family_name"));
+    }
+
+    @Test
+    void shouldPreserveLargeMdocIntegersAsStrings() {
+        CBORObject item = CBORObject.NewMap()
+                .Add("elementIdentifier", "large_number")
+                .Add("elementValue", CBORObject.FromObject(new java.math.BigInteger("18446744073709551615")));
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray().Add(CBORObject.FromObject(item.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("docType", "org.iso.18013.5.1.mDL")
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document), List.of());
+
+        assertEquals("18446744073709551615",
+                ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("large_number"));
+    }
+
+    @Test
+    void shouldConvertMdocDecimalFractionToNumericValue() {
+        CBORObject decimalFraction = CBORObject.NewArray()
+                .Add(-1)
+                .Add(15)
+                .WithTag(4);
+        CBORObject item = CBORObject.NewMap()
+                .Add("elementIdentifier", "decimal_claim")
+                .Add("elementValue", decimalFraction);
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray().Add(CBORObject.FromObject(item.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("docType", "org.iso.18013.5.1.mDL")
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document), List.of());
+
+        assertEquals(new BigDecimal("1.5"),
+                ((Map<?, ?>) claims.get("org.iso.18013.5.1")).get("decimal_claim"));
+    }
+
+    @Test
+    void shouldExcludeMdocMetaClaimWithDottedElementIdentifier() {
+        CBORObject dotted = CBORObject.NewMap()
+                .Add("elementIdentifier", "age.over18")
+                .Add("elementValue", true);
+        CBORObject plain = CBORObject.NewMap()
+                .Add("elementIdentifier", "family_name")
+                .Add("elementValue", "Doe");
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(dotted.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(plain.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("docType", "org.iso.18013.5.1.mDL")
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document),
+                List.of("org.iso.18013.5.1.age.over18"));
+
+        Map<?, ?> namespaceClaims = (Map<?, ?>) claims.get("org.iso.18013.5.1");
+        assertFalse(namespaceClaims.containsKey("age.over18"));
+        assertEquals("Doe", namespaceClaims.get("family_name"));
+    }
+
+    @Test
+    void shouldExcludeEveryMdocMetaClaimSplitThatMatches() {
+        // "org.iso.18013.5.1.age" names both org.iso / 18013.5.1.age and org.iso.18013.5.1 / age.
+        CBORObject shortNamespaceItem = CBORObject.NewMap().Add("elementIdentifier", "18013.5.1.age").Add("elementValue", 1);
+        CBORObject shortNamespaceOther = CBORObject.NewMap().Add("elementIdentifier", "kept").Add("elementValue", 2);
+        CBORObject longNamespaceItem = CBORObject.NewMap().Add("elementIdentifier", "age").Add("elementValue", 3);
+        CBORObject longNamespaceOther = CBORObject.NewMap().Add("elementIdentifier", "family_name").Add("elementValue", "Doe");
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(shortNamespaceItem.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(shortNamespaceOther.EncodeToBytes())))
+                .Add("org.iso.18013.5.1", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(longNamespaceItem.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(longNamespaceOther.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        Map<String, Object> claims = Utils.extractMdocClaims(encodeMdoc(document), List.of("org.iso.18013.5.1.age"));
+
+        assertEquals(Map.of("kept", 2L), claims.get("org.iso"));
+        assertEquals(Map.of("family_name", "Doe"), claims.get("org.iso.18013.5.1"));
+    }
+
+    @Test
+    void shouldRejectCollidingKeysInNestedMdocMap() {
+        // Integer key 1 and text key "1" both render as "1" inside an element value.
+        CBORObject value = CBORObject.NewMap()
+                .Add(CBORObject.FromObject(1), "first")
+                .Add(CBORObject.FromObject("1"), "second");
+
+        InvalidCredentialException error = assertThrows(InvalidCredentialException.class,
+                () -> mdocElementValue(mdocWithElementValue(value)));
+        assertEquals("Failed to extract mdoc claims", error.getMessage());
+    }
+
+    @Test
+    void shouldRejectDuplicateMdocElementIdentifierInNamespace() {
+        CBORObject first = CBORObject.NewMap().Add("elementIdentifier", "family_name").Add("elementValue", "Doe");
+        CBORObject second = CBORObject.NewMap().Add("elementIdentifier", "family_name").Add("elementValue", "Roe");
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray()
+                        .Add(CBORObject.FromObject(first.EncodeToBytes()))
+                        .Add(CBORObject.FromObject(second.EncodeToBytes())));
+        CBORObject document = CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces);
+
+        InvalidCredentialException error = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(encodeMdoc(document), List.of()));
+        assertEquals("Duplicate mdoc element identifier", error.getMessage());
+    }
+
+    private static String mdocWithElementValue(CBORObject elementValue) {
+        CBORObject item = CBORObject.NewMap()
+                .Add("elementIdentifier", "value")
+                .Add("elementValue", elementValue);
+        CBORObject namespaces = CBORObject.NewMap()
+                .Add("org.iso.18013.5.1", CBORObject.NewArray().Add(CBORObject.FromObject(item.EncodeToBytes())));
+        return encodeMdoc(CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", namespaces));
+    }
+
+    private static Object mdocElementValue(String mdoc) {
+        return ((Map<?, ?>) Utils.extractMdocClaims(mdoc, List.of()).get("org.iso.18013.5.1")).get("value");
+    }
+
+    @Test
+    void shouldKeepTdateAsSentAndRenderEpochDatesAsUtcInstants() {
+        assertEquals("2024-05-03T08:00:00Z",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1714723200L).WithTag(1))));
+        assertEquals("2024-05-03T08:00:00.500Z",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1714723200.5).WithTag(1))));
+        // A tdate is not converted to UTC: that would give 2024-05-04T04:30:00Z, a different date.
+        assertEquals("2024-05-03T23:30:00-05:00",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject("2024-05-03T23:30:00-05:00").WithTag(0))));
+        assertEquals("not-a-date",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject("not-a-date").WithTag(0))));
+        assertEquals("1985-04-29",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject("1985-04-29").WithTag(1004))));
+    }
+
+    @Test
+    void shouldReturnOutOfRangeEpochDatesAsNumberText() {
+        // Valid CBOR that Instant cannot represent: kept as text instead of failing claim extraction.
+        assertEquals("1E+300", mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1e300).WithTag(1))));
+        assertEquals("18446744073709551615", mdocElementValue(mdocWithElementValue(
+                CBORObject.FromObject(new java.math.BigInteger("18446744073709551615")).WithTag(1))));
+    }
+
+    @Test
+    void shouldReturnNullForCborNullAndUndefined() {
+        for (CBORObject value : List.of(CBORObject.Null, CBORObject.Undefined)) {
+            Map<?, ?> claims = (Map<?, ?>) Utils.extractMdocClaims(mdocWithElementValue(value), List.of()).get(MDL_NAMESPACE);
+            assertTrue(claims.containsKey("value"), value.toString());
+            assertNull(claims.get("value"), value.toString());
+        }
+    }
+
+    @Test
+    void shouldKeepSubMillisecondDigitsOfFloatingPointMdocEpochs() {
+        // Previously rounded to whole milliseconds (.123Z); the raw double fraction would give .123456001Z.
+        assertEquals("2024-05-03T08:00:00.123456Z",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1714723200.123456).WithTag(1))));
+        assertEquals("1969-12-31T23:59:58.500Z",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(-1.5).WithTag(1))));
+        assertEquals("NaN",
+                mdocElementValue(mdocWithElementValue(CBORObject.FromObject(Double.NaN).WithTag(1))));
+    }
+
+    @Test
+    void shouldKeepNonIntegralMdocNumbersExact() {
+        // Plain floats are FloatingPoint, never truncated to an integer.
+        assertEquals(1.5, mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1.5))));
+        assertEquals(-0.25, mdocElementValue(mdocWithElementValue(CBORObject.FromObject(-0.25))));
+    }
+
+    @Test
+    void shouldRejectMalformedMdocNamespacesAndItems() {
+        String mapNamespace = encodeMdoc(CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", CBORObject.NewMap().Add("org.example", CBORObject.NewMap())));
+        InvalidCredentialException namespaceError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(mapNamespace, List.of()));
+        assertEquals("Invalid mdoc namespace: expected an item array", namespaceError.getMessage());
+
+        CBORObject noValue = CBORObject.NewMap().Add("elementIdentifier", "family_name");
+        String missingValue = encodeMdoc(CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", CBORObject.NewMap().Add("org.iso.18013.5.1",
+                        CBORObject.NewArray().Add(CBORObject.FromObject(noValue.EncodeToBytes())))));
+        InvalidCredentialException itemError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(missingValue, List.of()));
+        assertEquals("Invalid mdoc issuer-signed item", itemError.getMessage());
+
+        // Integer key 1 and text key "1" both render as the namespace name "1".
+        String collidingNamespaces = encodeMdoc(CBORObject.NewMap()
+                .Add("issuerAuth", CBORObject.NewArray())
+                .Add("nameSpaces", CBORObject.NewMap()
+                        .Add(CBORObject.FromObject(1), CBORObject.NewArray())
+                        .Add(CBORObject.FromObject("1"), CBORObject.NewArray())));
+        InvalidCredentialException duplicateError = assertThrows(InvalidCredentialException.class,
+                () -> Utils.extractMdocClaims(collidingNamespaces, List.of()));
+        assertEquals("Duplicate mdoc namespace", duplicateError.getMessage());
+    }
+
+    @Test
+    void shouldDetectOversizedMdocWhoseKeysUseLongerLengthHeaders() {
+        // {"issuerAuth": [], "nameSpaces": {}} with each key's length in every non-shortest form.
+        byte[][] lengthHeaders = {
+                {0x78, 10},
+                {0x79, 0, 10},
+                {0x7a, 0, 0, 0, 10},
+                {0x7b, 0, 0, 0, 0, 0, 0, 0, 10},
+        };
+        for (byte[] header : lengthHeaders) {
+            java.io.ByteArrayOutputStream cbor = new java.io.ByteArrayOutputStream();
+            cbor.write(0xa2);
+            cbor.writeBytes(header);
+            cbor.writeBytes("issuerAuth".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+            cbor.write(0x80);
+            cbor.writeBytes(header);
+            cbor.writeBytes("nameSpaces".getBytes(java.nio.charset.StandardCharsets.US_ASCII));
+            cbor.write(0xa0);
+            byte[] bytes = cbor.toByteArray();
+            String mdoc = Base64.getUrlEncoder().withoutPadding().encodeToString(bytes);
+            try {
+                new Utils().setMaxMdocSizeBytes(bytes.length - 1);
+                InvalidCredentialException error = assertThrows(InvalidCredentialException.class,
+                        () -> Utils.getCredentialFormat(mdoc), "header 0x" + Integer.toHexString(header[0] & 0xff));
+                assertEquals("Credential exceeds the maximum supported size", error.getMessage());
+            } finally {
+                new Utils().setMaxMdocSizeBytes(1_048_576);
+            }
+        }
+    }
+
+    @Test
+    void shouldApplyMdocSizeLimitToDecodedBytes() throws Exception {
+        String mdl = mdlSample("mdl-valid.txt");
+        int decodedBytes = Base64.getUrlDecoder().decode(mdl).length;
+        try {
+            new Utils().setMaxMdocSizeBytes(decodedBytes);
+            assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(mdl));
+            new Utils().setMaxMdocSizeBytes(decodedBytes - 1);
+            InvalidCredentialException error = assertThrows(InvalidCredentialException.class, () -> Utils.getCredentialFormat(mdl));
+            assertEquals("Credential exceeds the maximum supported size", error.getMessage());
+        } finally {
+            new Utils().setMaxMdocSizeBytes(1_048_576);
+        }
+    }
+
+    @Test
+    void shouldRejectNonPositiveMdocSizeLimit() throws Exception {
+        Utils utils = new Utils();
+        assertThrows(IllegalArgumentException.class, () -> utils.setMaxMdocSizeBytes(0));
+        assertThrows(IllegalArgumentException.class, () -> utils.setMaxMdocSizeBytes(-1));
+        // The previous limit is kept, not replaced by a default.
+        String mdl = mdlSample("mdl-valid.txt");
+        assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(mdl));
+    }
+
+    @Test
+    void shouldReturnEmptyClaimsMapForJwtVcJson() {
+        Map<String, Object> claims = Utils.extractClaims("unused", CredentialFormat.JWT_VC_JSON, null, null);
+
+        assertNotNull(claims);
+        assertTrue(claims.isEmpty());
+    }
+
+    private static String encodeMdoc(CBORObject document) {
+        return Base64.getUrlEncoder().withoutPadding().encodeToString(document.EncodeToBytes());
+    }
+
+    /** A fixed mDL sample from test resources (mdl-samples/README.md), as the base64url string sent to the API. */
+    static String mdlSample(String fileName) throws Exception {
+        return testResource("mdl-samples/" + fileName);
+    }
+
+    private static CBORObject mdlSampleCbor(String fileName) throws Exception {
+        return CBORObject.DecodeFromBytes(Base64.getUrlDecoder().decode(mdlSample(fileName)));
+    }
+
+    private static String testResource(String path) throws Exception {
+        try (var stream = UtilsTest.class.getClassLoader().getResourceAsStream(path)) {
+            assertNotNull(stream, "Test resource not found: " + path);
+            return new String(stream.readAllBytes(), java.nio.charset.StandardCharsets.UTF_8).trim();
+        }
+    }
+
+    @Test
+    void shouldDetectCredentialFormatsFromFixedAndSignedSdJwtSamples() throws Exception {
+        // The same credentials as the Postman "ldp_vc valid", "sd-jwt valid", "cwt valid" and "mso_mdoc valid" requests.
+        String ldp = testResource("format-samples/ldp-vc-valid.json");
+        String vcSdJwt = testResource("format-samples/vc-sd-jwt-valid.txt");
+        String cwt = testResource("format-samples/cwt-valid.txt");
+        String mdoc = mdlSample("mdl-valid.txt");
+
+        assertEquals(CredentialFormat.LDP_VC, Utils.getCredentialFormat(ldp));
+        assertEquals(CredentialFormat.VC_SD_JWT, Utils.getCredentialFormat(vcSdJwt));
+        assertEquals(CredentialFormat.CWT_VC, Utils.getCredentialFormat(cwt));
+        assertEquals(CredentialFormat.MSO_MDOC, Utils.getCredentialFormat(mdoc));
+
+        String dcSdJwt = createSignedDcSdJwt();
+        assertEquals(CredentialFormat.DC_SD_JWT, Utils.getCredentialFormat(dcSdJwt));
     }
 
     @Test
@@ -136,6 +630,17 @@ public class UtilsTest {
         String sdJwt = "eyJ0eXAiOiJkYytzZC1qd3QifQ.payload.signature~disclosure";
         CredentialFormat format = Utils.getCredentialFormat(sdJwt);
         assertEquals(CredentialFormat.DC_SD_JWT, format);
+    }
+
+    private static String createSignedDcSdJwt() throws Exception {
+        KeyPairGenerator keyPairGenerator = KeyPairGenerator.getInstance("EC");
+        keyPairGenerator.initialize(new ECGenParameterSpec("secp256r1"));
+        KeyPair keyPair = keyPairGenerator.generateKeyPair();
+        SignedJWT signedJwt = new SignedJWT(
+                new JWSHeader.Builder(JWSAlgorithm.ES256).type(new JOSEObjectType("dc+sd-jwt")).build(),
+                new JWTClaimsSet.Builder().subject("sample").build());
+        signedJwt.sign(new ECDSASigner((ECPrivateKey) keyPair.getPrivate()));
+        return signedJwt.serialize() + "~";
     }
 
     @Test
@@ -183,6 +688,27 @@ public class UtilsTest {
 
         assertNotNull(result);
         assertEquals("123", result.get(CBORObject.FromObject("sub")).AsString());
+    }
+
+    @Test
+    void extractCwtClaims_shouldReportClaimExtractionFailure() {
+        CBORObject payload = CBORObject.NewMap()
+                .Add(169, CBORObject.FromObject(new byte[] {(byte) 0xA0}));
+        CBORObject coseArray = CBORObject.NewArray()
+                .Add(0)
+                .Add(0)
+                .Add(payload.EncodeToBytes())
+                .Add(new byte[0]);
+        String credential = HexFormat.of().formatHex(coseArray.EncodeToBytes());
+        PixelPass pixelPass = mock(PixelPass.class);
+        when(pixelPass.decodeMappedData(anyString())).thenThrow(new IllegalStateException("mapping failed"));
+
+        InvalidCredentialException error = assertThrows(
+                InvalidCredentialException.class,
+                () -> Utils.extractCwtClaims(credential, pixelPass, List.of()));
+
+        assertEquals("Failed to extract CWT claims", error.getMessage());
+        assertInstanceOf(IllegalStateException.class, error.getCause());
     }
 
     @Test
