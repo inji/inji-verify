@@ -459,6 +459,14 @@ public class UtilsTest {
     }
 
     @Test
+    void shouldReturnOutOfRangeEpochDatesAsNumberText() {
+        // Valid CBOR that Instant cannot represent: kept as text instead of failing claim extraction.
+        assertEquals("1E+300", mdocElementValue(mdocWithElementValue(CBORObject.FromObject(1e300).WithTag(1))));
+        assertEquals("18446744073709551615", mdocElementValue(mdocWithElementValue(
+                CBORObject.FromObject(new java.math.BigInteger("18446744073709551615")).WithTag(1))));
+    }
+
+    @Test
     void shouldReturnNullForCborNullAndUndefined() {
         for (CBORObject value : List.of(CBORObject.Null, CBORObject.Undefined)) {
             Map<?, ?> claims = (Map<?, ?>) Utils.extractMdocClaims(mdocWithElementValue(value), List.of()).get(MDL_NAMESPACE);

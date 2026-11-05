@@ -534,10 +534,15 @@ public final class Utils {
         }
         if (value.HasMostOuterTag(1) && (value.getType() == CBORType.Integer || value.getType() == CBORType.FloatingPoint)) {
             CBORObject epoch = value.UntagOne();
-            if (epoch.getType() == CBORType.Integer) {
-                return Instant.ofEpochSecond(epoch.AsNumber().ToInt64Checked()).toString();
+            try {
+                if (epoch.getType() == CBORType.Integer) {
+                    return Instant.ofEpochSecond(epoch.AsNumber().ToInt64Checked()).toString();
+                }
+                return mdocFloatingEpoch(epoch.AsDouble());
+            } catch (ArithmeticException | java.time.DateTimeException outOfRange) {
+                // Not representable as an Instant: keep the signed value as text.
+                return epoch.AsNumber().toString();
             }
-            return mdocFloatingEpoch(epoch.AsDouble());
         }
         if (value.HasMostOuterTag(24) && value.getType() == CBORType.ByteString) {
             return mdocValueToJava(CBORObject.DecodeFromBytes(value.Untag().GetByteString()), depth + 1);

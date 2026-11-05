@@ -60,7 +60,7 @@ An mdoc whose decoded size is larger than `inji.verify.mso-mdoc.max-size` (bytes
 |---|---|---|
 | Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | ES256 (COSE `alg` -7, P-256), as given by the `issuerAuth` COSE `alg` header. ES256 is the only algorithm tested against real mDLs. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
 | Data-element integrity | MSO digests | Performed by the verification library |
-| MSO validity | `validFrom` and `validUntil` | Checked by the verification library |
+| MSO validity | `validFrom` and `validUntil` | Checked by the verification library, with gaps. `validFrom` is not enforced, so an mdoc with a future `validFrom` passes. An expired `validUntil` currently returns `schemaAndSignatureCheck.valid: false` with `ERR_INVALID_VALID_UNTIL_MSO` and no `expiryCheck`. Both cases await [inji/vc-verifier#300](https://github.com/inji/vc-verifier/issues/300). See [Limitations](#limitations). |
 | Revocation | — | Not supported; `statusCheck` is empty |
 | Holder / device binding | — | Not applicable on scan and upload |
 
@@ -144,6 +144,7 @@ The UI decodes the credential into a namespace-grouped claim map matching the ba
 | OpenID4VP | Not supported for `mso_mdoc` |
 | Issuer trust | Not enforced; certificate-chain validation is out of scope until IACA trust-anchor support ships. Even an mdoc signed by a self-signed certificate can show as verified. |
 | Multi-document submissions | Only `documents[0]` is verified and used for displayed claims, matching the library; all remaining documents are ignored. |
+| MSO validity | `validFrom` is not enforced. An expired `validUntil` is reported as a signature/schema error, not as `EXPIRED`. Both await vc-verifier#300. |
 | Revocation | Not checked; `statusCheck` is `[]` |
 | Device check | Not performed on scan and upload |
 | Oversized input | Documents larger than `inji.verify.mso-mdoc.max-size` decoded bytes (default 1 MiB) are rejected |
