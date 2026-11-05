@@ -4093,23 +4093,28 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
 	    }
 	}
 
-	@Then("User enter the credential type {string}")
-	public void userEnterTheCredentialType(String credentialType) {
-	    try {
-	        new WebDriverWait(driver, Duration.ofSeconds(10))
-	            .until(ExpectedConditions.elementToBeClickable(
-	                By.xpath("//input[@placeholder='Search VC Type']")));
-	        vpverification.enterCredentialType(credentialType);
-	        test.log(Status.PASS, "Successfully entered credential type: " + credentialType);
-	    } catch (NoSuchElementException e) {
-	        logFailure(test, driver, "Element not found while entering credential type: " + credentialType, e);
-	        throw e;
-	    } catch (Exception e) {
-	        logFailure(test, driver, "Unexpected error occurred while entering credential type: " + credentialType, e);
-	        throw e;
-	    }
-	}
-
+    @Then("User enter the credential type {string}")
+    public void userEnterTheCredentialType(String credentialType) {
+        try {
+            new WebDriverWait(driver, Duration.ofSeconds(10))
+                    .until(ExpectedConditions.elementToBeClickable(
+                            By.xpath("//input[@placeholder='Search VC Type']")));
+            String searchText;
+            try {
+                searchText = api.VerifiableClaimsConfigManager.resolveCredentialName(credentialType);
+            } catch (RuntimeException e) {
+                searchText = credentialType;
+            }
+            vpverification.enterCredentialType(searchText);
+            test.log(Status.PASS, "Successfully entered credential type: " + searchText);
+        } catch (NoSuchElementException e) {
+            logFailure(test, driver, "Element not found while entering credential type: " + credentialType, e);
+            throw e;
+        } catch (Exception e) {
+            logFailure(test, driver, "Unexpected error occurred while entering credential type: " + credentialType, e);
+            throw e;
+        }
+    }
 
 	@Then("Verify that Upload icon visible")
 	public void verifyThatUploadIconVisible() {

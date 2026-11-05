@@ -10,6 +10,7 @@ Feature: Inji Verify vpVerification testing
     #And User opens the inji-web issuer catalog
     Then User search the issuers sunbird
     When User click on StayProtected Insurance credentials button
+    Then Verify if user is logged into injiweb
     When User click on health insurance by e-signet button
     #And User click on validity dropdown
     #And User click on no limit
@@ -61,12 +62,9 @@ Feature: Inji Verify vpVerification testing
     And Verify click Sort AtoZ button
     And Verify click sort by button
     And Verify click Sort ZtoA button
-    And User enter the credential type "<credential type>"
+    And User enter the credential type "lifeInsurance"
     And Verify click Back button
 
-    Examples:
-      | credential type |
-      | life            |
 
 
   @smoke @verifyingVpVerification
@@ -118,7 +116,7 @@ Scenario: Verify VP verification same device flow
     And Click on vp verification tab
     And Verify click on request verifiable credentials button
     And Verify Verifiable Credential Panel label
-    And User enter the credential type "<credential type>"
+    And User enter the credential type "sdJwt"
     And Select credential "sdJwt"
     And Verify Click on Generate QR Code button
     And Verify QR code generated
@@ -129,9 +127,6 @@ Scenario: Verify VP verification same device flow
     And Verify Click on Generate QR Code button
     And Verify QR code generated
     
-    Examples:
-      | credential type |
-      | SD JWT     |
 	  
 	
 	@smoke @verifyingVpVerificationNegative @dependsOnVP
@@ -147,6 +142,7 @@ Scenario: Verify VP verification same device flow
     And User unlocks inji-web wallet with configured passcode
     And User confirms inji-web wallet with configured passcode
     #And User click on submit button
+    Then Verify if user is logged into injiweb
     And User click on trust verifier
     Then Verify error message is displayed
 
@@ -158,6 +154,7 @@ Scenario: Verify VP verification same device flow
     And User confirms inji-web wallet with configured passcode
     Then User search the issuers sunbird
     When User click on StayProtected Insurance credentials button
+    Then Verify if user is logged into injiweb
     When User click on health insurance by e-signet button
     And User enter the policy number
     And User enter the full name
@@ -187,6 +184,7 @@ Scenario: Verify VP verification same device flow
     #And User opens the inji-web issuer catalog
     Then User search the issuers sunbird
     When User click on StayProtected Insurance credentials button
+    Then Verify if user is logged into injiweb
     When User click on health insurance by e-signet button
     And User enter the policy number
     And User enter the full name
@@ -217,6 +215,7 @@ Scenario: Verify VP verification same device flow
     And User select the second credential for verification
     And User clicks consent and share button
     And User clicks consent and share card button
+    And wait for 10 seconds
     Then Verify multiple VC verification success message
 
   @smoke @verifyingVpVerification @dependsOnVP
@@ -229,6 +228,7 @@ Scenario: Verify VP verification same device flow
     And User opens the inji-web issuer catalog
     Then User search the issuers sunbird
     When User click on StayProtected Insurance credentials button
+    Then Verify if user is logged into injiweb
     When User click on health insurance by e-signet button
     And User enter the policy number
     And User enter the full name
@@ -320,6 +320,7 @@ Scenario: Verify VP verification same device flow
     And User confirms inji-web wallet with configured passcode
     Then User search the issuers sunbird
     When User click on StayProtected Insurance credentials button
+    Then Verify if user is logged into injiweb
     When User click on health insurance by e-signet button
     And User enter the policy number
     And User enter the full name
@@ -365,6 +366,7 @@ Scenario: Verify VP verification same device flow
     And User confirms inji-web wallet with configured passcode
     Then User search the issuers sunbird
     When User click on StayProtected Insurance credentials button
+    Then Verify if user is logged into injiweb
     When User click on health insurance by e-signet button
     And User enter the policy number
     And User enter the full name
