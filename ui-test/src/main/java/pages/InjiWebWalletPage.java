@@ -58,6 +58,13 @@ public class InjiWebWalletPage extends BasePage {
 	@FindBy(css = "button[data-testid*='show-more']")
 	WebElement showMoreCardsButton;
 
+	@FindBy(css = "img.rounded-full[alt='Profile Pic']")
+	WebElement profilePic;
+
+	@FindBy(xpath = "//span[contains(@class,'font-semibold') and contains(@class,'text-gray-800')]")
+	WebElement profileName;
+
+
 	private static final String PRESENT_BUTTON_XPATH =
 			"//button[normalize-space()='Present' or normalize-space()='Share' or normalize-space()='Proceed']";
 
@@ -146,6 +153,13 @@ public void enterConfirmPasscode(String string) {
 		new WebDriverWait(driver, Duration.ofSeconds(getTimeout())).until(webDriver -> {
 			String currentUrl = webDriver.getCurrentUrl();
 			return currentUrl.contains("injiweb") || currentUrl.contains("/user/");
+		});
+	}
+
+	public void waitForWalletUserPageReady() {
+		new WebDriverWait(driver, Duration.ofSeconds(getTimeout())).until(webDriver -> {
+			String currentUrl = webDriver.getCurrentUrl();
+			return currentUrl.contains("injiweb") && currentUrl.contains("/user/");
 		});
 	}
 
@@ -263,6 +277,15 @@ public void enterConfirmPasscode(String string) {
 
 	public void clickShowMoreCardsButton() {
 		clickOnElement(driver, showMoreCardsButton);
+	}
+
+	public boolean checkLoginElements() {
+		try {
+			waitForWalletUserPageReady();
+		} catch (Exception e) {
+			return false;
+		}
+		return isElementPresent(driver, profilePic) && isElementPresent(driver, profileName);
 	}
 
 	public void focusCurrentWindow() {

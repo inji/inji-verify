@@ -11,6 +11,7 @@ import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
 
+import java.io.IOException;
 import java.time.Duration;
 import java.util.List;
 
@@ -61,16 +62,26 @@ public class StepDefInjiWebWallet extends BaseSteps {   // <-- extends BaseSteps
 
     @When("User performs token-based login to inji-web wallet")
     public void user_performs_token_based_login_to_inji_web_wallet() throws Exception {
-        String idToken = HttpUtils.getIdToken();
-        String sessionCookie = HttpUtils.getSessionCookieFromIdToken(idToken);
-        driver.get(HttpUtils.getInjiWebBaseUrl());
-        try {
-            injiWebWalletPage.applySessionCookie(sessionCookie);
-            injiWebWalletPage.waitForWalletPageReady();
-            test.log(Status.PASS, "User successfully performed token-based login to inji-web wallet");
-        } catch (AssertionError | NoSuchElementException e) {
-            logFailure(test, driver, "Assertion/Element error during token-based login", e);
-            throw e;
+        final int maxAttempts = 3;
+        for (int attempt = 1; attempt <= maxAttempts; attempt++) {
+            try {
+                String idToken = HttpUtils.getIdToken();
+                String sessionCookie = HttpUtils.getSessionCookieFromIdToken(idToken);
+                driver.get(HttpUtils.getInjiWebBaseUrl());
+                injiWebWalletPage.applySessionCookie(sessionCookie);
+                injiWebWalletPage.waitForWalletPageReady();
+                injiWebWalletPage.waitForWalletUserPageReady();
+                test.log(Status.PASS, "User successfully performed token-based login to inji-web wallet (attempt "
+                        + attempt + "/" + maxAttempts + ")");
+                return;
+            } catch (AssertionError | RuntimeException | IOException e) {
+                if (attempt == maxAttempts) {
+                    logFailure(test, driver, "Token-based login failed after " + maxAttempts + " attempts", e);
+                    throw e;
+                }
+                test.log(Status.WARNING, "Token-based login attempt " + attempt + "/" + maxAttempts
+                        + " failed: " + e.getMessage() + ". Retrying...");
+            }
         }
     }
 
@@ -354,6 +365,18 @@ public class StepDefInjiWebWallet extends BaseSteps {   // <-- extends BaseSteps
             test.log(Status.PASS, "Verified '" + selectedName + "' is selected and '" + unselectedName + "' is unselected.");
         } catch (Exception e) {
             logFailure(test, driver, "Failed to verify VP credential selection state", e);
+            throw e;
+        }
+    }
+
+    @Then("Verify if user is logged into injiweb")
+    public void verify_if_user_is_logged_into_injiweb() {
+        try {
+            assertTrue(injiWebWalletPage.checkLoginElements(),
+                    "User is not logged into inji-web: URL does not contain 'injiweb'/'/user/', or profile pic/name are not visible.");
+            test.log(Status.PASS, "User is logged into inji-web — URL, profile pic, and profile name are all visible.");
+        } catch (Exception e) {
+            logFailure(test, driver, "Failed to verify user is logged into inji-web", e);
             throw e;
         }
     }
