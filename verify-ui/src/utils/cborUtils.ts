@@ -1,5 +1,20 @@
-import { decodeMultiple, decode, Tag } from "cbor-x";
+import { addExtension, decodeMultiple, decode, Tag } from "cbor-x";
 import { decodeMappedData } from "@injistack/pixelpass";
+
+/** A tdate (CBOR tag 0) kept as its original text. */
+class TdateText {
+  constructor(readonly value: string) {}
+}
+
+// cbor-x turns tag 0 into a Date, which is shown in UTC and can move the calendar date by a
+// day (2024-05-03T23:30:00-05:00 would read 2024-05-04T04:30:00Z). Keep the text as sent,
+// as the backend does. Tested with the cbor-x version pinned in package.json.
+addExtension<TdateText | string, string>({
+  Class: TdateText,
+  tag: 0,
+  encode: (tdate, encode) => encode(typeof tdate === "string" ? tdate : tdate.value),
+  decode: (text) => text,
+});
 
 export function uint8ArrayToHex(uint8Array: Uint8Array): string {
   return Array.from(uint8Array)
@@ -211,12 +226,11 @@ function imageMimeType(bytes: Uint8Array): string | null {
 }
 
 /**
- * An ISO-8601 UTC instant, without ".000" for whole seconds. cbor-x has already turned tag 0/1
- * into a Date, which holds milliseconds only: sub-millisecond digits are dropped, so
- * 2024-05-03T08:00:00.123456Z is shown as 2024-05-03T08:00:00.123Z while the backend keeps
- * .123456. Dates with millisecond precision or less read the same as the backend. An
- * unparseable tdate cannot be shown as its original text either; it is shown as "Invalid Date"
- * instead of failing the whole claim set.
+ * An epoch date (tag 1) as an ISO-8601 UTC instant, without ".000" for whole seconds. cbor-x has
+ * already turned it into a Date, which holds milliseconds only: sub-millisecond digits are
+ * dropped, so 2024-05-03T08:00:00.123456Z is shown as 2024-05-03T08:00:00.123Z while the backend
+ * keeps .123456. A non-finite epoch is shown as "Invalid Date" instead of failing the whole
+ * claim set. Tag 0 never reaches here: it stays text (see TdateText).
  */
 function renderMdocDate(value: Date): string {
   if (Number.isNaN(value.getTime())) {
@@ -274,7 +288,7 @@ function unwrapMdocItem(item: unknown): Record<string, unknown> | null {
   return null;
 }
 
-function mdocNamespaces(root: Record<string, any>): Record<string, unknown> {
+function getMdocNamespaces(root: Record<string, any>): Record<string, unknown> {
   if (Object.prototype.hasOwnProperty.call(root, MDOC_KEY_DOCUMENTS)) {
     if (!Array.isArray(root[MDOC_KEY_DOCUMENTS]) || root[MDOC_KEY_DOCUMENTS].length === 0) {
       throw new Error("mdoc contains no documents");
@@ -308,7 +322,7 @@ export function extractMdocDisplayClaims(
   } catch {
     throw new Error("Failed to decode mdoc credential");
   }
-  const namespaces = mdocNamespaces(root);
+  const namespaces = getMdocNamespaces(root);
   const claims: Record<string, Record<string, unknown>> = {};
   Object.entries(namespaces).forEach(([namespace, items]) => {
     if (!Array.isArray(items)) {

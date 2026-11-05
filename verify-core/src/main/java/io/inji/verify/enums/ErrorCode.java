@@ -52,6 +52,7 @@ public enum ErrorCode {
     CLIENT_ID_CERTIFICATE_CHAIN_MISSING("invalid_request", "For the x509_san_dns client_id scheme, this deployment's keystore has no signing certificate chain configured."),
     NONCE_INVALID("invalid_request", "Nonce must contain only ASCII URL-safe characters (A-Z, a-z, 0-9, -, ., _, ~) and be at least 16 characters."),
     DID_CREATION_FAILED("DID_CREATION_FAILED","Error while creating DID document."),
+    INVALID_CREDENTIAL("INVALID_CREDENTIAL","The credential could not be decoded or is not supported."),
     VP_SUBMISSION_EXCEPTION("VP_SUBMISSION_EXCEPTION","Error while processing VP submission"),
     TOKEN_MATCHING_FAILED("TOKEN_MATCHING_FAILED", "Token matching failed."),
     INVALID_VP_TOKEN("INVALID_VP_TOKEN","Verifiable Presentation Submission failed, due to invalid VP token"),

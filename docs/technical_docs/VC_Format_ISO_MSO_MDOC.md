@@ -58,7 +58,7 @@ An mdoc whose decoded size is larger than `inji.verify.mso-mdoc.max-size` (bytes
 
 | Check | Source | Notes |
 |---|---|---|
-| Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | ES256, ES384 or ES512, as given by the `issuerAuth` COSE `alg` header; other algorithms are rejected. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
+| Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | ES256 (COSE `alg` -7, P-256), as given by the `issuerAuth` COSE `alg` header. ES256 is the only algorithm tested against real mDLs. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
 | Data-element integrity | MSO digests | Performed by the verification library |
 | MSO validity | `validFrom` and `validUntil` | Checked by the verification library |
 | Revocation | — | Not supported; `statusCheck` is empty |
@@ -102,7 +102,8 @@ Example success response:
 When `includeClaims` is `true`, `claims` contains:
 
 - issuer-signed data elements grouped by namespace and keyed by `elementIdentifier`
-- dates as text: `tdate` (tag 0) and epoch dates (tag 1) as ISO-8601 UTC instants (for example `2024-05-03T08:00:00Z`); `full-date` (tag 1004) unchanged (for example `1985-04-29`); an unparseable `tdate` is returned as its original text
+- dates as text: `tdate` (tag 0) exactly as sent, keeping its offset (for example `2024-05-03T23:30:00-05:00`; it is not converted to UTC, which could change the date); epoch dates (tag 1) as ISO-8601 UTC instants (for example `2024-05-03T08:00:00Z`); `full-date` (tag 1004) unchanged (for example `1985-04-29`)
+- CBOR `null` and `undefined` as `null`
 - binary values, including `portrait`, as standard Base64
 - decimal fractions (tag 4) as numbers
 
@@ -110,6 +111,10 @@ A namespace that is not an item array, an item without a text `elementIdentifier
 
 The service returns namespace data elements only; it does not read or return `docType` from the document or signed MSO. Each namespace has a nested claim object, so elements with the same identifier remain separate without renaming.
 Claims are extracted by decoding the submitted credential string again (`Utils.extractClaims`), separately from the `vc-verifier` verification call.
+
+A credential that cannot be decoded is rejected with HTTP 400 and the reason, for example `{ "errorCode": "INVALID_CREDENTIAL", "errorMessage": "mdoc contains no documents" }`. The other messages are `Failed to decode mdoc credential` (corrupt CBOR) and `Credential exceeds the maximum supported size`.
+
+Fixed test samples (valid, shapes B and C, tampered, bad signature, empty `documents`, corrupt CBOR, oversized, expired, not yet valid) are in [`docs/postman_collection/mdl-samples`](../postman_collection/mdl-samples/README.md), with their `validUntil` dates. The Postman collection also has an Inji Certify-issued mDL for interop (valid until 2028-10-14).
 
 ---
 
@@ -127,7 +132,7 @@ See [VC_Verification.md](./VC_Verification.md) for the shared scan and upload fl
 
 ## UI Decoding
 
-The UI decodes the credential into a namespace-grouped claim map matching the backend (for example `{ "org.iso.18013.5.1": { "family_name": "..." } }`). It does not read `docType` from the credential; the result screen shows **Mobile Document** as the displayed `docType`. Shape preference matches the library: `documents`, then `issuerSigned`, then `issuerAuth` + `nameSpaces`. When `documents` is present, only the first document is used; later documents are ignored. The result card and expanded view reuse the existing details grid, displaying element identifiers qualified by their namespace. Dates use the same ISO-8601 text as the backend; an unparseable `tdate` is shown as `Invalid Date`. JPEG and PNG `portrait` / `signature_usual_mark` values are shown as images; other image encodings (such as JPEG 2000) are shown as `image (N bytes)`.
+The UI decodes the credential into a namespace-grouped claim map matching the backend (for example `{ "org.iso.18013.5.1": { "family_name": "..." } }`). It does not read `docType` from the credential; the result screen shows **Mobile Document** as the displayed `docType`. Shape preference matches the library: `documents`, then `issuerSigned`, then `issuerAuth` + `nameSpaces`. When `documents` is present, only the first document is used; later documents are ignored. The result card and expanded view reuse the existing details grid, displaying element identifiers qualified by their namespace. Dates read the same as the backend: a `tdate` (tag 0) is shown exactly as sent, and an epoch date (tag 1) as an ISO-8601 UTC instant (to millisecond precision). JPEG and PNG `portrait` / `signature_usual_mark` values are shown as images; other image encodings (such as JPEG 2000) are shown as `image (N bytes)`.
 
 ---
 
@@ -135,7 +140,7 @@ The UI decodes the credential into a namespace-grouped claim map matching the ba
 
 | Topic | Behaviour |
 |---|---|
-| Signature algorithm | ES256, ES384 or ES512 (from the COSE `alg` header) |
+| Signature algorithm | ES256 only (from the COSE `alg` header); other algorithms are not tested or supported |
 | OpenID4VP | Not supported for `mso_mdoc` |
 | Issuer trust | Not enforced; certificate-chain validation is out of scope until IACA trust-anchor support ships. Even an mdoc signed by a self-signed certificate can show as verified. |
 | Multi-document submissions | Only `documents[0]` is verified and used for displayed claims, matching the library; all remaining documents are ignored. |

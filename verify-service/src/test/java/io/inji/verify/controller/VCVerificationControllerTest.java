@@ -2,6 +2,7 @@ package io.inji.verify.controller;
 
 import com.fasterxml.jackson.databind.ObjectMapper;
 import io.inji.verify.dto.verification.VCVerificationStatusDto;
+import io.inji.verify.exception.InvalidCredentialException;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
@@ -17,6 +18,7 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
+import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 public class VCVerificationControllerTest {
 
@@ -75,6 +77,19 @@ public class VCVerificationControllerTest {
                         .contentType(MediaType.APPLICATION_JSON)
                         .content(""))
                 .andExpect(status().isBadRequest());
+    }
+
+    @Test
+    public void testVerifyV2ReturnsReasonForInvalidCredential() throws Exception {
+        when(VCVerificationService.verifyV2(any(), eq(false)))
+                .thenThrow(new InvalidCredentialException("Failed to decode mdoc credential", null));
+
+        mockMvc.perform(post("/v2/vc-verification")
+                        .contentType(MediaType.APPLICATION_JSON)
+                        .content("{\"verifiableCredential\":\"o2ppc3N1ZXJBdXRo\"}"))
+                .andExpect(status().isBadRequest())
+                .andExpect(jsonPath("$.errorCode").value("INVALID_CREDENTIAL"))
+                .andExpect(jsonPath("$.errorMessage").value("Failed to decode mdoc credential"));
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

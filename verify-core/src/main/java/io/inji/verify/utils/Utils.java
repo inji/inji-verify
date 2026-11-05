@@ -39,7 +39,6 @@ import java.math.RoundingMode;
 import java.nio.charset.StandardCharsets;
 import java.time.Duration;
 import java.time.Instant;
-import java.time.OffsetDateTime;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -403,7 +402,7 @@ public final class Utils {
         try {
             String trimmed = credential.trim();
             ensureMdocSize(trimmed);
-            CBORObject namespaces = mdocNamespaces(readMdocRoot(trimmed));
+            CBORObject namespaces = getMdocNamespaces(readMdocRoot(trimmed));
             if (namespaces == null || namespaces.getType() != CBORType.Map) {
                 throw new InvalidCredentialException("Failed to extract mdoc claims", null);
             }
@@ -475,7 +474,7 @@ public final class Utils {
         }
     }
 
-    private static CBORObject mdocNamespaces(CBORObject root) {
+    private static CBORObject getMdocNamespaces(CBORObject root) {
         if (root.ContainsKey(Constants.KEY_DOCUMENTS)) {
             CBORObject documents = root.get(Constants.KEY_DOCUMENTS);
             if (documents.getType() != CBORType.Array || documents.size() == 0) {
@@ -515,7 +514,7 @@ public final class Utils {
         if (depth > MAX_MDOC_DEPTH) {
             throw new IllegalArgumentException("mdoc claim nesting is too deep");
         }
-        if (value == null || value.isNull()) {
+        if (value == null || value.isNull() || value.isUndefined()) {
             return null;
         }
         if (value.HasMostOuterTag(4)) {
@@ -530,7 +529,8 @@ public final class Utils {
             return mantissa.scaleByPowerOfTen(exponent);
         }
         if (value.HasMostOuterTag(0) && value.getType() == CBORType.TextString) {
-            return normalizeMdocDateTime(value.AsString());
+            // tdate is kept as sent: converting to UTC could move the calendar date by a day.
+            return value.AsString();
         }
         if (value.HasMostOuterTag(1) && (value.getType() == CBORType.Integer || value.getType() == CBORType.FloatingPoint)) {
             CBORObject epoch = value.UntagOne();
@@ -659,14 +659,10 @@ public final class Utils {
     }
 
     /**
-     * tdate (tag 0) as an ISO-8601 UTC instant, the same text the UI shows. Unparseable text is
-     * returned unchanged rather than failing claim extraction.
-     */
-    /**
      * Floating-point epoch (tag 1) as an ISO-8601 UTC instant, keeping sub-millisecond digits.
      * {@link BigDecimal#valueOf(double)} uses the shortest decimal text of the double, so
      * 1714723200.123456 gives .123456 rather than the binary noise of the raw fraction
-     * (.123456001...). NaN and infinities are returned as text, like an unparseable tdate.
+     * (.123456001...). NaN and infinities are returned as text.
      */
     private static String mdocFloatingEpoch(double epochSeconds) {
         if (!Double.isFinite(epochSeconds)) {
@@ -676,16 +672,6 @@ public final class Utils {
         BigDecimal seconds = exact.setScale(0, RoundingMode.FLOOR);
         long nanos = exact.subtract(seconds).movePointRight(9).setScale(0, RoundingMode.HALF_EVEN).longValueExact();
         return Instant.ofEpochSecond(seconds.longValueExact(), nanos).toString();
-    }
-
-    private static String normalizeMdocDateTime(String text) {
-        try {
-            return OffsetDateTime.parse(text).toInstant().toString();
-        } catch (Exception e) {
-            // Class name only: the date text is claim data.
-            log.warn("Unparseable mdoc tdate; returning the original text: {}", e.getClass().getSimpleName());
-            return text;
-        }
     }
 
     /**

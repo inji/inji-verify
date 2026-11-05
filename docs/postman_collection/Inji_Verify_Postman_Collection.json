@@ -740,21 +740,596 @@
                   "script": {
                     "exec": [
                       "const body = pm.response.json();",
-                                            "",
+                      "",
                       "pm.test(\"Status code is 200\", function () {",
                       "    pm.response.to.have.status(200);",
                       "});",
                       "",
-                      "pm.test(\"mDL verification response includes decoded claims\", function () {",
+                      "pm.test(\"mDL verifies and returns the mandatory data elements\", function () {",
                       "    pm.expect(body.allChecksSuccessful).to.eql(true);",
                       "    pm.expect(body.schemaAndSignatureCheck.valid).to.eql(true);",
                       "    pm.expect(body.schemaAndSignatureCheck.error).to.eql(null);",
                       "    pm.expect(body.expiryCheck.valid).to.eql(true);",
                       "    pm.expect(body.statusCheck).to.eql([]);",
                       "    pm.expect(body.claims).not.to.have.property(\"docType\");",
+                      "    const claims = body.claims[\"org.iso.18013.5.1\"];",
+                      "    pm.expect(claims.family_name).to.eql(\"Doe\");",
+                      "    pm.expect(claims.given_name).to.eql(\"Jane\");",
+                      "    pm.expect(claims.birth_date).to.eql(\"1990-01-15\");",
+                      "    pm.expect(claims.issue_date).to.eql(\"2026-11-05\");",
+                      "    pm.expect(claims.expiry_date).to.eql(\"2031-11-05\");",
+                      "    pm.expect(claims.issuing_country).to.eql(\"IN\");",
+                      "    pm.expect(claims.issuing_authority).to.eql(\"Inji Verify Test Authority\");",
+                      "    pm.expect(claims.document_number).to.eql(\"TEST-DL-0000001\");",
+                      "    pm.expect(claims.driving_privileges).to.deep.equal([{\"vehicle_category_code\": \"B\", \"issue_date\": \"2026-11-05\", \"expiry_date\": \"2031-11-05\"}]);",
+                      "    pm.expect(claims.un_distinguishing_sign).to.eql(\"IND\");",
+                      "    // portrait is a JPEG, returned as standard Base64.",
+                      "    pm.expect(claims.portrait).to.match(/^\\/9j\\//);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"omppc3N1ZXJBdXRohEOhASahGCFZAicwggIjMIIByaADAgECAhRBe_SnFYt_sajjydIv8YaWW-wwGDAKBggqhkjOPQQDAjB1MQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExGTAXBgNVBAoMEEluamkgVmVyaWZ5IFRlc3QxPjA8BgNVBAMMNUluamkgVmVyaWZ5IFRFU1QgRG9jdW1lbnQgU2lnbmVyIC0gTk9UIEZPUiBQUk9EVUNUSU9OMB4XDTI2MTEwMzA1MDUyMVoXDTMyMTEwNTA1MDUyMVowdTELMAkGA1UEBhMCSU4xCzAJBgNVBAgMAktBMRkwFwYDVQQKDBBJbmppIFZlcmlmeSBUZXN0MT4wPAYDVQQDDDVJbmppIFZlcmlmeSBURVNUIERvY3VtZW50IFNpZ25lciAtIE5PVCBGT1IgUFJPRFVDVElPTjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOH0KL87_AP5-GcXIlubUWfgDmoCmw38s1Q0dpaMG6R8TXX5jH5mleKkGz8-C8YSDjTCJaru0VyQVPVUigjjTHyjNzA1MAwGA1UdEwEB_wQCMAAwDgYDVR0PAQH_BAQDAgeAMBUGA1UdJQEB_wQLMAkGByiBjF0FAQIwCgYIKoZIzj0EAwIDSAAwRQIhALJPH4XPyAV-vRPCNPQlUs1S08uC1etOEwrhUSEBp4b7AiAvSJxcpT5B8B1y17LAJ7IJMqS7vzrA4_qIdaRvNVm941kCutgYWQK1pmdkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGd2ZXJzaW9uYzEuMGx2YWxpZGl0eUluZm-jZnNpZ25lZMB0MjAyNi0xMS0wNFQwNTowNToyMVppdmFsaWRGcm9twHQyMDI2LTExLTA0VDA1OjA1OjIxWmp2YWxpZFVudGlswHQyMDMxLTExLTA1VDA1OjA1OjIxWmx2YWx1ZURpZ2VzdHOhcW9yZy5pc28uMTgwMTMuNS4xqwBYIK1_BPBf4VMgavfJfa4Bn9Nna6n8C2M6yh7iVF3lrdZPAVgg3V80NJWogGEag-R42mLi7Im4704FVpgu-e5zC2MIj-cCWCC3CWzSSR2AL9ETy0i8lsG5GesPAVV9N8M6CrqFHUi5dQNYINomaSWDWuGfySce6O9iPReMu9TxFhHu3fcYbK1IPV0GBFgg-12Bo4Q_yjJYRusXsRJgKZlXKDYNdCqEeehP_AiCRW0FWCAe9duq42Q6Rdy4Q6-lOFQLv-XRy4JMIGRWFurdFNotfAZYINUG6OegdLczUw7dOYa17sL8eLsypHS_ghUQI8iM4gNIB1ggOCCE_pY6x1-jV1d3Amv3jcuil_AR76i-nRS4ZMk0wSsIWCBah0996MoQM_B7gkJi6qG6yq8SSR2vf-jD5d68vo093glYICK3K47d4yAT5aUtMp7n8j9n8zr4PQjdAaJH3fy2yQuMClggnIKyO4rAsIQXjJS57liQr7SYGq-SVd8iBJtcsXJAuUVtZGV2aWNlS2V5SW5mb6FpZGV2aWNlS2V5pAECIAEhWCCBzlyLG6pCfRxH8bb62IVGGfN6YvKkqcHWhJ_u47yMKCJYIBq2-KYRyg7ca8stgGW2mcxjv7zx5f7O0VBGmxetMFAIb2RpZ2VzdEFsZ29yaXRobWdTSEEtMjU2WECIzsJvGy94vjQwyem7jzpyVkpf-u3ewq7cyxjCxW6B4ZztVNG9cF6Jq8UvqzO-4dRjc49e1L-2KLVdz0UQcWcSam5hbWVTcGFjZXOhcW9yZy5pc28uMTgwMTMuNS4xi9gYWFKkZnJhbmRvbVAkrsErm5lifVLBeAXtAAVdaGRpZ2VzdElEAGxlbGVtZW50VmFsdWVjRG9lcWVsZW1lbnRJZGVudGlmaWVya2ZhbWlseV9uYW1l2BhYUqRmcmFuZG9tUI0fp-UUvfW9DwxFVmVt0n9oZGlnZXN0SUQBbGVsZW1lbnRWYWx1ZWRKYW5lcWVsZW1lbnRJZGVudGlmaWVyamdpdmVuX25hbWXYGFhbpGZyYW5kb21QuPuwQpSsah4xheciqL1ZU2hkaWdlc3RJRAJsZWxlbWVudFZhbHVl2QPsajE5OTAtMDEtMTVxZWxlbWVudElkZW50aWZpZXJqYmlydGhfZGF0ZdgYWFukZnJhbmRvbVA9jLXqHYbDsW0Lt8-QYlToaGRpZ2VzdElEA2xlbGVtZW50VmFsdWXZA-xqMjAyNi0xMS0wNXFlbGVtZW50SWRlbnRpZmllcmppc3N1ZV9kYXRl2BhYXKRmcmFuZG9tUMO0X5yJJI6OcRB4WYMJwmdoZGlnZXN0SUQEbGVsZW1lbnRWYWx1ZdkD7GoyMDMxLTExLTA1cWVsZW1lbnRJZGVudGlmaWVya2V4cGlyeV9kYXRl2BhYVaRmcmFuZG9tUPfrfGNULGSCIKaiJtcmbY5oZGlnZXN0SUQFbGVsZW1lbnRWYWx1ZWJJTnFlbGVtZW50SWRlbnRpZmllcm9pc3N1aW5nX2NvdW50cnnYGFhwpGZyYW5kb21Qf_NySAqPHfSSHcC7GQ_-VmhkaWdlc3RJRAZsZWxlbWVudFZhbHVleBpJbmppIFZlcmlmeSBUZXN0IEF1dGhvcml0eXFlbGVtZW50SWRlbnRpZmllcnFpc3N1aW5nX2F1dGhvcml0edgYWGKkZnJhbmRvbVCGeZOQjugWgs9qlRJ2CYhbaGRpZ2VzdElEB2xlbGVtZW50VmFsdWVvVEVTVC1ETC0wMDAwMDAxcWVsZW1lbnRJZGVudGlmaWVyb2RvY3VtZW50X251bWJlctgYWQMxpGZyYW5kb21QBpTaG1dxmE0fmB3yHlFaC2hkaWdlc3RJRAhsZWxlbWVudFZhbHVlWQLj_9j_4AAQSkZJRgABAQAAAQABAAD_2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko-MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk__2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0__wAARCABQADwDASIAAhEBAxEB_8QAGwABAAIDAQEAAAAAAAAAAAAAAAUGAQMEAgf_xAAwEAACAAMFBQcEAwAAAAAAAAAAAQIDEQQFBhIhEzE1QbIUFiJRc4LiYWSDoxVxsf_EABgBAAMBAQAAAAAAAAAAAAAAAAACBAMB_8QAIBEAAwABBAMBAQAAAAAAAAAAAAECEQMSITETUWEiMv_aAAwDAQACEQMRAD8Au4ANjIAw2kqvcanPSeiqLVzPY0w66NwNcE2GLR6M2AqVLKOOXPDAAGOAAxE6Qtrkjj4BcnPNjzRUT0RrOO95drm3XaJd3x5LTFD4HWj36pPk6VVf8NGHpN4yLsUF6xuOdnbhzR5olD5N89a83vX9EDe79MuS28Ikzpkx5lRvVFXtdlvyLE8qfInNWBOGq2iUKhp4k4ebeutHvWqppY5LpMX1H03tpfRdRbpfw6QAWkYMNVTXmZAAcbVHR8jB0TZdfFDv5o0EFw5eC6LVLJg2yFWOvkeIYXE6JHTBCoIaIfRht5E1bSWD0ACwkBA3niPsFvm2Xsm02dPFtKVqk91PqTxQ8S8etPt6UPppN8i08IlO9_2H7viYeLU993p_l-JWAa-OfQu5lnWLklRXfT83xM97_sP3fEq4Dxz6Dcz6Dc95fylkin7HZZY3BlzZuSddy8zvIHB_CpvrvphJ4wpYY66BQ8S8etPt6UXwoeJePWn29KH0uzldEWADczAAAC5YP4VN9d9MJPEDg_hU3130wk8TX_TNV0f_2XFlbGVtZW50SWRlbnRpZmllcmhwb3J0cmFpdNgYWKKkZnJhbmRvbVCyLHIVx56lrDMP7jEULH43aGRpZ2VzdElECWxlbGVtZW50VmFsdWWBo2ppc3N1ZV9kYXRl2QPsajIwMjYtMTEtMDVrZXhwaXJ5X2RhdGXZA-xqMjAzMS0xMS0wNXV2ZWhpY2xlX2NhdGVnb3J5X2NvZGVhQnFlbGVtZW50SWRlbnRpZmllcnJkcml2aW5nX3ByaXZpbGVnZXPYGFhdpGZyYW5kb21QJDzzRL493XcWYvkWPtM2KWhkaWdlc3RJRApsZWxlbWVudFZhbHVlY0lORHFlbGVtZW50SWRlbnRpZmllcnZ1bl9kaXN0aW5ndWlzaGluZ19zaWdu\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                },
+                "description": "Shape A `{ issuerAuth, nameSpaces }`. Fixed test sample: ES256 (P-256), SHA-256 digests, mandatory ISO 18013-5 mDL elements only, fictional data. Signed by the self-signed \"Inji Verify TEST Document Signer - NOT FOR PRODUCTION\" certificate (C=IN, EKU 1.0.18013.5.1.2). Same string as docs/postman_collection/mdl-samples/mdl-valid.txt. **validUntil: 2031-11-05T05:05:21Z** \u2014 after this date the expiry check fails and the sample must be regenerated."
+              },
+              "response": [
+                {
+                  "name": "mso_mdoc valid response",
+                  "status": "OK",
+                  "code": 200,
+                  "_postman_previewlanguage": "json",
+                  "header": [
+                    {
+                      "key": "Content-Type",
+                      "value": "application/json"
+                    }
+                  ],
+                  "cookie": [],
+                  "body": "{\n  \"allChecksSuccessful\": true,\n  \"schemaAndSignatureCheck\": {\n    \"valid\": true,\n    \"error\": null\n  },\n  \"expiryCheck\": {\n    \"valid\": true\n  },\n  \"statusCheck\": [],\n  \"claims\": {\n    \"org.iso.18013.5.1\": {\n      \"family_name\": \"Doe\",\n      \"given_name\": \"Jane\",\n      \"birth_date\": \"1990-01-15\",\n      \"issue_date\": \"2026-11-05\",\n      \"expiry_date\": \"2031-11-05\",\n      \"issuing_country\": \"IN\",\n      \"issuing_authority\": \"Inji Verify Test Authority\",\n      \"document_number\": \"TEST-DL-0000001\",\n      \"portrait\": \"/9j/4AAQSkZJRgAB...\",\n      \"driving_privileges\": [\n        {\n          \"vehicle_category_code\": \"B\",\n          \"issue_date\": \"2026-11-05\",\n          \"expiry_date\": \"2031-11-05\"\n        }\n      ],\n      \"un_distinguishing_sign\": \"IND\"\n    }\n  }\n}"
+                }
+              ]
+            },
+            {
+              "name": "mso_mdoc shape B (issuerSigned)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Shape B gives the same result as shape A\", function () {",
+                      "    pm.expect(body.allChecksSuccessful).to.eql(true);",
+                      "    pm.expect(body.schemaAndSignatureCheck.valid).to.eql(true);",
+                      "    pm.expect(body.schemaAndSignatureCheck.error).to.eql(null);",
+                      "    pm.expect(body.expiryCheck.valid).to.eql(true);",
+                      "    pm.expect(body.statusCheck).to.eql([]);",
+                      "    pm.expect(body.claims).not.to.have.property(\"docType\");",
+                      "    const claims = body.claims[\"org.iso.18013.5.1\"];",
+                      "    pm.expect(claims.family_name).to.eql(\"Doe\");",
+                      "    pm.expect(claims.given_name).to.eql(\"Jane\");",
+                      "    pm.expect(claims.birth_date).to.eql(\"1990-01-15\");",
+                      "    pm.expect(claims.issue_date).to.eql(\"2026-11-05\");",
+                      "    pm.expect(claims.expiry_date).to.eql(\"2031-11-05\");",
+                      "    pm.expect(claims.issuing_country).to.eql(\"IN\");",
+                      "    pm.expect(claims.issuing_authority).to.eql(\"Inji Verify Test Authority\");",
+                      "    pm.expect(claims.document_number).to.eql(\"TEST-DL-0000001\");",
+                      "    pm.expect(claims.driving_privileges).to.deep.equal([{\"vehicle_category_code\": \"B\", \"issue_date\": \"2026-11-05\", \"expiry_date\": \"2031-11-05\"}]);",
+                      "    pm.expect(claims.un_distinguishing_sign).to.eql(\"IND\");",
+                      "    // portrait is a JPEG, returned as standard Base64.",
+                      "    pm.expect(claims.portrait).to.match(/^\\/9j\\//);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"omdkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGxpc3N1ZXJTaWduZWSiamlzc3VlckF1dGiEQ6EBJqEYIVkCJzCCAiMwggHJoAMCAQICFEF79KcVi3-xqOPJ0i_xhpZb7DAYMAoGCCqGSM49BAMCMHUxCzAJBgNVBAYTAklOMQswCQYDVQQIDAJLQTEZMBcGA1UECgwQSW5qaSBWZXJpZnkgVGVzdDE-MDwGA1UEAww1SW5qaSBWZXJpZnkgVEVTVCBEb2N1bWVudCBTaWduZXIgLSBOT1QgRk9SIFBST0RVQ1RJT04wHhcNMjYxMTAzMDUwNTIxWhcNMzIxMTA1MDUwNTIxWjB1MQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExGTAXBgNVBAoMEEluamkgVmVyaWZ5IFRlc3QxPjA8BgNVBAMMNUluamkgVmVyaWZ5IFRFU1QgRG9jdW1lbnQgU2lnbmVyIC0gTk9UIEZPUiBQUk9EVUNUSU9OMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE4fQovzv8A_n4ZxciW5tRZ-AOagKbDfyzVDR2lowbpHxNdfmMfmaV4qQbPz4LxhIONMIlqu7RXJBU9VSKCONMfKM3MDUwDAYDVR0TAQH_BAIwADAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lAQH_BAswCQYHKIGMXQUBAjAKBggqhkjOPQQDAgNIADBFAiEAsk8fhc_IBX69E8I09CVSzVLTy4LV604TCuFRIQGnhvsCIC9InFylPkHwHXLXssAnsgkypLu_OsDj-oh1pG81Wb3jWQK62BhZArWmZ2RvY1R5cGV1b3JnLmlzby4xODAxMy41LjEubURMZ3ZlcnNpb25jMS4wbHZhbGlkaXR5SW5mb6Nmc2lnbmVkwHQyMDI2LTExLTA0VDA1OjA1OjIxWml2YWxpZEZyb23AdDIwMjYtMTEtMDRUMDU6MDU6MjFaanZhbGlkVW50aWzAdDIwMzEtMTEtMDVUMDU6MDU6MjFabHZhbHVlRGlnZXN0c6Fxb3JnLmlzby4xODAxMy41LjGrAFggrX8E8F_hUyBq98l9rgGf02drqfwLYzrKHuJUXeWt1k8BWCDdXzQ0laiAYRqD5HjaYuLsibjvTgVWmC757nMLYwiP5wJYILcJbNJJHYAv0RPLSLyWwbkZ6w8BVX03wzoKuoUdSLl1A1gg2iZpJYNa4Z_JJx7o72I9F4y71PEWEe7d9xhsrUg9XQYEWCD7XYGjhD_KMlhG6xexEmApmVcoNg10KoR56E_8CIJFbQVYIB7126rjZDpF3LhDr6U4VAu_5dHLgkwgZFYW6t0U2i18Blgg1Qbo56B0tzNTDt05hrXuwvx4uzKkdL-CFRAjyIziA0gHWCA4IIT-ljrHX6NXV3cCa_eNy6KX8BHvqL6dFLhkyTTBKwhYIFqHT33oyhAz8HuCQmLqobrKrxJJHa9_6MPl3ry-jT3eCVggIrcrjt3jIBPlpS0ynufyP2fzOvg9CN0Bokfd_LbJC4wKWCCcgrI7isCwhBeMlLnuWJCvtJgar5JV3yIEm1yxckC5RW1kZXZpY2VLZXlJbmZvoWlkZXZpY2VLZXmkAQIgASFYIIHOXIsbqkJ9HEfxtvrYhUYZ83pi8qSpwdaEn-7jvIwoIlggGrb4phHKDtxryy2AZbaZzGO_vPHl_s7RUEabF60wUAhvZGlnZXN0QWxnb3JpdGhtZ1NIQS0yNTZYQIjOwm8bL3i-NDDJ6buPOnJWSl_67d7CrtzLGMLFboHhnO1U0b1wXomrxS-rM77h1GNzj17Uv7YotV3PRRBxZxJqbmFtZVNwYWNlc6Fxb3JnLmlzby4xODAxMy41LjGL2BhYUqRmcmFuZG9tUCSuwSubmWJ9UsF4Be0ABV1oZGlnZXN0SUQAbGVsZW1lbnRWYWx1ZWNEb2VxZWxlbWVudElkZW50aWZpZXJrZmFtaWx5X25hbWXYGFhSpGZyYW5kb21QjR-n5RS99b0PDEVWZW3Sf2hkaWdlc3RJRAFsZWxlbWVudFZhbHVlZEphbmVxZWxlbWVudElkZW50aWZpZXJqZ2l2ZW5fbmFtZdgYWFukZnJhbmRvbVC4-7BClKxqHjGF5yKovVlTaGRpZ2VzdElEAmxlbGVtZW50VmFsdWXZA-xqMTk5MC0wMS0xNXFlbGVtZW50SWRlbnRpZmllcmpiaXJ0aF9kYXRl2BhYW6RmcmFuZG9tUD2MteodhsOxbQu3z5BiVOhoZGlnZXN0SUQDbGVsZW1lbnRWYWx1ZdkD7GoyMDI2LTExLTA1cWVsZW1lbnRJZGVudGlmaWVyamlzc3VlX2RhdGXYGFhcpGZyYW5kb21Qw7RfnIkkjo5xEHhZgwnCZ2hkaWdlc3RJRARsZWxlbWVudFZhbHVl2QPsajIwMzEtMTEtMDVxZWxlbWVudElkZW50aWZpZXJrZXhwaXJ5X2RhdGXYGFhVpGZyYW5kb21Q9-t8Y1QsZIIgpqIm1yZtjmhkaWdlc3RJRAVsZWxlbWVudFZhbHVlYklOcWVsZW1lbnRJZGVudGlmaWVyb2lzc3VpbmdfY291bnRyedgYWHCkZnJhbmRvbVB_83JICo8d9JIdwLsZD_5WaGRpZ2VzdElEBmxlbGVtZW50VmFsdWV4GkluamkgVmVyaWZ5IFRlc3QgQXV0aG9yaXR5cWVsZW1lbnRJZGVudGlmaWVycWlzc3VpbmdfYXV0aG9yaXR52BhYYqRmcmFuZG9tUIZ5k5CO6BaCz2qVEnYJiFtoZGlnZXN0SUQHbGVsZW1lbnRWYWx1ZW9URVNULURMLTAwMDAwMDFxZWxlbWVudElkZW50aWZpZXJvZG9jdW1lbnRfbnVtYmVy2BhZAzGkZnJhbmRvbVAGlNobV3GYTR-YHfIeUVoLaGRpZ2VzdElECGxlbGVtZW50VmFsdWVZAuP_2P_gABBKRklGAAEBAAABAAEAAP_bAEMADQkKCwoIDQsKCw4ODQ8TIBUTEhITJxweFyAuKTEwLiktLDM6Sj4zNkY3LC1AV0FGTE5SU1IyPlphWlBgSlFST__bAEMBDg4OExETJhUVJk81LTVPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT__AABEIAFAAPAMBIgACEQEDEQH_xAAbAAEAAgMBAQAAAAAAAAAAAAAABQYBAwQCB__EADAQAAIAAwUFBwQDAAAAAAAAAAABAgMRBAUGEiETMTVBshQWIlFzguJhZIOjFXGx_8QAGAEAAwEBAAAAAAAAAAAAAAAAAAIEAwH_xAAgEQADAAEEAwEBAAAAAAAAAAAAAQIRAxIhMRNRYSIy_9oADAMBAAIRAxEAPwC7gA2MgDDaSq9xqc9J6KotXM9jTDro3A1wTYYtHozYCpUso45c8MAAY4ADETpC2uSOPgFyc82PNFRPRGs473l2ubddol3fHktMUPgdaPfqk-TpVV_w0Yek3jIuxQXrG452duHNHmiUPk3z1rze9f0QN7v0y5LbwiTOmTHmVG9UVe12W_IsTyp8ic1YE4araJQqGniTh5t660e9aqmljkukxfUfTe2l9F1Ful_DpABaRgw1VNeZkABxtUdHyMHRNl18UO_mjQQXDl4LotUsmDbIVY6-R4hhcTokdMEKghoh9GG3kTVtJYPQALCQEDeeI-wW-bZeybTZ08W0pWqT3U-pPFDxLx60-3pQ-mk3yLTwiU73_Yfu-Jh4tT33en-X4lYBr459C7mWdYuSVFd9PzfEz3v-w_d8SrgPHPoNzPoNz3l_KWSKfsdlljcGXNm5J13LzO8gcH8Km-u-mEnjClhjroFDxLx60-3pRfCh4l49afb0ofS7OV0RYANzMAAALlg_hU3130wk8QOD-FTfXfTCTxNf9M1XR__ZcWVsZW1lbnRJZGVudGlmaWVyaHBvcnRyYWl02BhYoqRmcmFuZG9tULIschXHnqWsMw_uMRQsfjdoZGlnZXN0SUQJbGVsZW1lbnRWYWx1ZYGjamlzc3VlX2RhdGXZA-xqMjAyNi0xMS0wNWtleHBpcnlfZGF0ZdkD7GoyMDMxLTExLTA1dXZlaGljbGVfY2F0ZWdvcnlfY29kZWFCcWVsZW1lbnRJZGVudGlmaWVycmRyaXZpbmdfcHJpdmlsZWdlc9gYWF2kZnJhbmRvbVAkPPNEvj3ddxZi-RY-0zYpaGRpZ2VzdElECmxlbGVtZW50VmFsdWVjSU5EcWVsZW1lbnRJZGVudGlmaWVydnVuX2Rpc3Rpbmd1aXNoaW5nX3NpZ24\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                },
+                "description": "The valid sample as shape B `{ docType, issuerSigned: { nameSpaces, issuerAuth } }`; same result as shape A. validUntil: 2031-11-05T05:05:21Z."
+              },
+              "response": []
+            },
+            {
+              "name": "mso_mdoc shape C (documents)",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Shape C gives the same result as shape A\", function () {",
+                      "    pm.expect(body.allChecksSuccessful).to.eql(true);",
+                      "    pm.expect(body.schemaAndSignatureCheck.valid).to.eql(true);",
+                      "    pm.expect(body.schemaAndSignatureCheck.error).to.eql(null);",
+                      "    pm.expect(body.expiryCheck.valid).to.eql(true);",
+                      "    pm.expect(body.statusCheck).to.eql([]);",
+                      "    pm.expect(body.claims).not.to.have.property(\"docType\");",
+                      "    const claims = body.claims[\"org.iso.18013.5.1\"];",
+                      "    pm.expect(claims.family_name).to.eql(\"Doe\");",
+                      "    pm.expect(claims.given_name).to.eql(\"Jane\");",
+                      "    pm.expect(claims.birth_date).to.eql(\"1990-01-15\");",
+                      "    pm.expect(claims.issue_date).to.eql(\"2026-11-05\");",
+                      "    pm.expect(claims.expiry_date).to.eql(\"2031-11-05\");",
+                      "    pm.expect(claims.issuing_country).to.eql(\"IN\");",
+                      "    pm.expect(claims.issuing_authority).to.eql(\"Inji Verify Test Authority\");",
+                      "    pm.expect(claims.document_number).to.eql(\"TEST-DL-0000001\");",
+                      "    pm.expect(claims.driving_privileges).to.deep.equal([{\"vehicle_category_code\": \"B\", \"issue_date\": \"2026-11-05\", \"expiry_date\": \"2031-11-05\"}]);",
+                      "    pm.expect(claims.un_distinguishing_sign).to.eql(\"IND\");",
+                      "    // portrait is a JPEG, returned as standard Base64.",
+                      "    pm.expect(claims.portrait).to.match(/^\\/9j\\//);",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"oWlkb2N1bWVudHOBomdkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGxpc3N1ZXJTaWduZWSiamlzc3VlckF1dGiEQ6EBJqEYIVkCJzCCAiMwggHJoAMCAQICFEF79KcVi3-xqOPJ0i_xhpZb7DAYMAoGCCqGSM49BAMCMHUxCzAJBgNVBAYTAklOMQswCQYDVQQIDAJLQTEZMBcGA1UECgwQSW5qaSBWZXJpZnkgVGVzdDE-MDwGA1UEAww1SW5qaSBWZXJpZnkgVEVTVCBEb2N1bWVudCBTaWduZXIgLSBOT1QgRk9SIFBST0RVQ1RJT04wHhcNMjYxMTAzMDUwNTIxWhcNMzIxMTA1MDUwNTIxWjB1MQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExGTAXBgNVBAoMEEluamkgVmVyaWZ5IFRlc3QxPjA8BgNVBAMMNUluamkgVmVyaWZ5IFRFU1QgRG9jdW1lbnQgU2lnbmVyIC0gTk9UIEZPUiBQUk9EVUNUSU9OMFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAE4fQovzv8A_n4ZxciW5tRZ-AOagKbDfyzVDR2lowbpHxNdfmMfmaV4qQbPz4LxhIONMIlqu7RXJBU9VSKCONMfKM3MDUwDAYDVR0TAQH_BAIwADAOBgNVHQ8BAf8EBAMCB4AwFQYDVR0lAQH_BAswCQYHKIGMXQUBAjAKBggqhkjOPQQDAgNIADBFAiEAsk8fhc_IBX69E8I09CVSzVLTy4LV604TCuFRIQGnhvsCIC9InFylPkHwHXLXssAnsgkypLu_OsDj-oh1pG81Wb3jWQK62BhZArWmZ2RvY1R5cGV1b3JnLmlzby4xODAxMy41LjEubURMZ3ZlcnNpb25jMS4wbHZhbGlkaXR5SW5mb6Nmc2lnbmVkwHQyMDI2LTExLTA0VDA1OjA1OjIxWml2YWxpZEZyb23AdDIwMjYtMTEtMDRUMDU6MDU6MjFaanZhbGlkVW50aWzAdDIwMzEtMTEtMDVUMDU6MDU6MjFabHZhbHVlRGlnZXN0c6Fxb3JnLmlzby4xODAxMy41LjGrAFggrX8E8F_hUyBq98l9rgGf02drqfwLYzrKHuJUXeWt1k8BWCDdXzQ0laiAYRqD5HjaYuLsibjvTgVWmC757nMLYwiP5wJYILcJbNJJHYAv0RPLSLyWwbkZ6w8BVX03wzoKuoUdSLl1A1gg2iZpJYNa4Z_JJx7o72I9F4y71PEWEe7d9xhsrUg9XQYEWCD7XYGjhD_KMlhG6xexEmApmVcoNg10KoR56E_8CIJFbQVYIB7126rjZDpF3LhDr6U4VAu_5dHLgkwgZFYW6t0U2i18Blgg1Qbo56B0tzNTDt05hrXuwvx4uzKkdL-CFRAjyIziA0gHWCA4IIT-ljrHX6NXV3cCa_eNy6KX8BHvqL6dFLhkyTTBKwhYIFqHT33oyhAz8HuCQmLqobrKrxJJHa9_6MPl3ry-jT3eCVggIrcrjt3jIBPlpS0ynufyP2fzOvg9CN0Bokfd_LbJC4wKWCCcgrI7isCwhBeMlLnuWJCvtJgar5JV3yIEm1yxckC5RW1kZXZpY2VLZXlJbmZvoWlkZXZpY2VLZXmkAQIgASFYIIHOXIsbqkJ9HEfxtvrYhUYZ83pi8qSpwdaEn-7jvIwoIlggGrb4phHKDtxryy2AZbaZzGO_vPHl_s7RUEabF60wUAhvZGlnZXN0QWxnb3JpdGhtZ1NIQS0yNTZYQIjOwm8bL3i-NDDJ6buPOnJWSl_67d7CrtzLGMLFboHhnO1U0b1wXomrxS-rM77h1GNzj17Uv7YotV3PRRBxZxJqbmFtZVNwYWNlc6Fxb3JnLmlzby4xODAxMy41LjGL2BhYUqRmcmFuZG9tUCSuwSubmWJ9UsF4Be0ABV1oZGlnZXN0SUQAbGVsZW1lbnRWYWx1ZWNEb2VxZWxlbWVudElkZW50aWZpZXJrZmFtaWx5X25hbWXYGFhSpGZyYW5kb21QjR-n5RS99b0PDEVWZW3Sf2hkaWdlc3RJRAFsZWxlbWVudFZhbHVlZEphbmVxZWxlbWVudElkZW50aWZpZXJqZ2l2ZW5fbmFtZdgYWFukZnJhbmRvbVC4-7BClKxqHjGF5yKovVlTaGRpZ2VzdElEAmxlbGVtZW50VmFsdWXZA-xqMTk5MC0wMS0xNXFlbGVtZW50SWRlbnRpZmllcmpiaXJ0aF9kYXRl2BhYW6RmcmFuZG9tUD2MteodhsOxbQu3z5BiVOhoZGlnZXN0SUQDbGVsZW1lbnRWYWx1ZdkD7GoyMDI2LTExLTA1cWVsZW1lbnRJZGVudGlmaWVyamlzc3VlX2RhdGXYGFhcpGZyYW5kb21Qw7RfnIkkjo5xEHhZgwnCZ2hkaWdlc3RJRARsZWxlbWVudFZhbHVl2QPsajIwMzEtMTEtMDVxZWxlbWVudElkZW50aWZpZXJrZXhwaXJ5X2RhdGXYGFhVpGZyYW5kb21Q9-t8Y1QsZIIgpqIm1yZtjmhkaWdlc3RJRAVsZWxlbWVudFZhbHVlYklOcWVsZW1lbnRJZGVudGlmaWVyb2lzc3VpbmdfY291bnRyedgYWHCkZnJhbmRvbVB_83JICo8d9JIdwLsZD_5WaGRpZ2VzdElEBmxlbGVtZW50VmFsdWV4GkluamkgVmVyaWZ5IFRlc3QgQXV0aG9yaXR5cWVsZW1lbnRJZGVudGlmaWVycWlzc3VpbmdfYXV0aG9yaXR52BhYYqRmcmFuZG9tUIZ5k5CO6BaCz2qVEnYJiFtoZGlnZXN0SUQHbGVsZW1lbnRWYWx1ZW9URVNULURMLTAwMDAwMDFxZWxlbWVudElkZW50aWZpZXJvZG9jdW1lbnRfbnVtYmVy2BhZAzGkZnJhbmRvbVAGlNobV3GYTR-YHfIeUVoLaGRpZ2VzdElECGxlbGVtZW50VmFsdWVZAuP_2P_gABBKRklGAAEBAAABAAEAAP_bAEMADQkKCwoIDQsKCw4ODQ8TIBUTEhITJxweFyAuKTEwLiktLDM6Sj4zNkY3LC1AV0FGTE5SU1IyPlphWlBgSlFST__bAEMBDg4OExETJhUVJk81LTVPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT__AABEIAFAAPAMBIgACEQEDEQH_xAAbAAEAAgMBAQAAAAAAAAAAAAAABQYBAwQCB__EADAQAAIAAwUFBwQDAAAAAAAAAAABAgMRBAUGEiETMTVBshQWIlFzguJhZIOjFXGx_8QAGAEAAwEBAAAAAAAAAAAAAAAAAAIEAwH_xAAgEQADAAEEAwEBAAAAAAAAAAAAAQIRAxIhMRNRYSIy_9oADAMBAAIRAxEAPwC7gA2MgDDaSq9xqc9J6KotXM9jTDro3A1wTYYtHozYCpUso45c8MAAY4ADETpC2uSOPgFyc82PNFRPRGs473l2ubddol3fHktMUPgdaPfqk-TpVV_w0Yek3jIuxQXrG452duHNHmiUPk3z1rze9f0QN7v0y5LbwiTOmTHmVG9UVe12W_IsTyp8ic1YE4araJQqGniTh5t660e9aqmljkukxfUfTe2l9F1Ful_DpABaRgw1VNeZkABxtUdHyMHRNl18UO_mjQQXDl4LotUsmDbIVY6-R4hhcTokdMEKghoh9GG3kTVtJYPQALCQEDeeI-wW-bZeybTZ08W0pWqT3U-pPFDxLx60-3pQ-mk3yLTwiU73_Yfu-Jh4tT33en-X4lYBr459C7mWdYuSVFd9PzfEz3v-w_d8SrgPHPoNzPoNz3l_KWSKfsdlljcGXNm5J13LzO8gcH8Km-u-mEnjClhjroFDxLx60-3pRfCh4l49afb0ofS7OV0RYANzMAAALlg_hU3130wk8QOD-FTfXfTCTxNf9M1XR__ZcWVsZW1lbnRJZGVudGlmaWVyaHBvcnRyYWl02BhYoqRmcmFuZG9tULIschXHnqWsMw_uMRQsfjdoZGlnZXN0SUQJbGVsZW1lbnRWYWx1ZYGjamlzc3VlX2RhdGXZA-xqMjAyNi0xMS0wNWtleHBpcnlfZGF0ZdkD7GoyMDMxLTExLTA1dXZlaGljbGVfY2F0ZWdvcnlfY29kZWFCcWVsZW1lbnRJZGVudGlmaWVycmRyaXZpbmdfcHJpdmlsZWdlc9gYWF2kZnJhbmRvbVAkPPNEvj3ddxZi-RY-0zYpaGRpZ2VzdElECmxlbGVtZW50VmFsdWVjSU5EcWVsZW1lbnRJZGVudGlmaWVydnVuX2Rpc3Rpbmd1aXNoaW5nX3NpZ24\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                },
+                "description": "The valid sample as shape C `{ version, documents: [ { docType, issuerSigned } ], status }`; same result as shape A. validUntil: 2031-11-05T05:05:21Z."
+              },
+              "response": []
+            },
+            {
+              "name": "mso_mdoc includeClaims false",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Verification succeeds without claims\", function () {",
+                      "    pm.expect(body.allChecksSuccessful).to.eql(true);",
+                      "    pm.expect(body.claims).to.eql({});",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"omppc3N1ZXJBdXRohEOhASahGCFZAicwggIjMIIByaADAgECAhRBe_SnFYt_sajjydIv8YaWW-wwGDAKBggqhkjOPQQDAjB1MQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExGTAXBgNVBAoMEEluamkgVmVyaWZ5IFRlc3QxPjA8BgNVBAMMNUluamkgVmVyaWZ5IFRFU1QgRG9jdW1lbnQgU2lnbmVyIC0gTk9UIEZPUiBQUk9EVUNUSU9OMB4XDTI2MTEwMzA1MDUyMVoXDTMyMTEwNTA1MDUyMVowdTELMAkGA1UEBhMCSU4xCzAJBgNVBAgMAktBMRkwFwYDVQQKDBBJbmppIFZlcmlmeSBUZXN0MT4wPAYDVQQDDDVJbmppIFZlcmlmeSBURVNUIERvY3VtZW50IFNpZ25lciAtIE5PVCBGT1IgUFJPRFVDVElPTjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOH0KL87_AP5-GcXIlubUWfgDmoCmw38s1Q0dpaMG6R8TXX5jH5mleKkGz8-C8YSDjTCJaru0VyQVPVUigjjTHyjNzA1MAwGA1UdEwEB_wQCMAAwDgYDVR0PAQH_BAQDAgeAMBUGA1UdJQEB_wQLMAkGByiBjF0FAQIwCgYIKoZIzj0EAwIDSAAwRQIhALJPH4XPyAV-vRPCNPQlUs1S08uC1etOEwrhUSEBp4b7AiAvSJxcpT5B8B1y17LAJ7IJMqS7vzrA4_qIdaRvNVm941kCutgYWQK1pmdkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGd2ZXJzaW9uYzEuMGx2YWxpZGl0eUluZm-jZnNpZ25lZMB0MjAyNi0xMS0wNFQwNTowNToyMVppdmFsaWRGcm9twHQyMDI2LTExLTA0VDA1OjA1OjIxWmp2YWxpZFVudGlswHQyMDMxLTExLTA1VDA1OjA1OjIxWmx2YWx1ZURpZ2VzdHOhcW9yZy5pc28uMTgwMTMuNS4xqwBYIK1_BPBf4VMgavfJfa4Bn9Nna6n8C2M6yh7iVF3lrdZPAVgg3V80NJWogGEag-R42mLi7Im4704FVpgu-e5zC2MIj-cCWCC3CWzSSR2AL9ETy0i8lsG5GesPAVV9N8M6CrqFHUi5dQNYINomaSWDWuGfySce6O9iPReMu9TxFhHu3fcYbK1IPV0GBFgg-12Bo4Q_yjJYRusXsRJgKZlXKDYNdCqEeehP_AiCRW0FWCAe9duq42Q6Rdy4Q6-lOFQLv-XRy4JMIGRWFurdFNotfAZYINUG6OegdLczUw7dOYa17sL8eLsypHS_ghUQI8iM4gNIB1ggOCCE_pY6x1-jV1d3Amv3jcuil_AR76i-nRS4ZMk0wSsIWCBah0996MoQM_B7gkJi6qG6yq8SSR2vf-jD5d68vo093glYICK3K47d4yAT5aUtMp7n8j9n8zr4PQjdAaJH3fy2yQuMClggnIKyO4rAsIQXjJS57liQr7SYGq-SVd8iBJtcsXJAuUVtZGV2aWNlS2V5SW5mb6FpZGV2aWNlS2V5pAECIAEhWCCBzlyLG6pCfRxH8bb62IVGGfN6YvKkqcHWhJ_u47yMKCJYIBq2-KYRyg7ca8stgGW2mcxjv7zx5f7O0VBGmxetMFAIb2RpZ2VzdEFsZ29yaXRobWdTSEEtMjU2WECIzsJvGy94vjQwyem7jzpyVkpf-u3ewq7cyxjCxW6B4ZztVNG9cF6Jq8UvqzO-4dRjc49e1L-2KLVdz0UQcWcSam5hbWVTcGFjZXOhcW9yZy5pc28uMTgwMTMuNS4xi9gYWFKkZnJhbmRvbVAkrsErm5lifVLBeAXtAAVdaGRpZ2VzdElEAGxlbGVtZW50VmFsdWVjRG9lcWVsZW1lbnRJZGVudGlmaWVya2ZhbWlseV9uYW1l2BhYUqRmcmFuZG9tUI0fp-UUvfW9DwxFVmVt0n9oZGlnZXN0SUQBbGVsZW1lbnRWYWx1ZWRKYW5lcWVsZW1lbnRJZGVudGlmaWVyamdpdmVuX25hbWXYGFhbpGZyYW5kb21QuPuwQpSsah4xheciqL1ZU2hkaWdlc3RJRAJsZWxlbWVudFZhbHVl2QPsajE5OTAtMDEtMTVxZWxlbWVudElkZW50aWZpZXJqYmlydGhfZGF0ZdgYWFukZnJhbmRvbVA9jLXqHYbDsW0Lt8-QYlToaGRpZ2VzdElEA2xlbGVtZW50VmFsdWXZA-xqMjAyNi0xMS0wNXFlbGVtZW50SWRlbnRpZmllcmppc3N1ZV9kYXRl2BhYXKRmcmFuZG9tUMO0X5yJJI6OcRB4WYMJwmdoZGlnZXN0SUQEbGVsZW1lbnRWYWx1ZdkD7GoyMDMxLTExLTA1cWVsZW1lbnRJZGVudGlmaWVya2V4cGlyeV9kYXRl2BhYVaRmcmFuZG9tUPfrfGNULGSCIKaiJtcmbY5oZGlnZXN0SUQFbGVsZW1lbnRWYWx1ZWJJTnFlbGVtZW50SWRlbnRpZmllcm9pc3N1aW5nX2NvdW50cnnYGFhwpGZyYW5kb21Qf_NySAqPHfSSHcC7GQ_-VmhkaWdlc3RJRAZsZWxlbWVudFZhbHVleBpJbmppIFZlcmlmeSBUZXN0IEF1dGhvcml0eXFlbGVtZW50SWRlbnRpZmllcnFpc3N1aW5nX2F1dGhvcml0edgYWGKkZnJhbmRvbVCGeZOQjugWgs9qlRJ2CYhbaGRpZ2VzdElEB2xlbGVtZW50VmFsdWVvVEVTVC1ETC0wMDAwMDAxcWVsZW1lbnRJZGVudGlmaWVyb2RvY3VtZW50X251bWJlctgYWQMxpGZyYW5kb21QBpTaG1dxmE0fmB3yHlFaC2hkaWdlc3RJRAhsZWxlbWVudFZhbHVlWQLj_9j_4AAQSkZJRgABAQAAAQABAAD_2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko-MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk__2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0__wAARCABQADwDASIAAhEBAxEB_8QAGwABAAIDAQEAAAAAAAAAAAAAAAUGAQMEAgf_xAAwEAACAAMFBQcEAwAAAAAAAAAAAQIDEQQFBhIhEzE1QbIUFiJRc4LiYWSDoxVxsf_EABgBAAMBAQAAAAAAAAAAAAAAAAACBAMB_8QAIBEAAwABBAMBAQAAAAAAAAAAAAECEQMSITETUWEiMv_aAAwDAQACEQMRAD8Au4ANjIAw2kqvcanPSeiqLVzPY0w66NwNcE2GLR6M2AqVLKOOXPDAAGOAAxE6Qtrkjj4BcnPNjzRUT0RrOO95drm3XaJd3x5LTFD4HWj36pPk6VVf8NGHpN4yLsUF6xuOdnbhzR5olD5N89a83vX9EDe79MuS28Ikzpkx5lRvVFXtdlvyLE8qfInNWBOGq2iUKhp4k4ebeutHvWqppY5LpMX1H03tpfRdRbpfw6QAWkYMNVTXmZAAcbVHR8jB0TZdfFDv5o0EFw5eC6LVLJg2yFWOvkeIYXE6JHTBCoIaIfRht5E1bSWD0ACwkBA3niPsFvm2Xsm02dPFtKVqk91PqTxQ8S8etPt6UPppN8i08IlO9_2H7viYeLU993p_l-JWAa-OfQu5lnWLklRXfT83xM97_sP3fEq4Dxz6Dcz6Dc95fylkin7HZZY3BlzZuSddy8zvIHB_CpvrvphJ4wpYY66BQ8S8etPt6UXwoeJePWn29KH0uzldEWADczAAAC5YP4VN9d9MJPEDg_hU3130wk8TX_TNV0f_2XFlbGVtZW50SWRlbnRpZmllcmhwb3J0cmFpdNgYWKKkZnJhbmRvbVCyLHIVx56lrDMP7jEULH43aGRpZ2VzdElECWxlbGVtZW50VmFsdWWBo2ppc3N1ZV9kYXRl2QPsajIwMjYtMTEtMDVrZXhwaXJ5X2RhdGXZA-xqMjAzMS0xMS0wNXV2ZWhpY2xlX2NhdGVnb3J5X2NvZGVhQnFlbGVtZW50SWRlbnRpZmllcnJkcml2aW5nX3ByaXZpbGVnZXPYGFhdpGZyYW5kb21QJDzzRL493XcWYvkWPtM2KWhkaWdlc3RJRApsZWxlbWVudFZhbHVlY0lORHFlbGVtZW50SWRlbnRpZmllcnZ1bl9kaXN0aW5ndWlzaGluZ19zaWdu\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": false\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                },
+                "description": "The valid sample with `includeClaims: false`. validUntil: 2031-11-05T05:05:21Z."
+              },
+              "response": []
+            },
+            {
+              "name": "mso_mdoc tampered element value",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Signature check fails\", function () {",
+                      "    pm.expect(body.allChecksSuccessful).to.eql(false);",
+                      "    pm.expect(body.schemaAndSignatureCheck.valid).to.eql(false);",
+                      "    pm.expect(body.schemaAndSignatureCheck.error.errorCode).to.eql(\"ERR_SIGNATURE_VERIFICATION_FAILED\");",
+                      "    pm.expect(body.schemaAndSignatureCheck.error.errorMessage).to.include(\"valueDigests verification failed\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"omppc3N1ZXJBdXRohEOhASahGCFZAicwggIjMIIByaADAgECAhRBe_SnFYt_sajjydIv8YaWW-wwGDAKBggqhkjOPQQDAjB1MQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExGTAXBgNVBAoMEEluamkgVmVyaWZ5IFRlc3QxPjA8BgNVBAMMNUluamkgVmVyaWZ5IFRFU1QgRG9jdW1lbnQgU2lnbmVyIC0gTk9UIEZPUiBQUk9EVUNUSU9OMB4XDTI2MTEwMzA1MDUyMVoXDTMyMTEwNTA1MDUyMVowdTELMAkGA1UEBhMCSU4xCzAJBgNVBAgMAktBMRkwFwYDVQQKDBBJbmppIFZlcmlmeSBUZXN0MT4wPAYDVQQDDDVJbmppIFZlcmlmeSBURVNUIERvY3VtZW50IFNpZ25lciAtIE5PVCBGT1IgUFJPRFVDVElPTjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOH0KL87_AP5-GcXIlubUWfgDmoCmw38s1Q0dpaMG6R8TXX5jH5mleKkGz8-C8YSDjTCJaru0VyQVPVUigjjTHyjNzA1MAwGA1UdEwEB_wQCMAAwDgYDVR0PAQH_BAQDAgeAMBUGA1UdJQEB_wQLMAkGByiBjF0FAQIwCgYIKoZIzj0EAwIDSAAwRQIhALJPH4XPyAV-vRPCNPQlUs1S08uC1etOEwrhUSEBp4b7AiAvSJxcpT5B8B1y17LAJ7IJMqS7vzrA4_qIdaRvNVm941kCutgYWQK1pmdkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGd2ZXJzaW9uYzEuMGx2YWxpZGl0eUluZm-jZnNpZ25lZMB0MjAyNi0xMS0wNFQwNTowNToyMVppdmFsaWRGcm9twHQyMDI2LTExLTA0VDA1OjA1OjIxWmp2YWxpZFVudGlswHQyMDMxLTExLTA1VDA1OjA1OjIxWmx2YWx1ZURpZ2VzdHOhcW9yZy5pc28uMTgwMTMuNS4xqwBYIK1_BPBf4VMgavfJfa4Bn9Nna6n8C2M6yh7iVF3lrdZPAVgg3V80NJWogGEag-R42mLi7Im4704FVpgu-e5zC2MIj-cCWCC3CWzSSR2AL9ETy0i8lsG5GesPAVV9N8M6CrqFHUi5dQNYINomaSWDWuGfySce6O9iPReMu9TxFhHu3fcYbK1IPV0GBFgg-12Bo4Q_yjJYRusXsRJgKZlXKDYNdCqEeehP_AiCRW0FWCAe9duq42Q6Rdy4Q6-lOFQLv-XRy4JMIGRWFurdFNotfAZYINUG6OegdLczUw7dOYa17sL8eLsypHS_ghUQI8iM4gNIB1ggOCCE_pY6x1-jV1d3Amv3jcuil_AR76i-nRS4ZMk0wSsIWCBah0996MoQM_B7gkJi6qG6yq8SSR2vf-jD5d68vo093glYICK3K47d4yAT5aUtMp7n8j9n8zr4PQjdAaJH3fy2yQuMClggnIKyO4rAsIQXjJS57liQr7SYGq-SVd8iBJtcsXJAuUVtZGV2aWNlS2V5SW5mb6FpZGV2aWNlS2V5pAECIAEhWCCBzlyLG6pCfRxH8bb62IVGGfN6YvKkqcHWhJ_u47yMKCJYIBq2-KYRyg7ca8stgGW2mcxjv7zx5f7O0VBGmxetMFAIb2RpZ2VzdEFsZ29yaXRobWdTSEEtMjU2WECIzsJvGy94vjQwyem7jzpyVkpf-u3ewq7cyxjCxW6B4ZztVNG9cF6Jq8UvqzO-4dRjc49e1L-2KLVdz0UQcWcSam5hbWVTcGFjZXOhcW9yZy5pc28uMTgwMTMuNS4xi9gYWFSkZnJhbmRvbVAkrsErm5lifVLBeAXtAAVdaGRpZ2VzdElEAGxlbGVtZW50VmFsdWVlU21pdGhxZWxlbWVudElkZW50aWZpZXJrZmFtaWx5X25hbWXYGFhSpGZyYW5kb21QjR-n5RS99b0PDEVWZW3Sf2hkaWdlc3RJRAFsZWxlbWVudFZhbHVlZEphbmVxZWxlbWVudElkZW50aWZpZXJqZ2l2ZW5fbmFtZdgYWFukZnJhbmRvbVC4-7BClKxqHjGF5yKovVlTaGRpZ2VzdElEAmxlbGVtZW50VmFsdWXZA-xqMTk5MC0wMS0xNXFlbGVtZW50SWRlbnRpZmllcmpiaXJ0aF9kYXRl2BhYW6RmcmFuZG9tUD2MteodhsOxbQu3z5BiVOhoZGlnZXN0SUQDbGVsZW1lbnRWYWx1ZdkD7GoyMDI2LTExLTA1cWVsZW1lbnRJZGVudGlmaWVyamlzc3VlX2RhdGXYGFhcpGZyYW5kb21Qw7RfnIkkjo5xEHhZgwnCZ2hkaWdlc3RJRARsZWxlbWVudFZhbHVl2QPsajIwMzEtMTEtMDVxZWxlbWVudElkZW50aWZpZXJrZXhwaXJ5X2RhdGXYGFhVpGZyYW5kb21Q9-t8Y1QsZIIgpqIm1yZtjmhkaWdlc3RJRAVsZWxlbWVudFZhbHVlYklOcWVsZW1lbnRJZGVudGlmaWVyb2lzc3VpbmdfY291bnRyedgYWHCkZnJhbmRvbVB_83JICo8d9JIdwLsZD_5WaGRpZ2VzdElEBmxlbGVtZW50VmFsdWV4GkluamkgVmVyaWZ5IFRlc3QgQXV0aG9yaXR5cWVsZW1lbnRJZGVudGlmaWVycWlzc3VpbmdfYXV0aG9yaXR52BhYYqRmcmFuZG9tUIZ5k5CO6BaCz2qVEnYJiFtoZGlnZXN0SUQHbGVsZW1lbnRWYWx1ZW9URVNULURMLTAwMDAwMDFxZWxlbWVudElkZW50aWZpZXJvZG9jdW1lbnRfbnVtYmVy2BhZAzGkZnJhbmRvbVAGlNobV3GYTR-YHfIeUVoLaGRpZ2VzdElECGxlbGVtZW50VmFsdWVZAuP_2P_gABBKRklGAAEBAAABAAEAAP_bAEMADQkKCwoIDQsKCw4ODQ8TIBUTEhITJxweFyAuKTEwLiktLDM6Sj4zNkY3LC1AV0FGTE5SU1IyPlphWlBgSlFST__bAEMBDg4OExETJhUVJk81LTVPT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT__AABEIAFAAPAMBIgACEQEDEQH_xAAbAAEAAgMBAQAAAAAAAAAAAAAABQYBAwQCB__EADAQAAIAAwUFBwQDAAAAAAAAAAABAgMRBAUGEiETMTVBshQWIlFzguJhZIOjFXGx_8QAGAEAAwEBAAAAAAAAAAAAAAAAAAIEAwH_xAAgEQADAAEEAwEBAAAAAAAAAAAAAQIRAxIhMRNRYSIy_9oADAMBAAIRAxEAPwC7gA2MgDDaSq9xqc9J6KotXM9jTDro3A1wTYYtHozYCpUso45c8MAAY4ADETpC2uSOPgFyc82PNFRPRGs473l2ubddol3fHktMUPgdaPfqk-TpVV_w0Yek3jIuxQXrG452duHNHmiUPk3z1rze9f0QN7v0y5LbwiTOmTHmVG9UVe12W_IsTyp8ic1YE4araJQqGniTh5t660e9aqmljkukxfUfTe2l9F1Ful_DpABaRgw1VNeZkABxtUdHyMHRNl18UO_mjQQXDl4LotUsmDbIVY6-R4hhcTokdMEKghoh9GG3kTVtJYPQALCQEDeeI-wW-bZeybTZ08W0pWqT3U-pPFDxLx60-3pQ-mk3yLTwiU73_Yfu-Jh4tT33en-X4lYBr459C7mWdYuSVFd9PzfEz3v-w_d8SrgPHPoNzPoNz3l_KWSKfsdlljcGXNm5J13LzO8gcH8Km-u-mEnjClhjroFDxLx60-3pRfCh4l49afb0ofS7OV0RYANzMAAALlg_hU3130wk8QOD-FTfXfTCTxNf9M1XR__ZcWVsZW1lbnRJZGVudGlmaWVyaHBvcnRyYWl02BhYoqRmcmFuZG9tULIschXHnqWsMw_uMRQsfjdoZGlnZXN0SUQJbGVsZW1lbnRWYWx1ZYGjamlzc3VlX2RhdGXZA-xqMjAyNi0xMS0wNWtleHBpcnlfZGF0ZdkD7GoyMDMxLTExLTA1dXZlaGljbGVfY2F0ZWdvcnlfY29kZWFCcWVsZW1lbnRJZGVudGlmaWVycmRyaXZpbmdfcHJpdmlsZWdlc9gYWF2kZnJhbmRvbVAkPPNEvj3ddxZi-RY-0zYpaGRpZ2VzdElECmxlbGVtZW50VmFsdWVjSU5EcWVsZW1lbnRJZGVudGlmaWVydnVuX2Rpc3Rpbmd1aXNoaW5nX3NpZ24\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                },
+                "description": "The valid sample with the `family_name` value changed inside its signed item; the MSO digest no longer matches."
+              },
+              "response": []
+            },
+            {
+              "name": "mso_mdoc corrupted issuerAuth signature",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Signature check fails\", function () {",
+                      "    pm.expect(body.allChecksSuccessful).to.eql(false);",
+                      "    pm.expect(body.schemaAndSignatureCheck.valid).to.eql(false);",
+                      "    pm.expect(body.schemaAndSignatureCheck.error.errorCode).to.eql(\"ERR_SIGNATURE_VERIFICATION_FAILED\");",
+                      "    pm.expect(body.schemaAndSignatureCheck.error.errorMessage).to.include(\"COSE signature verification\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"omppc3N1ZXJBdXRohEOhASahGCFZAicwggIjMIIByaADAgECAhRBe_SnFYt_sajjydIv8YaWW-wwGDAKBggqhkjOPQQDAjB1MQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExGTAXBgNVBAoMEEluamkgVmVyaWZ5IFRlc3QxPjA8BgNVBAMMNUluamkgVmVyaWZ5IFRFU1QgRG9jdW1lbnQgU2lnbmVyIC0gTk9UIEZPUiBQUk9EVUNUSU9OMB4XDTI2MTEwMzA1MDUyMVoXDTMyMTEwNTA1MDUyMVowdTELMAkGA1UEBhMCSU4xCzAJBgNVBAgMAktBMRkwFwYDVQQKDBBJbmppIFZlcmlmeSBUZXN0MT4wPAYDVQQDDDVJbmppIFZlcmlmeSBURVNUIERvY3VtZW50IFNpZ25lciAtIE5PVCBGT1IgUFJPRFVDVElPTjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOH0KL87_AP5-GcXIlubUWfgDmoCmw38s1Q0dpaMG6R8TXX5jH5mleKkGz8-C8YSDjTCJaru0VyQVPVUigjjTHyjNzA1MAwGA1UdEwEB_wQCMAAwDgYDVR0PAQH_BAQDAgeAMBUGA1UdJQEB_wQLMAkGByiBjF0FAQIwCgYIKoZIzj0EAwIDSAAwRQIhALJPH4XPyAV-vRPCNPQlUs1S08uC1etOEwrhUSEBp4b7AiAvSJxcpT5B8B1y17LAJ7IJMqS7vzrA4_qIdaRvNVm941kCutgYWQK1pmdkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGd2ZXJzaW9uYzEuMGx2YWxpZGl0eUluZm-jZnNpZ25lZMB0MjAyNi0xMS0wNFQwNTowNToyMVppdmFsaWRGcm9twHQyMDI2LTExLTA0VDA1OjA1OjIxWmp2YWxpZFVudGlswHQyMDMxLTExLTA1VDA1OjA1OjIxWmx2YWx1ZURpZ2VzdHOhcW9yZy5pc28uMTgwMTMuNS4xqwBYIK1_BPBf4VMgavfJfa4Bn9Nna6n8C2M6yh7iVF3lrdZPAVgg3V80NJWogGEag-R42mLi7Im4704FVpgu-e5zC2MIj-cCWCC3CWzSSR2AL9ETy0i8lsG5GesPAVV9N8M6CrqFHUi5dQNYINomaSWDWuGfySce6O9iPReMu9TxFhHu3fcYbK1IPV0GBFgg-12Bo4Q_yjJYRusXsRJgKZlXKDYNdCqEeehP_AiCRW0FWCAe9duq42Q6Rdy4Q6-lOFQLv-XRy4JMIGRWFurdFNotfAZYINUG6OegdLczUw7dOYa17sL8eLsypHS_ghUQI8iM4gNIB1ggOCCE_pY6x1-jV1d3Amv3jcuil_AR76i-nRS4ZMk0wSsIWCBah0996MoQM_B7gkJi6qG6yq8SSR2vf-jD5d68vo093glYICK3K47d4yAT5aUtMp7n8j9n8zr4PQjdAaJH3fy2yQuMClggnIKyO4rAsIQXjJS57liQr7SYGq-SVd8iBJtcsXJAuUVtZGV2aWNlS2V5SW5mb6FpZGV2aWNlS2V5pAECIAEhWCCBzlyLG6pCfRxH8bb62IVGGfN6YvKkqcHWhJ_u47yMKCJYIBq2-KYRyg7ca8stgGW2mcxjv7zx5f7O0VBGmxetMFAIb2RpZ2VzdEFsZ29yaXRobWdTSEEtMjU2WECIzsJvGy94vjQwNum7jzpyVkpf-u3ewq7cyxjCxW6B4ZztVNG9cF6Jq8UvqzO-4dRjc49e1L-2KLVdz0UQcWcSam5hbWVTcGFjZXOhcW9yZy5pc28uMTgwMTMuNS4xi9gYWFKkZnJhbmRvbVAkrsErm5lifVLBeAXtAAVdaGRpZ2VzdElEAGxlbGVtZW50VmFsdWVjRG9lcWVsZW1lbnRJZGVudGlmaWVya2ZhbWlseV9uYW1l2BhYUqRmcmFuZG9tUI0fp-UUvfW9DwxFVmVt0n9oZGlnZXN0SUQBbGVsZW1lbnRWYWx1ZWRKYW5lcWVsZW1lbnRJZGVudGlmaWVyamdpdmVuX25hbWXYGFhbpGZyYW5kb21QuPuwQpSsah4xheciqL1ZU2hkaWdlc3RJRAJsZWxlbWVudFZhbHVl2QPsajE5OTAtMDEtMTVxZWxlbWVudElkZW50aWZpZXJqYmlydGhfZGF0ZdgYWFukZnJhbmRvbVA9jLXqHYbDsW0Lt8-QYlToaGRpZ2VzdElEA2xlbGVtZW50VmFsdWXZA-xqMjAyNi0xMS0wNXFlbGVtZW50SWRlbnRpZmllcmppc3N1ZV9kYXRl2BhYXKRmcmFuZG9tUMO0X5yJJI6OcRB4WYMJwmdoZGlnZXN0SUQEbGVsZW1lbnRWYWx1ZdkD7GoyMDMxLTExLTA1cWVsZW1lbnRJZGVudGlmaWVya2V4cGlyeV9kYXRl2BhYVaRmcmFuZG9tUPfrfGNULGSCIKaiJtcmbY5oZGlnZXN0SUQFbGVsZW1lbnRWYWx1ZWJJTnFlbGVtZW50SWRlbnRpZmllcm9pc3N1aW5nX2NvdW50cnnYGFhwpGZyYW5kb21Qf_NySAqPHfSSHcC7GQ_-VmhkaWdlc3RJRAZsZWxlbWVudFZhbHVleBpJbmppIFZlcmlmeSBUZXN0IEF1dGhvcml0eXFlbGVtZW50SWRlbnRpZmllcnFpc3N1aW5nX2F1dGhvcml0edgYWGKkZnJhbmRvbVCGeZOQjugWgs9qlRJ2CYhbaGRpZ2VzdElEB2xlbGVtZW50VmFsdWVvVEVTVC1ETC0wMDAwMDAxcWVsZW1lbnRJZGVudGlmaWVyb2RvY3VtZW50X251bWJlctgYWQMxpGZyYW5kb21QBpTaG1dxmE0fmB3yHlFaC2hkaWdlc3RJRAhsZWxlbWVudFZhbHVlWQLj_9j_4AAQSkZJRgABAQAAAQABAAD_2wBDAA0JCgsKCA0LCgsODg0PEyAVExISEyccHhcgLikxMC4pLSwzOko-MzZGNywtQFdBRkxOUlNSMj5aYVpQYEpRUk__2wBDAQ4ODhMREyYVFSZPNS01T09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT09PT0__wAARCABQADwDASIAAhEBAxEB_8QAGwABAAIDAQEAAAAAAAAAAAAAAAUGAQMEAgf_xAAwEAACAAMFBQcEAwAAAAAAAAAAAQIDEQQFBhIhEzE1QbIUFiJRc4LiYWSDoxVxsf_EABgBAAMBAQAAAAAAAAAAAAAAAAACBAMB_8QAIBEAAwABBAMBAQAAAAAAAAAAAAECEQMSITETUWEiMv_aAAwDAQACEQMRAD8Au4ANjIAw2kqvcanPSeiqLVzPY0w66NwNcE2GLR6M2AqVLKOOXPDAAGOAAxE6Qtrkjj4BcnPNjzRUT0RrOO95drm3XaJd3x5LTFD4HWj36pPk6VVf8NGHpN4yLsUF6xuOdnbhzR5olD5N89a83vX9EDe79MuS28Ikzpkx5lRvVFXtdlvyLE8qfInNWBOGq2iUKhp4k4ebeutHvWqppY5LpMX1H03tpfRdRbpfw6QAWkYMNVTXmZAAcbVHR8jB0TZdfFDv5o0EFw5eC6LVLJg2yFWOvkeIYXE6JHTBCoIaIfRht5E1bSWD0ACwkBA3niPsFvm2Xsm02dPFtKVqk91PqTxQ8S8etPt6UPppN8i08IlO9_2H7viYeLU993p_l-JWAa-OfQu5lnWLklRXfT83xM97_sP3fEq4Dxz6Dcz6Dc95fylkin7HZZY3BlzZuSddy8zvIHB_CpvrvphJ4wpYY66BQ8S8etPt6UXwoeJePWn29KH0uzldEWADczAAAC5YP4VN9d9MJPEDg_hU3130wk8TX_TNV0f_2XFlbGVtZW50SWRlbnRpZmllcmhwb3J0cmFpdNgYWKKkZnJhbmRvbVCyLHIVx56lrDMP7jEULH43aGRpZ2VzdElECWxlbGVtZW50VmFsdWWBo2ppc3N1ZV9kYXRl2QPsajIwMjYtMTEtMDVrZXhwaXJ5X2RhdGXZA-xqMjAzMS0xMS0wNXV2ZWhpY2xlX2NhdGVnb3J5X2NvZGVhQnFlbGVtZW50SWRlbnRpZmllcnJkcml2aW5nX3ByaXZpbGVnZXPYGFhdpGZyYW5kb21QJDzzRL493XcWYvkWPtM2KWhkaWdlc3RJRApsZWxlbWVudFZhbHVlY0lORHFlbGVtZW50SWRlbnRpZmllcnZ1bl9kaXN0aW5ndWlzaGluZ19zaWdu\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                },
+                "description": "The valid sample with one byte of the `issuerAuth` COSE_Sign1 signature flipped."
+              },
+              "response": []
+            },
+            {
+              "name": "mso_mdoc empty documents",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error names the mdoc problem\", function () {",
+                      "    pm.expect(body.errorCode).to.eql(\"INVALID_CREDENTIAL\");",
+                      "    pm.expect(body.errorMessage).to.eql(\"mdoc contains no documents\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"oWlkb2N1bWVudHOA\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                },
+                "description": "Shape C with `documents: []`."
+              },
+              "response": []
+            },
+            {
+              "name": "mso_mdoc corrupt cbor",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error names the mdoc problem\", function () {",
+                      "    pm.expect(body.errorCode).to.eql(\"INVALID_CREDENTIAL\");",
+                      "    pm.expect(body.errorMessage).to.eql(\"Failed to decode mdoc credential\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"omppc3N1ZXJBdXRohEOhASahGCFZAicwggIjMIIByaADAgECAhRBe_SnFYt_sajjydIv8YaWW-wwGDAKBggqhkjOPQQDAjB1MQswCQYDVQQGEwJJTjELMAkGA1UECAwCS0ExGTAXBgNVBAoMEEluamkgVmVyaWZ5IFRlc3QxPjA8BgNVBAMMNUluamkgVmVyaWZ5IFRFU1QgRG9jdW1lbnQgU2lnbmVyIC0gTk9UIEZPUiBQUk9EVUNUSU9OMB4XDTI2MTEwMzA1MDUyMVoXDTMyMTEwNTA1MDUyMVowdTELMAkGA1UEBhMCSU4xCzAJBgNVBAgMAktBMRkwFwYDVQQKDBBJbmppIFZlcmlmeSBUZXN0MT4wPAYDVQQDDDVJbmppIFZlcmlmeSBURVNUIERvY3VtZW50IFNpZ25lciAtIE5PVCBGT1IgUFJPRFVDVElPTjBZMBMGByqGSM49AgEGCCqGSM49AwEHA0IABOH0KL87_AP5-GcXIlubUWfgDmoCmw38s1Q0dpaMG6R8TXX5jH5mleKkGz8-C8YSDjTCJaru0VyQVPVUigjjTHyjNzA1MAwGA1UdEwEB_wQCMAAwDgYDVR0PAQH_BAQDAgeAMBUGA1UdJQEB_wQLMAkGByiBjF0FAQIwCgYIKoZIzj0EAwIDSAAwRQIhALJPH4XPyAV-vRPCNPQlUs1S08uC1etOEwrhUSEBp4b7AiAvSJxcpT5B8B1y17LAJ7IJMqS7vzrA4_qIdaRvNVm941kCutgYWQK1pmdkb2NUeXBldW9yZy5pc28uMTgwMTMuNS4xLm1ETGd2ZXJzaW9uYzEuMGx2YWxpZGl0eUluZm-jZnNpZ25lZMB0MjAyNi0xMS0wNFQwNTowNToyMVppdmFsaWRGcm9twHQyMDI2LTExLTA0VDA1OjA1OjIxWmp2YWxpZFVudGlswHQyMDMxLTExLTA1VDA1OjA1OjIxWmx2YWx1ZURpZ2VzdHOhcW9yZy5pc28uMTgwMTMuNS4xqwBYIK1_BPBf4VMgavfJfa4Bn9Nna6n8C2M6yh7iVF3lrdZPAVgg3V80NJWogGEag-R42mLi7Im4704FVpgu-e5zC2MIj-cCWCC3CWzSSR2AL9ETy0i8lsG5GesPAVV9N8M6CrqFHUi5dQNYINomaSWDWuGfySce6O9iPReMu9TxFhHu3fcYbK1IPV0GBFgg-12Bo4Q_yjJYRusXsRJgKZlXKDYNdCqEeehP_AiCRW0FWCAe9duq42Q6Rdy4Q6-lOFQLv-XRy4JMIGRWFurdFNotfAZYINUG6OegdLczUw7dOYa17sL8eLsypHS_ghUQI8iM4gNIB1ggOCCE_pY6x1-jV1d3Amv3jcuil_AR76i-nRS4ZMk0wSsIWCBah0996MoQM_B7gkJi6qG6yq8SSR2vf-jD5d68vo093glYICK3K47d4yAT5aUtMp7n8j9n8zr4PQjdAaJH3fy2yQuMClggnIKyO4rAsIQXjJS57liQr7SYGq-SVd8iBJtcsXJAuUVtZGV2aWNlS2V5SW5mb6FpZGV2aWNlS2V5pAECIAEhWCCBzlyLG6pCfRxH8bb62IVGGfN6YvKkqcHWhJ_u47yMKCJYIBq2-KYRyg7ca8stgGW2mcxjv7zx5f7O0VBGmxetMFAIb2RpZ2VzdEFsZ29yaXRobWdTSEEtMjU2WECIzsJvGy94vjQwyem7jzpyVkpf-u3ewq7cyxjCxW6B4ZztVNG9cF6Jq8UvqzO-4dRjc49e1L-2KLVdz0UQcWcSam5hbWVTcGFjZXOhcW9yZy5pc28uMTgwMTMuNS4xi9gYWFKkZnJhbmRvbVAkrsErm5lifVLBeAXtAAVdaGRpZ2VzdElEAGxlbGVtZW50VmFsdWVjRG9lcWVsZW1lbnRJZGVudGlmaWVya2ZhbWlseV9uYW1l2BhYUqRmcmFuZG9tUI0fp-UUvfW9DwxFVmVt0n9oZGlnZXN0SUQBbGVsZW1lbnRWYWx1ZWRKYW5lcWVsZW1lbnRJZGVudGlmaWVyamdpdmVuX25hbWXYGFhbpGZyYW5kb21QuPuwQpSsah4xheciqL1ZU2hkaWdlc3RJRAJsZWxlbWVudFZhbHVl2QPsajE5OTAtMDEtMTVx\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                },
+                "description": "The valid sample cut to half its length: still recognised as an mdoc, reported as an mdoc decode error (not JSON-LD)."
+              },
+              "response": []
+            },
+            {
+              "name": "mso_mdoc oversized",
+              "event": [
+                {
+                  "listen": "prerequest",
+                  "script": {
+                    "exec": [
+                      "// A CBOR map with issuerAuth, nameSpaces and a 1,100,001-byte zero-filled byte string, so the",
+                      "// decoded size exceeds the default inji.verify.mso-mdoc.max-size (1048576). The header is",
+                      "// 3-byte aligned, so the zero bytes encode as base64url \"A\" characters.",
+                      "const header = \"o2ppc3N1ZXJBdXRogGpuYW1lU3BhY2VzoGhwYWRCeXRlc1oAEMjh\";",
+                      "pm.variables.set(\"oversizedMdoc\", header + \"A\".repeat(1466668));"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                },
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test(\"Status code is 400\", function () {",
+                      "    pm.response.to.have.status(400);",
+                      "});",
+                      "",
+                      "pm.test(\"Error names the mdoc problem\", function () {",
+                      "    pm.expect(body.errorCode).to.eql(\"INVALID_CREDENTIAL\");",
+                      "    pm.expect(body.errorMessage).to.eql(\"Credential exceeds the maximum supported size\");",
+                      "});"
+                    ],
+                    "type": "text/javascript",
+                    "packages": {},
+                    "requests": {}
+                  }
+                }
+              ],
+              "request": {
+                "auth": {
+                  "type": "noauth"
+                },
+                "method": "POST",
+                "header": [],
+                "body": {
+                  "mode": "raw",
+                  "raw": "{\n  \"verifiableCredential\": \"{{oversizedMdoc}}\",\n  \"skipStatusChecks\": false,\n  \"statusCheckFilters\": [\n    \"revocation\"\n  ],\n  \"includeClaims\": true\n}",
+                  "options": {
+                    "raw": {
+                      "language": "json"
+                    }
+                  }
+                },
+                "url": {
+                  "raw": "{{base_url}}/v1/verify/v2/vc-verification",
+                  "host": [
+                    "{{base_url}}"
+                  ],
+                  "path": [
+                    "v1",
+                    "verify",
+                    "v2",
+                    "vc-verification"
+                  ]
+                },
+                "description": "An mdoc larger than `inji.verify.mso-mdoc.max-size` (default 1048576 decoded bytes), built by the pre-request script."
+              },
+              "response": []
+            },
+            {
+              "name": "mso_mdoc certify interop",
+              "event": [
+                {
+                  "listen": "test",
+                  "script": {
+                    "exec": [
+                      "const body = pm.response.json();",
+                      "",
+                      "pm.test(\"Status code is 200\", function () {",
+                      "    pm.response.to.have.status(200);",
+                      "});",
+                      "",
+                      "pm.test(\"Certify-issued mDL verifies\", function () {",
+                      "    pm.expect(body.allChecksSuccessful).to.eql(true);",
+                      "    pm.expect(body.schemaAndSignatureCheck.valid).to.eql(true);",
+                      "    pm.expect(body.expiryCheck.valid).to.eql(true);",
                       "    pm.expect(body.claims[\"org.iso.18013.5.1\"].family_name).to.eql(\"Cooper\");",
-                      "    pm.expect(body.claims[\"org.iso.18013.5.1\"].given_name).to.eql(\"Gorge\");",
-                      "    pm.expect(body.claims[\"org.iso.18013.5.1\"].birth_date).to.eql(\"1985-04-29\");",
                       "    pm.expect(body.claims[\"org.iso.18013.5.1\"].document_number).to.eql(\"DL2154189532\");",
                       "});"
                     ],
@@ -790,26 +1365,13 @@
                     "v2",
                     "vc-verification"
                   ]
-                }
+                },
+                "description": "Interop: an mDL issued by Inji Certify (4 data elements). **validUntil: 2028-10-14T07:53:18Z** \u2014 after this date the expiry check fails and the sample must be replaced."
               },
-              "response": [
-                {
-                  "name": "mso_mdoc valid response",
-                  "status": "OK",
-                  "code": 200,
-                  "_postman_previewlanguage": "json",
-                  "header": [
-                    {
-                      "key": "Content-Type",
-                      "value": "application/json"
-                    }
-                  ],
-                  "cookie": [],
-                  "body": "{\n  \"allChecksSuccessful\": true,\n  \"schemaAndSignatureCheck\": {\n    \"valid\": true,\n    \"error\": null\n  },\n  \"expiryCheck\": {\n    \"valid\": true\n  },\n  \"statusCheck\": [],\n  \"claims\": {\n    \"org.iso.18013.5.1\": {\n      \"family_name\": \"Cooper\",\n      \"given_name\": \"Gorge\",\n      \"birth_date\": \"1985-04-29\",\n      \"document_number\": \"DL2154189532\"\n    }\n  }\n}"
-                }
-              ]
+              "response": []
             }
-          ]
+          ],
+          "description": "ISO 18013-5 mDL (`mso_mdoc`) on `POST /v2/vc-verification`. The fixed samples are ES256 test credentials (validUntil 2031-11-05T05:05:21Z); the Certify interop sample is valid until 2028-10-14. Expired and not-yet-valid cases are added once inji/vc-verifier#300 ships."
         }
       ]
     },
@@ -5986,7 +6548,7 @@
           "if (!currentUrl || currentUrl === \"\") {",
           "    const errorMessage = `",
           "    ",
-          "    🔴 CONFIGURATION REQUIRED 🔴",
+          "    \ud83d\udd34 CONFIGURATION REQUIRED \ud83d\udd34",
           "    ---------------------------------------------------",
           "    The 'base_url' variable is missing or empty.",
           "    ",

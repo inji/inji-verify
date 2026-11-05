@@ -3,6 +3,7 @@ import { decodeMappedData } from "@injistack/pixelpass";
 import { extractMappedClaim, extractMdocDisplayClaims, isCWT, isMsoMdoc, uint8ArrayToHex } from "../../utils/cborUtils";
 
 jest.mock("cbor-x", () => ({
+  addExtension: jest.fn(),
   decode: jest.fn(),
   decodeMultiple: jest.fn(),
   Tag: class Tag {
