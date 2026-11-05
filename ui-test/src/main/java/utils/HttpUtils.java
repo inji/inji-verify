@@ -68,7 +68,7 @@ public class HttpUtils {
 
 		String idToken = extractValue(response, "id_token");
 		if (idToken == null || idToken.isEmpty()) {
-			throw new RuntimeException("id_token not found in response: " + response);
+			throw new RuntimeException("id_token not found in Google token response. Check that the OAuth grant includes the openid scope.");
 		}
 
 		return idToken;

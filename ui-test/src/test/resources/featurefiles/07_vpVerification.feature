@@ -62,9 +62,12 @@ Feature: Inji Verify vpVerification testing
     And Verify click Sort AtoZ button
     And Verify click sort by button
     And Verify click Sort ZtoA button
-    And User enter the credential type "lifeInsurance"
+    And User enter the credential type "<credential type>"
     And Verify click Back button
 
+    Examples:
+      | credential type |
+      | lifeInsurance            |
 
 
   @smoke @verifyingVpVerification
@@ -116,7 +119,7 @@ Scenario: Verify VP verification same device flow
     And Click on vp verification tab
     And Verify click on request verifiable credentials button
     And Verify Verifiable Credential Panel label
-    And User enter the credential type "sdJwt"
+    And User enter the credential type "<credential type>"
     And Select credential "sdJwt"
     And Verify Click on Generate QR Code button
     And Verify QR code generated
@@ -127,6 +130,9 @@ Scenario: Verify VP verification same device flow
     And Verify Click on Generate QR Code button
     And Verify QR code generated
     
+    Examples:
+      | credential type |
+      | sdJwt     |
 	  
 	
 	@smoke @verifyingVpVerificationNegative @dependsOnVP
