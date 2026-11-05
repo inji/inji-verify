@@ -41,7 +41,7 @@ The two expiry samples will match the expected column once vc-verifier#300 ships
 
 `mdl-expired.txt` has `signed` = now − 2 years, which is earlier than the certificate's `notBefore`. ISO requires `validFrom` ≥ `signed`, so the two dates cannot both match the specification.
 
-The 400 responses have the body `{"errorCode": "INVALID_CREDENTIAL", "errorMessage": "<message above>"}`.
+The 400 responses use Spring Boot's default error body, as for the other formats. The messages above appear in the body only when `server.error.include-message=always` is set.
 
 ## Expiry
 

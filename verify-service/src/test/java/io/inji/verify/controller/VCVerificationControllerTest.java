@@ -18,7 +18,6 @@ import static org.mockito.Mockito.*;
 import static org.springframework.test.web.servlet.request.MockMvcRequestBuilders.post;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.content;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 
 public class VCVerificationControllerTest {
 
@@ -80,16 +79,14 @@ public class VCVerificationControllerTest {
     }
 
     @Test
-    public void testVerifyV2ReturnsReasonForInvalidCredential() throws Exception {
+    public void testVerifyV2ReturnsDefaultBadRequestForInvalidCredential() throws Exception {
         when(VCVerificationService.verifyV2(any(), eq(false)))
                 .thenThrow(new InvalidCredentialException("Failed to decode mdoc credential", null));
 
         mockMvc.perform(post("/v2/vc-verification")
                         .contentType(MediaType.APPLICATION_JSON)
                         .content("{\"verifiableCredential\":\"o2ppc3N1ZXJBdXRo\"}"))
-                .andExpect(status().isBadRequest())
-                .andExpect(jsonPath("$.errorCode").value("INVALID_CREDENTIAL"))
-                .andExpect(jsonPath("$.errorMessage").value("Failed to decode mdoc credential"));
+                .andExpect(status().isBadRequest());
     }
 
     @SuppressWarnings({"rawtypes", "unchecked"})

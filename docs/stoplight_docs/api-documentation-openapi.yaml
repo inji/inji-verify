@@ -1609,7 +1609,7 @@ paths:
                 $ref: '#/components/schemas/VcVerificationResponse'
         '400':
           description: |-
-            Invalid request payload — `verifiableCredential` field is null or missing.
+            Invalid request payload — `verifiableCredential` field is null or missing — or a credential that cannot be decoded (for example a corrupt mdoc, an mdoc with an empty `documents` array, or an mdoc larger than `inji.verify.mso-mdoc.max-size`). The body is Spring Boot's default error body.
         '500':
           description: Internal server error during verification or credential status check.
           content:

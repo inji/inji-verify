@@ -27,7 +27,7 @@ The `/v2/vc-verification` endpoint auto-detects format from the credential conte
 | `vc+sd-jwt` | X.509 Certificate (`x5c` JWT header) | PS256, RS256, EdDSA (Ed25519), ES256, ES256K | — |
 | `dc+sd-jwt` | X.509 Certificate (`x5c` JWT header) | PS256, RS256, EdDSA (Ed25519), ES256, ES256K | — |
 | `cwt_vc` (Claim 169) | COSE_Sign1 (CWT — RFC 8392) | ES256, EdDSA | `COSE_Sign1` |
-| `mso_mdoc` (ISO 18013-5, including mDL) | COSE_Sign1 `issuerAuth` in `issuerSigned`; its payload contains the Mobile Security Object | Determined by the `issuerAuth` COSE `alg` header, subject to verifier support | `COSE_Sign1` |
+| `mso_mdoc` (ISO 18013-5, including mDL) | COSE_Sign1 `issuerAuth` in `issuerSigned`; its payload contains the Mobile Security Object | ES256 only (COSE `alg` -7, P-256) | `COSE_Sign1` |
 
 Format details: [VC_Format_W3C_LDP_VC.md](./VC_Format_W3C_LDP_VC.md), [VC_Format_IETF_SD_JWT.md](./VC_Format_IETF_SD_JWT.md), [VC_Format_Claim_169.md](./VC_Format_Claim_169.md), [VC_Format_ISO_MSO_MDOC.md](./VC_Format_ISO_MSO_MDOC.md).
 

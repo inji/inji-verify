@@ -1139,15 +1139,8 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "const body = pm.response.json();",
-                      "",
                       "pm.test(\"Status code is 400\", function () {",
                       "    pm.response.to.have.status(400);",
-                      "});",
-                      "",
-                      "pm.test(\"Error names the mdoc problem\", function () {",
-                      "    pm.expect(body.errorCode).to.eql(\"INVALID_CREDENTIAL\");",
-                      "    pm.expect(body.errorMessage).to.eql(\"mdoc contains no documents\");",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -1194,15 +1187,8 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "const body = pm.response.json();",
-                      "",
                       "pm.test(\"Status code is 400\", function () {",
                       "    pm.response.to.have.status(400);",
-                      "});",
-                      "",
-                      "pm.test(\"Error names the mdoc problem\", function () {",
-                      "    pm.expect(body.errorCode).to.eql(\"INVALID_CREDENTIAL\");",
-                      "    pm.expect(body.errorMessage).to.eql(\"Failed to decode mdoc credential\");",
                       "});"
                     ],
                     "type": "text/javascript",
@@ -1264,15 +1250,8 @@
                   "listen": "test",
                   "script": {
                     "exec": [
-                      "const body = pm.response.json();",
-                      "",
                       "pm.test(\"Status code is 400\", function () {",
                       "    pm.response.to.have.status(400);",
-                      "});",
-                      "",
-                      "pm.test(\"Error names the mdoc problem\", function () {",
-                      "    pm.expect(body.errorCode).to.eql(\"INVALID_CREDENTIAL\");",
-                      "    pm.expect(body.errorMessage).to.eql(\"Credential exceeds the maximum supported size\");",
                       "});"
                     ],
                     "type": "text/javascript",
