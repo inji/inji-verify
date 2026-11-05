@@ -74,7 +74,7 @@ export function extractMappedClaim(
   if (items.length === 0) throw new Error("No CBOR items found");
 
   let tagged = items[0];
-  if (!tagged || tagged.tag !== 61) {
+  if (tagged?.tag !== 61) {
     throw new Error("Expected CWT (CBOR tag 61) at top level");
   }
 

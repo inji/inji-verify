@@ -1,6 +1,7 @@
+import { getKeyedItems } from "../../../../utils/listUtils";
 import React, { useEffect, useState } from "react";
 import { useAppDispatch, useAppSelector } from "../../../../redux/hooks";
-import { claim } from "../../../../types/data-types";
+import { Claim } from "../../../../types/data-types";
 import { RootState } from "../../../../redux/store";
 import { useTranslation } from "react-i18next";
 import { isRTL } from "../../../../utils/i18n";
@@ -12,7 +13,7 @@ import {
   setSelectedCredentials,
   setShowWalletSelector,
 } from "../../../../redux/features/verify/vpVerificationState";
-import { storage } from "../../../../utils/storage";
+import { Storage } from "../../../../utils/storage";
 import { Button } from "./Button";
 import { FilterLinesIcon, SearchIcon } from "../../../../utils/theme-utils";
 import { useVerifyFlowSelector } from "../../../../redux/features/verification/verification.selector";
@@ -24,14 +25,14 @@ function SelectionPanelContent() {
   const [isAscending, setIsAscending] = useState(true);
   const dispatch = useAppDispatch();
   let language = useAppSelector((state: RootState) => state.common.language);
-  language = language ?? window._env_.DEFAULT_LANG;
+  language = language ?? globalThis._env_.DEFAULT_LANG;
   const rtl = isRTL(language);
   const selectedCredentials = useVerifyFlowSelector((state) => state.selectedCredentials);
   const dcqlQuery = useVerifyFlowSelector((state) => state.dcqlQuery);
   const isMobile = isMobileDevice();
 
-  const isCredentialSelected = (cred: claim) =>
-    selectedCredentials.some((c: claim) => c.name === cred.name);
+  const isCredentialSelected = (cred: Claim) =>
+    selectedCredentials.some((c: Claim) => c.name === cred.name);
 
   const filteredClaims = getVerifiableClaims()
     .filter((claim) => claim.name.toLowerCase().includes(search.toLowerCase()))
@@ -51,12 +52,12 @@ function SelectionPanelContent() {
     setSearch(event.target.value);
   };
 
-  const toggleClaimSelection = (cred: claim) => {
+  const toggleClaimSelection = (cred: Claim) => {
     if (isCredentialSelected(cred)) {
       dispatch(
         setSelectedCredentials({
           selectedCredentials: selectedCredentials.filter(
-            (c: claim) => c.name !== cred.name
+            (c: Claim) => c.name !== cred.name
           ),
         })
       );
@@ -96,8 +97,8 @@ function SelectionPanelContent() {
   };
 
   useEffect(() => {
-    selectedCredentials.forEach((cred: claim) => {
-      storage.setItem(storage.ESSENTIAL_CLAIM, cred);
+    selectedCredentials.forEach((cred: Claim) => {
+      Storage.setItem(Storage.ESSENTIAL_CLAIM, cred);
     });
   }, [selectedCredentials]);
 
@@ -166,15 +167,15 @@ function SelectionPanelContent() {
         </h2>
         {filteredClaims.length > 0 ? (
           <ul className="grid gap-4 max-h-[120px] lg:max-h-[250px] pr-4">
-            {filteredClaims.map((claim, index) => {
+            {getKeyedItems(filteredClaims, (claim) => claim.type).map(({ item: claim, key }, index) => {
               const isSelectedClaim = isCredentialSelected(claim);
               return (
                 <li
                   id={`${claim.name}-ItemBox`}
-                  key={index}
+                  key={key}
                   className={`grid mb-2 ${
                     isSelectedClaim
-                      ? `bg-${window._env_.DEFAULT_THEME}-gradient bg-no-repeat rounded-[5px] p-px bg-opacity-95`
+                      ? `bg-${globalThis._env_.DEFAULT_THEME}-gradient bg-no-repeat rounded-[5px] p-px bg-opacity-95`
                       : ""
                   }`}
                 >
@@ -206,7 +207,7 @@ function SelectionPanelContent() {
                       <div
                         className={`w-5 h-5 ${
                           isSelectedClaim
-                            ? ` bg-${window._env_.DEFAULT_THEME}-gradient`
+                            ? ` bg-${globalThis._env_.DEFAULT_THEME}-gradient`
                             : "border-2 border-gray-300 bg-white"
                         } rounded-sm flex items-center justify-center p-px`}
                       >

@@ -9,24 +9,40 @@ interface ModalProps {
   children: React.ReactNode;
 }
 
-const Modal = ({ isOpen, onClose, children }: ModalProps) => {
+const Modal = ({ isOpen, onClose, children }: Readonly<ModalProps>) => {
+  const dialogRef = React.useRef<HTMLDialogElement>(null);
+
+  React.useEffect(() => {
+    const dialog = dialogRef.current;
+    if (!isOpen || !dialog) return;
+    const previousFocus = document.activeElement;
+    dialog.showModal();
+    return () => {
+      dialog.close();
+      if (previousFocus instanceof HTMLElement && previousFocus.isConnected) {
+        previousFocus.focus();
+      }
+    };
+  }, [isOpen]);
+
   if (!isOpen) return null;
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center">
-      <button
-        className="absolute inset-0 bg-black/50 transition-opacity duration-300"
-        onClick={onClose}
-        aria-label="Close modal"
-      />
-      <div
-        className="relative z-10 transform transition-all duration-300 scale-100 opacity-100"
-        role="dialog"
-        aria-modal="true"
-      >
-        {children}
-      </div>
-    </div>
+    <dialog
+      ref={dialogRef}
+      className="m-auto p-0 border-0 bg-transparent overflow-visible backdrop:bg-black/50"
+      aria-labelledby="camera-access-denied"
+      aria-describedby="camera-access-denied-description"
+      onCancel={(event) => {
+        event.preventDefault();
+        onClose();
+      }}
+      onClick={(event) => {
+        if (event.target === event.currentTarget) onClose();
+      }}
+    >
+      {children}
+    </dialog>
   );
 };
 

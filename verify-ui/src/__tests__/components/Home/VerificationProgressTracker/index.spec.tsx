@@ -1,7 +1,7 @@
 import React from "react";
 import { render, screen } from "@testing-library/react";
 import { Provider } from "react-redux";
-import configureMockStore from "redux-mock-store";
+import { configureStore } from "@reduxjs/toolkit";
 import VerificationProgressTracker from "../../../../components/Home/VerificationProgressTracker";
 import { VerificationSteps } from "../../../../utils/config";
 
@@ -33,11 +33,11 @@ jest.mock(
     }
 );
 
-const mockStore = configureMockStore([]);
+const createTestStore = (state: any) => configureStore({ reducer: () => state });
 
 describe("VerificationProgressTracker", () => {
     it("renders the progress tracker", () => {
-        const store = mockStore({
+        const store = createTestStore({
             verification: {
                 activeScreen: VerificationSteps.SCAN.QrCodePrompt,
                 method: "SCAN",

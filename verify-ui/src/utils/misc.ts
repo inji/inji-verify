@@ -28,7 +28,7 @@ export const getDisplayValue = (data: any): string => {
         data.forEach(value => {
             displayValue += `${value}, `;
         });
-        return displayValue.slice(0, displayValue.length - 2);
+        return displayValue.slice(0, -2);
     }
     return data?.toString();
 }
@@ -50,17 +50,17 @@ export const fetchVerificationSteps = (
         const verifySteps = verificationContent.VERIFY;
         const stepMap = Object.fromEntries(verifySteps.map((step) => [step.label, step]));
 
-        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.InitiateVpRequest.label")]!);
+        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.InitiateVpRequest.label")]);
 
         if (isPartiallyShared) {
-            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.RequestMissingCredential.label")]!);
+            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.RequestMissingCredential.label")]);
         } else {
-            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.SelectCredential.label")]!);
+            selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.SelectCredential.label")]);
         }
 
-        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label")]!);
+        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.ShareVerifiableCredentials.label")]);
 
-        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.DisplayResult.label")]!);
+        selectedSteps.push(stepMap[i18next.t("VerificationStepsContent:VERIFY.DisplayResult.label")]);
     }
 
     return selectedSteps
@@ -83,13 +83,13 @@ export const getFileExtension = (fileName: string) => fileName.slice(
 );
 
 export const checkInternetStatus = async (): Promise<boolean> => {
-    if (!window.navigator.onLine) return false;
+    if (!globalThis.navigator.onLine) return false;
     const controller = new AbortController();
     const timeoutId = setTimeout(() => {
         controller.abort()
     }, InternetConnectivityCheckTimeout);
     try {
-        // Try making an api call if the window.navigator.onLine is true
+        // Try making an api call if the globalThis.navigator.onLine is true
         await fetch(InternetConnectivityCheckEndpoint, {
             method: 'HEAD',
             mode: 'no-cors',
@@ -121,6 +121,6 @@ export const saveData = (vc: any) => {
   link.download = fileName + ".json";
   document.body.appendChild(link);
   link.click();
-  document.body.removeChild(link);
+  link.remove();
   URL.revokeObjectURL(href);
 };

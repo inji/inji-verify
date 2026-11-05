@@ -8,7 +8,7 @@ import {
   getTotalCredentialCount,
   isVPSubmissionSupported,
 } from "../../utils/commonUtils";
-import { claim, DcqlCredentialQuery, MatchingVc } from "../../types/data-types";
+import { Claim, DcqlCredentialQuery, MatchingVc } from "../../types/data-types";
 
 jest.mock("../../utils/i18n", () => ({
   getLanguageCodes: jest.fn(() => ["en"]),
@@ -29,7 +29,7 @@ const buildClaim = (
   name: string,
   type: string,
   credentials: DcqlCredentialQuery[]
-): claim => ({
+): Claim => ({
   name,
   type,
   logo: "/assets/cert.png",
@@ -724,16 +724,16 @@ describe("commonUtils credential matching", () => {
     });
 
     test("reads client and VP submission settings from the environment", () => {
-      (window as any)._env_ = { CLIENT_ID: "inji-verify", VP_SUBMISSION_SUPPORTED: "TRUE" };
+      (globalThis as any)._env_ = { CLIENT_ID: "inji-verify", VP_SUBMISSION_SUPPORTED: "TRUE" };
       expect(getClientId()).toBe("inji-verify");
       expect(isVPSubmissionSupported()).toBe(true);
 
-      (window as any)._env_.VP_SUBMISSION_SUPPORTED = "false";
+      (globalThis as any)._env_.VP_SUBMISSION_SUPPORTED = "false";
       expect(isVPSubmissionSupported()).toBe(false);
     });
 
     test("handles missing environment values", () => {
-      delete (window as any)._env_;
+      delete (globalThis as any)._env_;
       expect(getClientId()).toBeUndefined();
       expect(isVPSubmissionSupported()).toBe(false);
     });

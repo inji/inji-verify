@@ -11,7 +11,7 @@ import { Pages } from '../../../utils/config';
 
 const Scan = () => {
   const dispatch = useAppDispatch();
-  const [isHover, setHover] = useState(false);
+  const [isHover, setIsHover] = useState(false);
   const ScanIcon = isHover ? WhiteScanIcon : GradientScanIcon;
   const {t} = useTranslation()
   return (
@@ -21,8 +21,8 @@ const Scan = () => {
         title={t("Common:Button.scan")}
         icon={<ScanIcon />}
         variant='outline'
-        onMouseEnter={() => setHover(true)}
-        onMouseLeave={() => setHover(false)}
+        onMouseEnter={() => setIsHover(true)}
+        onMouseLeave={() => setIsHover(false)}
         className="mx-0 my-1.5 text-center inline-flex absolute top-[160px] left-[33px] w-[205px] lg:w-[223px] lg:left-[70px] lg:top-[231px]"
         onClick={async () => {
           dispatch(
@@ -59,8 +59,8 @@ export const ScanQrCode = () => {
 
   useEffect(() => {
     if (openedScannerForResponseCodeRef.current) return;
-    const searchParams = new URLSearchParams(window.location.search);
-    const rawHash = window.location.hash;
+    const searchParams = new URLSearchParams(globalThis.location.search);
+    const rawHash = globalThis.location.hash;
     const hashParams = new URLSearchParams(
       rawHash.startsWith('#') ? rawHash.slice(1) : rawHash
     );
@@ -79,7 +79,7 @@ export const ScanQrCode = () => {
         className={`relative grid content-center justify-center w-[275px] h-auto lg:w-[360px] aspect-square my-1.5 mx-auto bg-cover`}
         style={{ backgroundImage: `url(${ScanOutline})` }}
       >
-        <div className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[250px] lg:w-[320px] aspect-square content-center justify-center`}></div>
+        <div className={`grid bg-${globalThis._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[250px] lg:w-[320px] aspect-square content-center justify-center`}></div>
         <div className="absolute top-[58px] left-[98px] lg:top-[165px] lg:left-[50%] lg:translate-x-[-50%] lg:translate-y-[-50%]">
           <QrIcon className="w-[78px] lg:w-[100px]" />
         </div>

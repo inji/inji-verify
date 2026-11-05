@@ -9,10 +9,10 @@ import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
 import {getCredentialType} from "../../../../utils/commonUtils";
 import { backgroundColorMapping, borderColorMapping, textColorMapping } from "../../../../utils/config";
 
-function DisplayVcCardView(ViewVc: VpSubmissionResultInt) {
+function DisplayVcCardView(ViewVc: Readonly<VpSubmissionResultInt>) {
   const { vc, vcStatus, view } = ViewVc;
   const [showDetailView, setShowDetailView] = useState(view);
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const { t } = useTranslation("Verify");
   const [claims, setClaims] = useState<any>();
   const [credentialType, setCredentialType] = useState<string>("");
@@ -71,7 +71,7 @@ function DisplayVcCardView(ViewVc: VpSubmissionResultInt) {
           <div className={`h-[3px] border-b-2 border-b-transparent`} />
           <DisplayVcDetailView
             vc={claims}
-            onExpand={() => setModalOpen(true)}
+            onExpand={() => setIsModalOpen(true)}
             className={`${
               view ? "h-auto" : "h-[257px]"
             } rounded-t-0 rounded-b-lg overflow-y-auto`}
@@ -81,7 +81,7 @@ function DisplayVcCardView(ViewVc: VpSubmissionResultInt) {
       {claims && (
         <DisplayVcDetailsModal
           isOpen={isModalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={() => setIsModalOpen(false)}
           vc={claims}
           status={vcStatus}
           vcType={credentialType}

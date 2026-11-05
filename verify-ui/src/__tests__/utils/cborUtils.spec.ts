@@ -13,7 +13,7 @@ jest.mock("@injistack/pixelpass", () => ({
 
 const mockDecode = decode as jest.MockedFunction<typeof decode>;
 const mockDecodeMultiple = decodeMultiple as jest.MockedFunction<typeof decodeMultiple>;
-const mockDecodeMappedData = decodeMappedData as jest.MockedFunction<typeof decodeMappedData>;
+const mockDecodeMappedData = decodeMappedData;
 
 describe("cborUtils", () => {
   let consoleWarnSpy: jest.SpyInstance;
@@ -48,8 +48,8 @@ describe("cborUtils", () => {
     mockDecodeMultiple.mockReturnValue([
       { tag: 61, value: { value: ["protected", "unprotected", new Uint8Array([1]), "signature"] } },
     ] as never);
-    mockDecode.mockReturnValue({ 169: claimBytes } as never);
-    mockDecodeMappedData.mockReturnValue({ fullName: "Test User" } as never);
+    mockDecode.mockReturnValue({ 169: claimBytes });
+    mockDecodeMappedData.mockReturnValue({ fullName: "Test User" });
 
     expect(extractMappedClaim("a0", 169)).toEqual({ fullName: "Test User" });
     expect(mockDecodeMappedData).toHaveBeenCalledWith("cafe");
@@ -70,7 +70,7 @@ describe("cborUtils", () => {
     mockDecodeMultiple.mockReturnValue([
       { tag: 61, value: { value: [1, 2, new Uint8Array([1]), 4] } },
     ] as never);
-    mockDecode.mockReturnValue({} as never);
+    mockDecode.mockReturnValue({});
 
     expect(() => extractMappedClaim("a0", 169)).toThrow("Claim 169 not found in CWT");
   });

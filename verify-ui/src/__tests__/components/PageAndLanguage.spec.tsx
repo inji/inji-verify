@@ -5,10 +5,11 @@ import { LanguageSelector } from "../../components/commons/LanguageSelector";
 import SomethingWentWrong from "../../components/SomethingWentWrong";
 
 const mockDispatch = jest.fn();
+let mockLanguage = "en";
 
 jest.mock("../../redux/hooks", () => ({
   useAppDispatch: () => mockDispatch,
-  useAppSelector: (selector: (state: any) => any) => selector({ common: { language: "en" } }),
+  useAppSelector: (selector: (state: any) => any) => selector({ common: { language: mockLanguage } }),
 }));
 
 jest.mock("../../utils/i18n", () => ({
@@ -45,12 +46,45 @@ jest.mock("react-i18next", () => ({
 describe("language and retry components", () => {
   beforeEach(() => {
     mockDispatch.mockClear();
+    mockLanguage = "en";
   });
 
   test("opens the language selector and changes language", () => {
     render(<LanguageSelector />);
     fireEvent.click(screen.getByTestId("Language-Selector-Button"));
     expect(screen.getByTestId("Language-Selector-DropDown-Item-hi")).toBeInTheDocument();
+  });
+
+  test("supports language menu keyboard navigation, selection, and escape", () => {
+    render(<LanguageSelector />);
+    const trigger = screen.getByTestId("Language-Selector-Button");
+    fireEvent.keyDown(trigger, { key: "ArrowDown" });
+    const english = screen.getByRole("menuitemradio", { name: "English" });
+    const hindi = screen.getByRole("menuitemradio", { name: "Hindi" });
+    expect(english).toHaveFocus();
+    fireEvent.keyDown(english, { key: "ArrowDown" });
+    expect(hindi).toHaveFocus();
+    fireEvent.click(hindi);
+    expect(mockDispatch).toHaveBeenCalledWith(expect.objectContaining({ payload: { language: "hi" } }));
+    expect(trigger).toHaveFocus();
+    fireEvent.click(trigger);
+    fireEvent.keyDown(screen.getByRole("menu"), { key: "Escape" });
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+    expect(trigger).toHaveFocus();
+  });
+
+  test("closes the menu on Tab without trapping keyboard navigation", () => {
+    render(<LanguageSelector />);
+    fireEvent.click(screen.getByTestId("Language-Selector-Button"));
+    fireEvent.keyDown(screen.getByRole("menuitemradio", { name: "English" }), { key: "Tab" });
+    expect(screen.queryByRole("menu")).not.toBeInTheDocument();
+  });
+
+  test("focuses the first language when the current language is unavailable", () => {
+    mockLanguage = "unsupported";
+    render(<LanguageSelector />);
+    fireEvent.click(screen.getByTestId("Language-Selector-Button"));
+    expect(screen.getByRole("menuitemradio", { name: "English" })).toHaveFocus();
   });
 
   test("renders retry action on the error page", () => {

@@ -26,7 +26,6 @@ const AlertMessage = (props:any) => {
     }, [alertInfo, dispatch]);
 
   return (
-    <>
       <div
         className={`fixed top-[70px] ${isRtl ? 'left-1 lg:left-[2]' : 'right-1 lg:right-[2]'} py-[22px] px-[18px] text-white rounded-[12px] shadow-lg ${backgroundColorMapping[alertInfo.severity ?? "success"]} ${alertInfo.open ? "" : "hidden"} z-10`}>
         {alertInfo.errorCode || alertInfo.errorReason || alertInfo.referenceId ? (
@@ -79,7 +78,6 @@ const AlertMessage = (props:any) => {
           </div>
         )}
       </div>
-    </>
   );
 }
 

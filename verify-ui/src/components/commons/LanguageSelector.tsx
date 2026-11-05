@@ -14,9 +14,10 @@ interface DropdownItem {
 export const LanguageSelector: React.FC = () => {
   const dispatch = useAppDispatch();
   let language = useAppSelector((state: RootState) => state.common.language);
-  language = language ?? window._env_.DEFAULT_LANG;
+  language = language ?? globalThis._env_.DEFAULT_LANG;
   const rtl = isRTL(language);
   const containerRef = useRef<HTMLDivElement>(null);
+  const triggerRef = useRef<HTMLButtonElement>(null);
 
   const [isOpen, setIsOpen] = useState(false);
 
@@ -24,6 +25,39 @@ export const LanguageSelector: React.FC = () => {
     setIsOpen(false);
     void switchLanguage(item.value);
     dispatch(storeLanguage({ language: item.value }));
+    triggerRef.current?.focus();
+  };
+
+  useEffect(() => {
+    if (isOpen) {
+      const menu = containerRef.current;
+      const selectedOption = menu?.querySelector<HTMLButtonElement>('[role="menuitemradio"][aria-checked="true"]');
+      const firstOption = menu?.querySelector<HTMLButtonElement>('[role="menuitemradio"]');
+      (selectedOption ?? firstOption)?.focus();
+    }
+  }, [isOpen]);
+
+  const handleMenuKeyDown = (event: React.KeyboardEvent<HTMLUListElement>) => {
+    if (event.key === "Tab") {
+      setIsOpen(false);
+      return;
+    }
+    if (event.key === "Escape") {
+      event.preventDefault();
+      setIsOpen(false);
+      triggerRef.current?.focus();
+      return;
+    }
+    if (!["ArrowDown", "ArrowUp", "Home", "End"].includes(event.key)) return;
+    event.preventDefault();
+    const buttons = Array.from(event.currentTarget.querySelectorAll<HTMLButtonElement>('[role="menuitemradio"]'));
+    if (buttons.length === 0) return;
+    const currentIndex = buttons.indexOf(document.activeElement as HTMLButtonElement);
+    let nextIndex = 0;
+    if (event.key === "End") nextIndex = buttons.length - 1;
+    if (event.key === "ArrowDown") nextIndex = (currentIndex + 1) % buttons.length;
+    if (event.key === "ArrowUp") nextIndex = (currentIndex - 1 + buttons.length) % buttons.length;
+    buttons[nextIndex]?.focus();
   };
 
   useEffect(() => {
@@ -50,7 +84,14 @@ export const LanguageSelector: React.FC = () => {
           className="inline-flex items-center"
           data-testid="Language-Selector-Button"
           onClick={() => setIsOpen(!isOpen)}
-          aria-haspopup="listbox"
+          ref={triggerRef}
+          aria-haspopup="menu"
+          onKeyDown={(event) => {
+            if (event.key === "ArrowDown" || event.key === "ArrowUp") {
+              event.preventDefault();
+              setIsOpen(true);
+            }
+          }}
           aria-expanded={isOpen}
         >
           <p
@@ -76,9 +117,10 @@ export const LanguageSelector: React.FC = () => {
               rtl ? "left-1 lg:left-0" : "right-1 lg:right-0"
             } mt-3 rounded-md shadow-lg bg-background overflow-hidden font-normal border border-gray-200`}
           >
-            <ul className="divide-y divide-gray-200">
+            <ul role="menu" aria-label="Languages" onKeyDown={handleMenuKeyDown} className="divide-y divide-gray-200">
               {LanguagesSupported.map((item) => (
                 <li
+                  role="none"
                   key={item.value}
                   data-testid={`Language-Selector-DropDown-Item-${item.value}`}
                 >
@@ -89,8 +131,9 @@ export const LanguageSelector: React.FC = () => {
                       event.stopPropagation();
                       handleChange(item);
                     }}
-                    role="option"
-                    aria-selected={language === item.value}
+                    role="menuitemradio"
+                    tabIndex={-1}
+                    aria-checked={language === item.value}
                   >
                     {language === item.value
                       ? renderGradientText(item.label)

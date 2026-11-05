@@ -1,6 +1,6 @@
 import React from "react";
 import { useTranslation } from "react-i18next";
-import {claim, VcStatus, VpSubmissionResultInt} from "../../../../types/data-types";
+import {Claim, VpSubmissionResultInt} from "../../../../types/data-types";
 import { useVerifyFlowSelector } from "../../../../redux/features/verification/verification.selector";
 import { getTotalCredentialCount } from "../../../../utils/commonUtils";
 import {
@@ -11,7 +11,7 @@ import {
 
 interface VpVerifyResultSummaryProps {
   verifiedVcs: VpSubmissionResultInt[];
-  unverifiedCredentials: claim[];
+  unverifiedCredentials: Claim[];
 }
 
 const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({
@@ -40,7 +40,7 @@ const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({
 
   return (
     <div
-      className={`flex flex-col items-center col-start-1 col-end-13 h-[170px] lg:h-[133px] bg-${window._env_.DEFAULT_THEME}-lighter-gradient w-full`}
+      className={`flex flex-col items-center col-start-1 col-end-13 h-[170px] lg:h-[133px] bg-${globalThis._env_.DEFAULT_THEME}-lighter-gradient w-full`}
     >
       <p className="font-normal text-lgNormalTextSize text-center mt-5">
         {NoOfClaims} {t("credentialsRequested")}:
@@ -48,9 +48,9 @@ const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({
       <div className="flex justify-center w-[392px]">
         {verifiedVcs.map((vc, index) => {
           const status = vc.vcStatus;
-          const bgColor = backgroundColorMapping[status as VcStatus];
-          const textColor = textColorMapping[status as VcStatus];
-          const borderColor = borderColorMapping[status as VcStatus];
+          const bgColor = backgroundColorMapping[status];
+          const textColor = textColorMapping[status];
+          const borderColor = borderColorMapping[status];
           return (
             index ===
               verifiedVcs.findIndex(
@@ -58,7 +58,7 @@ const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({
               ) && (
               <div
                 className={`rounded-xl min-w-[80px] ${bgColor} border ${borderColor} mr-2 p-1`}
-                key={index}
+                key={status}
               >
                 <p
                   className={`font-normal text-lgNormalTextSize text-center ${textColor}`}

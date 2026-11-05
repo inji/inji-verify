@@ -11,7 +11,7 @@ import {
   qrReadInit,
 } from "../../../../redux/features/verification/verification.slice";
 import { decodeSdJwtToken } from "../../../../utils/decodeSdJwt";
-import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
+import { AnyVc, LdpVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
 import { extractMappedClaim, isCWT, uint8ArrayToHex } from "../../../../utils/cborUtils";
 import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
@@ -19,7 +19,7 @@ import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
 const Result = () => {
   const { vc, vcStatus } = useVerificationFlowSelector((state) => state.verificationResult ?? { vc: null, vcStatus: null });
   const { method } = useVerificationFlowSelector((state) => ({ method: state.method }));
-  const [isModalOpen, setModalOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
   const [claims, setClaims] = useState<AnyVc | null>(null);
   const [credentialType, setCredentialType] = useState<string>("");
   const { t } = useTranslation();
@@ -39,32 +39,20 @@ const Result = () => {
 
   useEffect(() => {
     const fetchDecodedClaims = async () => {
-      if (isCWT(vc)) {
-        try {
-          const cwtHex =
-            vc instanceof Uint8Array
-              ? uint8ArrayToHex(vc)
-              : vc instanceof ArrayBuffer
-                ? uint8ArrayToHex(new Uint8Array(vc))
-                : (vc as string);
-          const claims = extractMappedClaim(cwtHex, 169);
-          setClaims(claims as LdpVc);
-
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          dispatch(raiseAlert({ message, severity: "error", open: true }));
-
+      try {
+        if (isCWT(vc)) {
+          let cwtHex = vc as string;
+          if (vc instanceof Uint8Array) cwtHex = uint8ArrayToHex(vc);
+          if (vc instanceof ArrayBuffer) cwtHex = uint8ArrayToHex(new Uint8Array(vc));
+          setClaims(extractMappedClaim(cwtHex, 169) as LdpVc);
+          return;
         }
-      } else if (typeof vc === "string") {
-        try {
-          const claims = await decodeSdJwtToken(vc);
-          setClaims(claims as SdJwtVc);
-          setCredentialType(claims.regularClaims.vct);
-        } catch (err) {
-          const message = err instanceof Error ? err.message : String(err);
-          dispatch(raiseAlert({ message, severity: "error", open: true }));
+        if (typeof vc === "string") {
+          const decodedClaims = await decodeSdJwtToken(vc);
+          setClaims(decodedClaims);
+          setCredentialType(decodedClaims.regularClaims.vct);
+          return;
         }
-      } else {
         setClaims(vc as LdpVc);
         const typeEntry = vc.type[1];
         if (typeof typeEntry === "string") {
@@ -72,6 +60,9 @@ const Result = () => {
         } else if (typeof typeEntry === "object" && "_value" in typeEntry) {
           setCredentialType(typeEntry._value);
         }
+      } catch (error) {
+        const message = error instanceof Error ? error.message : String(error);
+        dispatch(raiseAlert({ message, severity: "error", open: true }));
       }
     };
     void fetchDecodedClaims().catch((err) => {
@@ -106,7 +97,7 @@ const Result = () => {
         {claims && (
           <DisplayVcDetailView
             vc={claims}
-            onExpand={() => setModalOpen(true)}
+            onExpand={() => setIsModalOpen(true)}
             className={`h-auto rounded-t-0 rounded-b-lg overflow-y-auto mt-[-30px]`}
           />
         )}
@@ -121,7 +112,7 @@ const Result = () => {
       {claims && (
         <DisplayVcDetailsModal
           isOpen={isModalOpen}
-          onClose={() => setModalOpen(false)}
+          onClose={() => setIsModalOpen(false)}
           vc={claims}
           status={vcStatus}
           vcType={credentialType}

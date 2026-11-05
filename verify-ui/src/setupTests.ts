@@ -10,7 +10,7 @@ beforeEach(() => {
     expect("jest-replace-all".replaceAll("-", " ")).toBe("jest replace all");
 });
 
-(window as any)._env_ = {
+(globalThis as any)._env_ = {
     INTERNET_CONNECTIVITY_CHECK_ENDPOINT: "https://dns.google/",
     INTERNET_CONNECTIVITY_CHECK_TIMEOUT: "3000",
     DISPLAY_TIMEOUT: "5000",
@@ -25,10 +25,10 @@ beforeEach(() => {
 };
 
 
-global.fetch = jest.fn().mockImplementation(() =>
+globalThis.fetch = jest.fn().mockImplementation(() =>
     Promise.resolve({
         ok: true,
         json: () => Promise.resolve({ verifiableClaims: [], VCRenderOrders: {} }),
     })
-) as jest.Mock;
+);
 

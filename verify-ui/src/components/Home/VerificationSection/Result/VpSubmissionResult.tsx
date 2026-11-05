@@ -1,6 +1,7 @@
+import { getKeyedItems } from "../../../../utils/listUtils";
 import React, { useEffect, useRef } from "react";
 import ResultSummary from "./ResultSummary";
-import { claim, VpSubmissionResultInt } from "../../../../types/data-types";
+import { Claim, VpSubmissionResultInt } from "../../../../types/data-types";
 import VpVerifyResultSummary from "./VpVerifyResultSummary";
 import DisplayVcCardView from "./DisplayVcCardView";
 import { Button } from "../commons/Button";
@@ -13,7 +14,7 @@ import { useAppDispatch } from "../../../../redux/hooks";
 
 type VpSubmissionResultProps = {
   verifiedVcs: VpSubmissionResultInt[];
-  unverifiedCredentials: claim[];
+  unverifiedCredentials: Claim[];
   requestCredentials: () => void;
   requestMissingCredentials: () => void;
   restart: () => void;
@@ -29,7 +30,7 @@ const VpSubmissionResult: React.FC<VpSubmissionResultProps> = ({
   isSingleVc,
 }) => {
   const vcStatus = isSingleVc ? verifiedVcs[0]?.vcStatus : "INVALID";
-  const originalSelectedCredentials: claim[] = useVerifyFlowSelector((state) => state.originalSelectedCredentials) || [];
+  const originalSelectedCredentials: Claim[] = useVerifyFlowSelector((state) => state.originalSelectedCredentials) || [];
   const isPartiallyShared = useVerifyFlowSelector((state) => state.isPartiallyShared );
   const showResult = useVerifyFlowSelector((state) => state.isShowResult );
   const { t } = useTranslation("Verify");
@@ -94,16 +95,16 @@ const VpSubmissionResult: React.FC<VpSubmissionResultProps> = ({
       )}
       <div className="relative">
         <div className="flex flex-col items-center space-y-4 lg:space-y-6 mt-[-60px] lg:mt-[-70px]">
-          {showResult && verifiedVcs.map(({ vc, vcStatus }, index) => (
+          {showResult && getKeyedItems(verifiedVcs, ({ vc }) => JSON.stringify(vc)).map(({ item: { vc, vcStatus }, key }) => (
             <DisplayVcCardView
-              key={index}
+              key={key}
               vc={vc}
               vcStatus={vcStatus}
               view={originalSelectedCredentials.length === 1}
             />
           ))}
-          {unverifiedCredentials.length > 0 && unverifiedCredentials.map((claim,index) => (
-            <DisplayUnVerifiedVc key={index} claim={claim} />
+          {unverifiedCredentials.length > 0 && getKeyedItems(unverifiedCredentials, (claim) => claim.type).map(({ item: claim, key }) => (
+            <DisplayUnVerifiedVc key={key} claim={claim} />
           ))}
         </div>
       </div>

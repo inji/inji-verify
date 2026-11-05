@@ -11,7 +11,7 @@ import pt from "../locales/pt.json";
 import es from "../locales/es.json";
 import km from "../locales/km.json";
 
-import { storage } from "./storage";
+import { Storage } from "./storage";
 import { LanguageObject } from "../types/data-types";
 import { iso6393, Language } from "iso-639-3";
 
@@ -30,7 +30,7 @@ export const LanguagesSupported: LanguageObject[] = [
 ];
 
 export function normalizeLanguageCode(lang: string | undefined | null): string {
-  const defaultLang = window._env_?.DEFAULT_LANG || "en";
+  const defaultLang = globalThis._env_?.DEFAULT_LANG || "en";
   if (!lang) return defaultLang;
 
   const code = lang.toLowerCase();
@@ -62,8 +62,8 @@ export function getLanguageCodes(lang: string): string[] {
   return Array.from(aliases);
 }
 
-export const defaultLanguage = normalizeLanguageCode(window._env_?.DEFAULT_LANG) || "en";
-export const selected_language = normalizeLanguageCode(storage.getItem(storage.SELECTED_LANGUAGE));
+export const defaultLanguage = normalizeLanguageCode(globalThis._env_?.DEFAULT_LANG) || "en";
+export const selected_language = normalizeLanguageCode(Storage.getItem(Storage.SELECTED_LANGUAGE));
 
 void i18n.use(initReactI18next).init({
   resources,
@@ -76,7 +76,7 @@ void i18n.use(initReactI18next).init({
 
 export const switchLanguage = async (language: string) => {
   const normalized = normalizeLanguageCode(language);
-  storage.setItem(storage.SELECTED_LANGUAGE, normalized);
+  Storage.setItem(Storage.SELECTED_LANGUAGE, normalized);
   await i18n.changeLanguage(normalized);
 };
 

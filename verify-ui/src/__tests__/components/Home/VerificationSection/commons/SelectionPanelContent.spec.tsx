@@ -39,7 +39,7 @@ jest.mock("../../../../../utils/config", () => ({
 }));
 jest.mock("../../../../../utils/i18n", () => ({ isRTL: () => false }));
 jest.mock("../../../../../utils/storage", () => ({
-  storage: { setItem: jest.fn(), ESSENTIAL_CLAIM: "essential" },
+  Storage: { setItem: jest.fn(), ESSENTIAL_CLAIM: "essential" },
 }));
 jest.mock("../../../../../utils/theme-utils", () => ({
   SearchIcon: () => <span />,

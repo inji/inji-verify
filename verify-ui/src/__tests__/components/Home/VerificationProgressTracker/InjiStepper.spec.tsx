@@ -8,10 +8,10 @@ import { render, screen } from "@testing-library/react";
 import DesktopStepper from "../../../../components/Home/VerificationProgressTracker/DesktopStepper";
 import { getVerificationStepsContent } from "../../../../utils/config";
 import { Provider } from "react-redux";
-import configureMockStore from "redux-mock-store";
+import { configureStore } from "@reduxjs/toolkit";
 
-const mockStore = configureMockStore();
-const store = mockStore({
+const createTestStore = (state: any) => configureStore({ reducer: () => state });
+const store = createTestStore({
   verification: { activeScreen: 1, method: "SCAN" },
   verify: { isPartiallyShared: false, flowType: "sameDevice", activeScreen: 1 },
   common: { language: "en" },

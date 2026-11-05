@@ -1,4 +1,4 @@
-import { fireEvent, render, screen } from "@testing-library/react";
+import { render, screen } from "@testing-library/react";
 import MobileStepper from "../../components/Home/VerificationProgressTracker/MobileStepper";
 import SelectWallet from "../../components/Home/VerificationSection/commons/SelectWallet";
 import SelectionPanel from "../../components/Home/VerificationSection/commons/SelectionPanel";

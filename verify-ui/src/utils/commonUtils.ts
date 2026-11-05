@@ -1,4 +1,4 @@
-import { claim, LdpVc, MatchingVc, VcStatus} from "../types/data-types";
+import { Claim, LdpVc, MatchingVc, VcStatus} from "../types/data-types";
 import { EXCLUDE_KEYS_SD_JWT_VC, getVCRenderOrders } from "./config";
 import { getLanguageCodes } from "./i18n";
 
@@ -6,6 +6,27 @@ const isSafeKey = (key: string) =>
   key && key !== "__proto__" && key !== "constructor" && key !== "prototype";
 
 type CredentialValue = string | string[] | undefined;
+
+const findLanguageValue = (entries: any[], languageAliases: string[], fallbackAliases: string[]) => {
+  const matchesLanguage = (entry: any, aliases: string[]) =>
+    aliases.includes(entry?.["@language"]) || aliases.includes(entry?.language);
+  return entries.find((entry) => matchesLanguage(entry, languageAliases))
+    || entries.find((entry) => matchesLanguage(entry, fallbackAliases));
+};
+
+const getObjectValue = (credentialElement: any, currentLanguage: string): CredentialValue => {
+  if ("value" in credentialElement) {
+    return getValue(credentialElement.value, currentLanguage);
+  }
+  const values: string[] = [];
+  for (const key of Object.keys(credentialElement)) {
+    if (!isSafeKey(key)) continue;
+    const nestedValue = getValue(credentialElement[key], currentLanguage);
+    if (nestedValue === undefined) continue;
+    values.push(...(Array.isArray(nestedValue) ? nestedValue : [nestedValue]));
+  }
+  return values.length > 0 ? values : undefined;
+};
 
 const getValue = (credentialElement: any, currentLanguage: string): CredentialValue => {
   if (credentialElement === null || credentialElement === undefined) {
@@ -20,41 +41,11 @@ const getValue = (credentialElement: any, currentLanguage: string): CredentialVa
   const fallbackAliases = getLanguageCodes("en");
 
   if (Array.isArray(credentialElement)) {
-    const languageEntry = credentialElement.find(
-      (el) =>
-        languageAliases.includes(el?.["@language"]) ||
-        languageAliases.includes(el?.language)
-    );
-    if (languageEntry) {
-      return languageEntry["@value"] ?? languageEntry.value;
-    }
-
-    const fallbackEntry = credentialElement.find(
-      (el) =>
-        fallbackAliases.includes(el?.["@language"]) ||
-        fallbackAliases.includes(el?.language)
-    );
-    if (fallbackEntry) {
-      return fallbackEntry["@value"] ?? fallbackEntry.value;
-    }
+    const languageEntry = findLanguageValue(credentialElement, languageAliases, fallbackAliases);
+    if (languageEntry) return languageEntry["@value"] ?? languageEntry.value;
   }
   if (typeof credentialElement === "object") {
-    if ("value" in credentialElement) {
-      return getValue(credentialElement.value, currentLanguage);
-    }
-    let finalValue: string[] = [];
-    for (const key of Object.keys(credentialElement)) {
-      if (!isSafeKey(key)) continue;
-      const nestedValue = getValue(credentialElement[key], currentLanguage);
-      if (nestedValue !== undefined) {
-        if (Array.isArray(nestedValue)) {
-          finalValue.push(...nestedValue);
-        } else {
-          finalValue.push(nestedValue);
-        }
-      }
-    }
-    return finalValue.length > 0 ? finalValue : undefined;
+    return getObjectValue(credentialElement, currentLanguage);
   }
 
   return String(credentialElement);
@@ -254,29 +245,24 @@ const credentialTypesMatch = (submittedType: string, configuredType: string): bo
   );
 };
 
-const getConfiguredTypeValuesFromClaim = (selectedClaim: claim): string[] => {
-  const configuredTypes: string[] = [];
-
-  for (const credentialDefinition of selectedClaim.dcqlQuery?.credentials ??
-    []) {
-    for (const typeGroup of credentialDefinition.meta?.type_values ?? []) {
-      for (const typeValue of typeGroup) {
-        if (typeof typeValue === "string" && typeValue) {
-          configuredTypes.push(typeValue);
-        }
-      }
-    }
-    for (const vctValue of credentialDefinition.meta?.vct_values ?? []) {
-      if (typeof vctValue === "string" && vctValue) {
-        configuredTypes.push(vctValue);
-      }
-    }
+const appendConfiguredTypes = (configuredTypes: string[], values: readonly unknown[]) => {
+  for (const value of values) {
+    if (typeof value === "string" && value) configuredTypes.push(value);
   }
+};
 
+const getConfiguredTypeValuesFromClaim = (selectedClaim: Claim): string[] => {
+  const configuredTypes: string[] = [];
+  for (const credentialDefinition of selectedClaim.dcqlQuery?.credentials ?? []) {
+    for (const typeGroup of credentialDefinition.meta?.type_values ?? []) {
+      appendConfiguredTypes(configuredTypes, typeGroup);
+    }
+    appendConfiguredTypes(configuredTypes, credentialDefinition.meta?.vct_values ?? []);
+  }
   return configuredTypes;
 };
 
-const credentialMatchesClaim = (credential: any, selectedClaim: claim): boolean => {
+const credentialMatchesClaim = (credential: any, selectedClaim: Claim): boolean => {
   const submittedType = getCredentialType(credential);
   const configuredTypes = getConfiguredTypeValuesFromClaim(selectedClaim);
 
@@ -286,11 +272,11 @@ const credentialMatchesClaim = (credential: any, selectedClaim: claim): boolean 
 };
 
 export const calculateVerifiedClaims = (
-  selectedClaims: claim[],
+  selectedClaims: Claim[],
   verificationSubmissionResult: MatchingVc[]
 ) => verificationSubmissionResult;
 
-export const getDcqlCredentialQueryCount = (claims: claim[]): number =>
+export const getDcqlCredentialQueryCount = (claims: Claim[]): number =>
   claims.reduce(
     (count, selectedClaim) =>
       count + (selectedClaim.dcqlQuery?.credentials?.length ?? 0),
@@ -299,8 +285,8 @@ export const getDcqlCredentialQueryCount = (claims: claim[]): number =>
 
 export const getTotalCredentialCount = (
   verifiedVcs: MatchingVc[],
-  unverifiedClaims: claim[],
-  originalSelectedClaims: claim[],
+  unverifiedClaims: Claim[],
+  originalSelectedClaims: Claim[],
 ): number => {
   const dcqlQueryCount = getDcqlCredentialQueryCount(originalSelectedClaims);
   const submittedOrMissingCount =
@@ -310,9 +296,9 @@ export const getTotalCredentialCount = (
 };
 
 export const calculateUnverifiedClaims = (
-  originalSelectedClaims: claim[],
+  originalSelectedClaims: Claim[],
   verificationSubmissionResult: { vc: LdpVc | object; vcStatus: VcStatus }[]
-): claim[] => {
+): Claim[] => {
   return originalSelectedClaims.filter((selectedClaim) => {
     return !verificationSubmissionResult.some(
       (vcResult) => credentialMatchesClaim(vcResult.vc, selectedClaim),
@@ -323,9 +309,9 @@ export const calculateUnverifiedClaims = (
 const extractType = (type: any): string | undefined => {
   if (!type) return undefined;
   if (typeof type === "string")
-    return type !== "VerifiableCredential" ? type : undefined;
+    return type === "VerifiableCredential" ? undefined : type;
   if (typeof type === "object" && "_value" in type) {
-    return type._value !== "VerifiableCredential" ? type._value : undefined;
+    return type._value === "VerifiableCredential" ? undefined : type._value;
   }
   return String(type);
 };
@@ -354,10 +340,10 @@ export const getCredentialType = (credential: any): string => {
   return "verifiableCredential";
 };
 
-export const getClientId = () => window._env_?.CLIENT_ID;
+export const getClientId = () => globalThis._env_?.CLIENT_ID;
 
 export const isVPSubmissionSupported = () => {
-  const value = window._env_?.VP_SUBMISSION_SUPPORTED;
+  const value = globalThis._env_?.VP_SUBMISSION_SUPPORTED;
   return value?.toLowerCase() === "true";
 };
 

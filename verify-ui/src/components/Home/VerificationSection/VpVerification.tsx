@@ -30,7 +30,7 @@ const DisplayActiveStep = () => {
   const verifiedVcs: VpSubmissionResultInt[] = useVerifyFlowSelector((state) => state.verificationSubmissionResult );
   const unverifiedCredentials = useVerifyFlowSelector((state) => state.unVerifiedCredentials );
   const dcqlQuery = useVerifyFlowSelector((state) => state.dcqlQuery);
-  const qrSize = window.innerWidth <= 1024 ? 240 : 320;
+  const qrSize = globalThis.innerWidth <= 1024 ? 240 : 320;
   const activeScreen = useVerifyFlowSelector((state) => state.activeScreen);
   const showResult = useVerifyFlowSelector((state) => state.isShowResult);
   const flowType = useVerifyFlowSelector((state) => state.flowType);
@@ -119,21 +119,21 @@ const DisplayActiveStep = () => {
 
   const getClientId = () => {
     if (!isSingleVc) {
-      return window._env_.CLIENT_ID_DID;
+      return globalThis._env_.CLIENT_ID_DID;
     }
     const prefix = selectedCredentials[0]?.clientIdPrefix;
     if (prefix === "pre_registered") {
-      return window._env_.CLIENT_ID;
+      return globalThis._env_.CLIENT_ID;
     }
     if (prefix === "x509_san_dns") {
-      return window._env_.CLIENT_ID_X509;
+      return globalThis._env_.CLIENT_ID_X509;
     }
-    return window._env_.CLIENT_ID_DID;
+    return globalThis._env_.CLIENT_ID_DID;
   }
 
   useEffect(() => {
 
-    const searchParams = new URLSearchParams(window.location.search);
+    const searchParams = new URLSearchParams(globalThis.location.search);
     if (searchParams.has("response_code")) return;
 
     // Auto-trigger SDK only when we're on the ScanQrCode step and NOT in the
@@ -198,12 +198,12 @@ const DisplayActiveStep = () => {
           >
             <div className="flex flex-col items-center">
               <div
-                className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
+                className={`grid bg-${globalThis._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
               >
                 <OpenID4VPVerification
                   key={`${flowType}-${sdkInstanceKey}`}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={(dcqlQuery?.credentials?.length ?? 0) === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
+                  verifyServiceUrl={globalThis.location.origin + globalThis._env_.VERIFY_SERVICE_API_URL}
                   dcqlQuery={dcqlQuery}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}
@@ -236,13 +236,13 @@ const DisplayActiveStep = () => {
           >
             <div className="flex flex-col items-center">
               <div
-                className={`grid bg-${window._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
+                className={`grid bg-${globalThis._env_.DEFAULT_THEME}-lighter-gradient rounded-[12px] w-[300px] lg:w-[350px] aspect-square content-center justify-center`}
               >
                 <OpenID4VPVerification
                   key={`${flowType}-${sdkInstanceKey}`}
                   triggerElement={ <QrIcon id="OpenID4VPVerification_trigger" className="w-[78px] lg:w-[100px]" aria-disabled={(dcqlQuery?.credentials?.length ?? 0) === 0 } /> }
-                  verifyServiceUrl={window.location.origin + window._env_.VERIFY_SERVICE_API_URL}
-                  enableDcApi={window._env_.ENABLE_DC_API === "true" && !selectedWalletBaseUrl}
+                  verifyServiceUrl={globalThis.location.origin + globalThis._env_.VERIFY_SERVICE_API_URL}
+                  enableDcApi={globalThis._env_.ENABLE_DC_API === "true" && !selectedWalletBaseUrl}
                   dcqlQuery={dcqlQuery}
                   onVPProcessed={handleOnVpProcessed}
                   onQrCodeExpired={handleOnQrExpired}
@@ -258,7 +258,7 @@ const DisplayActiveStep = () => {
       </div>
     );
   } else {
-    return <></>;
+    return null;
   }
 };
 

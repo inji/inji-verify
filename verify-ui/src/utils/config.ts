@@ -1,8 +1,7 @@
 import {
     AlertInfo,
-    claim,
+    Claim,
     VcStatus,
-    VerificationMethod,
     VerificationStep, VerificationStepsContentType,
     WebWallet,
 } from "../types/data-types";
@@ -146,7 +145,7 @@ export const getWalletErrorAlert = (errorCode?: string): AlertInfo | undefined =
     if (!i18nKey) {
         return undefined;
     }
-    return { message: i18next.t(i18nKey), severity: "error" } as AlertInfo;
+    return { message: i18next.t(i18nKey), severity: "error" };
 };
 
 export const UploadFileSizeLimits = {
@@ -154,20 +153,20 @@ export const UploadFileSizeLimits = {
     max: 5000000 // 5MB
 }
 
-export const InternetConnectivityCheckEndpoint = window._env_.INTERNET_CONNECTIVITY_CHECK_ENDPOINT ?? "https://dns.google/";
+export const InternetConnectivityCheckEndpoint = globalThis._env_.INTERNET_CONNECTIVITY_CHECK_ENDPOINT ?? "https://dns.google/";
 
-const InternetConnectivityTimeout = Number.parseInt(window._env_.INTERNET_CONNECTIVITY_CHECK_TIMEOUT);
+const InternetConnectivityTimeout = Number.parseInt(globalThis._env_.INTERNET_CONNECTIVITY_CHECK_TIMEOUT);
 export const InternetConnectivityCheckTimeout = Number.isNaN(InternetConnectivityTimeout)
     ? 10000
     : InternetConnectivityTimeout;
 
-const timeout = Number.parseInt(window._env_.DISPLAY_TIMEOUT);
+const timeout = Number.parseInt(globalThis._env_.DISPLAY_TIMEOUT);
 export const DisplayTimeout = Number.isNaN(timeout) ? 10000 : timeout;
 
-export const OvpQrHeader = window._env_.OVP_QR_HEADER;
+export const OvpQrHeader = globalThis._env_.OVP_QR_HEADER;
 
 let VCRenderOrders: any = {};
-let verifiableClaims: claim[] = [];
+let verifiableClaims: Claim[] = [];
 let webWallets: WebWallet[] = [];
 
 export const getVCRenderOrders = () => VCRenderOrders;
@@ -185,13 +184,13 @@ export const resolveWalletBaseUrl = (url: string): string => {
 
 export const initializeClaims = async () => {
   try {
-    const response = await fetch(window._env_.VERIFIABLE_CLAIMS_CONFIG_URL);
+    const response = await fetch(globalThis._env_.VERIFIABLE_CLAIMS_CONFIG_URL);
     if (!response.ok) {
       throw new Error(`HTTP error! status: ${response.status}`);
     }
     const data = await response.json();
-    verifiableClaims = data.verifiableClaims as claim[];
-    VCRenderOrders = data.VCRenderOrders as any;
+    verifiableClaims = data.verifiableClaims as Claim[];
+    VCRenderOrders = data.VCRenderOrders;
     webWallets = ((data.WebWallets as WebWallet[]) ?? [])
       .filter((wallet) => !!wallet.walletBaseUrl)
       .map((wallet) => ({
@@ -254,7 +253,7 @@ export const EXCLUDE_KEYS_SD_JWT_VC = [
   "vct",
 ].map((key) => key.toLowerCase());
 
-export const getStepConfig = (method: VerificationMethod | string) => {
+export const getStepConfig = (method: string) => {
     switch (method) {
         case "SCAN":
             return VerificationSteps.SCAN;
