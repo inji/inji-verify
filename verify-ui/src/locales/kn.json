@@ -128,6 +128,8 @@
     "mobileDocument": "ಮೊಬೈಲ್ ದಾಖಲೆ"
   },
   "AlertMessages": {
+    "svgTemplateLoadFailed": "ರುಜುವಾತು ಟೆಂಪ್ಲೇಟ್ ಲೋಡ್ ಮಾಡಲು ವಿಫಲವಾಗಿದೆ",
+    "svgTemplateRenderFailed": "ರುಜುವಾತು ಟೆಂಪ್ಲೇಟ್ ಪ್ರದರ್ಶಿಸಲು ವಿಫಲವಾಗಿದೆ",
     "qrVerificationLimitReached": "ಈ QR ಕೋಡ್‌ನ ಪರಿಶೀಲನೆಗಳ ಗರಿಷ್ಠ ಮಿತಿಯನ್ನು ತಲುಪಲಾಗಿದೆ. ದಯವಿಟ್ಟು ಹೊಸ QR ಕೋಡ್‌ಗಾಗಿ ವಿನಂತಿಸಿ.",
     "qrUploadSuccess": "QR ಕೋಡ್ ಅನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಅಪ್‌ಲೋಡ್ ಮಾಡಲಾಗಿದೆ!",
     "qrScanSuccess": "QR ಕೋಡ್ ಅನ್ನು ಯಶಸ್ವಿಯಾಗಿ ಸ್ಕ್ಯಾನ್ ಮಾಡಲಾಗಿದೆ!",

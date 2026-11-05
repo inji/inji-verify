@@ -5,6 +5,7 @@ import { fetchSvgTemplate } from "../../../../utils/svg-template-utils";
 import Loader from "../../../commons/Loader";
 import DOMPurify from "dompurify";
 import QRCode from "qrcode";
+import i18next from "i18next";
 
 interface VcSvgTemplateProps {
   vc: AnyVc;
@@ -49,11 +50,11 @@ const VcSvgTemplate = ({ vc, templateUrl, onError }: VcSvgTemplateProps) => {
           setTemplateContent(svgTemplate);
           setLoader(false);
         } else {
-          throw new Error("Failed to load credential template");
+          throw new Error("Empty SVG template");
         }
       } catch (err) {
         console.error("Template fetch error:", err);
-        onError?.(new Error(err instanceof Error ? err.message : "Failed to fetch template"));
+        onError?.(new Error(i18next.t("AlertMessages:svgTemplateLoadFailed")));
       } finally {
         setLoader(false);
       }
@@ -96,7 +97,7 @@ const VcSvgTemplate = ({ vc, templateUrl, onError }: VcSvgTemplateProps) => {
     );
   } catch (err) {
     console.error("Mustache render error:", err);
-    onError?.(new Error(err instanceof Error ? err.message : "Failed to render template"));
+    onError?.(new Error(i18next.t("AlertMessages:svgTemplateRenderFailed")));
     return null;
   }
 };

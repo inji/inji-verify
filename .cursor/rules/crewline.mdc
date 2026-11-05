@@ -1,0 +1,17 @@
+---
+description: Crewline, the gated MOSIP engineering workflow for this repository (features, bug fixes, refactors, upgrades, migrations, test automation, releases). Apply to any change to this repository.
+alwaysApply: true
+---
+
+# Crewline
+
+This repository uses Crewline (mosip/mosip-labs, `crewline/`). Its context is in `.crewline/` (read `.crewline/README.md`
+first); the repository's own AGENTS.md / CONTRIBUTING.md win where they are more specific.
+
+For any change to this repository: before doing anything else, run `python .cursor/crewline.py rule` and follow the rule it
+prints (the current Crewline workflow, with the path of the cached Crewline core). Run Crewline validators as
+`python .cursor/crewline.py <command>`. Questions and read-only explanations need no task.
+
+Hooks (`.cursor/hooks.json`) enforce the rails: git commit / push / `gh pr create` are denied until the task's gates pass,
+and force-push, `--no-verify`, hard reset, stash, branch delete and PR merge are always denied. Do not work around a deny.
+Off for one session: `CREWLINE=off`; for this clone: `.cursor/crewline.local.json` with `{"enabled": false}`.

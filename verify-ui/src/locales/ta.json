@@ -128,6 +128,8 @@
     "mobileDocument": "மொபைல் ஆவணம்"
   },
   "AlertMessages": {
+    "svgTemplateLoadFailed": "நற்சான்றிதழ் வார்ப்புருவை ஏற்ற முடியவில்லை",
+    "svgTemplateRenderFailed": "நற்சான்றிதழ் வார்ப்புருவைக் காட்ட முடியவில்லை",
     "qrVerificationLimitReached": "இந்த QR குறியீட்டின் சரிபார்ப்பு எண்ணிக்கை வரம்பை எட்டியுள்ளது. புதிய QR குறியீட்டைக் கோரவும்.",
     "qrUploadSuccess": "QR குறியீடு பதிவேற்றப்பட்டது!",
     "qrScanSuccess": "QR குறியீடு வெற்றிகரமாக ஸ்கேன் செய்யப்பட்டது!",
