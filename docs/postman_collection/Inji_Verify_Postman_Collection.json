@@ -800,7 +800,7 @@
                     "vc-verification"
                   ]
                 },
-                "description": "Shape A `{ issuerAuth, nameSpaces }`. Fixed test sample: ES256 (P-256), SHA-256 digests, mandatory ISO 18013-5 mDL elements only, fictional data. Signed by the self-signed \"Inji Verify TEST Document Signer - NOT FOR PRODUCTION\" certificate (C=IN, EKU 1.0.18013.5.1.2). Same string as verify-core/src/test/resources/mdl-samples/mdl-valid.txt. **validUntil: 2031-11-05T05:05:21Z** \u2014 after this date the expiry check fails and the sample must be regenerated."
+                "description": "Shape A `{ issuerAuth, nameSpaces }`. Fixed test sample: ES256 (P-256), SHA-256 digests, mandatory ISO 18013-5 mDL elements only, fictional data. Signed by the self-signed \"Inji Verify TEST Document Signer - NOT FOR PRODUCTION\" certificate (C=IN, EKU 1.0.18013.5.1.2). Same string as verify-core/src/test/resources/mdl-samples/mdl-valid.txt. **validUntil: 2031-11-05T05:05:21Z** \u2014 after this date verification fails: the current verifier reports `ERR_INVALID_VALID_UNTIL_MSO` in `schemaAndSignatureCheck` (pending inji/vc-verifier#300). Regenerate the sample before then."
               },
               "response": [
                 {
@@ -1345,7 +1345,7 @@
                     "vc-verification"
                   ]
                 },
-                "description": "Interop: an mDL issued by Inji Certify (4 data elements). **validUntil: 2028-10-14T07:53:18Z** \u2014 after this date the expiry check fails and the sample must be replaced."
+                "description": "Interop: an mDL issued by Inji Certify (4 data elements). **validUntil: 2028-10-14T07:53:18Z** \u2014 after this date verification fails: the current verifier reports `ERR_INVALID_VALID_UNTIL_MSO` in `schemaAndSignatureCheck` (pending inji/vc-verifier#300). Replace the sample before then."
               },
               "response": []
             }
