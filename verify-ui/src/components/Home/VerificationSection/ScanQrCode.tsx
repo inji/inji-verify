@@ -1,11 +1,10 @@
 import React, { useEffect, useRef, useState } from 'react';
-import { GradientScanIcon, QrIcon, WhiteScanIcon } from '../../../utils/theme-utils';
+import { GradientScanIcon, QrIcon, WhiteScanIcon, ScanOutline } from '../../../utils/theme-utils';
 import { Button } from "./commons/Button";
 import {useAppDispatch} from "../../../redux/hooks";
 import {qrReadInit} from "../../../redux/features/verification/verification.slice";
 import {checkInternetStatus} from "../../../utils/misc";
 import {updateInternetConnectionStatus} from "../../../redux/features/application-state/application-state.slice";
-import { ScanOutline } from '../../../utils/theme-utils';
 import { useTranslation } from 'react-i18next';
 import { Pages } from '../../../utils/config';
 

@@ -1,6 +1,5 @@
-import { QrIcon } from "../utils/theme-utils";
+import { QrIcon, ScanOutline } from "../utils/theme-utils";
 import { UploadQrCode } from "../components/Home/VerificationSection/UploadQrCode";
-import { ScanOutline } from "../utils/theme-utils";
 import { useTranslation } from "react-i18next";
 import {
   goToHomeScreen,
