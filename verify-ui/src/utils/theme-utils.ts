@@ -3,7 +3,7 @@ import purpleTheme from "../themes/purple-theme";
 import carTheme from "../themes/car-theme";
 
 let Theme;
-const ActiveTheme = window._env_.DEFAULT_THEME;
+const ActiveTheme = globalThis._env_.DEFAULT_THEME;
 
 switch (ActiveTheme) {
   case "default_theme":

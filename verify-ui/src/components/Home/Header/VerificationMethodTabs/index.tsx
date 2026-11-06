@@ -25,7 +25,7 @@ const Tab = ({
   onClick?: () => void;
 }) => {
   const activeTab =
-    `bg-${window._env_.DEFAULT_THEME}-gradient border-t-[6px] border-y-transparent text-activeTabText`;
+    `bg-${globalThis._env_.DEFAULT_THEME}-gradient border-t-[6px] border-y-transparent text-activeTabText`;
   const inactiveTab = "bg-inactiveTabBackground text-inactiveTabText";
   const disabledTab = "text-disableTabText bg-disableTabBackground";
   const enabledTab = active ? activeTab : inactiveTab;
@@ -78,7 +78,7 @@ function VerificationMethodTabs(props: any) {
   };
 
   return (
-    <div className={`container mx-auto w-[100%] bg-${window._env_.DEFAULT_THEME}-lighter-gradient  max-w-[100vw] overflow-x-hidden lg:overflow-x-auto`}>
+    <div className={`container mx-auto w-[100%] bg-${globalThis._env_.DEFAULT_THEME}-lighter-gradient  max-w-[100vw] overflow-x-hidden lg:overflow-x-auto`}>
       <div className="flex flex-row items-center mx-auto justify-center relative">
         <div className="absolute left-0 h-full w-12 bg-light-gradient md:hidden grid items-center">
           <button
@@ -146,7 +146,7 @@ function VerificationMethodTabs(props: any) {
       </div>
       <div
         id="horizontalLine"
-        className={`bg-${window._env_.DEFAULT_THEME}-gradient h-[3px] border-b-2 border-b-transparent`}
+        className={`bg-${globalThis._env_.DEFAULT_THEME}-gradient h-[3px] border-b-2 border-b-transparent`}
       />
     </div>
   );

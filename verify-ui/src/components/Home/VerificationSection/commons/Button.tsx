@@ -23,7 +23,7 @@ export const Button = ({
   id,
   ...rest
 }: ButtonProps) => {
-  const theme = window._env_?.DEFAULT_THEME || "primary";
+  const theme = globalThis._env_?.DEFAULT_THEME || "primary";
   const gradient = `bg-${theme}-gradient`;
   const textGradient = `bg-${theme}-gradient bg-clip-text text-transparent`;
 

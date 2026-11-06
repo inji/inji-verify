@@ -40,7 +40,7 @@ const VpVerifyResultSummary: React.FC<VpVerifyResultSummaryProps> = ({
 
   return (
     <div
-      className={`flex flex-col items-center col-start-1 col-end-13 h-[170px] lg:h-[133px] bg-${window._env_.DEFAULT_THEME}-lighter-gradient w-full`}
+      className={`flex flex-col items-center col-start-1 col-end-13 h-[170px] lg:h-[133px] bg-${globalThis._env_.DEFAULT_THEME}-lighter-gradient w-full`}
     >
       <p className="font-normal text-lgNormalTextSize text-center mt-5">
         {NoOfClaims} {t("credentialsRequested")}:
