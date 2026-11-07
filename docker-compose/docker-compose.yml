@@ -3,7 +3,7 @@ version: '3.8'
 services:
   verify-service:
     container_name: verify-service
-    image: injistackqa/inji-verify-service:1.0.x
+    image: injistackqa/inji-verify-service:1.0.0-rc.1
 #    build:
 #      context: ../verify-service
 #      dockerfile: Dockerfile
