@@ -53,7 +53,6 @@ const Result = () => {
         } catch (err) {
           const message = err instanceof Error ? err.message : String(err);
           dispatch(raiseAlert({ message, severity: "error", open: true }));
-
         }
       } else if (typeof vc === "string") {
         try {
