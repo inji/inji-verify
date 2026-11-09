@@ -1,8 +1,12 @@
 import React from "react";
-import { render } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import Result from "../../../../../components/Home/VerificationSection/Result";
 import { useVerificationFlowSelector } from "../../../../../redux/features/verification/verification.selector";
 import { VerificationResult } from "../../../../../types/data-types";
+import { useAppDispatch } from "../../../../../redux/hooks";
+import { raiseAlert } from "../../../../../redux/features/alerts/alerts.slice";
+import { decodeSdJwtToken } from "../../../../../utils/decodeSdJwt";
+import { isCWT, extractMappedClaim } from "../../../../../utils/cborUtils";
 
 jest.mock("iso-639-3", () => ({
     iso6393: [],
@@ -13,13 +17,17 @@ jest.mock("../../../../../redux/hooks", () => ({
 }));
 
 jest.mock("../../../../../redux/features/verification/verification.selector", () => ({
-        useVerificationFlowSelector: jest.fn(),
-    }));
+    useVerificationFlowSelector: jest.fn(),
+}));
+
+jest.mock("../../../../../utils/decodeSdJwt", () => ({
+    decodeSdJwtToken: jest.fn(),
+}));
 
 jest.mock("../../../../../utils/cborUtils", () => ({
-    isCWT: () => false,
+    isCWT: jest.fn(() => false),
     uint8ArrayToHex: () => "",
-    extractMappedClaim: () => ({}),
+    extractMappedClaim: jest.fn(() => ({})),
 }));
 
 jest.mock(
@@ -84,8 +92,11 @@ const workingVc: any = {
 };
 
 describe("Vc Result", () => {
+  const mockDispatch = jest.fn();
+
   beforeEach(() => {
     jest.clearAllMocks();
+    (useAppDispatch as jest.Mock).mockReturnValue(mockDispatch);
   });
 
   test("VC Verification Successful", () => {
@@ -106,5 +117,42 @@ describe("Vc Result", () => {
     const message = container.querySelector("#vc-result-display-message");
     expect(message).toBeInTheDocument();
     expect(message?.textContent).toBeTruthy();
+  });
+
+  test("dispatches raiseAlert with severity 'error' when SD-JWT decoding fails", async () => {
+    (decodeSdJwtToken as jest.Mock).mockRejectedValueOnce(new Error("Invalid SD-JWT"));
+
+    mockVerificationSelector({ vc: "invalid.sdjwt.token", vcStatus: "SUCCESS" });
+
+    render(<Result />);
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalledWith(
+        raiseAlert({
+          message: "Invalid SD-JWT",
+          severity: "error",
+        })
+      );
+    });
+  });
+
+  test("dispatches raiseAlert with severity 'error' when CWT decoding fails", async () => {
+    (isCWT as jest.Mock).mockReturnValueOnce(true);
+    (extractMappedClaim as jest.Mock).mockImplementationOnce(() => {
+      throw new Error("Invalid CWT");
+    });
+
+    mockVerificationSelector({ vc: new Uint8Array([1, 2, 3]), vcStatus: "SUCCESS" });
+
+    render(<Result />);
+
+    await waitFor(() => {
+      expect(mockDispatch).toHaveBeenCalledWith(
+        raiseAlert({
+          message: "Invalid CWT",
+          severity: "error",
+        })
+      );
+    });
   });
 });
