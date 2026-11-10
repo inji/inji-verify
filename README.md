@@ -1,4 +1,4 @@
-[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=release-1.0.x&project=inji_inji-verify-verify-service&id=inji_inji-verify-verify-service&metric=alert_status)](https://sonarcloud.io/dashboard?branch=release-1.0.x&id=inji_inji-verify-verify-service)
+[![Quality Gate Status](https://sonarcloud.io/api/project_badges/measure?branch=master&project=inji_inji-verify-verify-service&id=inji_inji-verify-verify-service&metric=alert_status)](https://sonarcloud.io/dashboard?branch=master&id=inji_inji-verify-verify-service)
 # Inji Verify
 
 <!-- Trigger a fresh Sonar analysis; no application behavior changed. -->
