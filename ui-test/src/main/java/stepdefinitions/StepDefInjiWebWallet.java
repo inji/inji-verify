@@ -10,6 +10,8 @@ import org.openqa.selenium.WebDriver;
 import org.openqa.selenium.WebElement;
 import org.openqa.selenium.support.ui.ExpectedConditions;
 import org.openqa.selenium.support.ui.WebDriverWait;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import java.io.IOException;
 import java.time.Duration;
@@ -35,6 +37,8 @@ import utils.HttpUtils;
 import utils.ScreenshotUtil;
 
 public class StepDefInjiWebWallet extends BaseSteps {   // <-- extends BaseSteps
+
+    private static final Logger logger = LoggerFactory.getLogger(StepDefInjiWebWallet.class);
 
     private final WebDriver driver;
     private final BaseTest baseTest;
@@ -74,13 +78,23 @@ public class StepDefInjiWebWallet extends BaseSteps {   // <-- extends BaseSteps
                 test.log(Status.PASS, "User successfully performed token-based login to inji-web wallet (attempt "
                         + attempt + "/" + maxAttempts + ")");
                 return;
-            } catch (AssertionError | RuntimeException | IOException e) {
+            } catch (AssertionError | RuntimeException e) {
                 if (attempt == maxAttempts) {
                     logFailure(test, driver, "Token-based login failed after " + maxAttempts + " attempts", e);
                     throw e;
                 }
                 test.log(Status.WARNING, "Token-based login attempt " + attempt + "/" + maxAttempts
                         + " failed: " + e.getMessage() + ". Retrying...");
+            } catch (IOException e) {
+                logger.warn("Token-based login attempt {}/{} failed", attempt, maxAttempts, e);
+
+                if (attempt == maxAttempts) {
+                    test.log(Status.FAIL, "Token-based login failed after " + maxAttempts + " attempts");
+                    throw new IOException("Token-based login failed after " + maxAttempts + " attempts");
+                }
+
+                test.log(Status.WARNING, "Token-based login attempt " + attempt + "/" + maxAttempts
+                        + " failed. Retrying...");
             }
         }
     }
@@ -375,6 +389,9 @@ public class StepDefInjiWebWallet extends BaseSteps {   // <-- extends BaseSteps
             assertTrue(injiWebWalletPage.checkLoginElements(),
                     "User is not logged into inji-web: URL does not contain 'injiweb'/'/user/', or profile pic/name are not visible.");
             test.log(Status.PASS, "User is logged into inji-web — URL, profile pic, and profile name are all visible.");
+        } catch (AssertionError e) {
+            logAssertionFailure(test, driver, "Failed to verify user is logged into inji-web", e);
+            throw e;
         } catch (Exception e) {
             logFailure(test, driver, "Failed to verify user is logged into inji-web", e);
             throw e;

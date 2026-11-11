@@ -148,8 +148,8 @@ Scenario: Verify VP verification same device flow
     And User unlocks inji-web wallet with configured passcode
     And User confirms inji-web wallet with configured passcode
     #And User click on submit button
-    Then Verify if user is logged into injiweb
     And User click on trust verifier
+    Then Verify if user is logged into injiweb
     Then Verify error message is displayed
 
 	@smoke @verifyingVpVerificationNegative @dependsOnVP
