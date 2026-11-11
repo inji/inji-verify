@@ -2,7 +2,7 @@ apiVersion: v2
 name: inji-verify-uitestrig
 description: A Helm chart to deploy UITESTRIG for Inji Verify UI
 type: application
-version: 0.0.1-develop
+version: 1.0.0-rc.1-develop
 appVersion: ""
 dependencies:
   - name: common
