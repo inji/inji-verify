@@ -150,16 +150,18 @@ public void enterConfirmPasscode(String string) {
 	}
 
 	public void waitForWalletPageReady() {
+		String walletOrigin = HttpUtils.getInjiWebBaseUrl();
 		new WebDriverWait(driver, Duration.ofSeconds(getTimeout())).until(webDriver -> {
 			String currentUrl = webDriver.getCurrentUrl();
-			return currentUrl.contains("injiweb") || currentUrl.contains("/user/");
+			return currentUrl.startsWith(walletOrigin) || currentUrl.contains("/user/");
 		});
 	}
 
 	public void waitForWalletUserPageReady() {
+		String walletOrigin = HttpUtils.getInjiWebBaseUrl();
 		new WebDriverWait(driver, Duration.ofSeconds(getTimeout())).until(webDriver -> {
 			String currentUrl = webDriver.getCurrentUrl();
-			return currentUrl.contains("injiweb") && currentUrl.contains("/user/");
+			return currentUrl.startsWith(walletOrigin) && currentUrl.contains("/user/");
 		});
 	}
 
