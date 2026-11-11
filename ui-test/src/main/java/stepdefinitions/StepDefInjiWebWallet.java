@@ -90,7 +90,8 @@ public class StepDefInjiWebWallet extends BaseSteps {   // <-- extends BaseSteps
 
                 if (attempt == maxAttempts) {
                     //the Exception is set to null because we don't want to log the request and response body of google login present in the IOException error message in extent report.
-                    logFailure(test, driver, "Token-based login failed after " + maxAttempts + " attempts", (Exception)null);
+                    logFailure(test, driver, "Token-based login failed after " + maxAttempts + " attempts",
+                            new IOException("Token-login I/O failure"));
                     throw e;
                 }
 
