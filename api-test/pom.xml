@@ -69,6 +69,11 @@
 				<enabled>false</enabled>
 			</snapshots>
 		</repository>
+		
+		<repository>
+	<id>danubetech-maven-public</id>
+	<url>https://repo.danubetech.com/repository/maven-public/</url>
+</repository>
 
 	</repositories>
 
@@ -90,12 +95,31 @@
 		<git.commit.id.plugin.version>3.0.1</git.commit.id.plugin.version>
 		<fileName>apitest-injiverify-1.0.0-rc.2-SNAPSHOT-jar-with-dependencies</fileName>
 	</properties>
-		
-	<dependencies>
+		<dependencies>
 		<dependency>
 			<groupId>io.mosip.testrig.apitest.commons</groupId>
 			<artifactId>apitest-commons</artifactId>
 			<version>1.5.0</version>
+		</dependency>
+		<dependency>
+			<groupId>info.weboftrust</groupId>
+			<artifactId>ld-signatures-java</artifactId>
+			<version>1.0.0</version>
+		</dependency>
+		<dependency>
+			<groupId>com.google.crypto.tink</groupId>
+			<artifactId>tink</artifactId>
+			<version>1.15.0</version>
+		</dependency>
+		<dependency>
+			<groupId>org.bouncycastle</groupId>
+			<artifactId>bcpkix-jdk18on</artifactId>
+			<version>1.78.1</version>
+		</dependency>
+		<dependency>
+			<groupId>decentralized-identity</groupId>
+			<artifactId>jsonld-common-java</artifactId>
+			<version>1.12.0</version>
 		</dependency>
 		<dependency>
 			<groupId>io.inji</groupId>
@@ -108,7 +132,7 @@
 				</exclusion>
 			</exclusions>
 		</dependency>
-				<dependency>
+		<dependency>
 			<groupId>org.apache.pdfbox</groupId>
 			<artifactId>pdfbox</artifactId>
 			<version>2.0.31</version>
