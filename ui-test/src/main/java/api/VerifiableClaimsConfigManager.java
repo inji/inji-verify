@@ -14,6 +14,8 @@ import java.util.Set;
 
 import javax.ws.rs.core.MediaType;
 
+import exceptions.UnknownCredentialException;
+
 import org.apache.log4j.Logger;
 
 import com.fasterxml.jackson.databind.JsonNode;
@@ -136,7 +138,7 @@ public final class VerifiableClaimsConfigManager {
                 return displayName;
             }
         }
-        throw new RuntimeException("Unknown credential '" + trimmed
+        throw new UnknownCredentialException("Unknown credential '" + trimmed
                 + "'. Use a uiAuto.credential.* key or a display name from config.json verifiableClaims.");
     }
 
