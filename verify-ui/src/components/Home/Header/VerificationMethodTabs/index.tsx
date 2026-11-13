@@ -31,6 +31,7 @@ const Tab = ({
   const enabledTab = active ? activeTab : inactiveTab;
   return (
       <button
+        type="button"
         id={id}
         className={`min-w-[214px] py-4 px-4 focus:outline-none self-end rounded-t-xl shadow-xl shadow-[0_2px_6px_0] ${
           disabled ? disabledTab : enabledTab
@@ -82,6 +83,7 @@ function VerificationMethodTabs(props: any) {
       <div className="flex flex-row items-center mx-auto justify-center relative">
         <div className="absolute left-0 h-full w-12 bg-light-gradient md:hidden grid items-center">
           <button
+            type="button"
             id="tabs-carousel-left-icon"
             onClick={handlePrevious}
             className="focus:outline-none"
@@ -134,6 +136,7 @@ function VerificationMethodTabs(props: any) {
         </div>
         <div className="absolute right-0 h-full w-12 bg-light-gradient md:hidden grid items-center">
           <button
+            type="button"
             id="tabs-carousel-right-icon"
             onClick={handleNext}
             className="focus:outline-none"

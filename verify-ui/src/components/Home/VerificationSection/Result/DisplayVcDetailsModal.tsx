@@ -70,6 +70,7 @@ const DisplayVcDetailsModal: React.FC<ModalProps> = ({
             </div>
           </div>
           <button
+            type="button"
             onClick={onClose}
             className="text-gray-500 hover:text-gray-700"
           >

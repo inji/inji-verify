@@ -43,6 +43,7 @@ const Scan = () => {
       />
 
       <button
+        type="button"
         id="trigger-scan"
         className="hidden"
         onClick={() => {
