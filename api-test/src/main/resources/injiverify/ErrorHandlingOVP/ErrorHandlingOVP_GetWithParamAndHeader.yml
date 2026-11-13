@@ -1,0 +1,16 @@
+ErrorHandlingOVP:
+  Injiverify_ErrorHandlingOVP_TC664_GetVpRequest_NonExistentRequestId_Neg:
+      endPoint: /v1/verify/v2/vp-request/{requestId}
+      description: TC_664 - GET vp-request JWT with non-existent requestId; expect 404 Not Found
+      uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC664
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpRequestUriEdge/1_3_ldp_vp_valid_signature_request_uri_get_request_get_jwt_vp_request_
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "requestId": "req_00000000-0000-0000-0000-000000000000"
+      }'
+      output: '{
+      "responseCode": "404"
+      }'

@@ -1,0 +1,52 @@
+ErrorHandlingOVP:
+  Injiverify_ErrorHandlingOVP_TC290_VpSessionRequest_Without_WebUrl_Neg:
+      endPoint: /v1/verify/v2/vp-session-request
+      description: TC_290 - VpSessionRequest with empty clientId (no inji web URL); expect 400 invalid parameter error
+      uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC290
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/VpRequestForSessionRequest/VpRequestForSessionRequest
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "acceptVPWithoutHolderProof": false,
+      "responseCodeValidationRequired": true
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_ErrorHandlingOVP_TC305_VpSessionRequest_Without_DcqlQuery_Neg:
+      endPoint: /v1/verify/v2/vp-session-request
+      description: TC_305 - VpSessionRequest without dcqlQuery (presentation definition missing); expect error response
+      uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC305
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/CreateNewVerificationRequest/CreateNewVerificationRequestOptionalDcql
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "clientId": "injiverify.dev-int-inji.mosip.net/",
+      "nonce": "NkdHJkBIbdOdQaAjWm8gpA",
+      "responseCodeValidationRequired": false
+      }'
+      output: '{
+      "responseCode": "400"
+      }'
+
+  Injiverify_ErrorHandlingOVP_TC303_Setup_Sid:
+      endPoint: /v1/verify/v2/vp-request
+      description: TC_303 Setup - Create a valid ldp_vc vp-request to use in invalid format type submission test
+      uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC303_Setup
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/EdgeTestCases/VpInvalidSignatureEdge/1_5_ldp_vp_invalid_signature_require_cryptographic_holder_binding_fals
+      outputTemplate: injiverify/responseCode
+      input: '{
+      }'
+      output: '{
+      "responseCode": "201"
+      }'

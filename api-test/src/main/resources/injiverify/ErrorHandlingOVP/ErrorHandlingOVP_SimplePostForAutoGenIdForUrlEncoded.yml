@@ -1,0 +1,16 @@
+ErrorHandlingOVP:
+  Injiverify_ErrorHandlingOVP_TC303_Submission_InvalidFormatType_Neg:
+      endPoint: /v1/verify/v2/vp-submission/direct-post
+      description: TC_303 - Submit VP token with invalid format type (non-ldp_vc string); expect credentials don't meet requirements
+      uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC303
+      role: noauth
+      restMethod: post
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/ErrorHandlingOVP/ErrorHandlingOVP_TC303_Submit
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "state": "$ID:ErrorHandlingOVP_TC303_Setup_Sid_requestId$"
+      }'
+      output: '{
+      "responseCode": "400"
+      }'

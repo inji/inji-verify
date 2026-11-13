@@ -1,0 +1,31 @@
+ErrorHandlingOVP:
+  Injiverify_ErrorHandlingOVP_TC912_VpResult_InvalidTransactionId_Neg:
+      endPoint: /v1/verify/vp-result/{transactionId}
+      description: TC_912 scenario 1 - GET vp-result with invalid transactionId format; expect INVALID_TRANSACTION_ID error
+      uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC912_InvalidId
+      role: noauth
+      restMethod: get
+      inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
+      outputTemplate: injiverify/error2
+      input: '{
+      "transactionId": "INVALID_FORMAT_ID"
+      }'
+      output: '{
+      "errorCode": "INVALID_TRANSACTION_ID"
+}'
+
+  Injiverify_ErrorHandlingOVP_TC912_VpResult_NonExistentTransactionId_Neg:
+      endPoint: /v1/verify/vp-result/{transactionId}
+      description: TC_912 scenario 2 - GET vp-result with non-existent UUID transactionId; expect 404 Not Found
+      uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC912_NotFound
+      role: noauth
+      restMethod: get
+      checkOnlyStatusCodeInResponse: true
+      inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
+      outputTemplate: injiverify/responseCode
+      input: '{
+      "transactionId": "txn_00000000-0000-0000-0000-000000000000"
+      }'
+      output: '{
+      "responseCode": "404"
+}'
