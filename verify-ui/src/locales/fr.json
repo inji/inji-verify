@@ -128,6 +128,8 @@
     "mobileDocument": "Document mobile"
   },
   "AlertMessages": {
+    "svgTemplateLoadFailed": "Échec du chargement du modèle des informations d'identification",
+    "svgTemplateRenderFailed": "Échec de l'affichage du modèle des informations d'identification",
     "qrVerificationLimitReached": "Ce code QR a atteint sa limite de vérifications. Veuillez en demander un nouveau.",
     "qrUploadSuccess": "Code QR téléchargé avec succès !",
     "qrScanSuccess": "Code QR scanné avec succès !",

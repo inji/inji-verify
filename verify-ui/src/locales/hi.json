@@ -128,6 +128,8 @@
     "mobileDocument": "मोबाइल दस्तावेज़"
   },
   "AlertMessages": {
+    "svgTemplateLoadFailed": "क्रेडेंशियल टेम्पलेट लोड करने में विफल",
+    "svgTemplateRenderFailed": "क्रेडेंशियल टेम्पलेट प्रदर्शित करने में विफल",
     "qrVerificationLimitReached": "इस QR कोड के सत्यापन की अधिकतम सीमा पूरी हो गई है। कृपया नया QR कोड माँगें।",
     "qrUploadSuccess": "क्यूआर कोड सफलतापूर्वक अपलोड हो गया!",
     "qrScanSuccess": "क्यूआर कोड सफलतापूर्वक स्कैन किया गया!",

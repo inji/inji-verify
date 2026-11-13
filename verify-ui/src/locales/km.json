@@ -128,6 +128,8 @@
     "mobileDocument": "ឯកសារចល័ត"
   },
   "AlertMessages": {
+    "svgTemplateLoadFailed": "មិនអាចផ្ទុកគំរូអត្តសញ្ញាណបានទេ",
+    "svgTemplateRenderFailed": "មិនអាចបង្ហាញគំរូអត្តសញ្ញាណបានទេ",
     "qrVerificationLimitReached": "កូដ QR នេះបានឈានដល់ចំនួនដងអតិបរមានៃការផ្ទៀងផ្ទាត់។ សូមស្នើសុំកូដថ្មី។",
     "qrUploadSuccess": "កូដ QR ផ្ទុកឡើងដោយជោគជ័យ!",
     "qrScanSuccess": "ស្កេន QR កូដដោយជោគជ័យ!",
