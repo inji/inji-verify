@@ -12,6 +12,9 @@ import java.util.Base64;
 
 public class SecurityUtils {
 
+    private SecurityUtils() {
+    }
+
     private static final SecureRandom random = new SecureRandom();
 
     public static String generateNonce() {

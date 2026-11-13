@@ -19,7 +19,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -59,16 +58,14 @@ public class VPRequestController {
 
     @Operation(summary = "Create a new VP request based on the provided parameters. Validates the DCQL query and returns the created request details.")
     @PostMapping(path = VP_REQUEST_URI, consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiResponses({
-            @ApiResponse(
+    @ApiResponse(
                     responseCode = "201",
                     description = "VP request created successfully. The response body contains the details of the created request, including the transaction ID and other relevant information.",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = VPRequestResponseDto.class)
                     )
-            )
-    })
+    )
     public ResponseEntity<Object> createVPRequest(
             @Parameter(description = "The parameters for creating a VP request, including the DCQL query and other relevant details.")
             @Valid @RequestBody VPRequestCreateDto vpRequestCreate,
@@ -78,16 +75,14 @@ public class VPRequestController {
 
     @Operation(summary = "Create a new VP session request with cookie management. Validates the DCQL query, creates the request, and sets a cookie for session tracking.")
     @PostMapping(path = "/v2/vp-session-request", consumes = MediaType.APPLICATION_JSON_VALUE)
-    @ApiResponses({
-            @ApiResponse(
+    @ApiResponse(
                     responseCode = "201",
                     description = "VP session request created successfully. The response body contains the details of the created request, including the transaction ID and other relevant information. A cookie is set for session tracking.",
                     content = @Content(
                         mediaType = "application/json",
                         schema = @Schema(implementation = VPRequestResponseDto.class)
                 )
-            )
-    })
+    )
     public ResponseEntity<Object> createVPSessionRequest(
             @Parameter(description = "The parameters for creating a VP session request, including the DCQL query and other relevant details. A cookie will be set for session tracking.")
             @Valid @RequestBody VPRequestCreateDto vpRequestCreate,
@@ -97,16 +92,14 @@ public class VPRequestController {
 
     @Operation(summary = "Get the status of a VP request by its ID. Returns the current status of the request, including any relevant details.")
     @GetMapping(path = "/vp-request/{requestId}/status")
-    @ApiResponses({
-            @ApiResponse(
+    @ApiResponse(
                     responseCode = "200",
                     description = "VP request status retrieved successfully. The response body contains the current status of the VP request."
-            ),
-            @ApiResponse(
+            )
+    @ApiResponse(
                     responseCode = "404",
                     description = "VP request not found. No VP request exists with the provided request ID."
-            )
-    })
+    )
     public DeferredResult<VPRequestStatusDto> getStatus(
             @Parameter(description = "The unique identifier of the VP request for which to retrieve the status.")
             @PathVariable String requestId) {
@@ -115,16 +108,14 @@ public class VPRequestController {
 
     @Operation(summary = "Get a VP request by its ID. Returns the VP request details as a JWT.")
     @GetMapping(path = "/v2/vp-request/{requestId}", produces = "application/oauth-authz-req+jwt")
-    @ApiResponses({
-            @ApiResponse(
+    @ApiResponse(
                     responseCode = "200",
                     description = "VP request retrieved successfully. The response body contains the VP request details as a JWT."
-            ),
-            @ApiResponse(
+            )
+    @ApiResponse(
                     responseCode = "404",
                     description = "VP request not found. No VP request exists with the provided request ID."
-            )
-    })
+    )
     public ResponseEntity<Object> getVPRequest(
             @Parameter(description = "The unique identifier of the VP request to retrieve.")
             @PathVariable String requestId) throws VPRequestNotFoundException {
