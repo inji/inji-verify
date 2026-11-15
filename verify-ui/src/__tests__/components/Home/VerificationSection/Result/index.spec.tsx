@@ -42,9 +42,10 @@ jest.mock(
         const React = require("react");
         return {
             __esModule: true,
-            default: () =>
+            default: (props: any) =>
                 React.createElement("div", {
                     "data-testid": "vc-detail-modal-mock",
+                    "data-vc-type": props.vcType,
                 }),
         };
     }
@@ -106,5 +107,21 @@ describe("Vc Result", () => {
     const message = container.querySelector("#vc-result-display-message");
     expect(message).toBeInTheDocument();
     expect(message?.textContent).toBeTruthy();
+  });
+
+  test("correctly sets credentialType for single-item type array", () => {
+    mockVerificationSelector({
+      vc: {
+        id: "did:example:single",
+        type: ["InsuranceCredential"],
+        credentialSubject: { email: "test@example.com" },
+      },
+      vcStatus: "SUCCESS",
+    });
+
+    const { container } = render(<Result />);
+
+    const modal = container.querySelector("[data-testid='vc-detail-modal-mock']");
+    expect(modal).toHaveAttribute("data-vc-type", "InsuranceCredential");
   });
 });
