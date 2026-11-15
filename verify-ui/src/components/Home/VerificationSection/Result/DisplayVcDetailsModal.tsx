@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect, useState } from "react";
 import { VectorCollapse, VectorDownload } from "../../../../utils/theme-utils";
 import { convertToTitleCase, saveData } from "../../../../utils/misc";
 import ActionButton from "../commons/ActionButton";
@@ -36,6 +36,16 @@ const DisplayVcDetailsModal: React.FC<ModalProps> = ({
   const currentLang = i18next.language;
   const orderedDetails = vc && getDetailsOrder(vc, currentLang);
   const templateUrl = getTemplateUrl(vc);
+  const [templateError, setTemplateError] = useState(false);
+  const showTemplate = templateUrl && !templateError;
+
+  const onTemplateError = () => {
+    setTemplateError(true);
+  };
+
+  useEffect(() => {
+    setTemplateError(false);
+  }, [templateUrl, vc]);
 
   if (!isOpen) return null;
   return (
@@ -75,8 +85,12 @@ const DisplayVcDetailsModal: React.FC<ModalProps> = ({
         </div>
 
         <div className="space-y-4">
-          {templateUrl ? (
-            <VcSvgTemplate vc={vc} templateUrl={templateUrl} />
+          {showTemplate ? (
+            <VcSvgTemplate
+              vc={vc}
+              templateUrl={templateUrl}
+              onError={onTemplateError}
+            />
           ) : (
             <VcDetailsGrid orderedDetails={orderedDetails} vc={vc} />
           )}
