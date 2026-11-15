@@ -66,6 +66,38 @@ describe("commonUtils credential matching", () => {
         })
       ).toBe("MockVerifiableCredential_SD_JWT");
     });
+
+    test("extracts credential type from single-item array", () => {
+      const vc = {
+        type: ["InsuranceCredential"],
+      };
+      expect(getCredentialType(vc)).toBe("InsuranceCredential");
+    });
+
+    test("extracts credential type when type is a single string", () => {
+      const vc = {
+        type: "InsuranceCredential",
+      };
+      expect(getCredentialType(vc)).toBe("InsuranceCredential");
+    });
+
+    test("extracts credential type when type is an object with _value", () => {
+      const vc = {
+        type: [{ _value: "InsuranceCredential" }],
+      };
+      expect(getCredentialType(vc)).toBe("InsuranceCredential");
+    });
+
+    test("falls back to verifiableCredential when only VerifiableCredential is provided", () => {
+      const vc = {
+        type: ["VerifiableCredential"],
+      };
+      expect(getCredentialType(vc)).toBe("verifiableCredential");
+    });
+
+    test("falls back to verifiableCredential when credential has no type", () => {
+      expect(getCredentialType({})).toBe("verifiableCredential");
+    });
   });
 
   describe("calculateVerifiedClaims", () => {
