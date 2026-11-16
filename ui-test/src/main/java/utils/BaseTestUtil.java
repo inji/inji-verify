@@ -80,7 +80,7 @@ public class BaseTestUtil {
         return mobileEmulation;
     }
 
-    protected ChromeOptions getLocalChromeOptions(boolean scanMode, boolean mobileView) {
+    protected ChromeOptions getLocalChromeOptions(boolean scanMode, boolean mobileView, boolean allowInsecureConnection) {
         ChromeOptions chromeOptions = new ChromeOptions();
         chromeOptions.addArguments("--remote-allow-origins=*");
         chromeOptions.addArguments("--disable-notifications");
@@ -88,7 +88,15 @@ public class BaseTestUtil {
         chromeOptions.addArguments("--no-sandbox");
         chromeOptions.addArguments("--disable-dev-shm-usage");
 
-        chromeOptions.addArguments("--disable-features=LocalNetworkAccessChecks");
+        // Combine every disabled feature into a single --disable-features switch;
+        // passing the switch twice makes Chrome keep only one of them. Scenarios
+        // tagged @allowInsecureConnection also disable the HTTPS-upgrade interstitial
+        // so an HTTP test URL loads without Chrome's "secure connection" warning.
+        String disabledFeatures = "LocalNetworkAccessChecks";
+        if (allowInsecureConnection) {
+            disabledFeatures += ",HttpsUpgrades,HttpsFirstBalancedMode";
+        }
+        chromeOptions.addArguments("--disable-features=" + disabledFeatures);
         chromeOptions.setExperimentalOption("prefs", getLocalChromePreferences());
         chromeOptions.setCapability("goog:loggingPrefs", getChromeLoggingPreferences());
 
