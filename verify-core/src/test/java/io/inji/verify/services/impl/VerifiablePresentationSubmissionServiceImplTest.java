@@ -687,7 +687,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             when(summary.getVerificationResult()).thenReturn(vResult);
             when(vResult.getVerificationStatus()).thenReturn(true);
 
-            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(), anyList(), anyBoolean()))
+            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(), anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
 
             assertDoesNotThrow(() -> verifiablePresentationSubmissionService.getVPResult("tx"));
@@ -761,7 +761,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
-            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.LDP_VC), anyList(), anyBoolean()))
+            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.LDP_VC), anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(mockSummary);
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                     .thenReturn(authResponse);
@@ -812,7 +812,7 @@ public class VerifiablePresentationSubmissionServiceImplTest {
             AuthorizationRequestCreateResponse authResponse = new AuthorizationRequestCreateResponse(
                     "state123", transactionId, authDetails, System.currentTimeMillis() + 100000);
 
-            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.DC_SD_JWT), anyList(), anyBoolean()))
+            when(credentialsVerifier.verifyAndGetCredentialStatus(anyString(), eq(io.mosip.vercred.vcverifier.constants.CredentialFormat.DC_SD_JWT), anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(mockSummary);
             when(verifiablePresentationRequestService.getLatestAuthorizationRequestFor(transactionId))
                     .thenReturn(authResponse);

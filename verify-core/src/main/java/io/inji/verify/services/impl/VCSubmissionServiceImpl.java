@@ -3,6 +3,7 @@ package io.inji.verify.services.impl;
 import io.inji.verify.exception.CredentialStatusCheckException;
 import io.mosip.vercred.vcverifier.data.CredentialVerificationSummary;
 import io.mosip.vercred.vcverifier.data.VerificationStatus;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 import io.inji.verify.dto.submission.VCSubmissionDto;
 import io.inji.verify.dto.submission.VCSubmissionResponseDto;
@@ -24,6 +25,10 @@ public class VCSubmissionServiceImpl implements VCSubmissionService {
 
     final VCSubmissionRepository vcSubmissionRepository;
     final CredentialsVerifier credentialsVerifier;
+
+    // Temporary: false relaxes only the mDL DS KeyUsage/EKU and element type checks in vc-verifier.
+    @Value("${inji.verify.mso-mdoc.strict-profile:false}")
+    boolean mdocStrictProfile;
 
     public VCSubmissionServiceImpl(VCSubmissionRepository vcSubmissionRepository, CredentialsVerifier credentialsVerifier) {
         this.vcSubmissionRepository = vcSubmissionRepository;
@@ -48,7 +53,7 @@ public class VCSubmissionServiceImpl implements VCSubmissionService {
             List<String> statusPurposeList = new ArrayList<>();
             statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
             // Plain VC flow — no VP session context, KB-JWT validation not applicable.
-            CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList, false);
+            CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList, false, mdocStrictProfile);
             VerificationStatus vcVerificationStatus = Utils.getVcVerificationStatus(credentialVerificationSummary);
 
             return new VCSubmissionVerificationStatusDto(vc, vcVerificationStatus);

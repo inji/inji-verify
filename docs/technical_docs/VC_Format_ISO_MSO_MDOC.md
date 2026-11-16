@@ -49,6 +49,7 @@ An mdoc whose decoded size is larger than `inji.verify.mso-mdoc.max-size` (bytes
 
 | Property | Env variable | Default | Meaning |
 |---|---|---|---|
+| `inji.verify.mso-mdoc.strict-profile` | `INJI_VERIFY_MSO_MDOC_STRICT_PROFILE` | `false` | Passed to vc-verifier as `mdocStrictProfile`. `false` relaxes only two mDL checks: the Document Signer certificate KeyUsage/EKU (ISO 18013-5 Table B.3) and the mDL element types (ISO Table 5). Every other mDL check always runs. Keep `false`, written out in every environment, until Inji Certify issues conformant mDLs ([inji-certify#1132](https://github.com/inji/inji-certify/issues/1132), [#1147](https://github.com/inji/inji-certify/issues/1147)); then set `true`. |
 | `inji.verify.mso-mdoc.max-size` | `INJI_VERIFY_MSO_MDOC_MAX_SIZE` | `1048576` | Maximum decoded mdoc size in bytes; must be greater than zero, otherwise the service fails to start |
 | `inji.verify.mso-mdoc.claims-with-meta-data` | `INJI_VERIFY_MSO_MDOC_CLAIMS_WITH_META_DATA` | empty | Comma-separated `<namespace>.<element>` entries removed from `claims`; each entry removes that element from that namespace only. Namespaces and element identifiers may contain dots, so every split of an entry is tried against the namespaces in the credential. If more than one split matches (for example namespaces `org.iso` and `org.iso.18013.5.1` with elements `18013.5.1.age` and `age`), every matching element is removed. |
 
@@ -59,8 +60,9 @@ An mdoc whose decoded size is larger than `inji.verify.mso-mdoc.max-size` (bytes
 | Check | Source | Notes |
 |---|---|---|
 | Signature | COSE_Sign1 `issuerAuth` inside `issuerSigned` | ES256 (COSE `alg` -7, P-256), as given by the `issuerAuth` COSE `alg` header. ES256 is the only algorithm tested against real mDLs. The certificate chain is not validated; a valid signature from an untrusted or self-signed certificate can still show as verified. |
-| Data-element integrity | MSO digests | Performed by the verification library |
-| MSO validity | `validFrom` and `validUntil` | Checked by the verification library, with gaps. `validFrom` is not enforced, so an mdoc with a future `validFrom` passes. An expired `validUntil` currently returns `schemaAndSignatureCheck.valid: false` with `ERR_INVALID_VALID_UNTIL_MSO` and no `expiryCheck`. Both cases await [inji/vc-verifier#300](https://github.com/inji/vc-verifier/issues/300). See [Limitations](#limitations). |
+| Data-element integrity | MSO digests | Performed by the verification library. A changed element returns `ERR_LIKELY_TAMPERED` in `schemaAndSignatureCheck` |
+| mDL data elements | `org.iso.18013.5.1` namespace | Checked by the verification library before the signature: mandatory elements (when the whole namespace is disclosed), `driving_privileges`, Latin-1 text, age claims, `issue_date` not after `validFrom`, and element types (strict profile only). A failure returns `ERR_INVALID_MDL_ELEMENT` (or `ERR_INVALID_ISSUE_DATE`) |
+| MSO validity | `validFrom` and `validUntil` | Checked by the verification library ([inji/vc-verifier#300](https://github.com/inji/vc-verifier/issues/300)). A future `validFrom` fails `schemaAndSignatureCheck`. An expired `validUntil` that otherwise verifies gives `schemaAndSignatureCheck.valid: true` and `expiryCheck.valid: false`. |
 | Revocation | — | Not supported; `statusCheck` is empty |
 | Holder / device binding | — | Not applicable on scan and upload |
 
@@ -114,7 +116,7 @@ Claims are extracted by decoding the submitted credential string again (`Utils.e
 
 A credential that cannot be decoded is rejected with HTTP 400 and Spring Boot's default error body, as for the other formats: a corrupt mdoc, an mdoc with an empty `documents` array, or an mdoc larger than `inji.verify.mso-mdoc.max-size`.
 
-Fixed test samples (valid, shapes B and C, tampered, bad signature, empty `documents`, corrupt CBOR, expired, not yet valid) are in [`verify-core/src/test/resources/mdl-samples`](../../verify-core/src/test/resources/mdl-samples/README.md), with their `validUntil` dates. The Postman collection also has an Inji Certify-issued mDL for interop (valid until 2028-10-14).
+Fixed test samples (valid, shapes B and C, tampered, bad signature, empty `documents`, corrupt CBOR, expired, not yet valid) are in [`verify-core/src/test/resources/mdl-samples`](../../verify-core/src/test/resources/mdl-samples/README.md), with their `validUntil` dates. The Postman collection also has an Inji Certify-issued mDL for interop (valid until 2028-10-14); it fails today, see [Limitations](#limitations).
 
 ---
 
@@ -144,7 +146,7 @@ The UI decodes the credential into a namespace-grouped claim map matching the ba
 | OpenID4VP | Not supported for `mso_mdoc` |
 | Issuer trust | Not enforced; certificate-chain validation is out of scope until IACA trust-anchor support ships. Even an mdoc signed by a self-signed certificate can show as verified. |
 | Multi-document submissions | Only `documents[0]` is verified and used for displayed claims, matching the library; all remaining documents are ignored. |
-| MSO validity | `validFrom` is not enforced. An expired `validUntil` is reported as a signature/schema error, not as `EXPIRED`. Both await vc-verifier#300. |
+| Inji Certify mDLs | Current Certify mDLs lack the ISO mandatory mDL elements ([inji-certify#1123](https://github.com/inji/inji-certify/issues/1123)), so they fail with `ERR_INVALID_MDL_ELEMENT` even with the strict profile off |
 | Revocation | Not checked; `statusCheck` is `[]` |
 | Device check | Not performed on scan and upload |
 | Oversized input | Documents larger than `inji.verify.mso-mdoc.max-size` decoded bytes (default 1 MiB) are rejected |

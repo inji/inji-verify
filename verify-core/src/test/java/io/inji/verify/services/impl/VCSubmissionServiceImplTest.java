@@ -105,7 +105,7 @@ public class VCSubmissionServiceImplTest {
         when(credentialsVerifier.verifyAndGetCredentialStatus(
                 eq(TEST_VC_STRING),
                 eq(CredentialFormat.LDP_VC),
-                anyList(), eq(false))
+                anyList(), eq(false), eq(false))
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -124,7 +124,7 @@ public class VCSubmissionServiceImplTest {
                     eq(TEST_VC_STRING),
                     eq(CredentialFormat.LDP_VC),
                     argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED)),
-                    eq(false)
+                    eq(false), eq(false)
             );
             utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
         }
@@ -139,7 +139,7 @@ public class VCSubmissionServiceImplTest {
         when(credentialsVerifier.verifyAndGetCredentialStatus(
                 eq(TEST_SDJWT_VC_STRING),
                 eq(CredentialFormat.VC_SD_JWT),
-                anyList(), eq(false))
+                anyList(), eq(false), eq(false))
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -158,7 +158,7 @@ public class VCSubmissionServiceImplTest {
                     eq(TEST_SDJWT_VC_STRING),
                     eq(CredentialFormat.VC_SD_JWT),
                     argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED)),
-                    eq(false)
+                    eq(false), eq(false)
             );
             utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
         }
@@ -174,7 +174,7 @@ public class VCSubmissionServiceImplTest {
         when(credentialsVerifier.verifyAndGetCredentialStatus(
                 eq(TEST_VC_STRING),
                 eq(CredentialFormat.LDP_VC),
-                anyList(), eq(false))
+                anyList(), eq(false), eq(false))
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -195,7 +195,7 @@ public class VCSubmissionServiceImplTest {
                     eq(TEST_VC_STRING),
                     eq(CredentialFormat.LDP_VC),
                     argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED)),
-                    eq(false)
+                    eq(false), eq(false)
             );
             utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
         }
@@ -210,7 +210,7 @@ public class VCSubmissionServiceImplTest {
         when(credentialsVerifier.verifyAndGetCredentialStatus(
                 eq(TEST_SDJWT_VC_STRING),
                 eq(CredentialFormat.VC_SD_JWT),
-                anyList(), eq(false))
+                anyList(), eq(false), eq(false))
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -230,7 +230,7 @@ public class VCSubmissionServiceImplTest {
                     eq(TEST_SDJWT_VC_STRING),
                     eq(CredentialFormat.VC_SD_JWT),
                     argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED)),
-                    eq(false)
+                    eq(false), eq(false)
             );
             utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
         }
@@ -245,7 +245,7 @@ public class VCSubmissionServiceImplTest {
         when(credentialsVerifier.verifyAndGetCredentialStatus(
                 eq(TEST_VC_STRING),
                 eq(CredentialFormat.LDP_VC),
-                anyList(), eq(false))
+                anyList(), eq(false), eq(false))
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -266,7 +266,7 @@ public class VCSubmissionServiceImplTest {
                     eq(TEST_VC_STRING),
                     eq(CredentialFormat.LDP_VC),
                     argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED)),
-                    eq(false)
+                    eq(false), eq(false)
             );
             utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
         }
@@ -281,7 +281,7 @@ public class VCSubmissionServiceImplTest {
         when(credentialsVerifier.verifyAndGetCredentialStatus(
                 eq(TEST_SDJWT_VC_STRING),
                 eq(CredentialFormat.VC_SD_JWT),
-                anyList(), eq(false))
+                anyList(), eq(false), eq(false))
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -301,7 +301,7 @@ public class VCSubmissionServiceImplTest {
                     eq(TEST_SDJWT_VC_STRING),
                     eq(CredentialFormat.VC_SD_JWT),
                     argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED)),
-                    eq(false)
+                    eq(false), eq(false)
             );
             utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
         }
@@ -328,7 +328,7 @@ public class VCSubmissionServiceImplTest {
         when(credentialsVerifier.verifyAndGetCredentialStatus(
                 eq(TEST_VC_STRING),
                 eq(CredentialFormat.LDP_VC),
-                anyList(), eq(false))
+                anyList(), eq(false), eq(false))
         ).thenReturn(credentialVerificationSummary);
 
         try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -348,7 +348,7 @@ public class VCSubmissionServiceImplTest {
                     eq(TEST_VC_STRING),
                     eq(CredentialFormat.LDP_VC),
                     argThat(list -> list.contains(Constants.STATUS_PURPOSE_REVOKED)),
-                    eq(false)
+                    eq(false), eq(false)
             );
             utilsMock.verify(() -> Utils.getVcVerificationStatus(credentialVerificationSummary), times(1));
         }
