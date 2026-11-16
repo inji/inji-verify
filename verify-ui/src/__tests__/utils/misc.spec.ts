@@ -16,6 +16,8 @@ describe("misc utilities", () => {
         jest.doMock("i18next", () => ({
             __esModule: true,
             default: {
+                use: jest.fn().mockReturnThis(),
+                init: jest.fn().mockReturnThis(),
                 t: jest.fn((key: string) => {
                     const map: Record<string, string> = {
                         "VerificationStepsContent:VERIFY.InitiateVpRequest.label": "Initiate VP Request",
@@ -168,23 +170,59 @@ describe("misc utilities", () => {
         });
     });
 
+    describe("getDownloadFileName", () => {
+        test("resolves credential type from multi-type array", () => {
+            expect(misc.getDownloadFileName({ type: ["VerifiableCredential", "InsuranceCredential"] })).toBe("InsuranceCredential");
+        });
+
+        test("resolves credential type from single-item array", () => {
+            expect(misc.getDownloadFileName({ type: ["InsuranceCredential"] })).toBe("InsuranceCredential");
+        });
+
+        test("resolves credential type from string type", () => {
+            expect(misc.getDownloadFileName({ type: "InsuranceCredential" })).toBe("InsuranceCredential");
+        });
+
+        test("resolves credential type from SD-JWT regularClaims", () => {
+            expect(misc.getDownloadFileName({ regularClaims: { vct: "MockIdentityCredential" } })).toBe("MockIdentityCredential");
+        });
+
+        test("resolves credential type from object with _value", () => {
+            expect(misc.getDownloadFileName({ type: [{ _value: "InsuranceCredential" }] })).toBe("InsuranceCredential");
+        });
+
+        test("extracts clean type name from IRI with hash", () => {
+            expect(misc.getDownloadFileName({ type: ["VerifiableCredential", "https://example.com/context#InsuranceCredential"] })).toBe("InsuranceCredential");
+        });
+
+        test("extracts clean type name from IRI with slash", () => {
+            expect(misc.getDownloadFileName({ type: ["VerifiableCredential", "https://example.com/context/InsuranceCredential"] })).toBe("InsuranceCredential");
+        });
+
+        test("falls back to default filename when only VerifiableCredential is provided", () => {
+            expect(misc.getDownloadFileName({ type: ["VerifiableCredential"] })).toBe("Inji_Verify_Credential_Data");
+        });
+
+        test("falls back to default filename when credential has no type", () => {
+            expect(misc.getDownloadFileName({})).toBe("Inji_Verify_Credential_Data");
+        });
+    });
+
     describe("saveData", () => {
         const originalCreateObjectURL = URL.createObjectURL;
         const originalRevokeObjectURL = URL.revokeObjectURL;
 
-        afterEach(() => {
-            URL.createObjectURL = originalCreateObjectURL;
-            URL.revokeObjectURL = originalRevokeObjectURL;
-            jest.restoreAllMocks();
-        });
+        let mockLink: any;
+        let mockCreateObjectURL: jest.Mock;
+        let mockRevokeObjectURL: jest.Mock;
 
-        test("triggers download", async () => {
-            const mockCreateObjectURL = jest.fn(() => "blob:url");
-            const mockRevokeObjectURL = jest.fn();
+        beforeEach(() => {
+            mockCreateObjectURL = jest.fn(() => "blob:url");
+            mockRevokeObjectURL = jest.fn();
             URL.createObjectURL = mockCreateObjectURL;
             URL.revokeObjectURL = mockRevokeObjectURL;
 
-            const mockLink = {
+            mockLink = {
                 href: "",
                 download: "",
                 click: jest.fn(),
@@ -193,7 +231,15 @@ describe("misc utilities", () => {
             jest.spyOn(document, "createElement").mockReturnValue(mockLink as any);
             jest.spyOn(document.body, "appendChild").mockImplementation(() => mockLink as any);
             jest.spyOn(document.body, "removeChild").mockImplementation(() => mockLink as any);
+        });
 
+        afterEach(() => {
+            URL.createObjectURL = originalCreateObjectURL;
+            URL.revokeObjectURL = originalRevokeObjectURL;
+            jest.restoreAllMocks();
+        });
+
+        test("triggers download", async () => {
             await misc.saveData({ type: ["VerifiableCredential", "MyType"], data: "test" });
 
             expect(mockLink.download).toBe("MyType.json");
@@ -202,17 +248,22 @@ describe("misc utilities", () => {
             expect(mockRevokeObjectURL).toHaveBeenCalledWith("blob:url");
         });
 
+        test("correctly names file for single-item type array", async () => {
+            await misc.saveData({ type: ["InsuranceCredential"], data: "test" });
+            expect(mockLink.download).toBe("InsuranceCredential.json");
+        });
+
+        test("correctly names file for string type", async () => {
+            await misc.saveData({ type: "InsuranceCredential", data: "test" });
+            expect(mockLink.download).toBe("InsuranceCredential.json");
+        });
+
+        test("correctly names file for SD-JWT credential", async () => {
+            await misc.saveData({ regularClaims: { vct: "MockIdentityCredential" }, data: "test" });
+            expect(mockLink.download).toBe("MockIdentityCredential.json");
+        });
+
         test("uses default filename if type is missing", async () => {
-            const mockCreateObjectURL = jest.fn(() => "blob:url");
-            const mockRevokeObjectURL = jest.fn();
-            URL.createObjectURL = mockCreateObjectURL;
-            URL.revokeObjectURL = mockRevokeObjectURL;
-
-            const mockLink = {href: "", download: "", click: jest.fn(),};
-            jest.spyOn(document, "createElement").mockReturnValue(mockLink as any);
-            jest.spyOn(document.body, "appendChild").mockImplementation(() => mockLink as any);
-            jest.spyOn(document.body, "removeChild").mockImplementation(() => mockLink as any);
-
             await misc.saveData({ data: "test" });
             expect(mockLink.download).toBe("Inji_Verify_Credential_Data.json");
             expect(mockLink.click).toHaveBeenCalled();
