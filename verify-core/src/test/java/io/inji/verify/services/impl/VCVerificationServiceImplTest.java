@@ -222,7 +222,7 @@ public class VCVerificationServiceImplTest {
     @Nested
     class MdocStrictProfileTests {
         @Test
-        void shouldPassTheConfiguredMdocStrictProfileToVcVerifier() throws CredentialStatusCheckException {
+        void should_passConfiguredMdocStrictProfile_when_strictProfileEnabled() throws CredentialStatusCheckException {
             CredentialsVerifier verifier = mock(CredentialsVerifier.class);
             VCVerificationServiceImpl strictService = new VCVerificationServiceImpl(verifier, mockPixelPass);
             strictService.mdocStrictProfile = true;
