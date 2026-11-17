@@ -5,12 +5,12 @@ ErrorHandlingOVP:
       uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC303
       role: noauth
       restMethod: post
-      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/ErrorHandlingOVP/ErrorHandlingOVP_TC303_Submit
-      outputTemplate: injiverify/responseCode
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "state": "$ID:ErrorHandlingOVP_TC303_Setup_Sid_requestId$"
       }'
       output: '{
-      "responseCode": "400"
+      "errorCode": "invalid_request",
+      "errorMessage": "invalid_vp_token, not a valid JSON object"
       }'

@@ -5,12 +5,12 @@ ErrorHandlingOVP:
       uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC664
       role: noauth
       restMethod: get
-      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/EdgeTestCases/VpRequestUriEdge/1_3_ldp_vp_valid_signature_request_uri_get_request_get_jwt_vp_request_
-      outputTemplate: injiverify/responseCode
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "requestId": "req_00000000-0000-0000-0000-000000000000"
       }'
       output: '{
-      "responseCode": "404"
+      "errorCode": "NO_AUTH_REQUEST",
+      "errorMessage": "No Authorization request found for given request ID."
       }'

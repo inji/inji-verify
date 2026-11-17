@@ -6,12 +6,13 @@ ErrorHandlingOVP:
       role: noauth
       restMethod: get
       inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
-      outputTemplate: injiverify/error2
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "transactionId": "INVALID_FORMAT_ID"
       }'
       output: '{
-      "errorCode": "INVALID_TRANSACTION_ID"
+      "errorCode": "INVALID_TRANSACTION_ID",
+      "errorMessage": "Invalid transaction ID, No requests found for given transaction ID."
 }'
 
   Injiverify_ErrorHandlingOVP_TC912_VpResult_NonExistentTransactionId_Neg:
@@ -20,12 +21,12 @@ ErrorHandlingOVP:
       uniqueIdentifier: TC_InjiVerify_ErrorHandlingOVP_TC912_NotFound
       role: noauth
       restMethod: get
-      checkOnlyStatusCodeInResponse: true
       inputTemplate: injiverify/GetVpTokenForRequest/GetVpTokenForRequest
-      outputTemplate: injiverify/responseCode
+      outputTemplate: injiverify/errorCodeAndMessage
       input: '{
       "transactionId": "txn_00000000-0000-0000-0000-000000000000"
       }'
       output: '{
-      "responseCode": "404"
+       "errorCode": "INVALID_TRANSACTION_ID",
+      "errorMessage": "Invalid transaction ID, No requests found for given transaction ID."
 }'
