@@ -48,6 +48,7 @@ jobs:
     uses: mosip/kattu/.github/workflows/npm-sonar-analysis.yml@v0.0.1
     with:
       SERVICE_LOCATION: ./verify-ui
+      NODE_VERSION: "22"
       SONAR_TEST_INCLUSIONS: "**/*.spec.ts,**/*.spec.tsx,**/*.spec.js"
     secrets:
       SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
