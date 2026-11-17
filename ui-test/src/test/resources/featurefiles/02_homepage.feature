@@ -32,7 +32,7 @@ Feature: Inji Verify homepage testing
     And Verify that Upload button visible
     And Verify file format constraints text
 
-  @negative @verifyingHomePageWithWrongURL
+  @negative @verifyingHomePageWithWrongURL @allowInsecureConnection
   Scenario: Verify the Inji Verify with wrong URL
     Given User enters wrong URL in the address bar
     Then Verify error message for wrong URL

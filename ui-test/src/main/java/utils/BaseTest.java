@@ -227,12 +227,24 @@ public class BaseTest extends BaseTestUtil {
 			DesiredCapabilities capabilities = new DesiredCapabilities();
 			HashMap<String, Object> browserstackOptions = new HashMap<>();
 
+			HashMap<String, Object> googChromeOptions = new HashMap<>();
 			if (mobileView) {
 				logger.info("Launching test in MOBILE VIEW (Desktop Emulation) via BrowserStack");
-
-				capabilities.setCapability("goog:chromeOptions", getMobileChromeOptions());
+				googChromeOptions.putAll(getMobileChromeOptions());
 			} else {
 				logger.info("Launching test in DESKTOP mode via BrowserStack");
+			}
+			// Scenarios tagged @allowInsecureConnection navigate to an HTTP URL that
+			// Chrome would otherwise block with the "Always Use Secure Connections"
+			// interstitial. Disabling the HTTPS-upgrade features stops that page from
+			// appearing at all, scoped to just these scenarios rather than every session.
+			if (scenario.getSourceTagNames().contains("@allowInsecureConnection")) {
+				logger.info("Disabling Chrome HTTPS-upgrade interstitial for scenario: {}", scenario.getName());
+				googChromeOptions.put("args", java.util.Arrays.asList(
+						"--disable-features=HttpsUpgrades,HttpsFirstBalancedMode"));
+			}
+			if (!googChromeOptions.isEmpty()) {
+				capabilities.setCapability("goog:chromeOptions", googChromeOptions);
 			}
 
 			capabilities.setCapability("browserName", "Chrome");
@@ -253,7 +265,8 @@ public class BaseTest extends BaseTestUtil {
 			((RemoteWebDriver) newDriver).setFileDetector(new LocalFileDetector());
 			driverHolder.set(newDriver);
 		} else {
-			ChromeOptions chromeOptions = getLocalChromeOptions(scanMode, mobileView);
+			boolean allowInsecureConnection = scenario.getSourceTagNames().contains("@allowInsecureConnection");
+			ChromeOptions chromeOptions = getLocalChromeOptions(scanMode, mobileView, allowInsecureConnection);
 			driverHolder.set(new ChromeDriver(chromeOptions));
 		}
 
