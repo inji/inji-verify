@@ -94,6 +94,10 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
     @Value("${inji.verify.kb-jwt-max-age-seconds:#{600}}")
     long kbJwtMaxAgeSeconds;
 
+    // Temporary: false relaxes only the mDL DS KeyUsage/EKU and element type checks in vc-verifier.
+    @Value("${inji.verify.mso-mdoc.strict-profile:false}")
+    boolean mdocStrictProfile;
+
     final AuthorizationRequestCreateResponseRepository authorizationRequestCreateResponseRepository;
     final VPSubmissionRepository vpSubmissionRepository;
     final CredentialsVerifier credentialsVerifier;
@@ -1074,7 +1078,7 @@ public class VerifiablePresentationSubmissionServiceImpl implements VerifiablePr
         if (requireCryptographicHolderBinding && CredentialFormat.DC_SD_JWT.equals(credentialFormat)) {
             validateKbJwt = true;
         }
-        CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList, validateKbJwt);
+        CredentialVerificationSummary credentialVerificationSummary = credentialsVerifier.verifyAndGetCredentialStatus(vc, credentialFormat, statusPurposeList, validateKbJwt, mdocStrictProfile);
         VerificationResult verificationResult = credentialVerificationSummary.getVerificationResult();
         if (!verificationResult.getVerificationStatus()) {
             log.error("VC Verification Failed");

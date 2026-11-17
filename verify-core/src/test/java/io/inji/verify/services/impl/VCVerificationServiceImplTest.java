@@ -47,7 +47,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                     eq(TEST_JSON_VC_STRING),
                     eq(CredentialFormat.LDP_VC),
-                    anyList(), anyBoolean()))
+                    anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
 
                 VCVerificationStatusDto result = service.verify(TEST_JSON_VC_STRING, "application/ldp+json");
@@ -64,7 +64,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                     eq(TEST_JSON_VC_STRING),
                     eq(CredentialFormat.LDP_VC),
-                    anyList(), anyBoolean()))
+                    anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
 
                 VCVerificationStatusDto result = service.verify(TEST_JSON_VC_STRING, "application/ldp+json");
@@ -86,7 +86,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                     eq(TEST_JSON_VC_STRING),
                     eq(CredentialFormat.LDP_VC),
-                    anyList(), anyBoolean()))
+                    anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
 
                 VCVerificationStatusDto result = service.verify(TEST_JSON_VC_STRING, "application/ldp+json");
@@ -104,7 +104,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                     eq(TEST_JSON_VC_STRING),
                     eq(CredentialFormat.LDP_VC),
-                    anyList(), anyBoolean())
+                    anyList(), anyBoolean(), anyBoolean())
             ).thenReturn(summary);
 
                 VCVerificationStatusDto statusDto = service.verify(TEST_JSON_VC_STRING, "application/other");
@@ -125,7 +125,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                     eq(TEST_JSON_VC_STRING),
                     eq(CredentialFormat.LDP_VC),
-                    anyList(), anyBoolean()))
+                    anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
             when(vResult.getVerificationMessage()).thenReturn("EXPIRED");
             when(vResult.getVerificationErrorCode()).thenReturn("ERR_VC_EXPIRED");
@@ -145,7 +145,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                     eq(TEST_CWT_VC_STRING),
                     eq(CredentialFormat.CWT_VC),
-                    anyList(), anyBoolean()))
+                    anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
 
                 VCVerificationStatusDto result = service.verify(TEST_CWT_VC_STRING, "application/vc+cwt");
@@ -163,7 +163,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                     eq(TEST_CWT_VC_STRING),
                     eq(CredentialFormat.CWT_VC),
-                    anyList(), anyBoolean()))
+                    anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
 
                 VCVerificationStatusDto result = service.verify(TEST_CWT_VC_STRING, "application/vc+cwt");
@@ -186,7 +186,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                     eq(TEST_CWT_VC_STRING),
                     eq(CredentialFormat.CWT_VC),
-                    anyList(), anyBoolean()))
+                    anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
 
                 VCVerificationStatusDto result = service.verify(TEST_CWT_VC_STRING, "application/vc+cwt");
@@ -207,7 +207,7 @@ public class VCVerificationServiceImplTest {
             when(mockCredentialsVerifier.verifyAndGetCredentialStatus(
                     eq(TEST_CWT_VC_STRING),
                     eq(CredentialFormat.CWT_VC),
-                    anyList(), anyBoolean()))
+                    anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
             when(vResult.getVerificationMessage()).thenReturn("EXPIRED");
             when(vResult.getVerificationErrorCode()).thenReturn("ERR_VC_EXPIRED");
@@ -220,6 +220,38 @@ public class VCVerificationServiceImplTest {
     }
 
     @Nested
+    class MdocStrictProfileTests {
+        @Test
+        void should_passConfiguredMdocStrictProfile_when_strictProfileEnabled() throws CredentialStatusCheckException {
+            CredentialsVerifier verifier = mock(CredentialsVerifier.class);
+            VCVerificationServiceImpl strictService = new VCVerificationServiceImpl(verifier, mockPixelPass);
+            strictService.mdocStrictProfile = true;
+
+            VerificationResult verificationResult = new VerificationResult(false, "invalid", "ERR_INVALID");
+            CredentialVerificationSummary summary = mock(CredentialVerificationSummary.class);
+            when(summary.getVerificationResult()).thenReturn(verificationResult);
+            when(verifier.verify(anyString(), any(CredentialFormat.class), anyBoolean(), anyBoolean()))
+                    .thenReturn(verificationResult);
+            when(verifier.verifyAndGetCredentialStatus(anyString(), any(CredentialFormat.class), anyList(), anyBoolean(), anyBoolean()))
+                    .thenReturn(summary);
+
+            VCVerificationRequestDto skipStatusChecks = new VCVerificationRequestDto(TEST_CWT_VC_STRING);
+            skipStatusChecks.setSkipStatusChecks(true);
+            try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
+                utilsMock.when(() -> Utils.getCredentialFormat(anyString())).thenReturn(CredentialFormat.MSO_MDOC);
+                utilsMock.when(() -> Utils.populateSchemaAndSignature(any())).thenReturn(new SchemaAndSignatureCheckDto(false, null));
+                strictService.verifyV2(skipStatusChecks, false);
+                strictService.verifyV2(new VCVerificationRequestDto(TEST_CWT_VC_STRING), false);
+                strictService.verify(TEST_JSON_VC_STRING, "application/ldp+json");
+            }
+
+            verify(verifier).verify(anyString(), eq(CredentialFormat.MSO_MDOC), eq(false), eq(true));
+            verify(verifier).verifyAndGetCredentialStatus(anyString(), eq(CredentialFormat.MSO_MDOC), anyList(), eq(false), eq(true));
+            verify(verifier).verifyAndGetCredentialStatus(anyString(), eq(CredentialFormat.LDP_VC), anyList(), eq(false), eq(true));
+        }
+    }
+
+    @Nested
     class VerifyV2Tests {
         @Test
         void shouldReturnAllChecksTrueForVerifiedVC() {
@@ -228,7 +260,7 @@ public class VCVerificationServiceImplTest {
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
-            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean()))
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean(), anyBoolean()))
                     .thenReturn(verificationResult);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -256,7 +288,7 @@ public class VCVerificationServiceImplTest {
             CredentialVerificationSummary summary = mock(CredentialVerificationSummary.class);
             when(summary.getVerificationResult()).thenReturn(verificationResult);
             when(summary.getCredentialStatus()).thenReturn(Map.of("revocation", statusResult));
-            when(mockCredentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(CredentialFormat.class), anyList(), anyBoolean()))
+            when(mockCredentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(CredentialFormat.class), anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -283,7 +315,7 @@ public class VCVerificationServiceImplTest {
             when(verificationResult.getVerificationMessage()).thenReturn("Some error message");
 
 
-            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean()))
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean(), anyBoolean()))
                     .thenReturn(verificationResult);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -309,7 +341,7 @@ public class VCVerificationServiceImplTest {
             CredentialVerificationSummary summary = mock(CredentialVerificationSummary.class);
             when(summary.getVerificationResult()).thenReturn(verificationResult);
             when(summary.getCredentialStatus()).thenReturn(Map.of("revocation", statusResult));
-            when(mockCredentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(CredentialFormat.class), anyList(), anyBoolean()))
+            when(mockCredentialsVerifier.verifyAndGetCredentialStatus(anyString(), any(CredentialFormat.class), anyList(), anyBoolean(), anyBoolean()))
                     .thenReturn(summary);
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
                 utilsMock.when(() -> Utils.getCredentialFormat(TEST_JSON_VC_STRING)).thenReturn(CredentialFormat.LDP_VC);
@@ -335,7 +367,7 @@ public class VCVerificationServiceImplTest {
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
-            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean())).thenReturn(verificationResult);
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean(), anyBoolean())).thenReturn(verificationResult);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
                 utilsMock.when(() -> Utils.getCredentialFormat(anyString())).thenReturn(CredentialFormat.LDP_VC);
@@ -364,7 +396,7 @@ public class VCVerificationServiceImplTest {
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
-            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean()))
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean(), anyBoolean()))
                     .thenReturn(verificationResult);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -391,7 +423,7 @@ public class VCVerificationServiceImplTest {
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
-            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean()))
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean(), anyBoolean()))
                     .thenReturn(verificationResult);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -414,7 +446,7 @@ public class VCVerificationServiceImplTest {
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
-            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean())).thenReturn(verificationResult);
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean(), anyBoolean())).thenReturn(verificationResult);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
                 utilsMock.when(() -> Utils.getCredentialFormat(TEST_JSON_VC_STRING)).thenReturn(CredentialFormat.LDP_VC);
@@ -437,7 +469,7 @@ public class VCVerificationServiceImplTest {
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
-            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean()))
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean(), anyBoolean()))
                     .thenReturn(verificationResult);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {
@@ -474,7 +506,7 @@ public class VCVerificationServiceImplTest {
 
             VerificationResult verificationResult = mock(VerificationResult.class);
             when(verificationResult.getVerificationStatus()).thenReturn(true);
-            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean()))
+            when(mockCredentialsVerifier.verify(anyString(), any(CredentialFormat.class), anyBoolean(), anyBoolean()))
                     .thenReturn(verificationResult);
 
             try (MockedStatic<Utils> utilsMock = mockStatic(Utils.class)) {

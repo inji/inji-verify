@@ -38,6 +38,10 @@ public class VCVerificationServiceImpl implements VCVerificationService {
     @Value("${inji.verify.mso-mdoc.claims-with-meta-data:#{T(java.util.List).of()}}")
     List<String> mdocClaimsWithMetaData;
 
+    // Temporary: false relaxes only the mDL DS KeyUsage/EKU and element type checks in vc-verifier.
+    @Value("${inji.verify.mso-mdoc.strict-profile:false}")
+    boolean mdocStrictProfile;
+
     private final CredentialsVerifier credentialsVerifier;
     private final PixelPass pixelPass;
 
@@ -65,7 +69,7 @@ public class VCVerificationServiceImpl implements VCVerificationService {
         statusPurposeList.add(Constants.STATUS_PURPOSE_REVOKED);
         // Plain VC verification endpoint — no VP session context, KB-JWT validation not applicable.
         CredentialVerificationSummary credentialVerificationSummary
-                = credentialsVerifier.verifyAndGetCredentialStatus(vc, format, statusPurposeList, false);
+                = credentialsVerifier.verifyAndGetCredentialStatus(vc, format, statusPurposeList, false, mdocStrictProfile);
         log.debug("CredentialVerificationResult: {}", credentialVerificationSummary.getVerificationResult());
         return new VCVerificationStatusDto(Utils.getVcVerificationStatus(credentialVerificationSummary));
     }
@@ -84,11 +88,11 @@ public class VCVerificationServiceImpl implements VCVerificationService {
 
         boolean skipStatusChecks = request.isSkipStatusChecks();
         if (skipStatusChecks) {
-            verificationResult = credentialsVerifier.verify(verifiableCredential, format, validateKeyBindingJwt);
+            verificationResult = credentialsVerifier.verify(verifiableCredential, format, validateKeyBindingJwt, mdocStrictProfile);
         } else {
             List<String> statusCheckFilters = request.getStatusCheckFilters();
             CredentialVerificationSummary credentialVerificationSummary
-                    = credentialsVerifier.verifyAndGetCredentialStatus(verifiableCredential, format, statusCheckFilters, validateKeyBindingJwt);
+                    = credentialsVerifier.verifyAndGetCredentialStatus(verifiableCredential, format, statusCheckFilters, validateKeyBindingJwt, mdocStrictProfile);
             verificationResult = credentialVerificationSummary.getVerificationResult();
             credentialStatus = credentialVerificationSummary.getCredentialStatus();
         }
