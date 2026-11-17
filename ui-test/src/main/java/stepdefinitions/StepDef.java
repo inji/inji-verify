@@ -4288,7 +4288,7 @@ public void verifyUploadButtonVisibleAfter2MinsIdle() {
     @Given("User enters wrong URL in the address bar")
     public void userEntersWrongUrlInTheAddressBar() {
         try {
-            driver.get("http://invalid-url-for-testing.com");
+            driver.get("http://invalid-url-for-testing.test");
             test.log(Status.PASS, "Navigated to an invalid URL successfully.");
         } catch (org.openqa.selenium.WebDriverException e) {
             String message = e.getMessage() == null ? "" : e.getMessage();
