@@ -1,0 +1,24 @@
+module: inji-verify
+remotes:
+- https://github.com/inji/inji-verify.git
+verified_at:
+  commit: a4601a1ac775f8be5ff8fd4ee38b4bb3143845ef
+  date: '2026-11-02T06:20:30Z'
+stack:
+  maven_parent: pom.xml
+  node_projects:
+  - inji-verify-sdk
+  - verify-ui
+  ui_test_projects:
+  - ui-test
+  api_test: true
+roles:
+  development:
+  - development/local-context.md
+  - development/discovery.json
+  qa:
+  - qa/module-context.md
+  - qa/known-issues.md
+  - qa/profile.yaml
+guidance:
+- AGENTS.md
