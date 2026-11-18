@@ -1,7 +1,6 @@
 import React from 'react';
 import {render, screen} from "@testing-library/react";
 import VcDisplayCard from "../../../../../components/Home/VerificationSection/Result/VcDisplayCard";
-import {useAppDispatch} from "../../../../../redux/hooks";
 import {convertToTitleCase, getDisplayValue} from "../../../../../utils/misc";
 
 jest.mock("../../../../../redux/hooks", () => ({
