@@ -429,6 +429,45 @@
 			<class name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
 		</classes>
 	</test>
+		<test name="ErrorHandlingOVP_SimplePostForAutoGenId">
+		<parameter name="ymlFile"
+			value="injiverify/ErrorHandlingOVP/ErrorHandlingOVP_SimplePostForAutoGenId.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,requestId" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenId" />
+		</classes>
+	</test>
+	<test name="ErrorHandlingOVP_SimplePostForAutoGenIdForUrlEncoded">
+		<parameter name="ymlFile"
+			value="injiverify/ErrorHandlingOVP/ErrorHandlingOVP_SimplePostForAutoGenIdForUrlEncoded.yml" />
+		<parameter name="idKeyName"
+			value="transactionId,redirect_uri,response_code" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.SimplePostForAutoGenIdForUrlEncoded" />
+		</classes>
+	</test>
+		<test name="ErrorHandlingOVP_GetWithParamAndHeader">
+		<parameter name="ymlFile"
+			value="injiverify/ErrorHandlingOVP/ErrorHandlingOVP_GetWithParamAndHeader.yml" />
+		<parameter name="pathParams" value="requestId" />
+		<parameter name="headers" value="" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParamAndHeader" />
+		</classes>
+	</test>
+	<test name="ErrorHandlingOVP_GetWithParam">
+		<parameter name="ymlFile"
+			value="injiverify/ErrorHandlingOVP/ErrorHandlingOVP_GetWithParam.yml" />
+		<parameter name="pathParams" value="transactionId" />
+		<classes>
+			<class
+				name="io.inji.testrig.apirig.injiverify.testscripts.GetWithParam" />
+		</classes>
+	</test>
 	<test name="VpInvalidSignatureEdge_GetWithParam">
 		<parameter name="ymlFile" value="injiverify/EdgeTestCases/VpInvalidSignatureEdge/VpInvalidSignatureEdge_GetWithParam.yml" />
 		<parameter name="pathParams" value="transactionId" />
