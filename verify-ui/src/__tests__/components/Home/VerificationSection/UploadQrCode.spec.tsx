@@ -1,3 +1,4 @@
+import { Button } from "../../../../components/Home/VerificationSection/commons/Button";
 import React from 'react';
 import { render, screen } from "@testing-library/react";
 import { UploadQrCode } from "../../../../components/Home/VerificationSection/UploadQrCode";
@@ -23,3 +24,22 @@ describe("UploadQrCode", () => {
     })
 })
 
+
+
+describe("shared button styles", () => {
+  test.each(["fill", "outline", "clear"] as const)("preserves enabled and disabled %s styles", (variant) => {
+    const { rerender } = render(<Button title="Action" variant={variant} />);
+    const button = screen.getByRole("button", { name: "Action" });
+    expect(button).toHaveAttribute("type", "button");
+    const backgrounds = { fill: "text-white", outline: "bg-white", clear: "bg-transparent" };
+    expect(button).toHaveClass(backgrounds[variant]);
+    rerender(<Button title="Action" variant={variant} disabled />);
+    expect(button).toBeDisabled();
+    expect(button).toHaveClass("bg-disabledButtonBg", "text-white");
+  });
+
+  test("preserves explicit submit type", () => {
+    render(<Button title="Submit" type="submit" />);
+    expect(screen.getByRole("button", { name: "Submit" })).toHaveAttribute("type", "submit");
+  });
+});
