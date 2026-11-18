@@ -76,14 +76,13 @@ return (
                         );
                         if (isOnline) {
                             document.getElementById("trigger-upload")?.click();
+                            const message = error instanceof Error ? error.message : error.errorMessage;
                             const translationKey = error instanceof Error
                                 ? uploadErrorTranslationKeys.get(error.name) ?? uploadErrorTranslationKeys.get(error.message)
                                 : undefined;
                             dispatch(
                                 raiseAlert({
-                                    message: error instanceof Error
-                                        ? translationKey ? t(translationKey) : error.message
-                                        : error.errorMessage,
+                                    message: translationKey ? t(translationKey) : message,
                                     title: error instanceof Error ? undefined : "Verification Failed",
                                     errorCode: error instanceof Error ? undefined : error.errorCode,
                                     errorReason: error instanceof Error ? undefined : error.errorMessage,
