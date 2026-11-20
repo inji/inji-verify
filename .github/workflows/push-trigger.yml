@@ -426,3 +426,24 @@ jobs:
       - name: Fail Job If Tests Failed
         if: env.EXIT_CODE != '0'
         run: exit 1
+
+  pr-gate:
+    if: github.event_name == 'pull_request'
+    permissions:
+      contents: read
+      security-events: write
+      pull-requests: write
+      checks: write
+    uses: ./.github/workflows/pr-gate.yml
+    with:
+      SERVICE_LOCATION: '.'
+      JAVA_SERVICE_LOCATION: '.'
+      NPM_SERVICE_LOCATION: 'verify-ui'
+      JAVA_VERSION: 21
+      # Only block on vulnerabilities this PR introduces; existing HIGH/CRITICAL
+      # findings in the repo would otherwise fail every PR.
+      trivy_comment_mode: 'diff'
+      # The default list plus the other branches this repo builds.
+      PROTECTED_BRANCHES: 'master,main,develop,release-*,INJI*,develop*,inji*,1.*'
+    secrets:
+      CODECOV_LICENSE: ${{ secrets.CODECOV_LICENSE }}
