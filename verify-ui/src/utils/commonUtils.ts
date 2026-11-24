@@ -161,7 +161,7 @@ export const getDetailsOrder = (vc: any, currentLanguage: string): { key: string
   const type =
     parsedVc?.regularClaims && parsedVc?.disclosedClaims
       ? "SdJwtVC"
-      : parsedVc?.type?.find((t: string) => t !== "VerifiableCredential");
+      : getCredentialType(parsedVc);
 
   switch (type) {
     case "InsuranceCredential":
@@ -335,8 +335,11 @@ const extractType = (type: any): string | undefined => {
   if (!type) return undefined;
   if (typeof type === "string")
     return type !== "VerifiableCredential" ? type : undefined;
-  if (typeof type === "object" && "_value" in type) {
-    return type._value !== "VerifiableCredential" ? type._value : undefined;
+  if (typeof type === "object" && type !== null) {
+    const val = type._value ?? type["@value"] ?? type.value;
+    if (typeof val === "string") {
+      return val !== "VerifiableCredential" ? val : undefined;
+    }
   }
   return String(type);
 };
@@ -357,9 +360,14 @@ export const getCredentialType = (credential: any): string => {
     }
   }
 
-  if (Array.isArray(credential?.type)) {
-    const type = findType(credential.type);
-    if (type) return type;
+  if (credential?.type) {
+    if (Array.isArray(credential.type)) {
+      const type = findType(credential.type);
+      if (type) return type;
+    } else {
+      const type = extractType(credential.type);
+      if (type) return type;
+    }
   }
 
   return "verifiableCredential";

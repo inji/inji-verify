@@ -66,6 +66,42 @@ describe("commonUtils credential matching", () => {
         })
       ).toBe("MockVerifiableCredential_SD_JWT");
     });
+
+    test("returns credential type when type is a single string", () => {
+      expect(getCredentialType({ type: "InsuranceCredential" })).toBe(
+        "InsuranceCredential"
+      );
+    });
+
+    test("returns credential type when type contains JSON-LD @value object", () => {
+      expect(
+        getCredentialType({
+          type: [
+            { "@value": "VerifiableCredential" },
+            { "@value": "InsuranceCredential" },
+          ],
+        })
+      ).toBe("InsuranceCredential");
+    });
+
+    test("returns credential type when type contains value object", () => {
+      expect(
+        getCredentialType({
+          type: [
+            { value: "VerifiableCredential" },
+            { value: "InsuranceCredential" },
+          ],
+        })
+      ).toBe("InsuranceCredential");
+    });
+
+    test("returns credential type when single type object with @value is provided", () => {
+      expect(
+        getCredentialType({
+          type: { "@value": "InsuranceCredential" },
+        })
+      ).toBe("InsuranceCredential");
+    });
   });
 
   describe("calculateVerifiedClaims", () => {
@@ -664,6 +700,41 @@ describe("commonUtils credential matching", () => {
           "en",
         ),
       ).toEqual([{ key: "address", value: ["Bengaluru", "Karnataka"] }]);
+    });
+
+    test("handles credential with single string type without throwing TypeError", () => {
+      const vc = {
+        type: "InsuranceCredential",
+        credentialSubject: {
+          name: "Test User",
+          active: true,
+        },
+      };
+
+      const result = getDetailsOrder(vc, "en");
+      expect(result).toEqual([
+        { key: "name", value: "Test User" },
+        { key: "active", value: "true" },
+      ]);
+    });
+
+    test("handles credential with JSON-LD expanded type objects without throwing", () => {
+      const vc = {
+        type: [
+          { "@value": "VerifiableCredential" },
+          { "@value": "InsuranceCredential" },
+        ],
+        credentialSubject: {
+          name: "Test User",
+          active: true,
+        },
+      };
+
+      const result = getDetailsOrder(vc, "en");
+      expect(result).toEqual([
+        { key: "name", value: "Test User" },
+        { key: "active", value: "true" },
+      ]);
     });
   });
 
