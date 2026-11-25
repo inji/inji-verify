@@ -166,6 +166,12 @@ describe("misc utilities", () => {
         test("converts string to kebab-case id", () => {
             expect(misc.convertToId("Some Content")).toBe("some-content");
         });
+
+        test("returns empty string when input is undefined, null, or empty", () => {
+            expect(misc.convertToId(undefined)).toBe("");
+            expect(misc.convertToId(null as unknown as string)).toBe("");
+            expect(misc.convertToId("")).toBe("");
+        });
     });
 
     describe("saveData", () => {

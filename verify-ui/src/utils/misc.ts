@@ -108,7 +108,8 @@ export const checkInternetStatus = async (): Promise<boolean> => {
     }
 }
 
-export const convertToId = (content: string) => content.toLowerCase().replaceAll(" ", "-");
+export const convertToId = (content?: string) =>
+  content ? content.toLowerCase().replaceAll(" ", "-") : "";
 
 export const saveData = async (vc: any) => {
   const myData = vc;

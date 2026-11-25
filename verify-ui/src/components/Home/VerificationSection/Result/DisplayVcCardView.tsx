@@ -19,13 +19,17 @@ function DisplayVcCardView(ViewVc: VpSubmissionResultInt) {
 
   useEffect(() => {
     const fetchDecodedClaims = async () => {
-      if (typeof vc === "string") {
-        const claims = await decodeSdJwtToken(vc);
-        setClaims(claims);
-        setCredentialType(claims.regularClaims.vct);
-      } else {
-        setClaims(vc);
-        setCredentialType(getCredentialType(vc));
+      try {
+        if (typeof vc === "string") {
+          const claims = await decodeSdJwtToken(vc);
+          setClaims(claims);
+          setCredentialType(getCredentialType(claims));
+        } else {
+          setClaims(vc);
+          setCredentialType(getCredentialType(vc));
+        }
+      } catch (err) {
+        console.error("Failed to decode credential claims:", err);
       }
     };
     fetchDecodedClaims();
