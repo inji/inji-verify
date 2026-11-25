@@ -7,6 +7,7 @@ import {
   getVerificationStepsContent,
     VerificationStepWithStatus
 } from "./config";
+import { getCredentialType } from "./commonUtils";
 
 const splitCamelCaseRegex: RegExp = /([A-Z][a-z]+)/g;
 
@@ -110,9 +111,33 @@ export const checkInternetStatus = async (): Promise<boolean> => {
 
 export const convertToId = (content: string) => content.toLowerCase().replaceAll(" ", "-");
 
+export const getDownloadFileName = (vc: any): string => {
+  let credentialType = getCredentialType(vc);
+  if (!credentialType || credentialType === "verifiableCredential") {
+    if (typeof vc?.type === "string" && vc.type !== "VerifiableCredential") {
+      credentialType = vc.type;
+    }
+  }
+
+  if (credentialType && credentialType !== "verifiableCredential") {
+    let cleanName = credentialType;
+    if (cleanName.includes("#")) {
+      cleanName = cleanName.split("#").pop() || cleanName;
+    } else if (cleanName.includes("/")) {
+      cleanName = cleanName.split("/").pop() || cleanName;
+    }
+    cleanName = cleanName.replace(/[<>:"/\\|?*#]/g, "_").trim();
+    if (cleanName) {
+      return cleanName;
+    }
+  }
+
+  return "Inji_Verify_Credential_Data";
+};
+
 export const saveData = async (vc: any) => {
   const myData = vc;
-  const fileName = vc.type ? vc?.type[1] : "Inji_Verify_Credential_Data";
+  const fileName = getDownloadFileName(vc);
   const json = JSON.stringify(myData, null, 2);
   const blob = new Blob([json], { type: "application/json" });
   const href = URL.createObjectURL(blob);
