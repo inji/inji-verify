@@ -360,6 +360,9 @@ export const getCredentialType = (credential: any): string => {
   if (Array.isArray(credential?.type)) {
     const type = findType(credential.type);
     if (type) return type;
+  } else if (credential?.type) {
+    const type = extractType(credential.type);
+    if (type) return type;
   }
 
   return "verifiableCredential";

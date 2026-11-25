@@ -15,6 +15,7 @@ import { AnyVc, LdpVc, SdJwtVc } from "../../../../types/data-types";
 import { DisplayTimeout } from "../../../../utils/config";
 import { extractMappedClaim, isCWT, uint8ArrayToHex } from "../../../../utils/cborUtils";
 import { raiseAlert } from "../../../../redux/features/alerts/alerts.slice";
+import { getCredentialType } from "../../../../utils/commonUtils";
 
 const Result = () => {
   const { vc, vcStatus } = useVerificationFlowSelector((state) => state.verificationResult ?? { vc: null, vcStatus: null });
@@ -66,12 +67,7 @@ const Result = () => {
         }
       } else {
         setClaims(vc as LdpVc);
-        const typeEntry = vc.type[1];
-        if (typeof typeEntry === "string") {
-          setCredentialType(typeEntry);
-        } else if (typeof typeEntry === "object" && "_value" in typeEntry) {
-          setCredentialType(typeEntry._value);
-        }
+        setCredentialType(getCredentialType(vc));
       }
     };
     fetchDecodedClaims();
