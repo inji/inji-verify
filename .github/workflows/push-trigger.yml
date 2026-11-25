@@ -426,3 +426,18 @@ jobs:
       - name: Fail Job If Tests Failed
         if: env.EXIT_CODE != '0'
         run: exit 1
+
+  pr-gate:
+    if: github.event_name != 'release'
+    uses: mosip/kattu/.github/workflows/pr-gate.yml@develop
+    permissions:
+      contents: write
+      pull-requests: write
+      security-events: write
+      checks: write
+    with:
+      SERVICE_LOCATION: .
+      NPM_SERVICE_LOCATION: verify-ui
+      JAVA_SERVICE_LOCATION: .
+      JAVA_VERSION: 21
+    secrets: inherit
