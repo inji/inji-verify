@@ -220,7 +220,7 @@ const readQRcodeFromPdf = async (file: File, format: string) => {
         throw decodeFailure;
     }
 
-    throw createQrNotFoundError(`No ${format} found`);
+    throw createQrNotFoundError();
 
 };
 
