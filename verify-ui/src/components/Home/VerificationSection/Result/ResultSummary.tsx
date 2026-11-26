@@ -2,19 +2,24 @@ import React from "react";
 import { VerificationSuccessIcon, VerificationFailedIcon } from "../../../../utils/theme-utils";
 import { useTranslation } from "react-i18next";
 
-const backgroundColorMapping: any = {
+const backgroundColorMapping: Record<string, string> = {
   SUCCESS: "bg-successText",
   EXPIRED: "bg-expiredText",
   INVALID: "bg-invalidText",
   REVOKED: "bg-revokedText",
+  TIMEOUT: "bg-expiredText",
 };
 
 const ResultSummary = ({
   status,
 }: {
-  status: "SUCCESS" | "EXPIRED" | "INVALID" | "TIMEOUT" | "REVOKED";
+  status?: "SUCCESS" | "EXPIRED" | "INVALID" | "TIMEOUT" | "REVOKED" | string | null;
 }) => {
-  const bgColor = backgroundColorMapping[status];
+  if (!status) {
+    return null;
+  }
+
+  const bgColor = backgroundColorMapping[status] || "bg-invalidText";
   const { t } = useTranslation("ResultSummary");
   return (
     <div
