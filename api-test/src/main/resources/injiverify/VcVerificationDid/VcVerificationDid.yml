@@ -124,16 +124,16 @@ VcVerificationDid:
       "allChecksSuccessful": false
 }'
 
-  Injiverify_VcVerificationDid_TamperedProofJws_Neg:
+  Injiverify_VcVerificationDid_TamperedProofValue_Neg:
       endPoint: /v1/verify/v2/vc-verification
-      description: Performing VC verification with tampered proof JWS and expects signature verification error
+      description: Performing VC verification with tampered Ed25519 proof value and expects signature verification error
       uniqueIdentifier: TC_InjiVerify_VcVerificationDid_08
       role: noauth
       restMethod: post
       inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
       outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
       input: '{
-        "jws": "eyJ4NXQjUzI1NiI6IlRjX1B6cUVUeUpYSDllbWpVOXVEY2JlZUU5U1BYVlVBeldwNnF0V1pEVnciLCJiNjQiOmZhbHNlLCJjcml0IjpbImI2NCJdLCJraWQiOiJRaXpobFl1NXBjVmE4bF9mbUVsWXplTHVrS1BTaG1rZDB2SWZGMVk3T2NvIiwiYWxnIjoiUlMyNTYifQ..B8DPrx7ieT3lkLJUwvppRwk63vOpIOk6Y7UuV-KYBexFn4BNPe7rvnDn15pLCPG6tHa1FV-MX9yRZztKQMpXrdt42Sg6vqLMATfBXrWiiGCneePGXhXSvyYGiJ1zP9-hdZkikcT8G2Ho3LM3uWpk1O39a8qnQRM09leh0cuw3s16ODPnsFBFesd_ZDDJSzKemWvlvGdvCFJTE6Y78b4gRM-NErAba27KVyfXRvRpZz--kcaMWQHVcXQekAv0b-C8cX3NtPAXAflq4-pnrOXwwGc5RWqmq1pyIh5ZM1vZo1vnh-L0yjct2FGbTDNVAK3BTAINVALIDJWSXXXX",
+        "proofValue": "z2JFbu4DbfFLqRvvruFwgPMVvJkFKAQpNm6gqF6qwuEj6S7L47R1UkQ6qs4EUXr18Xc13yEQEoR4kdm5N63Jjt9Wb",
         "skipStatusChecks": true,
         "statusCheckFilters": [],
         "includeClaims": true
@@ -188,6 +188,24 @@ VcVerificationDid:
       outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
       input: '{
         "credentialSubject_id": "did:jwk:NotValidBase64!!!",
+        "skipStatusChecks": true,
+        "statusCheckFilters": [],
+        "includeClaims": true
+      }'
+      output: '{
+      "errorCode": "ERR_SIGNATURE_VERIFICATION_FAILED"
+}'
+
+  Injiverify_VcVerificationDid_ExpiredDid_Neg:
+      endPoint: /v1/verify/v2/vc-verification
+      description: Performing VC verification with expired or unavailable DID verification method
+      uniqueIdentifier: TC_InjiVerify_VcVerificationDid_12
+      role: noauth
+      restMethod: post
+      inputTemplate: injiverify/VcVerificationDid/VcVerificationDid
+      outputTemplate: injiverify/VcVerificationDid/VcVerificationDidResultV2SigError
+      input: '{
+        "verificationMethod": "did:web:api.collab.mosip.net:identity-service:56de166e-0e2f-4734-b8e7-be42b3117d39#expired-key-0",
         "skipStatusChecks": true,
         "statusCheckFilters": [],
         "includeClaims": true
