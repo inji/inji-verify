@@ -13,7 +13,6 @@ import io.swagger.v3.oas.annotations.Parameter;
 import io.swagger.v3.oas.annotations.media.Content;
 import io.swagger.v3.oas.annotations.media.Schema;
 import io.swagger.v3.oas.annotations.responses.ApiResponse;
-import io.swagger.v3.oas.annotations.responses.ApiResponses;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.validation.Valid;
 import lombok.extern.slf4j.Slf4j;
@@ -48,16 +47,14 @@ public class VPResultController {
     }
 
     @Operation(summary = "Fetch VP result for a given transactionId", description = "This endpoint is used to fetch the VP result for a given transactionId. It will first check if there is any VP request associated with the transactionId. If there is no VP request associated with the transactionId, it will check if there is any VC submission associated with the transactionId. If there is, it will return the VC submission result. If there is no VC submission associated with the transactionId, it will return 404 Not Found.")
-    @ApiResponses({
-            @ApiResponse(
+    @ApiResponse(
                     responseCode = "200",
                     description = "VP result fetched successfully",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = VPTokenResultDto.class)
                     )
-            )
-    })
+    )
     @GetMapping(path = "/vp-result/{transactionId}")
     public ResponseEntity<Object> getVPResult(
             @Parameter(description = "Unique identifier for the VP transaction, which is generated when the VP request is created. It is used to correlate the VP request and VP submission.", required = true)
@@ -68,16 +65,14 @@ public class VPResultController {
     }
 
     @Operation(summary = "V2 version to fetch VP result for a given transactionId", description = "This endpoint is used to fetch the VP result for a given transactionId with request body. It will first check if there is any VP request associated with the transactionId. If there is no VP request associated with the transactionId, it will return 404 Not Found.")
-    @ApiResponses({
-            @ApiResponse(
+    @ApiResponse(
                     responseCode = "200",
                     description = "VP result fetched successfully",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = VPVerificationResultDto.class)
                     )
-            )
-    })
+    )
     @PostMapping(path = "/v2/vp-results/{transactionId}", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getVPResultV2(
             @Parameter(description = "Unique identifier for the VP transaction, which is generated when the VP request is created. It is used to correlate the VP request and VP submission.", required = true)
@@ -90,16 +85,14 @@ public class VPResultController {
     }
 
     @Operation(summary = "Fetch VP session result for a given transactionId from cookie", description = "This endpoint is used to fetch the VP session result for a given transactionId from cookie. It will first check if there is any VP request associated with the transactionId. If there is no VP request associated with the transactionId, it will return 404 Not Found.")
-    @ApiResponses({
-            @ApiResponse(
+    @ApiResponse(
                     responseCode = "200",
                     description = "VP session result fetched successfully",
                     content = @Content(
                             mediaType = "application/json",
                             schema = @Schema(implementation = VPVerificationResultDto.class)
                     )
-            )
-    })
+    )
     @PostMapping(path = "/vp-session-results", consumes = MediaType.APPLICATION_JSON_VALUE)
     public ResponseEntity<Object> getVPSessionResults(
             @Parameter(description = "Request body for fetching VP session result, which may contain additional parameters for the verification process.", required = true)
@@ -194,9 +187,14 @@ public class VPResultController {
     @ExceptionHandler(VPVerificationException.class)
     public ResponseEntity<ErrorDto> handleVPVerificationException(VPVerificationException e) {
         String causeMessage = e.getCause() != null ? e.getCause().getMessage() : null;
-        String rootCause = causeMessage != null ? causeMessage
-                : e.getMessage() != null ? e.getMessage()
-                : e.getClass().getName();
+        String rootCause;
+        if (causeMessage != null) {
+            rootCause = causeMessage;
+        } else if (e.getMessage() != null) {
+            rootCause = e.getMessage();
+        } else {
+            rootCause = e.getClass().getName();
+        }
         log.warn("VP verification failed: {}", rootCause);
         return ResponseEntity.status(HttpStatus.INTERNAL_SERVER_ERROR)
                 .body(new ErrorDto(ErrorCode.VP_VERIFICATION_FAILED.getErrorCode(), rootCause));

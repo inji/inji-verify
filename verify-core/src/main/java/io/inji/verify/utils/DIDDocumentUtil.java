@@ -21,6 +21,9 @@ import org.bouncycastle.jcajce.provider.asymmetric.edec.BCEdDSAPublicKey;
 @Slf4j
 public class DIDDocumentUtil {
 
+    private DIDDocumentUtil() {
+    }
+
     private static final String MULTICODEC_PREFIX = "ed01";
 
     public static Map<String, Object> generateDIDDocument(PublicKey publicKey, String verifyDidURI, String verifyPublicKeyURI) {

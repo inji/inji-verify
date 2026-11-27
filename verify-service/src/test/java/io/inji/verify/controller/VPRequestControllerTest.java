@@ -19,11 +19,9 @@ import org.springframework.web.bind.MethodArgumentNotValidException;
 import io.inji.verify.enums.VPRequestStatus;
 import io.inji.verify.services.VerifiablePresentationRequestService;
 import io.inji.verify.shared.Constants;
-import jakarta.servlet.http.HttpServletRequest;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.mockito.ArgumentCaptor;
-import org.mockito.Mockito;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
@@ -51,7 +49,7 @@ import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.
 public class VPRequestControllerTest {
 
     private final VerifiablePresentationRequestService verifiablePresentationRequestService =
-            Mockito.mock(VerifiablePresentationRequestService.class);
+            mock(VerifiablePresentationRequestService.class);
 
     private MockMvc mockMvc;
 
@@ -78,7 +76,7 @@ public class VPRequestControllerTest {
     }
 
     @BeforeEach
-    public void setUp() {
+    void setUp() {
         VPRequestController vpRequestController = new VPRequestController(verifiablePresentationRequestService);
         mockMvc = MockMvcBuilders.standaloneSetup(vpRequestController)
                 .setMessageConverters(
@@ -112,7 +110,7 @@ public class VPRequestControllerTest {
     }
 
     @Test
-    public void should_createVpRequest_when_requestIsValid() throws Exception {
+    void should_createVpRequest_when_requestIsValid() throws Exception {
         VPRequestResponseDto responseDto = new VPRequestResponseDto("tId", "rId", mock(), 0L, "", null);
 
         when(verifiablePresentationRequestService.createAuthorizationRequest(any(), any())).thenReturn(responseDto);
@@ -169,7 +167,7 @@ public class VPRequestControllerTest {
     }
 
     @Test
-    public void should_acceptVpRequest_when_dcqlQueryIsMissing() throws Exception {
+    void should_acceptVpRequest_when_dcqlQueryIsMissing() throws Exception {
         VPRequestResponseDto responseDto = new VPRequestResponseDto("tId", "rId", mock(), 0L, "", null);
         when(verifiablePresentationRequestService.createAuthorizationRequest(any(), any())).thenReturn(responseDto);
 
@@ -182,7 +180,7 @@ public class VPRequestControllerTest {
     }
 
     @Test
-    public void should_propagateException_when_serviceThrows() {
+    void should_propagateException_when_serviceThrows() {
         when(verifiablePresentationRequestService.createAuthorizationRequest(any(), any()))
                 .thenThrow(new RuntimeException("unexpected"));
 
@@ -192,7 +190,7 @@ public class VPRequestControllerTest {
     }
 
     @Test
-    public void testGetStatus() throws Exception {
+    void testGetStatus() throws Exception {
         String requestId = "req789";
         VPRequestStatusDto statusDto = new VPRequestStatusDto(VPRequestStatus.ACTIVE);
 
@@ -212,7 +210,7 @@ public class VPRequestControllerTest {
     }
 
     @Test
-    public void testGetVPRequest_Success() throws Exception {
+    void testGetVPRequest_Success() throws Exception {
         String requestId = "req123";
         String jwt = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c";
 
@@ -227,7 +225,7 @@ public class VPRequestControllerTest {
     }
 
     @Test
-    public void testGetVPRequest_NotFound() throws Exception {
+    void testGetVPRequest_NotFound() throws Exception {
         String requestId = "missing-req";
 
         when(verifiablePresentationRequestService.getVPRequestJwt(requestId))
@@ -242,29 +240,7 @@ public class VPRequestControllerTest {
     }
 
     @Test
-    public void testGetStatus_NotFound() throws Exception {
-        String requestId = "missing-req";
-        DeferredResult<VPRequestStatusDto> deferredResult = new DeferredResult<>();
-
-        when(verifiablePresentationRequestService.getStatus(requestId)).thenReturn(deferredResult);
-
-        MvcResult mvcResult = mockMvc.perform(get("/vp-request/{requestId}/status", requestId)
-                        .contentType(MediaType.APPLICATION_JSON))
-                .andExpect(org.springframework.test.web.servlet.result.MockMvcResultMatchers.request().asyncStarted())
-                .andReturn();
-
-        deferredResult.setErrorResult(new io.inji.verify.exception.VPRequestNotFoundException());
-
-        mockMvc.perform(org.springframework.test.web.servlet.request.MockMvcRequestBuilders.asyncDispatch(mvcResult))
-                .andExpect(status().isNotFound())
-                .andExpect(content().string(objectMapper.writeValueAsString(
-                        new ErrorDto(io.inji.verify.enums.ErrorCode.NO_AUTH_REQUEST))));
-
-        verify(verifiablePresentationRequestService, times(1)).getStatus(requestId);
-    }
-
-    @Test
-    public void testGetStatus_NotFound1() throws Exception {
+    void testGetStatus_NotFound() throws Exception {
         String requestId = "missing-req";
         DeferredResult<VPRequestStatusDto> deferredResult = new DeferredResult<>();
 
