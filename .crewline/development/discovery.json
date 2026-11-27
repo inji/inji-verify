@@ -1,0 +1,331 @@
+{
+  "repo_name": "inji-verify",
+  "head": "a4601a1ac775f8be5ff8fd4ee38b4bb3143845ef",
+  "branch": "HEAD",
+  "remotes": [
+    "https://github.com/inji/inji-verify.git"
+  ],
+  "discovered_at": "2026-11-02T06:20:30Z",
+  "maven": {
+    "poms": [
+      {
+        "path": "pom.xml",
+        "kind": "service",
+        "artifact": "verify-service-parent",
+        "modules": [
+          "verify-core",
+          "verify-service"
+        ],
+        "java_version": "21",
+        "java_version_ref": "pom.xml:109",
+        "jacoco": true,
+        "jacoco_ref": "pom.xml:319",
+        "surefire_argline": [],
+        "surefire_argline_keeps_agent": true,
+        "test_libs": []
+      },
+      {
+        "path": "ui-test/pom.xml",
+        "kind": "ui-test",
+        "artifact": "uitest-injiverify",
+        "modules": [],
+        "java_version": "1.8",
+        "java_version_ref": "ui-test/pom.xml",
+        "jacoco": false,
+        "jacoco_ref": "",
+        "surefire_argline": [],
+        "surefire_argline_keeps_agent": true,
+        "test_libs": []
+      },
+      {
+        "path": "verify-core/pom.xml",
+        "kind": "service",
+        "artifact": "verify-core",
+        "modules": [],
+        "java_version": null,
+        "java_version_ref": "verify-core/pom.xml",
+        "jacoco": false,
+        "jacoco_ref": "",
+        "surefire_argline": [],
+        "surefire_argline_keeps_agent": true,
+        "test_libs": [
+          "spring-boot-starter-test"
+        ]
+      },
+      {
+        "path": "verify-service/pom.xml",
+        "kind": "service",
+        "artifact": "verify-service",
+        "modules": [],
+        "java_version": null,
+        "java_version_ref": "verify-service/pom.xml",
+        "jacoco": false,
+        "jacoco_ref": "",
+        "surefire_argline": [],
+        "surefire_argline_keeps_agent": true,
+        "test_libs": [
+          "spring-boot-starter-test"
+        ]
+      }
+    ],
+    "parent": "pom.xml"
+  },
+  "services": {
+    "verify-core": {
+      "test_files": 53,
+      "main_files": 104,
+      "component_test_example": ""
+    },
+    "verify-service": {
+      "test_files": 11,
+      "main_files": 13,
+      "springboottest": 1,
+      "mockmvc": 6,
+      "webmvctest": 3,
+      "component_test_example": "verify-service/src/test/java/io/inji/verify/controller/DidWebControllerTest.java"
+    }
+  },
+  "ui_test_projects": [
+    "ui-test"
+  ],
+  "node": [
+    {
+      "path": "inji-verify-sdk",
+      "name": "@injistack/react-inji-verify-sdk",
+      "node": "",
+      "scripts": {
+        "prebuild": "npm run test",
+        "build": "webpack --config webpack.config.js && tsc --declaration --emitDeclarationOnly --outDir dist",
+        "test:runner": "jest test --coverage --watchman=false",
+        "test:react18": "npm install --prefix node_modules/.peer-test react@18.2.0 react-dom@18.2.0 --no-package-lock --no-save && cross-env NODE_PATH=node_modules/.peer-test/node_modules npm run test:runner",
+        "test:react19": "npm install --prefix node_modules/.peer-test react@19.1.2 react-dom@19.1.2 --no-package-lock --no-save && cross-env NODE_PATH=node_modules/.peer-test/node_modules npm run test:runner",
+        "test": "npm run test:react18 && npm run test:react19",
+        "verify": "npm run build",
+        "localPublish": "npm version patch && npm run build && npm publish --access public --registry http://localhost:4873"
+      },
+      "runner": "jest",
+      "libs": [
+        "@babel/preset-typescript",
+        "@svgr/webpack",
+        "@testing-library/dom",
+        "@testing-library/jest-dom",
+        "@testing-library/react",
+        "@typescript-eslint/eslint-plugin",
+        "@typescript-eslint/parser",
+        "eslint",
+        "jest",
+        "jest-environment-jsdom",
+        "typescript",
+        "webpack",
+        "webpack-cli"
+      ],
+      "lockfile": "package-lock.json",
+      "jest_config": "inji-verify-sdk/jest.config.js",
+      "coverage_reporters": [
+        "html"
+      ],
+      "lcov": false,
+      "test_files": 5
+    },
+    {
+      "path": "verify-ui",
+      "name": "inji-verify",
+      "node": "",
+      "scripts": {
+        "prestart": "npm run test:ci",
+        "start": "sh ./configure_start_local.sh && react-app-rewired start",
+        "prebuild": "npm run test:ci",
+        "build": "react-app-rewired build",
+        "test": "jest --passWithNoTests --updateSnapshot --coverage",
+        "test:ci": "jest --ci --passWithNoTests --coverage",
+        "eject": "react-scripts eject",
+        "sonar": "sonar-scanner"
+      },
+      "runner": "jest",
+      "libs": [
+        "@babel/preset-typescript",
+        "@testing-library/jest-dom",
+        "@testing-library/react",
+        "@types/jest",
+        "babel-jest",
+        "css-minimizer-webpack-plugin",
+        "jest",
+        "jest-environment-jsdom",
+        "react-scripts",
+        "ts-jest",
+        "typescript"
+      ],
+      "lockfile": "package-lock.json",
+      "jest_config": "verify-ui/jest.config.js",
+      "coverage_reporters": [
+        "clover",
+        "json",
+        "lcov",
+        "text"
+      ],
+      "lcov": true,
+      "test_files": 46
+    }
+  ],
+  "ci": {
+    "workflows": [
+      "browserstack-web.yml",
+      "chart-lint-publish.yml",
+      "codeql.yml",
+      "publish-inji-verify-sdk-npm.yml",
+      "push-trigger.yml"
+    ],
+    "uses": [
+      "8398a7/action-slack",
+      "actions/cache",
+      "actions/checkout",
+      "actions/setup-java",
+      "actions/upload-artifact",
+      "github/codeql-action/analyze",
+      "github/codeql-action/init",
+      "mosip/kattu/.github/workflows/browserstack-web.yml",
+      "mosip/kattu/.github/workflows/chart-lint-publish.yml",
+      "mosip/kattu/.github/workflows/docker-build.yml",
+      "mosip/kattu/.github/workflows/maven-build.yml",
+      "mosip/kattu/.github/workflows/maven-publish-to-nexus.yml",
+      "mosip/kattu/.github/workflows/maven-sonar-analysis.yml",
+      "mosip/kattu/.github/workflows/npm-publish-to-npm-registry.yml",
+      "mosip/kattu/.github/workflows/npm-sonar-analysis.yml"
+    ]
+  },
+  "db": {
+    "dirs": [
+      "db_scripts"
+    ],
+    "forward": 12,
+    "unpaired": []
+  },
+  "deploy": {
+    "helm": [
+      "helm/inji-verify-service",
+      "helm/inji-verify-ui",
+      "helm/inji-verify-uitestrig",
+      "helm/injiverify-apitestrig"
+    ],
+    "dockerfiles": [
+      "api-test/Dockerfile",
+      "ui-test/Dockerfile",
+      "verify-service/Dockerfile",
+      "verify-ui/Dockerfile"
+    ]
+  },
+  "guidance": [
+    "AGENTS.md"
+  ],
+  "api_test": {
+    "root": "api-test",
+    "suite_files": [
+      "testNgXmlFiles/injiverifySuite.xml"
+    ],
+    "yaml_files": 77,
+    "cases": 354,
+    "with_unique_identifier": 354,
+    "parse_errors": {},
+    "unwired_yaml": [],
+    "script_classes": {
+      "SimplePostForAutoGenId": 23,
+      "SimplePostForAutoGenIdForUrlEncoded": 15,
+      "GetWithParam": 12,
+      "PostWithBodyAndPathParams": 8,
+      "SimplePost": 7,
+      "GetWithParamAndHeader": 4,
+      "SimplePostForAutoGenIdWithHeaders": 4,
+      "PostDcApiSubmission": 2,
+      "SimplePostWithContentType": 1,
+      "GetDcApiRequestJwt": 1
+    },
+    "id_key_names": [
+      "id",
+      "nonce",
+      "redirect_uri",
+      "requestId",
+      "requestUri",
+      "response_code",
+      "transactionId"
+    ],
+    "case_name_prefix": [
+      "Injiverify_",
+      278
+    ],
+    "case_name_families": {
+      "Injiverify_": 278,
+      "DC_": 74
+    },
+    "case_name_deviations": {
+      "InjiVerify_": 2
+    },
+    "uid_module_token": [
+      [
+        "InjiVerify",
+        354
+      ]
+    ],
+    "uid_pattern": "^TC_(?i:InjiVerify)_[A-Za-z0-9_]+_\\d+$",
+    "uid_pattern_matches": 354,
+    "duplicate_uids": [],
+    "coverage_matrix": false,
+    "profile": {
+      "module_code": "INJIVERIFY",
+      "resources_root": "src/main/resources",
+      "suite_files": [
+        "testNgXmlFiles/injiverifySuite.xml"
+      ],
+      "exclude_dirs": [
+        "config",
+        "dbFiles"
+      ],
+      "ignore_yaml": [],
+      "testcase_rules": {
+        "case_name_prefix": [
+          "Injiverify_",
+          "DC_"
+        ],
+        "unique_identifier_pattern": "^TC_(?i:InjiVerify)_[A-Za-z0-9_]+_\\d+$",
+        "extra_id_fields_by_class": {},
+        "extra_id_fields_gate": {},
+        "capture_without_sid": [],
+        "id_key_from_input": {},
+        "severity": {
+          "NAME-003": "WARN"
+        }
+      }
+    },
+    "id_capture": {
+      "extra_id_fields_by_class": {},
+      "extra_id_fields_gate": {},
+      "capture_without_sid": [],
+      "id_key_from_input": {}
+    }
+  },
+  "standards": {
+    "tools": [
+      {
+        "id": "eslint",
+        "kind": "node",
+        "marker": "eslint",
+        "command": [
+          "npx",
+          "eslint",
+          "."
+        ],
+        "evidence": "inji-verify-sdk/package.json",
+        "cwd": "inji-verify-sdk"
+      }
+    ],
+    "config_files": []
+  },
+  "baseline": {
+    "status": "FAIL",
+    "summary": "5 blocking, 117 warning(s), 0 info, 0 approved",
+    "by_rule": {
+      "NAME-003": 117,
+      "NAME-001": 2,
+      "DEP-001": 3
+    }
+  }
+}
