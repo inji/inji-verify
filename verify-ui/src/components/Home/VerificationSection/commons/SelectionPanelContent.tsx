@@ -141,6 +141,7 @@ function SelectionPanelContent() {
               } mt-3 rounded-md shadow-lg bg-background overflow-hidden font-normal border border-gray-200`}
             >
               <button
+                type="button"
                 role="menuitem"
                 onClick={() => setIsAscending(true)}
                 className="w-full h-[44px] text-sortByText text-left text-verySmallTextSize px-4 py-2 hover:bg-gray-100"
@@ -149,6 +150,7 @@ function SelectionPanelContent() {
               </button>
               <div className="w-full border-t-[2px] border-sortByBorder" />
               <button
+                type="button"
                 role="menuitem"
                 onClick={() => setIsAscending(false)}
                 className="w-full h-[44px] text-sortByText text-left text-verySmallTextSize px-4 py-2 hover:bg-gray-100"

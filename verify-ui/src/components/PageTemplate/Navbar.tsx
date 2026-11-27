@@ -32,7 +32,7 @@ const SubMenu = () => {
                target="_blank"
                rel="noreferrer"
                className="inline-flex items-center w-full px-[26px] py-2 text-sm lg:px-4"> {t("documentation")} <NewTabIcon className="mx-1.5" /></a>
-            <button id="faq" onClick={showAlert} className="inline-flex items-center w-full px-[26px] py-2 text-sm lg:px-4"> {t("faqs")} </button>
+            <button type="button" id="faq" onClick={showAlert} className="inline-flex items-center w-full px-[26px] py-2 text-sm lg:px-4"> {t("faqs")} </button>
         </div>
     );
 }
@@ -69,7 +69,7 @@ const MobileDropDownMenu = ({ showMenu, setShowMenu }: { showMenu: boolean; setS
                         {t('verifyCredentials')}
                     </Link>
                     <div className="relative">
-                        <button id="submenu-button"
+                        <button type="button" id="submenu-button"
                                 className="inline-flex items-center w-full text-left px-1 py-3 text-sm text-gray-700 hover:bg-gray-100"
                                 onClick={() => setShowSubMenu(show => !show)}
                         >{t('help')} <MdArrowForwardIos className={`mx-1.5 ${showSubMenu ? "rotate-90" : ""}`}/>
@@ -126,7 +126,7 @@ const DesktopMenu = () => {
                     </Link>
                 </li>
                 <li className="relative" ref={helpRef}>
-                    <button id="help-button"
+                    <button type="button" id="help-button"
                             onClick={() => setShowHelp(show=>!show)}
                             className="inline-flex items-center cursor-pointer py-2 rounded text-black">
                         {t("help")} <MdExpandLess className={`mx-1.5 ${showHelp ? "" : "rotate-180"}`}/>
