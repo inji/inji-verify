@@ -13,6 +13,15 @@ import { getClientId, isVPSubmissionSupported, vcStatusFromVerificationResponse,
 import {checkInternetStatus} from "../utils/misc";
 import {updateInternetConnectionStatus} from "../redux/features/application-state/application-state.slice";
 
+const uploadErrorTranslationKeys = new Map([
+    ["QR_NOT_FOUND", "AlertMessages:qrNotDetected"],
+    ["QR_DECODE_FAILED", "AlertMessages:qrDecodeFailed"],
+    ["MULTIPLE_QR_FOUND", "AlertMessages:multipleQrFound"],
+    // The SDK sends file validation errors without a dedicated error name.
+    ["File size not supported. The file size should be between 10 KB and 5 MB.", "AlertMessages:unsupportedFileSize"],
+    ["Unsupported file format. Allowed file formats are: png, jpeg, jpg, pdf.", "AlertMessages:unsupportedFileType"],
+]);
+
 export const Upload = () => {
   const { t } = useTranslation("Upload");
   const dispatch = useAppDispatch();
@@ -67,9 +76,13 @@ return (
                         );
                         if (isOnline) {
                             document.getElementById("trigger-upload")?.click();
+                            const message = error instanceof Error ? error.message : error.errorMessage;
+                            const translationKey = error instanceof Error
+                                ? uploadErrorTranslationKeys.get(error.name) ?? uploadErrorTranslationKeys.get(error.message)
+                                : undefined;
                             dispatch(
                                 raiseAlert({
-                                    message: error instanceof Error ? error.message : error.errorMessage,
+                                    message: translationKey ? t(translationKey) : message,
                                     title: error instanceof Error ? undefined : "Verification Failed",
                                     errorCode: error instanceof Error ? undefined : error.errorCode,
                                     errorReason: error instanceof Error ? undefined : error.errorMessage,
