@@ -19,7 +19,7 @@ const ActionButton: React.FC<ActionButtonProps> = ({
       className={`group absolute flex items-center justify-center ${positionClasses} gap-2`}
     >
       <p
-        className={`hidden group-hover:flex items-center justify-center text-smallTextSize w-[105px] bg-${window._env_.DEFAULT_THEME}-gradient text-white p-px bg-no-repeat rounded-[5px]`}
+        className={`hidden group-hover:flex items-center justify-center text-smallTextSize w-[105px] bg-${globalThis._env_.DEFAULT_THEME}-gradient text-white p-px bg-no-repeat rounded-[5px]`}
       >
         {label}
       </p>

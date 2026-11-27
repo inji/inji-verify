@@ -354,10 +354,10 @@ export const getCredentialType = (credential: any): string => {
   return "verifiableCredential";
 };
 
-export const getClientId = () => window._env_?.CLIENT_ID;
+export const getClientId = () => globalThis._env_?.CLIENT_ID;
 
 export const isVPSubmissionSupported = () => {
-  const value = window._env_?.VP_SUBMISSION_SUPPORTED;
+  const value = globalThis._env_?.VP_SUBMISSION_SUPPORTED;
   return value?.toLowerCase() === "true";
 };
 

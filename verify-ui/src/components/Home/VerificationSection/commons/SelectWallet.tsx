@@ -119,7 +119,7 @@ const SelectWalletContent: React.FC = () => {
               type="button"
               onClick={() => setSelectedWalletId(wallet.id)}
               className={`grid rounded-2xl transition-shadow duration-150 ${isSelected
-                  ? `bg-${window._env_.DEFAULT_THEME || "primary"}-lighter-gradient bg-no-repeat p-[2px] shadow-md`
+                  ? `bg-${globalThis._env_.DEFAULT_THEME || "primary"}-lighter-gradient bg-no-repeat p-[2px] shadow-md`
                   : "border border-gray-200 p-[2px] bg-white shadow-sm"
                 }`}
             >
@@ -129,7 +129,7 @@ const SelectWalletContent: React.FC = () => {
               >
                 {isSelected && (
                   <div
-                    className={`absolute inset-0 rounded-xl bg-${window._env_.DEFAULT_THEME || "primary"}-lighter-gradient opacity-25`}
+                    className={`absolute inset-0 rounded-xl bg-${globalThis._env_.DEFAULT_THEME || "primary"}-lighter-gradient opacity-25`}
                   />
                 )}
                 <div className="relative z-10 flex flex-col items-center justify-between w-full">

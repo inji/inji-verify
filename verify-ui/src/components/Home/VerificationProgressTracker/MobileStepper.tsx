@@ -5,7 +5,7 @@ import { VerificationMethod } from "../../../types/data-types";
 import i18n from "i18next";
 
 const Step = ({ stepNumber, isCompleted, isActive }: { stepNumber: number; isCompleted: boolean; isActive: boolean }) => {
-  const theme = window._env_.DEFAULT_THEME;
+  const theme = globalThis._env_.DEFAULT_THEME;
   const activeOrCompleted = isCompleted || isActive;
   const base = "flex items-center";
   const activeClass = `rounded-full bg-${theme}-gradient bg-no-repeat text-white`;
@@ -57,7 +57,7 @@ function MobileStepper() {
   return () => i18n.off("languageChanged", updateSteps);
   }, [method, isPartiallyShared, flow, activeScreen]);
 
-  const theme = window._env_.DEFAULT_THEME;
+  const theme = globalThis._env_.DEFAULT_THEME;
   const activeStep = VerificationStepsContent.find((step) => step.isActive);
   const label = activeStep?.label as string;
   const description = activeStep?.description as string;

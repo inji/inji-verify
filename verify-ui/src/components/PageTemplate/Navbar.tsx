@@ -64,7 +64,7 @@ const MobileDropDownMenu = ({ showMenu, setShowMenu }: { showMenu: boolean; setS
                         {t("home")}
                     </Link>
                     <Link id="verify-credentials-button" to={Pages.VerifyCredentials }
-                          className={`block px-1 py-2 font-bold text-sm bg-${window._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}
+                          className={`block px-1 py-2 font-bold text-sm bg-${globalThis._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}
                           onClick={() => setShowMenu(false)}>
                         {t('verifyCredentials')}
                     </Link>
@@ -121,7 +121,7 @@ const DesktopMenu = () => {
                 <li>
                     <Link id="verify-credentials-button"
                           to={Pages.VerifyCredentials}
-                          className={`block py-2 font-bold rounded bg-${window._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}>
+                          className={`block py-2 font-bold rounded bg-${globalThis._env_.DEFAULT_THEME}-gradient bg-clip-text text-transparent`}>
                         {t("verifyCredentials")}
                     </Link>
                 </li>
@@ -147,7 +147,7 @@ function Navbar(props: any) {
             <div className="container flex flex-wrap justify-between items-center h-[40px] mx-0">
                 <div className='flex items-center'>
                     <button data-collapse-toggle="navbar-default" type="button"
-                            className={`${showMenu?`bg-${window._env_.DEFAULT_THEME}-lighter-gradient`:"bg-background"} p-3 ml-2 mr-1 lg:hidden`}
+                            className={`${showMenu?`bg-${globalThis._env_.DEFAULT_THEME}-lighter-gradient`:"bg-background"} p-3 ml-2 mr-1 lg:hidden`}
                             aria-controls="navbar-default" aria-expanded="false" id="hamburger"
                             onClick={() => setShowMenu(!showMenu)}
                     >
