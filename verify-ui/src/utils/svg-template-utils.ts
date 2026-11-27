@@ -1,19 +1,28 @@
 import { AnyVc, LdpVc } from "../types/data-types";
 
 function hasRenderMethod(vc: AnyVc): vc is LdpVc {
-  return (vc as LdpVc).renderMethod !== undefined;
+  return (
+    typeof vc === "object" &&
+    vc !== null &&
+    "renderMethod" in vc &&
+    (vc as LdpVc).renderMethod !== undefined
+  );
 }
 
 export const getTemplateUrl = (vc: AnyVc): string | undefined => {
   if (!hasRenderMethod(vc)) return undefined;
 
-  const renderMethod = Array.isArray(vc.renderMethod)
-    ? vc.renderMethod.find(
-        (r: any) =>
-          r.renderSuite === "svg-mustache" &&
-          r.template?.mediaType === "image/svg+xml"
-      )
-    : undefined;
+  const methods = Array.isArray(vc.renderMethod)
+    ? vc.renderMethod
+    : typeof vc.renderMethod === "object" && vc.renderMethod !== null
+      ? [vc.renderMethod]
+      : [];
+
+  const renderMethod = methods.find(
+    (r: any) =>
+      r?.renderSuite === "svg-mustache" &&
+      r?.template?.mediaType === "image/svg+xml"
+  );
 
   return renderMethod?.template?.id;
 };
